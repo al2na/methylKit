@@ -1,0 +1,47 @@
+#import(GenomicRanges)
+importClassesFrom("GenomicRanges", GRanges, GRangesList)
+
+importFrom("GenomicRanges", GRanges, GRangesList)
+
+importClassesFrom("IRanges", RangedData, RangedDataList, DataTable,
+                  Annotated, Vector, List, DataTableORNULL, characterORNULL,
+                  RangedSelection, SimpleList, DataFrame)
+
+importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
+           RangesList, Rle, RangedSelection)
+
+importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps, seqnames, seqlengths, strand,"strand<-")
+
+importMethodsFrom("IRanges",nearest,as.data.frame)
+
+exportPattern("^[[:alpha:]]+")
+
+exportClasses(
+    "annotationByFeature",
+     "annotationByGenicParts",
+     "methylBase",
+     "methylDiff",
+     "methylRaw",
+     "methylRawList" 
+)
+
+exportMethods(
+    "annotate.WithFeature.Flank",
+    "annotate.WithFeature",
+    "annotate.WithGenicParts",
+    "calculateDiffMeth",
+    "convert.bed.df",
+    "convert.bed2exons",
+    "convert.bed2introns",
+    "get.methylDiff",
+    "getAssembly",
+    "getCorrelation",
+    "getData",
+    "getFlanks",
+    "read.bed",
+    "read.feature.flank",
+    "read.transcript.features",
+    "read",
+    "show",
+    "unite" 
+)

@@ -1,0 +1,485 @@
+## PART THAT DEALS WITH DIFFERENTIAL METHYLATION CALCULATIONS
+
+
+# S3 functions to be used
+
+# SLIM
+######################################
+#####SLIM pi0 Estimation function
+#####Copyright by Tsai Lab of UGA, US, and Hong-Qiang Wang, IIM, CAS, China
+#####Reference: SLIM: A Sliding Linear Model for Estimating the Proportion of True Null Hypotheses in Datasets With Dependence Structures
+#####usage:
+#####inputs: 
+#####rawp:p-values, required
+#####STA:lambda1
+#####Divi: the number of segments
+#####Pz: maximum of p-values of alternative tests
+#####B: the number of quantile points
+#####Bplot: logic, if true, drawing lambda-gamma plot
+#####outputs: 
+#####pi0_Est: estimated value of pi0
+#####selQuantile: the value of alpha determined 
+
+#####################################
+
+
+SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
+{
+
+
+  ####################
+  m <- length(rawp) 
+ 
+  ########################
+  alpha_mtx=NULL;#
+  pi0s_est_COM=NULL;
+  SzCluster_mtx=NULL;
+  P_pi1_mtx=NULL;
+  pi1_act_mtx=NULL;
+  Dist_group=NULL;
+  Num_mtx=NULL;
+  Gamma=NULL;
+  PI0=NULL;
+  
+  #############
+  ##observed points
+  lambda_ga=seq(0,1,0.001);
+  gamma_ga=sapply(lambda_ga,f1,rawp=rawp);
+  Gamma=c(Gamma,gamma_ga);
+  alpha_mtx=c(alpha_mtx,gamma_ga[which(lambda_ga==0.05)]);
+  
+  
+  ###esimation
+  pi0_mtx=NULL;
+  x.axis=NULL;
+  y.axis=NULL;
+  itv=(1-STA)/Divi;
+  for (i in 1:Divi)##10 for uniform data
+  {
+    cutoff=STA+(i/Divi)*(1-STA);##10 for uniform data
+    lambda=seq(cutoff-itv,cutoff,itv/10);
+    gamma_mtx=sapply(lambda,f1,rawp=rawp);
+    LModel=lm(gamma_mtx~lambda);
+    pi0_mtx=c(pi0_mtx,coefficients(LModel)[2]);
+  }
+
+
+  ##################################
+  ########searching
+  N_COM=NULL;
+  N_rawp=NULL;
+  maxFDR_mtx=NULL;
+  quapoint_mtx=NULL; 
+  if (B<=1) B=100;
+  quapoint_mtx=seq(0.01,0.99,1/B);
+  for (k in 1:length(quapoint_mtx))
+  {
+    qua_point=quapoint_mtx[k];
+    
+    pi0_combLR=min(quantile(pi0_mtx,qua_point),1);#mean(pi0_mtx);#median();# qua_point=0.78 for desreasing distribution;
+    ##0.4 for uniform or normal distribution;
+    pi0_est=pi0_combLR;
+    
+    ###########Calculate independent index of raw p vlaues
+    PI0=rbind(PI0,pi0_mtx);
+    
+    pi0s_est_COM=c(pi0s_est_COM,pi0_est);
+    ##Condition1
+    P_pi1=sort(rawp)[max(length(rawp)*(1-pi0_est),1)];##
+    P_pi1_mtx=c(P_pi1_mtx,P_pi1);
+    
+    pi0=pi0_est;
+    if (is.null(Pz)) Pz=0.05;
+    maxFDR=Pz*pi0/(1-(1-Pz)*pi0);
+    maxFDR_mtx=c(maxFDR_mtx,maxFDR);
+    
+    qvalues_combLR=QValuesfun(rawp,pi0);
+    qvalue_cf=maxFDR;
+    selected=which(qvalues_combLR<qvalue_cf);
+    Sel_qvalues_combLR=selected;
+    
+    pi1_act_mtx=c(pi1_act_mtx,length(Sel_qvalues_combLR)/length(rawp));
+    N_COM=c(N_COM,list(Sel_qvalues_combLR));
+    Num_mtx=c(Num_mtx,length(Sel_qvalues_combLR));
+  }
+  length(N_COM)
+  length(quapoint_mtx)
+  
+  ####doing judging
+  ##by max FDR
+  pi1s_est_COM=1-pi0s_est_COM;
+  Diff=sum(rawp<=Pz)/length(rawp)-pi1_act_mtx;
+  
+  ###
+  loc=which.min(abs(Diff));
+  Diff.loc=Diff[loc];
+  selQuantile=quapoint_mtx[loc];
+  pi0_Est=min(1,pi0s_est_COM[loc]);
+  maxFDR.Pz=Pz*pi0_Est/(1-(1-Pz)*pi0_Est);
+  
+  if(Bplot)
+  {
+    #windows();
+    par(mfrow=c(1,2));
+    hist(rawp,main="Histogram of p-value");
+    gamma_ga=sapply(lambda_ga,f1,rawp=rawp);
+    plot(lambda_ga,gamma_ga,type="l",main="Relationship of p- and q value",xlab=expression(lambda),ylab=expression(gamma),cex.lab=1.45,cex.axis=1.42)
+    #par(xaxp=c(0,1,10));
+    #axis(1);
+    ##qvalues
+    qValues=QValuesfun(rawp,pi0=pi0_Est);
+    gammaq_ga=sapply(lambda_ga,f1,rawp=qValues);
+    lines(lambda_ga,gammaq_ga,col="blue",lwd=2,lty="dashed")
+    abline(v=Pz,col="black",lwd=2,lty="dotdash")
+    abline(v=maxFDR.Pz,col="blue",lwd=2,lty="dotdash")
+    text(0.75,0.6,labels=paste("L=",round(abs(Diff.loc),4),sep=""));
+    leg=list(bquote("CPD of p-value"),bquote("CPD of q-value"),bquote("Pmax"==.(Pz)),bquote("FDRmax"==.(round(maxFDR.Pz,2))));
+    legend("bottomright",legend=as.expression(leg),lwd=2,lty=c("solid","dashed","dotdash","dotdash"),col=c("black","blue","black","blue"));
+  }
+  
+  return(list(pi0_Est=pi0_Est,selQuantile=selQuantile));
+}
+
+####
+f1<-function(cutoff,rawp){sum(rawp<cutoff)/length(rawp)};
+
+###
+QValuesfun<-function(rawp,pi0)
+{
+  order_rawp=sort(rawp);
+  qvalues=pi0*length(order_rawp)*order_rawp/c(1:length(order_rawp));
+  temp=cummin(qvalues[seq(length(qvalues),1,-1)])
+  qvalues=temp[seq(length(temp),1,-1)];
+  qvalues=qvalues[order(order(rawp))]
+}
+
+glm.set<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
+{
+
+  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
+
+  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
+  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
+
+  sums=Cs+Ts # get number of Cs and Ts
+  Ps  =Cs/sums # get probability of Cs
+  
+  Tmod=model.matrix(~Treat)
+  glm.bare<-function(X,Y) # X probs > Ps, Y total number > sums
+  {
+    #cat(Tmod)
+    obj=glm.fit(Tmod,X,weights=Y,family=binomial(link=logit))
+    deviance <- obj$null.deviance - obj$deviance
+    dispersion=1 #(if binomial or poisson)
+    aliased <- is.na(coef(obj))
+    p <- obj$rank
+    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
+        p1 <- 1L:p
+        Qr <- obj$qr
+        coef.p <- obj$coefficients[Qr$pivot[p1]]
+        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
+        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
+        covmat <- dispersion * covmat.unscaled
+        var.cf <- diag(covmat)
+        s.err <- sqrt(var.cf)
+        tvalue <- (coef.p/s.err)[2]    
+     }else if (df.r<=0)
+     { tvalue=NaN }
+ 
+    wald <- tvalue
+    beta1 <- obj$coefficients[2]
+    p.value <- 1-pchisq(deviance,df=1)
+
+    return( c(wald,beta1,p.value) )
+  }
+
+  Ps.list=split(Ps,1:nrow(Ps) ) # get Probs
+  Ws.list=split(sums,1:nrow(sums) ) # get weights to feed into function
+  res=t(mapply(glm.bare,Ps.list,Ws.list))
+  colnames(res)=c("wald","beta1","pvalue")
+  return(res)
+}
+
+# function to fix logistic regression pvalues and make qvalues
+fix.q.values.glm<-function(pvals,slim=FALSE)
+{
+  if(slim==FALSE){qvals=qvalue(pvals[,3])$qvalues # get qvalues
+  }else{slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)}                
+
+  pvals=cbind(pvals,qvalue=qvals) # merge pvals and qvals
+  return(pvals)
+}
+
+# function to fix fisher.test pvalues and make qvalues
+fix.q.values.fisher<-function(pvals,slim=FALSE)
+{
+  if(slim==FALSE){qvals=qvalue(pvals)$qvalues # get qvalues
+  }else{slimObj=SLIMfunc(pvals);qvals=QValuesfun(pvals, slimObj$pi0_Est)}                
+
+  pvals=data.frame(pvalue=pvals,qvalue=qvals) # merge pvals and qvals
+  return(pvals)
+}
+ 
+# A FASTER VERSION OF FISHERs EXACT
+fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control = list(), 
+    or = 1, alternative = "two.sided", conf.int = TRUE, conf.level = 0.95, 
+    simulate.p.value = FALSE, B = 2000, cache=F) 
+{
+    if (nrow(x)!=2 | ncol(x)!=2) stop("Incorrect input format for fast.fisher")
+    if (cache) {
+      key = paste(x,collapse="_")
+      cachedResult = hashTable[[key]]
+      if (!is.null(cachedResult)) {
+        return(cachedResult)
+      }
+    }
+    # ---- START: cut version of fisher.test ----
+    DNAME <- deparse(substitute(x))
+    METHOD <- "Fisher's Exact Test for Count Data"
+    nr <- nrow(x)
+    nc <- ncol(x)
+    PVAL <- NULL
+    if ((nr == 2) && (nc == 2)) {
+        m <- sum(x[, 1])
+        n <- sum(x[, 2])
+        k <- sum(x[1, ])
+        x <- x[1, 1]
+        lo <- max(0, k - n)
+        hi <- min(k, m)
+        NVAL <- or
+        names(NVAL) <- "odds ratio"
+        support <- lo:hi
+        logdc <- dhyper(support, m, n, k, log = TRUE)
+        dnhyper <- function(ncp) {
+            d <- logdc + log(ncp) * support
+            d <- exp(d - max(d))
+            d/sum(d)
+        }
+        mnhyper <- function(ncp) {
+            if (ncp == 0) 
+                return(lo)
+            if (ncp == Inf) 
+                return(hi)
+            sum(support * dnhyper(ncp))
+        }
+        pnhyper <- function(q, ncp = 1, upper.tail = FALSE) {
+            if (ncp == 1) {
+                if (upper.tail) 
+                  return(phyper(x - 1, m, n, k, lower.tail = FALSE))
+                else return(phyper(x, m, n, k))
+            }
+            if (ncp == 0) {
+                if (upper.tail) 
+                  return(as.numeric(q <= lo))
+                else return(as.numeric(q >= lo))
+            }
+            if (ncp == Inf) {
+                if (upper.tail) 
+                  return(as.numeric(q <= hi))
+                else return(as.numeric(q >= hi))
+            }
+            d <- dnhyper(ncp)
+            if (upper.tail) 
+                sum(d[support >= q])
+            else sum(d[support <= q])
+        }
+        if (is.null(PVAL)) {
+            PVAL <- switch(alternative, less = pnhyper(x, or), 
+                greater = pnhyper(x, or, upper.tail = TRUE), 
+                two.sided = {
+                  if (or == 0) 
+                    as.numeric(x == lo)
+                  else if (or == Inf) 
+                    as.numeric(x == hi)
+                  else {
+                    relErr <- 1 + 10^(-7)
+                    d <- dnhyper(or)
+                    sum(d[d <= d[x - lo + 1] * relErr])
+                  }
+                })
+            RVAL <- list(p.value = PVAL)
+        }
+        mle <- function(x) {
+            if (x == lo) 
+                return(0)
+            if (x == hi) 
+                return(Inf)
+            mu <- mnhyper(1)
+            if (mu > x) 
+                uniroot(function(t) mnhyper(t) - x, c(0, 1))$root
+            else if (mu < x) 
+                1/uniroot(function(t) mnhyper(1/t) - x, c(.Machine$double.eps, 
+                  1))$root
+            else 1
+        }
+        ESTIMATE <- mle(x)
+        #names(ESTIMATE) <- "odds ratio"
+        RVAL <- c(RVAL, estimate = ESTIMATE, null.value = NVAL)
+    }
+    RVAL <- c(RVAL, alternative = alternative, method = METHOD, data.name = DNAME)
+    attr(RVAL, "class") <- "htest"
+    # ---- END: cut version of fisher.test ----    
+    if (cache) hashTable[[key]] <<- RVAL # write to global variable
+    return(RVAL)                                                                         
+}
+
+
+# end of S3 functions
+
+#
+# S4 OBJECTS
+#
+
+# a class that holds differential methylation information
+# 
+setClass("methylDiff",representation(
+  sample.ids = "character", assembly = "character",treatment="numeric",destranded="logical"),contains="data.frame")
+
+
+#
+# S4 FUNCTIONS
+#
+
+# differential methylation analysis
+setGeneric("calculateDiffMeth", function(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T) standardGeneric("calculateDiffMeth"))
+setMethod("calculateDiffMeth", "methylBase",
+                    function(.Object,slim,coverage.cutoff,weigthed.mean){
+                      
+                      #get CpGs with the cutoff
+                      inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index)
+                      subst=S3Part(.Object)[inds,]
+                      
+                      if(length(.Object@treatment)<2 ){
+                        stop("can not do differential methylation calculation with less than two samples")
+                      }
+                      if(length(unique(.Object@treatment))<2 ){
+                        stop("can not do differential methylation calculation when there is no control\n
+                             treatment option should have 0 and 1 designating treatment and control samples")
+                      }
+                        
+                         
+                      # get the indices for numCs and numTs in each set
+                      set1.Cs=.Object@numCs.index[.Object@treatment==1]
+                      set2.Cs=.Object@numCs.index[.Object@treatment==0]
+                      set1.Ts=.Object@numTs.index[.Object@treatment==1]
+                      set2.Ts=.Object@numTs.index[.Object@treatment==0]
+
+                      # if one control, one treatment case to the fisher's exact test
+                      if(length(.Object@treatment)==2 )
+                      {
+                        p.vals   =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
+                        pvals    = fix.q.values.fisher(pvals,slim=slim)   
+                        
+                        # calculate mean methylation change
+                        mom.meth1    =rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1]) # get means of means
+                        mom.meth2    =rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1])
+                        mom.mean.diff=mom.meth1-mom.meth2
+                        x=data.frame(subst[,1:5],pvals,meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                        obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                            treatment=.Object@treatment,destranded=.Object@destranded)
+                        obj
+                      }
+                      else # else do the GLM - logistic regression
+                      { 
+                                                
+                          # pvalues
+                          pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+                           
+                          # get qvalues
+                          pvals  = fix.q.values.glm(pvals,slim=slim)   
+                          
+                          # calculate mean methylation change
+                          mom.meth1=rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1]) # get means of means
+                          mom.meth2=rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1])
+                          pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1]) # get weigthed means
+                          pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1]) # get weigthed means
+                          pm.mean.diff=pm.meth1-pm.meth2
+                          mom.mean.diff=mom.meth1-mom.meth2
+                          
+                          if(weigthed.mean){
+                            x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                              treatment=.Object@treatment,destranded=.Object@destranded)
+                            obj
+  
+                          }
+                          else{
+                            x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                              treatment=.Object@treatment,destranded=.Object@destranded)
+                            obj
+                          }
+                        
+                      }
+                    }    
+)
+
+
+# differential methylation summary
+# outputs a summary.methylDiff object
+# that shows:
+# total number of DMCs
+# total number of CpGs covered in given assays
+# total number of DMCs per Chromosome
+# total number CpGs covered per Chr
+#setGeneric(name="synopsis", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("synopsis"))
+#setMethod(f="synopsis", signature="methylDiff", 
+#          definition=function(.Object,difference,qvalue) {
+#                    cat("hi")                         
+#})
+
+# a class that holds differential methylation information
+# 
+#setClass("synopsis.methylDiff",representation(
+#qvalue="numeric",
+#  difference="numeric",
+#  sample.ids = "character", 
+#  assembly = "character",
+#  treatment="numeric",
+#  destranded="logical"),contains="data.frame")
+
+
+## ACESSOR FUNCTIONS FOR methylDiff OBJECT
+
+# show method for methylDiff class
+setMethod("show", "methylDiff", function(object) {
+  
+  cat("methylDiff object with",nrow(object),"rows\n--------------\n")
+  print(head(object))
+  cat("--------------\n")
+  cat("sample.ids:",object@sample.ids,"\n")
+  cat("destranded",object@destranded,"\n")
+  cat("assembly:",object@assembly,"\n")
+  cat("treament:", object@treatment,"\n")
+})
+
+# a function for getting data part of methylDiff                      
+setMethod(f="getData", signature="methylDiff", definition=function(x) {
+                return(as(x,"data.frame"))
+        }) 
+                      
+# function for selection differential methylation
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("get.methylDiff"))
+setMethod(f="get.methylDiff", signature="methylDiff", 
+          definition=function(.Object,difference,qvalue) {
+                    new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                              treatment=.Object@treatment,destranded=.Object@destranded)
+                    new.obj
+          }) 
+
+
+## CONVERTOR FUNCTIONS FOR methylDiff OBJECT
+
+setAs("methylDiff", "GRanges", function(from)
+                      {
+
+                        GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
+                                       strand=from$strand, 
+                                       id=from$id,
+                                       qvalue=from$qvalue,
+                                       meth.diff=from$meth.diff
+                                       )
+
+})
+
