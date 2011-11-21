@@ -43,5 +43,6 @@ exportMethods(
     "read.transcript.features",
     "read",
     "show",
-    "unite" 
+    "unite",
+    "clusterSamples"
 )

@@ -12,6 +12,7 @@
 
 library(methylKit)
 
+
 file.list=list( system.file("tests", "test1.myCpG.txt", package = "methylKit"),
                 system.file("tests", "test2.myCpG.txt", package = "methylKit"),
                 system.file("tests", "control1.myCpG.txt", package = "methylKit"),

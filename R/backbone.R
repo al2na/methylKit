@@ -275,7 +275,7 @@ setGeneric("getCorrelation", function(.Object,plot=F) standardGeneric("getCorrel
 # @aliases getCorrelation,ANY-method
 setMethod("getCorrelation", "methylBase",
                     function(.Object,plot){
-                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object@data[,.Object@numCs.index] + .Object@data[,.Object@numTs.index] )                                      
+                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
                         print( cor(meth.mat) )
