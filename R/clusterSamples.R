@@ -72,6 +72,17 @@
   return(hc)
   }
 
+# Principal Components Analysis on methylBase object
+# x matrix each column is a sample
+# cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
+.pcaPlot = function(x, cor=TRUE){
+  x.pr = princomp(x, cor=cor)
+  loads = loadings(x.pr)
+  plot(loads[,1:2], main = "CpG dinucleotide methylation PCA Analysis")
+  text(loads[,1], loads[,2],adj=c(-0.4,0.3))
+  return(summary(x.pr))
+}
+
 # end of regular functions to be used in S4 functions
 #---------------------------------------------------------------------------------------
 
@@ -82,26 +93,51 @@
 #' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" or "\code{centroid}". (default:"\code{ward}")
 #' @param plot clustering plot if TRUE (default:TRUE) 
 #' @return a \code{tree} object produced by hclust and plot hierarchical clustering
-#' @aliases clusterSamples,-methods getCorrelation,methylBase-method
+#' @aliases clusterSamples,-methods clusterSamples, methylBase-method
 #' @export
 #' @docType methods
 #' @rdname clusterSamples-methods
 setGeneric("clusterSamples", function(.Object, dist="correlation", method="ward", plot=TRUE) standardGeneric("clusterSamples"))
 
 #' @rdname clusterSamples-methods
-# @aliases clusterSamples,ANY-method
+#' @aliases clusterSamples,ANY-method
 setMethod("clusterSamples", "methylBase",
                     function(.Object, dist="correlation", method="ward", plot=TRUE){
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
                         .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=TRUE)
+                        
+                        }
+)
+
+#' Principal Components Analysis on samples in methylBase object
+#' 
+#' @param .Object a \code{methylBase} object
+#' @param cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
+#' @return The form of the value returned by \code{PCASamples} is the table of importance of components
+#' @aliases PCASamples,-methods PCASamples, methylBase-method
+#' @export
+#' @docType methods
+#' @rdname PCASamples-methods
+setGeneric("PCASamples", function(.Object, cor=TRUE) standardGeneric("PCASamples"))
+
+#' @rdname PCASamples-methods
+#' @aliases PCASamples,ANY-method
+setMethod("PCASamples", "methylBase",
+                    function(.Object, cor=TRUE){
+                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
+                        names(meth.mat)=.Object@sample.ids
+                        
+                        .pcaPlot(meth.mat, cor=TRUE)
+                        
                         }
 )
 
 #numC=grep("numCs", names(methidh))
 #numT=grep("numTs", names(methidh))
 #meth.mat=methidh[,numC]/(methidh[,numC]+methidh[,numT])
+
 
 ## ACESSOR FUNCTIONS FOR methylDiff OBJECT
 # a function for getting data part of methylDiff                      

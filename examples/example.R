@@ -46,6 +46,9 @@ hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
 # cluster all samples using correlation distance and plot hiarachical clustering
 clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
 
+# principal component anlaysis of all samples.
+PCASamples(methidh)
+
 # calculate differential methylation
 myDiff=calculateDiffMeth(methidh)
 

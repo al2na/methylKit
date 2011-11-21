@@ -1,7 +1,9 @@
 \docType{methods}
 \name{clusterSamples}
+\alias{"clusterSamples,"}
 \alias{"clusterSamples,-methods"}
-\alias{"getCorrelation,methylBase-method"}
+\alias{"clusterSamples,ANY-method"}
+\alias{"methylBase-method"}
 \alias{clusterSamples}
 \title{Hierarchical cluster analysis on samples in methylBase object}
 \arguments{

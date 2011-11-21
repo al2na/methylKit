@@ -44,5 +44,6 @@ exportMethods(
     "read",
     "show",
     "unite",
-    "clusterSamples"
+    "clusterSamples",
+    "PCASamples"
 )
