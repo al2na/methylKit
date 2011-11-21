@@ -77,11 +77,11 @@
 
 #' Hierarchical cluster analysis on samples in methylBase object
 #' 
-#' @param .Object a methylBase object
-#' @param dist the distance measure to be used. This must be one of "correlation", "euclidean", "maximum", "manhattan", "canberra", "binary" or "minkowski". Any unambiguous substring can be given. (default:"correlation")
-#' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "ward", "single", "complete", "average", "mcquitty", "median" or "centroid". (default:"ward")
+#' @param .Object a \code{methylBase} object
+#' @param dist the distance measure to be used. This must be one of "\code{correlation}", "\code{euclidean}", "\code{maximum}", "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". Any unambiguous substring can be given. (default:"\code{correlation}")
+#' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" or "\code{centroid}". (default:"\code{ward}")
 #' @param plot clustering plot if TRUE (default:TRUE) 
-#' @return a tree object produced by hclust and plot hierarchical clustering
+#' @return a \code{tree} object produced by hclust and plot hierarchical clustering
 #' @aliases clusterSamples,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods

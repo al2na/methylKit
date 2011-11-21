@@ -1,10 +1,10 @@
 \docType{methods}
 \name{getData}
+\alias{"getData,-methods"}
+\alias{"getData,ANY-method"}
+\alias{"getData,methylBase-method"}
+\alias{"getData,methylRaw-method"}
 \alias{getData}
-\alias{getData,-methods}
-\alias{getData,ANY-method}
-\alias{getData,methylBase-method}
-\alias{getData,methylRaw-method}
 \title{gets the data slot from the methylBase object}
 \arguments{
   \item{x}{a methylBase object}

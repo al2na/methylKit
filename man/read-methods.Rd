@@ -1,10 +1,10 @@
 \docType{methods}
 \name{read}
+\alias{"read,-methods"}
+\alias{"read,character,character,character,ANY-method"}
+\alias{"read,list,list,character,ANY-method"}
+\alias{"read,methylRawList-method"}
 \alias{read}
-\alias{read,-methods}
-\alias{read,character,character,character,ANY-method}
-\alias{read,list,list,character,ANY-method}
-\alias{read,methylRawList-method}
 \title{read file(s) to a methylrawList or methylraw object}
 \arguments{
   \item{file}{location(s)}

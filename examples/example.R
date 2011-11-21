@@ -39,6 +39,13 @@ methidh=unite(myobj,destrand=T)
 # 
 methidh=unite(myobj)
 
+# cluster all samples using correlation distance and return a tree object for plclust
+hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
+# plclust(hc,hang=-1)
+
+# cluster all samples using correlation distance and plot hiarachical clustering
+clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
+
 # calculate differential methylation
 myDiff=calculateDiffMeth(methidh)
 
