@@ -41,10 +41,12 @@ methidh=unite(myobj)
 
 # cluster all samples using correlation distance and return a tree object for plclust
 hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
-# plclust(hc,hang=-1)
 
 # cluster all samples using correlation distance and plot hiarachical clustering
 clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
+
+# screeplot of principal component analysis.
+PCASamples(methidh, screeplot=TRUE)
 
 # principal component anlaysis of all samples.
 PCASamples(methidh)

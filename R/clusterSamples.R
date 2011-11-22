@@ -75,24 +75,30 @@
 # Principal Components Analysis on methylBase object
 # x matrix each column is a sample
 # cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-.pcaPlot = function(x, cor=TRUE){
+.pcaPlot = function(x, cor=TRUE, screeplot=FALSE){
   x.pr = princomp(x, cor=cor)
-  loads = loadings(x.pr)
-  plot(loads[,1:2], main = "CpG dinucleotide methylation PCA Analysis")
-  text(loads[,1], loads[,2],adj=c(-0.4,0.3))
+  if (screeplot)
+    screeplot(x.pr, type="lines", main="CpG dinucleotide methylation PCA Screeplot")
+  else{
+    loads = loadings(x.pr)
+    plot(loads[,1:2], main = "CpG dinucleotide methylation PCA Analysis")
+    text(loads[,1], loads[,2],adj=c(-0.4,0.3))
+  }
   return(summary(x.pr))
 }
 
 # end of regular functions to be used in S4 functions
 #---------------------------------------------------------------------------------------
 
-#' Hierarchical cluster analysis on samples in methylBase object
+#' CpG Dinucleotide Methylation Hierarchical Cluster Analysis
 #' 
 #' @param .Object a \code{methylBase} object
 #' @param dist the distance measure to be used. This must be one of "\code{correlation}", "\code{euclidean}", "\code{maximum}", "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". Any unambiguous substring can be given. (default:"\code{correlation}")
 #' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" or "\code{centroid}". (default:"\code{ward}")
-#' @param plot clustering plot if TRUE (default:TRUE) 
-#' @return a \code{tree} object produced by hclust and plot hierarchical clustering
+#' @param plot a logical value indicating whether to plot hierarchical clustering. (default:TRUE) 
+#'
+#' @return a \code{tree} object of a hierarchical cluster analysis using a set of dissimilarities for the n objects being clustered.
+#'
 #' @aliases clusterSamples,-methods clusterSamples, methylBase-method
 #' @export
 #' @docType methods
@@ -106,30 +112,33 @@ setMethod("clusterSamples", "methylBase",
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=TRUE)
+                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot)
                         
                         }
 )
 
-#' Principal Components Analysis on samples in methylBase object
+#' CpG Dinucleotide Methylation Principal Components Analysis
 #' 
 #' @param .Object a \code{methylBase} object
-#' @param cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-#' @return The form of the value returned by \code{PCASamples} is the table of importance of components
+#' @param cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (default: TRUE)
+#' @param screeplot a logical value indicating whether to plot the variances against the number of the principal component. (default: FALSE)
+#'
+#' @return The form of the value returned by \code{PCASamples} is the summary of principal component analysis by \code{princomp}.
+#'
 #' @aliases PCASamples,-methods PCASamples, methylBase-method
 #' @export
 #' @docType methods
 #' @rdname PCASamples-methods
-setGeneric("PCASamples", function(.Object, cor=TRUE) standardGeneric("PCASamples"))
+setGeneric("PCASamples", function(.Object, cor=TRUE, screeplot=FALSE) standardGeneric("PCASamples"))
 
 #' @rdname PCASamples-methods
 #' @aliases PCASamples,ANY-method
 setMethod("PCASamples", "methylBase",
-                    function(.Object, cor=TRUE){
+                    function(.Object, cor=TRUE, screeplot=FALSE){
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .pcaPlot(meth.mat, cor=TRUE)
+                        .pcaPlot(meth.mat, cor=cor, screeplot=screeplot)
                         
                         }
 )

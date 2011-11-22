@@ -5,7 +5,7 @@
 \alias{"clusterSamples,ANY-method"}
 \alias{"methylBase-method"}
 \alias{clusterSamples}
-\title{Hierarchical cluster analysis on samples in methylBase object}
+\title{CpG Dinucleotide Methylation Hierarchical Cluster Analysis}
 \arguments{
   \item{.Object}{a \code{methylBase} object}
 
@@ -21,14 +21,16 @@
   "\code{average}", "\code{mcquitty}", "\code{median}" or
   "\code{centroid}". (default:"\code{ward}")}
 
-  \item{plot}{clustering plot if TRUE (default:TRUE)}
+  \item{plot}{a logical value indicating whether to plot
+  hierarchical clustering. (default:TRUE)}
 }
 \value{
-  a \code{tree} object produced by hclust and plot
-  hierarchical clustering
+  a \code{tree} object of a hierarchical cluster analysis
+  using a set of dissimilarities for the n objects being
+  clustered.
 }
 \description{
-  Hierarchical cluster analysis on samples in methylBase
-  object
+  CpG Dinucleotide Methylation Hierarchical Cluster
+  Analysis
 }
 
