@@ -1,10 +1,10 @@
 \docType{methods}
 \name{PCASamples}
-\alias{"PCASamples,"}
-\alias{"PCASamples,-methods"}
-\alias{"PCASamples,ANY-method"}
-\alias{"methylBase-method"}
 \alias{PCASamples}
+\alias{PCASamples,}
+\alias{PCASamples,-methods}
+\alias{PCASamples,ANY-method}
+\alias{methylBase-method}
 \title{CpG Dinucleotide Methylation Principal Components Analysis}
 \arguments{
   \item{.Object}{a \code{methylBase} object}

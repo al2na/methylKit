@@ -13,10 +13,10 @@
 library(methylKit)
 
 
-file.list=list( system.file("tests", "test1.myCpG.txt", package = "methylKit"),
-                system.file("tests", "test2.myCpG.txt", package = "methylKit"),
-                system.file("tests", "control1.myCpG.txt", package = "methylKit"),
-                system.file("tests", "control2.myCpG.txt", package = "methylKit") )
+file.list=list( system.file("data", "test1.myCpG.txt", package = "methylKit"),
+                system.file("data", "test2.myCpG.txt", package = "methylKit"),
+                system.file("data", "control1.myCpG.txt", package = "methylKit"),
+                system.file("data", "control2.myCpG.txt", package = "methylKit") )
 
 myobj=read( file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
@@ -33,7 +33,7 @@ head(myobj[[2]])
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # setting destrand=T, will merge reads on both strans of a CpG dinucleotide. This provides better 
 # coverage, but only advised when looking at CpG methylation
-methidh=unite(myobj,destrand=T)
+t=unite(myobj,destrand=T)
 
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # 

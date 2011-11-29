@@ -1,0 +1,16 @@
+Package: methylKit
+Type: Package
+Title: DNA methylation analysis from high-throughput bisulfate
+        sequencing
+Version: 0.2
+Date: 2011-11-10
+Author: Altuna Akalin
+Maintainer: ME <yourfault@somewhere.net>
+Description: DNA methylation analysis RRBS,ERRBS,BS-seq
+License: Artistic License, Version 2.0
+LazyLoad: yes
+Depends: R (>= 2.13.0), methods, GenomicRanges, IRanges
+Imports: methods, GenomicRanges, IRanges
+Collate: 'backbone.R' 'diffMeth.R' 'annotate.R' 'clusterSamples.R'
+Packaged: 2011-11-28; Sheng Li
+Built: R 2.14.0; ; 2011-11-29 17:01:31 UTC; unix

@@ -1,9 +1,9 @@
 \docType{methods}
 \name{unite}
-\alias{"unite,-methods"}
-\alias{"unite,ANY-method"}
-\alias{"unite,methylRawList-method"}
 \alias{unite}
+\alias{unite,-methods}
+\alias{unite,ANY-method}
+\alias{unite,methylRawList-method}
 \title{unites methylRawList to a single table}
 \arguments{
   \item{destrand}{if TRUE, reads covering both strands of a

@@ -1,8 +1,8 @@
 \docType{methods}
 \name{getCoverageStats}
-\alias{"getCoverageStats,-methods"}
-\alias{"getCoverageStats,methylRaw-method"}
 \alias{getCoverageStats}
+\alias{getCoverageStats,-methods}
+\alias{getCoverageStats,methylRaw-method}
 \title{get coverage stats from methylRaw object}
 \arguments{
   \item{.Object}{a \code{methylRaw} object}
