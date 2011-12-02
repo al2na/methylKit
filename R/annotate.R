@@ -369,7 +369,7 @@ annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=F)
   
 }
 
-distance2TSS<-function(g.idh,tss)
+distance2nearestFeature<-function(g.idh,tss)
 {
   
   elementMetadata(g.idh)=DataFrame(elementMetadata(g.idh),orig.row=1:length(g.idh))
@@ -434,7 +434,7 @@ setMethod("annotate.WithGenicParts", signature(target= "GRanges",GRangesList.obj
                     function(target,GRangesList.obj,strand){
                       
                       a.list    =annotate.gr.WithGenicParts(target,GRangesList.obj$promoters,GRangesList.obj$exons,GRangesList.obj$introns,strand=strand)
-                      dist2TSS  =distance2TSS(target,GRangesList.obj$TSSes)
+                      dist2TSS  =distance2nearestFeature(target,GRangesList.obj$TSSes)
 
                       new("annotationByGenicParts",
                                   members         =as.matrix(a.list$members),
