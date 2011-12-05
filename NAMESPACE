@@ -10,6 +10,8 @@ importClassesFrom("IRanges", RangedData, RangedDataList, DataTable,
 importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
            RangesList, Rle, RangedSelection)
 
+importFrom("data.table", data.table)
+
 importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps, seqnames, seqlengths, strand,"strand<-")
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
@@ -45,5 +47,6 @@ exportMethods(
     "show",
     "unite",
     "clusterSamples",
-    "PCASamples"
+    "PCASamples",
+    "regionCounts"
 )
