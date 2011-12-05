@@ -3,7 +3,7 @@ Type: Package
 Title: DNA methylation analysis from high-throughput bisulfate sequencing
 Version: 0.2
 Date: 2011-11-10
-Author: Altuna Akalin and Sheng Li
+Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: ME <yourfault@somewhere.net>
 Description: DNA methylation analysis RRBS,ERRBS,BS-seq
 License: Artistic License, Version 2.0
