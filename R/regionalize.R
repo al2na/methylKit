@@ -32,8 +32,8 @@ setAs("methylRaw", "GRanges", function(from)
 #' @aliases regionCounts,-methods regionCounts,methylRawList-method
 #' @aliases regionCounts,methylRaw,methyRawList,ANY-method
 #' @export
-#' docType methods
-#' rdname regionCount-methods
+#' @docType methods
+#' @rdname regionCounts-methods
 setGeneric("regionCounts", function(methylObj,regions) standardGeneric("regionCounts") )
 
 
@@ -41,8 +41,8 @@ setGeneric("regionCounts", function(methylObj,regions) standardGeneric("regionCo
 # RETURNS a new methylRaw object
 # @param methylObj a \code{methylRaw} object
 # @param regions a GRanges object.
-#' @rdname regionCount-methods
-#' @aliases regionCounts,methylRaw,ANY-method
+# @rdname regionCounts-methods
+# @aliases regionCounts,methylRaw,ANY-method
 setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
                     function(methylObj,regions){
                     
@@ -88,8 +88,8 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
 # you can add refseq id to the id column: chr.start.end.refseqid
 # @param methylObj a \code{methylRaw} object
 # @param regions a GRangesList object.
-#' @rdname regionCount-methods
-#' @aliases regionCounts,methylRaw,ANY-method
+# @rdname regionCounts-methods
+# @aliases regionCounts,methylRaw,ANY-method
 # assume that each name of the element in the GRangesList is unique and 
 setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList"),
                     function(methylObj,regions){
@@ -114,13 +114,14 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
                                                  end = max(end),
                                                  strand = first.element(strand)),
                                           by=element]
-                      
+                      # if it is intron, some of the symbols may not have any intron GRanges
+                      sum.id=names(regions)[sum.dt$id]
                       #create a new methylRaw object to return
-                      new.data=data.frame(id      =names(regions)[sum.dt$id],
-                                          chr     =sum.temp.dt$chr[sum.dt$id],
-                                          start   =sum.temp.dt$start[sum.dt$id],
-                                          end     =sum.temp.dt$end[sum.dt$id],
-                                          strand  =sum.temp.dt$strand[sum.dt$id],
+                      new.data=data.frame(id      =sum.id,
+                                          chr     =sum.temp.dt$chr[sum.temp.dt$element %in% sum.id],
+                                          start   =sum.temp.dt$start[sum.temp.dt$element %in% sum.id],
+                                          end     =sum.temp.dt$end[sum.temp.dt$element %in% sum.id],
+                                          strand  =sum.temp.dt$strand[sum.temp.dt$element %in% sum.id],
                                           coverage=sum.dt$coverage,
                                           numCs   =sum.dt$numCs,
                                           numTs   =sum.dt$numTs)
@@ -128,13 +129,15 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
                     new("methylRaw",new.data,sample.id=methylObj@sample.id,assembly=methylObj@assembly)
   
                     })
+# Note: some genes do not have intron, need to take care of it.
+
 
 # GETs regional counts for given GRanges object
 # RETURNS a new methylRawList object
 # @param methylObj a \code{methylRawList} object
 # @param regions a GRanges object.
-#' @rdname regionCount-methods
-#' @aliases regionCounts,methylRawList,ANY-method
+# @rdname regionCounts-methods
+# @aliases regionCounts,methylRawList,ANY-method
 setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRanges"),
                     function(methylObj,regions){
                      
@@ -155,8 +158,8 @@ setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRanges")
 # RETURNS a new methylRawList object
 # @param methylObj a \code{methylRawList} object
 # @param regions a GRangesList object.
-#' @rdname regionCount-methods
-#' @aliases regionCounts,methylRawList,ANY-method
+# @rdname regionCount-methods
+# @aliases regionCounts,methylRawList,ANY-method
 setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRangesList"),
                     function(methylObj,regions){
                      
