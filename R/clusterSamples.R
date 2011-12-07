@@ -72,7 +72,7 @@
     treatment=treatment
     sample.ids=sample.ids
 
-    my.cols=rainbow(length(unique(treatment)))
+    my.cols=rainbow(length(unique(treatment)), start=1, end=0.6)
 
     col.list=as.list(my.cols[treatment+1])
     names(col.list)=sample.ids
@@ -130,7 +130,7 @@
 
     treatment=treatment
     sample.ids=sample.ids
-    my.cols=rainbow(length(unique(treatment)))
+    my.cols=rainbow(length(unique(treatment)), start=1, end=0.6)
     
     plot(loads[,1:2], main = "CpG dinucleotide methylation PCA Analysis",col=my.cols[treatment+1],
          xlim=.adjlim(loads[,1],adj.lim[1]), ylim=.adjlim(loads[,2], adj.lim[2]))
