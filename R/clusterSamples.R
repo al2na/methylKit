@@ -45,7 +45,7 @@
 # dist.method method to get the distance between samples
 # hclust.method the agglomeration method to be used
 # plot if TRUE, plot the hierarchical clustering
-.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE){
+.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE, treatment=treatment,sample.ids=sample.ids){
   DIST.METHODS <- c("correlation", "euclidean", "maximum", "manhattan", "canberra", 
         "binary", "minkowski")
   dist.method <- pmatch(dist.method, DIST.METHODS)
@@ -66,9 +66,39 @@
   hc=hclust(d, HCLUST.METHODS[hclust.method]);
   
   if(plot){
-    plclust(hc,hang=-1, main=paste("CpG dinucleotide methylation clustering\nDistance: ",
-                                   DIST.METHODS[dist.method],sep=""), xlab = "Samples");
-  }
+    #plclust(hc,hang=-1, main=paste("CpG dinucleotide methylation clustering\nDistance method: ",
+    #                               DIST.METHODS[dist.method],sep=""), xlab = "Samples");
+    # plot
+    treatment=treatment
+    sample.ids=sample.ids
+
+    my.cols=rainbow(length(unique(treatment)))
+
+    col.list=as.list(my.cols[treatment+1])
+    names(col.list)=sample.ids
+
+    colLab <- function(n,col.list)
+      {
+      if(is.leaf(n))
+        {
+          a <- attributes(n)
+
+          attr(n, "nodePar") <- c(a$nodePar, list(lab.col =
+          col.list[[a$label]], lab.cex=1,
+          col=col.list[[a$label]], cex=1, pch=16 ))
+        }
+      n
+      }
+    
+    dend = as.dendrogram(hc)
+    dend_colored <- dendrapply(dend, colLab,col.list)
+    
+    plot(dend_colored, main = "CpG dinucleotide methylation clustering", 
+         sub = paste("Distance method: \"", DIST.METHODS[dist.method],
+         "\"; Clustering method: \"", HCLUST.METHODS[hclust.method],"\"",sep=""), 
+         xlab = "Samples", ylab = "Height");
+    # end of plot
+    }
   return(hc)
   }
 
@@ -112,7 +142,7 @@ setMethod("clusterSamples", "methylBase",
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot)
+                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot, treatment=.Object@treatment,sample.ids=.Object@sample.ids)
                         
                         }
 )
