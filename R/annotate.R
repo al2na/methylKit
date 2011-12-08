@@ -770,6 +770,7 @@ setMethod("getMembers", signature(x = "annotationByFeature"),
 #' That means if a feature overlaps with a promoter it will be counted as promoter overlapping only, or if it is overlapping with a an exon but not a promoter, 
 #' it will be counted as exon overlapping only whether or not it overlaps with an intron.
 #'
+#' @usage getTargetAnnotation(x,percentage=T,hierarchical=T)
 #' @return RETURNS  a vector of percentages or counts showing quantity of target features overlapping with annotation
 #' 
 #' @aliases getTargetAnnotation,-methods getTargetAnnotation,annotationByFeature-method
