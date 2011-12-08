@@ -94,13 +94,15 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' read file(s) to a methylrawList or methylraw object
 #'
 #' read a list of locations or one location and create a methylrawList or methylraw object
-#' @param file location(s)
+#' @param file location(s), either a list of locations (each a character string) or one location string
 #' @param sample.id sample.id(s)
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
 #' @param header if the input file has a header or not (default: TRUE)
 #' @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
 #' @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
+#' @usage read(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",treatment)
+#' @return returns methylRaw or methylRawList
 #' @aliases read,-methods read,methylRawList-method
 #' @aliases read,list,list,character,ANY-method
 #' @export
@@ -213,8 +215,12 @@ setClass("methylBase",contains="data.frame",representation(
 #' 
 #' This functions unites \code{methylRawList} object that only bases with coverage from all samples are retained.
 #' The resulting object is a class of \code{methylBase}
+#'
+#' @param .Object a methylRawList object to be merged by common locations covered by reads
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
 #'   do not set to TRUE if not only interested in CpGs (default: FALSE)
+#'
+#' @usage unite(.Object,destrand=F)
 #' @return a methylBase object
 #' @aliases unite,-methods unite,methylRawList-method
 #' @export
