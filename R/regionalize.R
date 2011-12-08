@@ -2,19 +2,6 @@
 
 # get counts for a given regions
 
-#convert methylRaw to Granges
-setAs("methylRaw", "GRanges", function(from)
-                      {
-                        from2=getData(from)
-                        GRanges(seqnames=from2$chr,ranges=IRanges(start=from2$start, end=from2$end),
-                                       strand=from2$strand, 
-                                       id=from2$id,
-                                       coverage=from2$coverage,
-                                       numCs   =from2$numCs,
-                                       numTs  =from2$numTs                                
-                                       )
-
-})
 
 #
 # S4 FUNCTIONS
