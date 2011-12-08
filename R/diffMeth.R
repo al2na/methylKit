@@ -491,7 +491,7 @@ setMethod("show", "methylDiff", function(object) {
   cat("sample.ids:",object@sample.ids,"\n")
   cat("destranded",object@destranded,"\n")
   cat("assembly:",object@assembly,"\n")
-  cat("treament:", object@context,"\n")
+  cat("context:", object@context,"\n")
   cat("treament:", object@treatment,"\n")
 })
 
