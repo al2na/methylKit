@@ -1,7 +1,8 @@
 ## PART THAT DEALS WITH DIFFERENTIAL METHYLATION CALCULATIONS
 
-
-# S3 functions to be used
+##############################################################################
+## S3 functions to be used in S4 stuff
+##############################################################################
 
 # SLIM
 ######################################
@@ -326,9 +327,10 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 
 # end of S3 functions
 
-#
-# S4 OBJECTS
-#
+##############################################################################
+## S4 OBJECTS
+##############################################################################
+
 
 # a class that holds differential methylation information
 # 
@@ -336,9 +338,10 @@ setClass("methylDiff",representation(
   sample.ids = "character", assembly = "character",treatment="numeric",destranded="logical"),contains="data.frame")
 
 
-#
-# S4 FUNCTIONS
-#
+##############################################################################
+## S4 FUNCTIONS
+##############################################################################
+
 
 # differential methylation analysis
 setGeneric("calculateDiffMeth", function(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T) standardGeneric("calculateDiffMeth"))
@@ -439,7 +442,11 @@ setMethod("calculateDiffMeth", "methylBase",
 #  destranded="logical"),contains="data.frame")
 
 
+
+##############################################################################
 ## ACESSOR FUNCTIONS FOR methylDiff OBJECT
+##############################################################################
+
 
 # show method for methylDiff class
 setMethod("show", "methylDiff", function(object) {
@@ -468,8 +475,75 @@ setMethod(f="get.methylDiff", signature="methylDiff",
                     new.obj
           }) 
 
+##############################################################################
+## PLOTTING FUNCTIONS FOR methylDiff OBJECT
+##############################################################################
 
+#' Gets and plots the number of hyper/hypo methylated regions per chromosome
+#'
+#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
+#' @param x a \code{annotationByFeature}  object
+#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
+#' @param col a vector of colors for piechart or the par plot
+#' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
+#' 
+#' @usage \code{diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)}
+#' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
+#' 
+#' @aliases diffMethPerChr,-methods diffMethPerChr,methylDiff-method
+#' @export
+#' docType methods
+#' rdname diffMethPerChr-methods
+setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...) standardGeneric("diffMethPerChr"))
+
+#' @rdname diffMethPerChr-methods
+#' docType methods
+#' @aliases diffMethPerChr,methylDiff,ANY-method
+setMethod("diffMethPerChr", signature(x = "methylDiff"),
+                    function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
+                      temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]
+                      temp.hypo =x[x$qvalue < qvalue.cutoff & x$meth.diff <= -meth.cutoff,]
+                      
+                      dmc.hyper=100*nrow(temp.hyper)/nrow(x) # get percentages of hypo/ hyper
+                      dmc.hypo =100*nrow(temp.hypo )/nrow(x)
+                      
+                      all.hyper.hypo=data.frame(percentage.of.hypermethylated=dmc.hyper,
+                                                number.of.hypermethylated=nrow(temp.hyper),
+                                                percentage.of.hypomethylated=dmc.hypo  ,
+                                                number.of.hypomethylated=nrow(temp.hypo))
+                      
+                      # plot barplot for percentage of DMCs per chr
+                      dmc.hyper.chr=merge(as.data.frame(table(temp.hyper[,2])), as.data.frame(table(x[, 2])),by="Var1")
+                      dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
+
+                      dmc.hypo.chr=merge(as.data.frame(table(temp.hypo[,2])), as.data.frame(table(x[, 2])),by="Var1")
+                      dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
+
+                      dmc.hypo.hyper=merge(dmc.hypo.chr[,c(1,2,4)],dmc.hyper.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome
+                      dmc.hypo.hyper=dmc.hypo.hyper[order(as.numeric(sub("chr","",dmc.hypo.hyper$Var1))),] # order the chromosomes
+                      
+                      names(dmc.hypo.hyper)=c("chr","number.of.hypomethylated","percentage.of.hypomethylated","number.of.hypermethylated","percentage.of.hypermethylated")
+                      if(plot){
+                        
+                        if(!is.null(exclude)){dmc.hypo.hype=dmc.hypo.hyper[! dmc.hypo.hyper$chr %in% exclude,]}
+                        
+                        barplot(
+                          t(as.matrix(data.frame(hyper=dmc.hypo.hyper[,5],hypo=dmc.hypo.hyper[,3],row.names=dmc.hypo.hyper[,1]) ))
+                          ,las=2,horiz=T,col=c("magenta","aquamarine4"),main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),xlab="% (percentage)",...)
+                        mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",meth.cutoff," %",sep="") )
+                        legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
+                      }else{
+                        
+                        list(diffMeth.per.chr=dmc.hypo.hyper,diffMeth.all=all.hyper.hypo)
+                        
+                      }
+
+})
+
+
+##############################################################################
 ## CONVERTOR FUNCTIONS FOR methylDiff OBJECT
+##############################################################################
 
 setAs("methylDiff", "GRanges", function(from)
                       {
