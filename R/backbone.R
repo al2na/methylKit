@@ -70,12 +70,13 @@
 #' @section Slots:\describe{
 #'                  \item{\code{sample.id}:}{string for an identifier of the sample}
 #'                  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
+#'                  \item{\code{context}:}{ methylation context string, ex: CpG,CpH,CHH, etc.}
 #'                 }
 #' @name methylRaw-class
 #' @rdname methylRaw-class
 #' @export
 setClass("methylRaw", representation(
-  sample.id = "character", assembly = "character"),contains= "data.frame")
+  sample.id = "character", assembly = "character",context="character"),contains= "data.frame")
 
 
 #' An S4 class for holding a list of methylRaw objects.
@@ -99,12 +100,13 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param header if the input file has a header or not (default: TRUE)
 #' @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
 #' @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
+#' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
 #' @aliases read,-methods read,methylRawList-method
 #' @aliases read,list,list,character,ANY-method
 #' @export
 #' @docType methods
 #' @rdname read-methods
-setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T, treatment) standardGeneric("read"))
+setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",treatment) standardGeneric("read"))
 
 
 # read one CpG methylation file that is a result of alignment pipeline
@@ -118,8 +120,8 @@ setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T,
 #' @aliases read,character,character,character,ANY-method
 setMethod("read", signature(location = "character",sample.id="character",assembly="character"),
           
-        function(location,sample.id,assembly,pipeline,header){ 
-            if(! file.exists(location)){stop(location,", That file doesn't exist, bitch!!!")}
+        function(location,sample.id,assembly,pipeline,header,context){ 
+            if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
             data<- .readTableFast(location,header=header)            
             if(pipeline=="amp")
             {
@@ -129,7 +131,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
                 stop("unknown 'pipeline' argument, supported alignment pipelines: amp ")
             }
 
-            obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly)
+            obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context)
             obj         
           }
 )
@@ -147,7 +149,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 #' @rdname read-methods
 #' @aliases read,list,list,character,ANY-method
 setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
-          function(location,sample.id,assembly,pipeline,header,treatment){ 
+          function(location,sample.id,assembly,pipeline,header,context,treatment){ 
             
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
@@ -170,7 +172,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
                 stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
               }
                   
-              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly)
+              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context)
               outList[[i]]=obj       
             }
             myobj=new("methylRawList",outList,treatment=treatment)
@@ -189,6 +191,8 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #'
 #'                  \item{assembly}{name of the genome assembly}
 #'
+#'                  \item{context}{context of methylation. Ex: CpG,CpH,CHH, etc}
+#'
 #'                  \item{treatment}{treatment vector denoting which samples are test and control}
 #'
 #'                  \item{coverage.index}{vector denoting which columns in the data correspons to coverage values}
@@ -201,7 +205,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @rdname methylBase-class
 #' @export
 setClass("methylBase",contains="data.frame",representation(
-  sample.ids = "character", assembly = "character",treatment="numeric",coverage.index="numeric",
+  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",coverage.index="numeric",
                                    numCs.index="numeric",numTs.index="numeric",destranded="logical"))
 
 
@@ -229,12 +233,14 @@ setMethod("unite", "methylRawList",
                      if(destrand){df=.CpG.dinuc.unify(df)}
                      sample.ids=c(.Object[[1]]@sample.id)
                      assemblies=c(.Object[[1]]@assembly)
+                     contexts  =c(.Object[[1]]@context)
                      for(i in 2:length(.Object))
                      {
                        df2=getData(.Object[[i]])
                        if(destrand){df2=.CpG.dinuc.unify(df2)}
                        df=merge(df,df2[,c(1,6:8)],by="id") # merge the dat to a data.frame
                        sample.ids=c(sample.ids,.Object[[i]]@sample.id)
+                       contexts=c(contexts,.Object[[i]]@context)
                      }
 
                      # stop if the assembly of object don't match
@@ -252,7 +258,7 @@ setMethod("unite", "methylRawList",
 
                      #make methylbase object and return the object
                      obj=new("methylBase",as.data.frame(df),sample.ids=sample.ids,
-                             assembly=unique(assemblies),
+                             assembly=unique(assemblies),context=unique(contexts)
                              treatment=.Object@treatment,coverage.index=coverage.ind,
                              numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand )
                      obj
@@ -344,7 +350,7 @@ setMethod("getCorrelation", "methylBase",
 setGeneric("getCoverageStats", function(.Object,plot=F,both.strands=F) standardGeneric("getCoverageStats"))
 
 #' @rdname getCoverageStats-methods
-# @aliases getCorrelation,ANY-method
+#' @aliases getCorrelation,ANY-method
 setMethod("getCoverageStats", "methylRaw",
                     function(.Object,plot,both.strands){
                       
@@ -389,13 +395,13 @@ setMethod("getCoverageStats", "methylRaw",
                           par(mfrow=c(1,2))
                           a=hist(log10(plus.cov),plot=F)
                           hist(log10(plus.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per CpG",
+                               xlab="log10 of read coverage per base",
                                main="Histogram of CpG coverage: Forward strand",
                                labels=as.character(round(100*a$counts/length(plus.cov),1)))
                           
                           a=hist(log10(mnus.cov),plot=F)
                           hist(log10(mnus.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per CpG",
+                               xlab="log10 of read coverage per base",
                                main="Histogram of CpG coverage: Reverse strand",
                                labels=as.character(round(100*a$counts/length(mnus.cov),1)))
  
@@ -404,7 +410,7 @@ setMethod("getCoverageStats", "methylRaw",
                           
                           a=hist(log10(all.cov),plot=F)
                           hist(log10(all.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per CpG",
+                               xlab="log10 of read coverage per base",
                                main="Histogram of CpG coverage",
                                labels=as.character(round(100*a$counts/length(all.cov),1)))
 
@@ -479,7 +485,7 @@ setMethod("getMethylationStats", "methylRaw",
                           
                           a=hist((mnus.met),plot=F)
                           hist((mnus.met),col="cornflowerblue",
-                               xlab="% methylation per CpG",
+                               xlab="% methylation per base",
                                main="Histogram of % methylation: Reverse strand",
                                labels=as.character(round(100*a$counts/length(mnus.met),1)))
  
@@ -487,7 +493,7 @@ setMethod("getMethylationStats", "methylRaw",
                           
                           a=hist((all.met),plot=F)
                           hist((all.met),col="cornflowerblue",
-                               xlab="% methylation per CpG",
+                               xlab="% methylation per base",
                                main="Histogram of % methylation",
                                labels=as.character(round(100*a$counts/length(all.met),1)))
 
@@ -533,10 +539,39 @@ setMethod("getMethylationStats", "methylRaw",
 setGeneric("getAssembly", def=function(x) standardGeneric("getAssembly"))
 
 #' @rdname getAssembly-methods
-#' @aliases getAssembly,ANY-method
+#' @aliases getAssembly,methylBase,ANY-method
 setMethod("getAssembly", signature="methylBase", definition=function(x) {
                 return(x@assembly)
         }) 
+
+#' @rdname getAssembly-methods
+#' @aliases getAssembly,methylRaw,ANY-method
+setMethod("getAssembly", signature="methylRaw", definition=function(x) {
+                return(x@assembly)
+        })
+
+#' get the context of methylation
+#' 
+#' @param x a methylBase/methylRaw/methylDiff object 
+#' @return the context of methylation string
+#' @aliases getAssembly,-methods getAssembly,methylBase-method
+#' @export
+#' @docType methods
+#' @rdname getContext-methods
+setGeneric("getContext", def=function(x) standardGeneric("getContext"))
+
+#' @rdname getContext-methods
+#' @aliases getContext,ANY-method
+setMethod("getContext", signature="methylBase", definition=function(x) {
+                return(x@Context)
+        })
+
+#' @rdname getContext-methods
+#' @aliases getContext,ANY-method
+setMethod("getContext", signature="methylRaw", definition=function(x) {
+                return(x@Context)
+        })
+
 
 
 #' gets the data slot from the methylBase object
@@ -562,4 +597,30 @@ setMethod("getData", signature="methylBase", definition=function(x) {
 setMethod("getData", signature="methylRaw", definition=function(x) {
                 return(as(x,"data.frame"))
 })
-       
+
+## CONVERTOR FUNCTIONS FOR methylRaw and methylBase OBJECT
+#convert methylRaw to Granges
+setAs("methylRaw", "GRanges", function(from)
+                      {
+                        from2=getData(from)
+                        GRanges(seqnames=from2$chr,ranges=IRanges(start=from2$start, end=from2$end),
+                                       strand=from2$strand, 
+                                       id=from2$id,
+                                       coverage=from2$coverage,
+                                       numCs   =from2$numCs,
+                                       numTs  =from2$numTs                                
+                                       )
+
+})
+
+setAs("methylBase", "GRanges", function(from)
+                      {
+                        #from=getData(from1)
+                        GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
+                                       strand=from$strand, 
+                                       id=from$id,
+                                       data.frame(from[,6:ncol(from)])
+                                       )
+
+})
+
