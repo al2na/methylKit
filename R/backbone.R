@@ -258,7 +258,7 @@ setMethod("unite", "methylRawList",
 
                      #make methylbase object and return the object
                      obj=new("methylBase",as.data.frame(df),sample.ids=sample.ids,
-                             assembly=unique(assemblies),context=unique(contexts)
+                             assembly=unique(assemblies),context=unique(contexts),
                              treatment=.Object@treatment,coverage.index=coverage.ind,
                              numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand )
                      obj
