@@ -28,10 +28,16 @@ exportClasses(
 )
 
 exportMethods(
+    "getMembers",
+    "getTargetAnnotation",
+    "getFeaturesWithTargets",
+    "getAssociationWithTSS",
+    "plotTargetAnnotation",
     "annotate.WithFeature.Flank",
     "annotate.WithFeature",
     "annotate.WithGenicParts",
     "calculateDiffMeth",
+    "diffMethPerChr",
     "convert.bed.df",
     "convert.bed2exons",
     "convert.bed2introns",
