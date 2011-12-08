@@ -270,7 +270,7 @@ setMethod("getFlanks", signature(grange= "GRanges"),
           
                     shores=c( flank(grange,flank),flank(grange,flank,FALSE) )
                     if(clean){
-                      shores=reduce(setdiff(shores, grange)) # ,erge overlapping shores remove CpG coordinates from all shores, das ist so cool!!
+                      shores=GenomicRanges::reduce(GenomicRanges::setdiff(shores, grange)) # ,erge overlapping shores remove CpG coordinates from all shores, das ist so cool!!
                     }
                     shores
 })
@@ -280,14 +280,21 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 # location: for the bed file of the feature 
 # flank   : number of basepairs for the flanking regions
 # clean   : If set to TRUE, flanks overlapping with other main features will be trimmed
+# remove.unsual : remove chromsomes with unsual names random, Un and antyhing with "_" character
+#feature.flank.name: the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
 # VALUE   :
 # a GRangesList contatining one GRanges object for flanks and one for GRanges object for the main feature
-setGeneric("read.feature.flank", function(location,remove.unsual=T,flank=2000,clean=T) standardGeneric("read.feature.flank") )
+setGeneric("read.feature.flank", function(location,remove.unsual=T,flank=2000,clean=T,feature.flank.name=NULL) standardGeneric("read.feature.flank") )
 setMethod("read.feature.flank", signature(location = "character"),
-                    function(location,remove.unsual,flank ,clean){
+                    function(location,remove.unsual,flank ,clean,feature.flank.name){
                     feat=read.bed(location,remove.unsual)
                     flanks=getFlanks(feat,flank=flank,clean=clean)
-                    list(features=feat,flanks=flanks)
+                    x=GRangesList(features=feat,flanks=flanks)
+                    if(!is.null(feature.flank.name) & length(feature.flank.name)==2)
+                    {
+                      names(x)=feature.flank.name
+                    }
+                    x
 })
 
 # SECTION 2:
@@ -303,7 +310,7 @@ setClass("annotationByFeature", representation(members         ="matrix",
                                       no.of.OlapFeat  ="numeric",
                                       perc.of.OlapFeat="numeric"))
 
-setClass("annotationByGenicParts", representation(dist.to.TSS   ="matrix"),contains="annotationByFeature")
+setClass("annotationByGenicParts", representation(dist.to.TSS   ="data.frame"),contains="annotationByFeature")
 
 
 #new.obj=new("annotationByGenicParts",
@@ -373,15 +380,17 @@ distance2nearestFeature<-function(g.idh,tss)
 {
   
   elementMetadata(g.idh)=DataFrame(elementMetadata(g.idh),orig.row=1:length(g.idh))
-  id.col=ncol(elementMetadata(g.idh))+5
-  met.tss= .nearest.2bed(g.idh, tss)
+  id.col    =ncol(elementMetadata(g.idh))+5 # get the row number column
+  tss.id.col=ncol(elementMetadata(g.idh))+5+6 # get the id column for tss
+  met.tss   = .nearest.2bed(g.idh, tss)
 
   dist.col=ncol(met.tss)
   met.tss[met.tss$end<met.tss$start.y & met.tss$strand.y=="+",dist.col] = -1* met.tss[met.tss$end<met.tss$start.y & met.tss$strand.y=="+",dist.col]
 
   met.tss[met.tss$end>met.tss$start.y & met.tss$strand.y=="-",dist.col] = -1* met.tss[met.tss$end>met.tss$start.y & met.tss$strand.y=="-",dist.col]
 
-  res=met.tss[order(met.tss[,id.col]),c(id.col,dist.col)]
+  res=met.tss[order(met.tss[,id.col]),c(id.col,dist.col,tss.id.col,tss.id.col-1)]
+  names(res)=c("target.row","dist.to.feature"   ,    "feature.name"  ,   "feature.strand")
   return(res)
 }
 
@@ -444,7 +453,7 @@ setMethod("annotate.WithGenicParts", signature(target= "GRanges",GRangesList.obj
                                   num.hierarchical=a.list$num.hierarchical,
                                   no.of.OlapFeat  =a.list$numberOfOlapFeat,
                                   perc.of.OlapFeat=a.list$percOfOlapFeat,
-                                  dist.to.TSS     =as.matrix(dist2TSS) )
+                                  dist.to.TSS     = dist2TSS )
 })
 
 setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList.obj="GRangesList"),
@@ -475,19 +484,33 @@ setMethod( "annotate.WithFeature.Flank", signature(target = "GRanges",feature="G
                                    100*sum(memb[,2]>0)/nrow(memb) ,
                                    100*sum(rowSums(memb)==0)/nrow(memb) )
                       names(annotation)=c(name1,name2,"other")
+
+                      num.annotation=c( sum(memb[,1]>0) , sum(memb[,2]>0) , sum(rowSums(memb)==0) )
+                      names(num.annotation)=c(name1,name2,"other")                      
+                      
                       
                       hierarchical=c(100*sum(memb[,1]>0)/nrow(memb) ,
                                      100*sum(memb[,2]>0 & memb[,1]==0)/nrow(memb) ,
                                      100*sum(rowSums(memb)==0)/nrow(memb) )
                       names(hierarchical)=c(name1,name2,"other")
+                      num.hierarchical=c( sum(memb[,1]>0)  , sum(memb[,2]>0 & memb[,1]==0) , sum(rowSums(memb)==0)  )
+                      names(num.hierarchical)=c(name1,name2,"other")                      
+                      
                       numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0),
                                          sum(countOverlaps(flank,target)>0) )
                       names(numberOfOlapFeat)=c(name1, name2)
                       percOfOlapFeat =100*numberOfOlapFeat/c(length(feature),length(flank) )
                     
-                      return(list(members=memb,annotation=annotation,hierarchical=hierarchical,
-                                  numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )
-                      
+                      #return(list(members=memb,annotation=annotation,hierarchical=hierarchical,
+                      #            numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )                      
+                      new("annotationByFeature",
+                          members         =as.matrix(memb),
+                          annotation      =annotation,
+                          hierarchical    =hierarchical,
+                          num.annotation  =num.annotation,
+                          num.hierarchical=num.hierarchical,
+                          no.of.OlapFeat  =numberOfOlapFeat,
+                          perc.of.OlapFeat=percOfOlapFeat)
                       
 })
 
@@ -549,6 +572,165 @@ setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRang
                       gr=as(target,"GRanges")
                       annotate.WithFeature(gr, feature, strand,extend,feature.name)
 })
+
+# ACCESSOR FUNCTIONS
+#annotationByFeature
+#annotationBygenicparts
+
+                      
+#' Get the membership slot of annotationByFeature
+#'
+#' Membership slot defines the overlap of target features with annotation features
+#' For example, if a target feature overlaps with an exon
+#' @param x a \code{annotationByFeature}  object
+#' 
+#' @return RETURNS a matrix showing overlap of target features with annotation features. 1 for overlap, 0 for non-overlap
+#' 
+#' @aliases getMembers,-methods getMembers,annotationByFeature-method
+#' @export
+#' docType methods
+#' rdname annotationByFeature-methods                      
+setGeneric("getMembers", def=function(x) standardGeneric("getMembers"))
+
+#' @rdname annotationByFeature-methods
+#' @aliases getMembers,annotationByFeature,ANY-method
+setMethod("getMembers", signature(x = "annotationByFeature"),
+                    function(x){
+                      return(x@members)
+                      
+})
+
+
+#' Get the percentage of target features overlapping with annotation from annotationByFeature
+#'
+#' This function retrieves percentage/number of target features overlapping with annotation
+#'  
+#' @param x a \code{annotationByFeature}  object
+#' @param percentage TRUE|FALSE. If TRUE percentage of target features will be returned. If FALSE, number of target features will be returned
+#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
+#' That means if a feature overlaps with a promoter it will be counted as promoter overlapping only, or if it is overlapping with a an exon but not a promoter, 
+#' it will be counted as exon overlapping only whether or not it overlaps with an intron.
+#'
+#' @return RETURNS  a vector of percentages or counts showing quantity of target features overlapping with annotation
+#' 
+#' @aliases getTargetAnnotation,-methods getTargetAnnotation,annotationByFeature-method
+#' @export
+#' docType methods
+#' rdname annotationByFeature-methods
+setGeneric("getTargetAnnotation", def=function(x,percentage=T,hierarchical=T) standardGeneric("getTargetAnnotation"))
+
+#' docType methods
+#' @rdname annotationByFeature-methods
+#' @aliases getTargetAnnotation,annotationByFeature,ANY-method
+setMethod("getTargetAnnotation", signature(x = "annotationByFeature"),
+                    function(x,percentage ,hierarchical ){                      
+                      if(percentage){
+                        if(hierarchical){return(x@hierarchical)
+                        }else{return(x@annotation)}
+                      }else{
+                        if(hierarchical){return(x@num.hierarchical)
+                        }else{return(x@num.annotation)}                        
+                      }
+
+})
+
+#' Get the percentage/count of annotation features overlapping with target features from annotationByFeature
+#'
+#' This function retrieves percentage/number of annotation features overlapping with targets. 
+#' For example, if \code{annotationByFeature}  object is containing statistics of differentially methylated 
+#' regions overlapping with gene annotation. This function will return number/percentage of introns,exons and promoters
+#' overlapping with differentially methylated regions.
+#'  
+#' @param x a \code{annotationByFeature}  object
+#' @param percentage TRUE|FALSE. If TRUE percentage of annotation features will be returned. If FALSE, number of annotation features will be returned
+#'
+#' @return RETURNS  a vector of percentages or counts showing quantity of annotation features overlapping with target features
+#' 
+#' @aliases getFeaturesWithTargets,-methods getFeaturesWithTargets,annotationByFeature-method
+#' @export
+#' docType methods
+#' rdname annotationByFeature-methods
+setGeneric("getFeaturesWithTargets", def=function(x,percentage=T) standardGeneric("getFeaturesWithTargets"))
+
+#' docType methods
+#' @rdname annotationByFeature-methods
+#' @aliases getFeaturesWithTargets,annotationByFeature,ANY-method
+setMethod("getFeaturesWithTargets", signature(x = "annotationByFeature" ),
+                    function( x,percentage ){                      
+                      if(percentage){
+                        return(x@perc.of.OlapFeat)
+                      }else{
+                        return(x@no.of.OlapFeat)                        
+                      }
+})
+
+
+#' Get distance to nearest TSS and gene id from annotationByGenicParts
+#'
+#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
+#' @param x a \code{annotationByGenicParts}  object
+#' 
+#' @return RETURNS a data.frame containing row number of the target features,distance of target to nearest TSS, TSS/Gene name, TSS strand
+#' 
+#' @aliases getAssociationWithTSS,-methods getAssociationWithTSS,annotationByGenicParts-method
+#' @export
+#' docType methods
+#' rdname annotationByGenicParts-methods
+setGeneric("getAssociationWithTSS", def=function(x) standardGeneric("getAssociationWithTSS"))
+
+#' @rdname annotationByGenicParts-methods
+#' docType methods
+#' @aliases getAssociationWithTSS,annotationByGenicParts,ANY-method
+setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
+                    function(x){
+                      return(x@dist.to.TSS)
+                      
+})
+
+# PLOTTING FUNCTIONS
+
+#' Get distance to nearest TSS and gene id from annotationByGenicParts
+#'
+#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
+#' @param x a \code{annotationByFeature}  object
+#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
+#' @param col a vector of colors for piechart or the par plot
+#' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
+#'
+#' @usage \code{plotTargetAnnotation(x,hierarchical=T,col,...)}
+#'
+#' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
+#' 
+#' @aliases plotTargetAnnotation,-methods plotTargetAnnotation,annotationByFeature-method
+#' @export
+#' docType methods
+#' rdname plotTargetAnnotation-methods
+setGeneric("plotTargetAnnotation", def=function(x,hierarchical=T,col=rainbow(length(x@annotation)),...) standardGeneric("plotTargetAnnotation"))
+
+#' @rdname plotTargetAnnotation-methods
+#' docType methods
+#' @aliases plotTargetAnnotation,annotationByFeature,ANY-method
+setMethod("plotTargetAnnotation", signature(x = "annotationByFeature"),
+                    function(x,hierarchical,col,...){
+                      props=getTargetAnnotation(x,hierarchical)
+
+                      if(hierarchical){
+                        slice.names=names(props)
+                        #names(props)=paste(names(props),paste(round(props),"%"),sep=" ")
+                        names(props)=paste( paste(round(props),"%"),sep=" ")
+
+                        pie(props,cex=0.9,col=col,...)
+                         legend("topright",legend=slice.names,fill=rainbow(length(props)) )
+
+                      }
+                      else{
+                        
+                        mids=barplot(props,col=col,...)  
+                        text(mids,y=props,labels=paste(paste(round(props),"%",sep="")),pos=1) 
+                      }
+
+})
+
 
 
 # SECTION 3:
