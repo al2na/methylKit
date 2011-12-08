@@ -391,7 +391,12 @@ setMethod("calculateDiffMeth", "methylBase",
                         stop("can not do differential methylation calculation when there is no control\n
                              treatment option should have 0 and 1 designating treatment and control samples")
                       }
-                        
+                      
+                      if(length(unique(.Object@treatment))>2 ){
+                        stop("can not do differential methylation calculation when there are more than\n
+                             two groups, treatment vector indicates more than two groups")
+                      }
+                         
                          
                       # get the indices for numCs and numTs in each set
                       set1.Cs=.Object@numCs.index[.Object@treatment==1]
