@@ -338,13 +338,10 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #'          
 #' @section Slots:\describe{
 #'                  \item{sample.ids}{ids/names of samples in a vector}
-#'
 #'                  \item{assembly}{a name of genome assembly, such as :hg18,mm9, etc}
-#'
+#'                  \item{context}{numeric vector identifying which samples are which group }
 #'                  \item{treatment}{numeric vector identifying which samples are which group }
-#'
 #'                  \item{destranded}{logical denoting if methylation inormation is destranded or not}
-#'
 #'                  \item{.Data}{data.frame holding the locations and statistics}
 #'
 #' }
@@ -352,7 +349,7 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #' @rdname methylDiff-class
 #' @export
 setClass("methylDiff",representation(
-  sample.ids = "character", assembly = "character",treatment="numeric",destranded="logical"),contains="data.frame")
+  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical"),contains="data.frame")
 
 
 ##############################################################################
@@ -415,7 +412,7 @@ setMethod("calculateDiffMeth", "methylBase",
                         mom.meth2    =rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1])
                         mom.mean.diff=mom.meth1-mom.meth2
                         x=data.frame(subst[,1:5],pvals,meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                        obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                        obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                             treatment=.Object@treatment,destranded=.Object@destranded)
                         obj
                       }
@@ -438,14 +435,14 @@ setMethod("calculateDiffMeth", "methylBase",
                           
                           if(weigthed.mean){
                             x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded)
                             obj
   
                           }
                           else{
                             x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded)
                             obj
                           }
@@ -494,8 +491,15 @@ setMethod("show", "methylDiff", function(object) {
   cat("sample.ids:",object@sample.ids,"\n")
   cat("destranded",object@destranded,"\n")
   cat("assembly:",object@assembly,"\n")
+  cat("treament:", object@context,"\n")
   cat("treament:", object@treatment,"\n")
 })
+
+#' @rdname getContext-methods
+#' @aliases getContext,methylDiff,ANY-method
+setMethod("getContext", signature="methylDiff", definition=function(x) {
+                return(x@Context)
+        })
 
 # a function for getting data part of methylDiff                      
 setMethod(f="getData", signature="methylDiff", definition=function(x) {
@@ -521,7 +525,7 @@ setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01
 setMethod(f="get.methylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue) {
                     new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded)
                     new.obj
           }) 
