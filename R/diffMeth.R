@@ -332,8 +332,25 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 ##############################################################################
 
 
-# a class that holds differential methylation information
-# 
+#' An S4 class that holds differential methylation information
+#'
+#' This object is desgined to hold statistics and locations for differentially methylated regions/bases
+#'          
+#' @section Slots:\describe{
+#'                  \item{sample.ids}{ids/names of samples in a vector}
+#'
+#'                  \item{assembly}{a name of genome assembly, such as :hg18,mm9, etc}
+#'
+#'                  \item{treatment}{numeric vector identifying which samples are which group }
+#'
+#'                  \item{destranded}{logical denoting if methylation inormation is destranded or not}
+#'
+#'                  \item{.Data}{data.frame holding the locations and statistics}
+#'
+#' }
+#' @name methylDiff-class
+#' @rdname methylDiff-class
+#' @export
 setClass("methylDiff",representation(
   sample.ids = "character", assembly = "character",treatment="numeric",destranded="logical"),contains="data.frame")
 
@@ -343,8 +360,23 @@ setClass("methylDiff",representation(
 ##############################################################################
 
 
-# differential methylation analysis
+#' Calculates differential methylation statistics
+#' 
+#' @param .Object a methylBase object to calculate differential methylation
+#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment
+#' @param coverage.cutoff a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
+#' @param weigthed.mean
+#' @usage calculateDiffMeth(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T)
+#' @returns a methylDiff object containing the differential methylation statistics and locations
+#' @note
+#'
+#' @export
+#' @docType methods
+#' @rdname calculateDiffMeth-methods
 setGeneric("calculateDiffMeth", function(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T) standardGeneric("calculateDiffMeth"))
+
+#' @alias calculateDiffMeth,methylBase,ANY-method
+#' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
                     function(.Object,slim,coverage.cutoff,weigthed.mean){
                       
@@ -465,8 +497,22 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
                 return(as(x,"data.frame"))
         }) 
                       
-# function for selection differential methylation
+#' gets differentially methylated regions/bases based on cutoffs 
+#' 
+#' @param .Object  a methylDiff object
+#' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
+#' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
+#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01)
+#' @returns a methylDiff object containing the differential methylated locations satisfying the criteria 
+#' @note
+#'
+#' @export
+#' @docType methods
+#' @rdname get.methylDiff-methods
 setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("get.methylDiff"))
+
+#' @alias get.methylDiff,methylDiff,ANY-method
+#' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue) {
                     new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
