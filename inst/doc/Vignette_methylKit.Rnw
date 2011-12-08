@@ -1,0 +1,136 @@
+\documentclass[a4paper]{article}
+\title{ methylKit: how to use}
+\usepackage{url}               % used in bibliography
+\usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
+\author{Altuna Akalin}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+In this example we show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation from high-throughput bisulfate sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfate sequencing data if proper input format is provided. 
+
+\section{Basics}
+\subsection{Reading the methylation call files}
+We start by reading in the methylation call data from bisulfate sequencing with read function. Reading in the data this way will return a methylRawList object which stores methylation information per sample.
+
+<<>>=
+library(methylKit)
+file.list=list( system.file("tests", "test1.myCpG.txt", package = "methylKit"),
+                system.file("tests", "test2.myCpG.txt", package = "methylKit"),
+                system.file("tests", "control1.myCpG.txt", package = "methylKit"),
+                system.file("tests", "control2.myCpG.txt", package = "methylKit") )
+
+
+# read the files to a methylRawList object: myobj
+myobj=read(file.list,
+           sample.id=list("test1","test2","ctrl1","ctrl2"),
+           assembly="hg18",
+           pipeline="amp",
+           treatment=c(1,1,0,0))
+
+
+@
+
+\subsection{Descriptive statistics on samples}
+Since we read the data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a methylRawList object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
+
+<<>>=
+getMethylationStats(myobj[[2]],plot=F,both.strands=F)
+@
+
+The following command plots the histogram for percent methylation distribution.The figure below is the histogram and numbers on bars denote what percentage of locations are contained in that bin. Typically, percent methylation histogram should have two peaks on both ends. In any given cell, any given base are either methylated or not. Therefore, looking at many cells should yield a similar pattern where we see lots of locations with high methylation and lots of locations with low methylation.
+
+
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+library("graphics")
+getMethylationStats(myobj[[2]],plot=T,both.strands=F)
+@
+\end{center}
+
+
+
+We can also plot the read coverage per base information in a similar way, again numbers on bars denote what percentage of locations are contained in that bin. Experiments that are highly suffering from PCR duplication bias will have a secondary peak towards the right hand side of the histogram.
+
+
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+library ("graphics")
+getCoverageStats(myobj[[2]],plot=T,both.strands=F)
+@
+\end{center}
+
+
+
+\section{Comparative analysis}
+\subsection{Merging samples}
+
+In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting destrand=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause in wrong results in subsequent analyses). This operation will return a methylBase object which will be our main object for all comparative analysis.
+<<>>=
+methidh=unite(myobj,destrand=FALSE)
+@
+
+Let us take a look at the data content of methylBase object:
+<<>>=
+head(methidh)
+@
+
+\subsection{Sample Correlation}
+We can check the correlation between samples using \Rfunction{getCorrelation}. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
+
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+getCorrelation(methidh,plot=T)
+@
+\end{center}
+
+\subsection{Clustering samples}
+We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
+@
+\end{center}
+
+Setting the plot=FALSE will return a dendrogram object which can be manipulated by users or fed in to other user defined functions.
+<<>>=
+hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
+@
+We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+PCASamples(methidh, screeplot=TRUE)
+@
+\end{center}
+We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
+\begin{center}
+<<fig=TRUE , echo =TRUE >>=
+PCASamples(methidh)
+@
+\end{center}
+
+\subsection{Finding differentially methylated bases or regions}
+calculateDiffMeth() function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using SLIM method \cite{Wang2011a}.
+<<>>=
+myDiff=calculateDiffMeth(methidh)
+@
+
+After q-value calculation, we can select the differentially methylated regions or bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%.
+<<>>=
+myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
+@
+
+\subsection{Annotating differentially methylated bases or regions}
+We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region.
+
+<<>>=
+gene.obj=read.transcript.features(system.file("tests", "refseq.hg18.bed.txt", package = "methylKit"))
+
+# annotate differentially methylated Cs with promoter/exon/intron using annotation data
+annotate.WithGenicParts(myDiff25p,gene.obj)
+@
+\bibliography{Vignette_methylKit.bib}
+\bibliographystyle{unsrt}
+\end{document}
+
+
