@@ -547,10 +547,11 @@ setMethod(f="get.methylDiff", signature="methylDiff",
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded)
                       return(new.obj)
-                    } else if(type=="hypo"){
+                    }else if(type=="hypo"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded)                      
+                              treatment=.Object@treatment,destranded=.Object@destranded) 
+                      return(new.obj)
                     }else{
                       stop("Wrong type argument supplied for the function")
                     }

@@ -142,9 +142,12 @@ After q-value calculation, we can select the differentially methylated regions/b
 # get hyper methylated bases
 myDiff25p.hyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 #
+# get hypo methylated bases
+myDiff25p.hypo=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
+#
 #
 # get all differentially methylated bases
-myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="all")
+myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
 @
 
 We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The \texttt{list} shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
@@ -230,7 +233,7 @@ plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
 It might be also useful to get percentage of intron/exon/promoters that overlap with differentially methylated bases.
 
 <<>>=
-getFeatsWithTargetsStats(diffAnn,percentage=FALSE)
+getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 @
 
 
