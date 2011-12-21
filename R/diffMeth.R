@@ -553,7 +553,7 @@ setMethod(f="get.methylDiff", signature="methylDiff",
                               treatment=.Object@treatment,destranded=.Object@destranded) 
                       return(new.obj)
                     }else{
-                      stop("Wrong type argument supplied for the function")
+                      stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
                     }
           }) 
 
