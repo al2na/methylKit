@@ -5,7 +5,7 @@ Title: DNA methylation analysis from high-throughput
 Version: 0.3
 Date: 2011-11-10
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
-Maintainer: ME <yourfault@somewhere.net>
+Maintainer: Altuna Akalin <aakalin@gmail.com>
 Description: DNA methylation analysis RRBS,ERRBS,BS-seq
 License: file LICENSE
 LazyLoad: yes
@@ -25,4 +25,4 @@ Collate:
     'clusterSamples.R'
     'regionalize.R'
     'document_data.R'
-Packaged: 2011-11-28; Sheng Li
+

@@ -213,7 +213,7 @@ plotTargetAnnotation(diffAnn,precedence=TRUE,
 @
 \end{center}
 
-We can also plot the CpG island annotation the same way.
+We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
 
 \begin{center}
 <<fig=TRUE , echo =TRUE>>=
