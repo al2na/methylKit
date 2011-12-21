@@ -870,12 +870,13 @@ setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
 
 # PLOTTING FUNCTIONS
 
-#' Plot annotation categories from annotationByGenicParts pr annotationByFeature
+#' Plot annotation categories from annotationByGenicParts or annotationByFeature
 #'
 #' This function plots a pie or bar chart for showing percentages of targets annotated by genic parts or other query features
 #' @param x a \code{annotationByFeature} or  \code{annotationByGenicParts} object
-#' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
-#' @param col a vector of colors for piechart or the par plot
+#' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence). 
+#'  This option is only valid when x is a \code{annotationByGenicParts} object
+#' @param col a vector of colors for piechart or the bar plot
 #' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
 #'
 #' usage  plotTargetAnnotation(x,precedence=TRUE,col,...)
@@ -894,13 +895,13 @@ setMethod("plotTargetAnnotation", signature(x = "annotationByFeature"),
                     function(x,precedence,col,...){
                       props=getTargetAnnotationStats(x,precedence)
 
-                      if(precedence){
+                      if(precedence | ( is(x,"annotationByFeature") & !is(x,"annotationByGenicParts")) ){
                         slice.names=names(props)
                         #names(props)=paste(names(props),paste(round(props),"%"),sep=" ")
                         names(props)=paste( paste(round(props),"%"),sep=" ")
 
                         pie(props,cex=0.9,col=col,...)
-                         legend("topright",legend=slice.names,fill=rainbow(length(props)) )
+                         legend("topright",legend=slice.names,fill=col )
 
                       }
                       else{
