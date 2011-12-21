@@ -137,9 +137,14 @@ head(tiles[[1]])
 myDiff=calculateDiffMeth(methidh)
 @
 
-After q-value calculation, we can select the differentially methylated regions/bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%.
+After q-value calculation, we can select the differentially methylated regions/bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%. If you specify \texttt{type="hyper"} or \texttt{type="hypo"} options, you will get hyper-methylated or hypo-methylated regions/bases.
 <<>>=
-myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
+# get hyper methylated bases
+myDiff25p.hyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
+#
+#
+# get all differentially methylated bases
+myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="all")
 @
 
 We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The \texttt{list} shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.

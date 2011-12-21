@@ -27,7 +27,15 @@ test_that("check if calculateDiffMeth output is a methylDiff object", {
         is_a('methylDiff'))
 })
 
+test_that("check getting hypo/hyper meth works", {
+    expect_that(get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo"),
+        is_a('methylDiff'))
+    expect_that(get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper"),
+        is_a('methylDiff'))
+})
+
 test_that("annotate.WithGenicParts", {
     expect_that(annotate.WithGenicParts(myDiff,gene.obj),
         is_a('annotationByGenicParts'))
 })
+

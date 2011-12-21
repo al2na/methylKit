@@ -520,24 +520,40 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 #' @param .Object  a methylDiff object
 #' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
 #' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
+#' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
+#'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
 #' 
 #' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
 #' 
-#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01)
+#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
 #'
 #' @export
 #' @docType methods
 #' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("get.methylDiff"))
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("get.methylDiff"))
 
 #' @aliases get.methylDiff,methylDiff-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
-          definition=function(.Object,difference,qvalue) {
-                    new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+          definition=function(.Object,difference,qvalue,type) {
+            
+                    if(type=="all"){
+                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded)
-                    new.obj
+                      return(new.obj)
+                    }else if(type=="hyper"){
+                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                              treatment=.Object@treatment,destranded=.Object@destranded)
+                      return(new.obj)
+                    } else if(type=="hypo"){
+                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                              treatment=.Object@treatment,destranded=.Object@destranded)                      
+                    }else{
+                      stop("Wrong type argument supplied for the function")
+                    }
           }) 
 
 ##############################################################################
