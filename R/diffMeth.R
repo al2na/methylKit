@@ -342,17 +342,18 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #' This object is desgined to hold statistics and locations for differentially methylated regions/bases
 #'          
 #' @section Slots:\describe{
-#'                  \item{sample.ids}{ids/names of samples in a vector}
-#'                  \item{assembly}{a name of genome assembly, such as :hg18,mm9, etc}
-#'                  \item{context}{numeric vector identifying which samples are which group }
-#'                  \item{treatment}{numeric vector identifying which samples are which group }
-#'                  \item{destranded}{logical denoting if methylation inormation is destranded or not}
-#'                  \item{.Data}{data.frame holding the locations and statistics}
+#'                  \item{\code{sample.ids}}{ids/names of samples in a vector}
+#'                  \item{\code{assembly}}{a name of genome assembly, such as :hg18,mm9, etc}
+#'                  \item{\code{context}}{numeric vector identifying which samples are which group }
+#'                  \item{\code{treatment}}{numeric vector identifying which samples are which group }
+#'                  \item{\code{destranded}}{logical denoting if methylation inormation is destranded or not}
+#'                  \item{\code{.Data}}{data.frame holding the locations and statistics}
 #'
 #' }
 #' @name methylDiff-class
 #' @rdname methylDiff-class
 #' @export
+#' @docType class
 setClass("methylDiff",representation(
   sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical"),contains="data.frame")
 
