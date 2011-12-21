@@ -13,11 +13,11 @@
 \maketitle
 
 \section{Introduction}
-In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfate sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfate sequencing data if proper input format is provided. 
+In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
 \section{Basics}
 \subsection{Reading the methylation call files}
-We start by reading in the methylation call data from bisulfate sequencing with \texttt{read} function. Reading in the data this way will return a methylRawList object which stores methylation information per sample.
+We start by reading in the methylation call data from bisulfite sequencing with \texttt{read} function. Reading in the data this way will return a methylRawList object which stores methylation information per sample.
 
 <<>>=
 library(methylKit)
