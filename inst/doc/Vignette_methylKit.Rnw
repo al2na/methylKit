@@ -80,12 +80,12 @@ filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
 
 In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting destrand=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). This operation will return a methylBase object which will be our main object for all comparative analysis.
 <<>>=
-methidh=unite(myobj,destrand=FALSE)
+meth=unite(myobj,destrand=FALSE)
 @
 
 Let us take a look at the data content of methylBase object:
 <<>>=
-head(methidh)
+head(meth)
 @
 
 \subsection{Sample Correlation}
@@ -93,7 +93,7 @@ We can check the correlation between samples using \texttt{getCorrelation}. This
 
 \begin{center}
 <<fig=TRUE , echo =TRUE >>=
-getCorrelation(methidh,plot=T)
+getCorrelation(meth,plot=T)
 @
 \end{center}
 
@@ -101,24 +101,24 @@ getCorrelation(methidh,plot=T)
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 \begin{center}
 <<fig=TRUE , echo =TRUE >>=
-clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
+clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 @
 \end{center}
 
 Setting the plot=FALSE will return a dendrogram object which can be manipulated by users or fed in to other user functions that can work with dendrograms.
 <<>>=
-hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
+hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 @
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 \begin{center}
 <<fig=TRUE , echo =TRUE >>=
-PCASamples(methidh, screeplot=TRUE)
+PCASamples(meth, screeplot=TRUE)
 @
 \end{center}
 We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
 \begin{center}
 <<fig=TRUE , echo =TRUE >>=
-PCASamples(methidh)
+PCASamples(meth)
 @
 \end{center}
 
@@ -134,7 +134,7 @@ head(tiles[[1]])
 \subsection{Finding differentially methylated bases or regions}
 \texttt{calculateDiffMeth()} function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using SLIM method \cite{Wang2011a}.
 <<>>=
-myDiff=calculateDiffMeth(methidh)
+myDiff=calculateDiffMeth(meth)
 @
 
 After q-value calculation, we can select the differentially methylated regions/bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%. If you specify \texttt{type="hyper"} or \texttt{type="hypo"} options, you will get hyper-methylated or hypo-methylated regions/bases.

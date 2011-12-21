@@ -33,26 +33,26 @@ head(myobj[[2]])
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # setting destrand=T, will merge reads on both strans of a CpG dinucleotide. This provides better 
 # coverage, but only advised when looking at CpG methylation
-t=unite(myobj,destrand=T)
+meth=unite(myobj,destrand=T)
 
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # 
-methidh=unite(myobj)
+meth=unite(myobj)
 
 # cluster all samples using correlation distance and return a tree object for plclust
-hc = clusterSamples(methidh, dist="correlation", method="ward", plot=FALSE)
+hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 
 # cluster all samples using correlation distance and plot hiarachical clustering
-clusterSamples(methidh, dist="correlation", method="ward", plot=TRUE)
+clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 
 # screeplot of principal component analysis.
-PCASamples(methidh, screeplot=TRUE)
+PCASamples(meth, screeplot=TRUE)
 
 # principal component anlaysis of all samples.
-PCASamples(methidh)
+PCASamples(meth)
 
 # calculate differential methylation
-myDiff=calculateDiffMeth(methidh)
+myDiff=calculateDiffMeth(meth)
 
 # check how data part of methylDiff object looks like
 head( myDiff )
