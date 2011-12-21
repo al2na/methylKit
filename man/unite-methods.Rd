@@ -2,10 +2,15 @@
 \name{unite}
 \alias{unite}
 \alias{unite,-methods}
-\alias{unite,ANY-method}
 \alias{unite,methylRawList-method}
 \title{unites methylRawList to a single table}
+\usage{
+  unite(.Object,destrand=F)
+}
 \arguments{
+  \item{.Object}{a methylRawList object to be merged by
+  common locations covered by reads}
+
   \item{destrand}{if TRUE, reads covering both strands of a
   CpG dinucleotide will be merged, do not set to TRUE if
   not only interested in CpGs (default: FALSE)}

@@ -1,10 +1,10 @@
 library("methylKit")
 context("calculateDiffMeth and annotate.WithGenicPart checks")
 
-file.list=list( system.file("data", "test1.myCpG.txt", package = "methylKit"),
-                system.file("data", "test2.myCpG.txt", package = "methylKit"),
-                system.file("data", "control1.myCpG.txt", package = "methylKit"),
-                system.file("data", "control2.myCpG.txt", package = "methylKit") )
+file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 file.list
 
 myobj=read( file.list,
@@ -18,12 +18,9 @@ methidh=unite(myobj)
 myDiff=calculateDiffMeth(methidh)
 
 # load annotation
-gene.obj=read.transcript.features(system.file("data", "refseq.hg18.bed.txt", package = "methylKit"))
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
 
-test_that("check if there are 4 test files in the file.list",{
-    expect_that(length(file.list),
-        equals(4))
-})
+
 
 test_that("check if calculateDiffMeth output is a methylDiff object", {
     expect_that(myDiff, 

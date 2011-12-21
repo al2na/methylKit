@@ -8,6 +8,8 @@
 \section{Slots}{
   \describe{ \item{\code{sample.id}:}{string for an
   identifier of the sample} \item{\code{assembly}:}{string
-  for genome assembly, ex: hg18,hg19,mm9} }
+  for genome assembly, ex: hg18,hg19,mm9}
+  \item{\code{context}:}{ methylation context string, ex:
+  CpG,CpH,CHH, etc.} }
 }
 

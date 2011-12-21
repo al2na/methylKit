@@ -2,9 +2,10 @@
 \name{getData}
 \alias{getData}
 \alias{getData,-methods}
-\alias{getData,ANY-method}
 \alias{getData,methylBase-method}
+\alias{getData,methylDiff-method}
 \alias{getData,methylRaw-method}
+\alias{getData-method}
 \title{gets the data slot from the methylBase object}
 \arguments{
   \item{x}{a methylBase object}

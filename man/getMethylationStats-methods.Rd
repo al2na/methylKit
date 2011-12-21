@@ -1,6 +1,5 @@
 \docType{methods}
 \name{getMethylationStats}
-\alias{MethylationStats,-methods}
 \alias{getMethylationStats}
 \alias{getMethylationStats,methylRaw-method}
 \title{get Methylation stats from methylRaw object}

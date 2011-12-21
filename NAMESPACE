@@ -1,58 +1,64 @@
-#import(GenomicRanges)
-importClassesFrom("GenomicRanges", GRanges, GRangesList)
+import(methods)
 
-importFrom("GenomicRanges", GRanges, GRangesList)
+import(GenomicRanges)
+
+#importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
+
+#importClassesFrom("GenomicRanges",GRanges,GRangesList)
 
 importClassesFrom("IRanges", RangedData, RangedDataList, DataTable,
                   Annotated, Vector, List, DataTableORNULL, characterORNULL,
                   RangedSelection, SimpleList, DataFrame)
 
 importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
-           RangesList, Rle, RangedSelection)
-
-importFrom("data.table", data.table)
-
-importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps, seqnames, seqlengths, strand,"strand<-")
+           RangesList, Rle,matchMatrix,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
 
-exportPattern("^[[:alpha:]]+")
 
-exportClasses(
-    "annotationByFeature",
-     "annotationByGenicParts",
-     "methylBase",
-     "methylDiff",
-     "methylRaw",
-     "methylRawList" 
-)
 
-exportMethods(
-    "getMembers",
-    "getTargetAnnotation",
-    "getFeaturesWithTargets",
-    "getAssociationWithTSS",
-    "plotTargetAnnotation",
-    "annotate.WithFeature.Flank",
-    "annotate.WithFeature",
-    "annotate.WithGenicParts",
-    "calculateDiffMeth",
-    "diffMethPerChr",
-    "convert.bed.df",
-    "convert.bed2exons",
-    "convert.bed2introns",
-    "get.methylDiff",
-    "getAssembly",
-    "getCorrelation",
-    "getData",
-    "getFlanks",
-    "read.bed",
-    "read.feature.flank",
-    "read.transcript.features",
-    "read",
-    "show",
-    "unite",
-    "clusterSamples",
-    "PCASamples",
-    "regionCounts"
-)
+importFrom("data.table", data.table)
+
+
+#importFrom("qvalue", qvalue)
+
+
+
+
+exportClasses(annotationByFeature)
+exportClasses(annotationByGenicParts)
+exportClasses(methylBase)
+exportClasses(methylDiff)
+exportClasses(methylRaw)
+exportClasses(methylRawList)
+exportMethods(PCASamples)
+exportMethods(annotate.WithFeature)
+exportMethods(annotate.WithFeature.Flank)
+exportMethods(annotate.WithGenicParts)
+exportMethods(calculateDiffMeth)
+exportMethods(clusterSamples)
+exportMethods(convert.bed.df)
+exportMethods(convert.bed2exons)
+exportMethods(convert.bed2introns)
+exportMethods(diffMethPerChr)
+exportMethods(filterByCoverage)
+exportMethods(get.methylDiff)
+exportMethods(getAssembly)
+exportMethods(getAssociationWithTSS)
+exportMethods(getContext)
+exportMethods(getCorrelation)
+exportMethods(getCoverageStats)
+exportMethods(getData)
+exportMethods(getFeatsWithTargetsStats)
+exportMethods(getFlanks)
+exportMethods(getMembers)
+exportMethods(getMethylationStats)
+exportMethods(getTargetAnnotationStats)
+exportMethods(plotTargetAnnotation)
+exportMethods(read)
+exportMethods(read.bed)
+exportMethods(read.feature.flank)
+exportMethods(read.transcript.features)
+exportMethods(regionCounts)
+exportMethods(tileMethylCounts)
+exportMethods(unite)

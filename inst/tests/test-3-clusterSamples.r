@@ -1,9 +1,9 @@
 context("clusterSamples and PCASamples checks")
 
-file.list=list( system.file("data", "test1.myCpG.txt", package = "methylKit"),
-                system.file("data", "test2.myCpG.txt", package = "methylKit"),
-                system.file("data", "control1.myCpG.txt", package = "methylKit"),
-                system.file("data", "control2.myCpG.txt", package = "methylKit") )
+file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
 myobj=read( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))

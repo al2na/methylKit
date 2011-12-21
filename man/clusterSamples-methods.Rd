@@ -1,11 +1,12 @@
 \docType{methods}
 \name{clusterSamples}
 \alias{clusterSamples}
-\alias{clusterSamples,}
-\alias{clusterSamples,-methods}
-\alias{clusterSamples,ANY-method}
-\alias{methylBase-method}
+\alias{clusterSamples,methylBase-method}
 \title{CpG Dinucleotide Methylation Hierarchical Cluster Analysis}
+\usage{
+  clusterSamples(.Object, dist="correlation",
+  method="ward", plot=TRUE)
+}
 \arguments{
   \item{.Object}{a \code{methylBase} object}
 

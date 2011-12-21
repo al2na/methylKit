@@ -2,7 +2,7 @@
 
 ##############################################################################
 # SECTION 1:
-# reading annotation to Granges
+# reading annotation to GRanges
 # makes GRanges object from a given bed6 or bed12 file to granges object
 ##############################################################################
 
@@ -10,7 +10,7 @@
 # SECTION 1: S3 functions
 #######################################
 
-# extracts exons from a bed12 file and puts them into Granges object
+# extracts exons from a bed12 file and puts them into GRanges object
 # done in pure R
 bed12.to.exons<-function(ref)
 {
@@ -32,7 +32,7 @@ bed12.to.exons<-function(ref)
 #  {
     strands=as.character(rep.ref$V6)
     strands[strands=="."]="*"
-    grange.exons=GRanges(seqnames=as.character(rep.ref$V1),
+    grange.exons=GenomicRanges::GRanges(seqnames=as.character(rep.ref$V1),
           ranges=IRanges(start=rep.ref$V2+1, end=rep.ref$V3),
           strand=strands, score=rep.ref$V5,name=rep.ref$V4)
     return(grange.exons)
@@ -52,7 +52,7 @@ bed12.to.exons<-function(ref)
 
 } 
 
-# extracts exons from a bed12 file and puts them into Granges object
+# extracts exons from a bed12 file and puts them into GRanges object
 # done in pure R
 bed12.to.introns<-function(ref)
 {
@@ -85,7 +85,7 @@ bed12.to.introns<-function(ref)
 #  {
     strands=as.character(rep.ref$V6)
     strands[strands=="."]="*"
-    grange.exons=GRanges(seqnames=as.character(rep.ref$V1),
+    grange.exons=GenomicRanges::GRanges(seqnames=as.character(rep.ref$V1),
           ranges=IRanges(start=rep.ref$V2+1, end=rep.ref$V3),
           strand=strands, score=rep.ref$V5,name=rep.ref$V4)
     return(grange.exons)
@@ -132,7 +132,7 @@ check.bed.validity<-function(bed.df,type="none")
 # SECTION 1: S4 functions
 #######################################
 
-#' convert a data frame read-in from a bed file to a Granges object
+#' convert a data frame read-in from a bed file to a GRanges object
 #'  
 #' @param bed  a data.frame where column order and content resembles a bed file with 12 columns
 #' @usage convert.bed.df(bed)
@@ -145,7 +145,7 @@ check.bed.validity<-function(bed.df,type="none")
 #' @rdname convert.bed.df-methods
 setGeneric("convert.bed.df",function(bed) standardGeneric("convert.bed.df"))
 
-#' @alias convert.bed.df,data.frame,ANY-method
+#' @aliases convert.bed.df,data.frame-method
 #' @rdname convert.bed.df-methods
 setMethod("convert.bed.df" ,signature(bed = "data.frame" ),
                             function(bed){
@@ -173,7 +173,7 @@ setMethod("convert.bed.df" ,signature(bed = "data.frame" ),
                             return(grange)
 })
 
-#' convert a data frame read-in from a bed file to a Granges object for exons
+#' convert a data frame read-in from a bed file to a GRanges object for exons
 #'  
 #' @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
 #' @usage convert.bed2exons(bed.df)
@@ -186,7 +186,7 @@ setMethod("convert.bed.df" ,signature(bed = "data.frame" ),
 #' @rdname convert.bed2exons-methods
 setGeneric("convert.bed2exons",function(bed.df) standardGeneric("convert.bed2exons"))
 
-#' @alias convert.bed2exons,data.frame,ANY-method
+#' @aliases convert.bed2exons,data.frame-method
 #' @rdname convert.bed2exons-methods
 setMethod("convert.bed2exons" ,signature(bed.df = "data.frame" ),
                             function(bed.df){
@@ -195,7 +195,7 @@ setMethod("convert.bed2exons" ,signature(bed.df = "data.frame" ),
                             bed12.to.exons(bed.df)
 })
 
-#' convert a data frame read-in from a bed file to a Granges object for introns
+#' convert a data frame read-in from a bed file to a GRanges object for introns
 #'  
 #' @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
 #' @usage convert.bed2introns(bed.df)
@@ -208,7 +208,7 @@ setMethod("convert.bed2exons" ,signature(bed.df = "data.frame" ),
 #' @rdname convert.bed2introns-methods
 setGeneric("convert.bed2introns",function(bed.df) standardGeneric("convert.bed2introns"))
 
-#' @alias convert.bed2introns,data.frame,ANY-method
+#' @aliases convert.bed2introns,data.frame-method
 #' @rdname convert.bed2introns-methods
 setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
                             function(bed.df){
@@ -233,7 +233,7 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 #' @rdname read.bed-methods
 setGeneric("read.bed", function(location,remove.unsual=T) standardGeneric("read.bed"))
 
-#' @alias read.bed,character,ANY-method
+#' @aliases read.bed,character-method
 #' @rdname read.bed-methods
 setMethod("read.bed", signature(location = "character"),#remove.unsual="logical" ),
                     function(location,remove.unsual){
@@ -257,16 +257,16 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
 #' @param up.flank  up-stream from TSS to detect promoter boundaries
 #' @param down.flank down-stream from TSS to detect promoter boundaries
 #' @param unique.prom     get only the unique promoters, promoter boundaries will not have a gene name if you set this option to be TRUE
-#' @usage
+#' @usage read.transcript.features(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
 #' @return a \code{\link{GRangesList}} containing locations of exon/intron/promoter/TSS
 #' @note  one bed track per file is only accepted, the bed files with multiple tracks will cause en error
 #'
 #' @export
 #' @docType methods
 #' @rdname read.transcript.features-methods
-setGeneric("read.transcript.features", function(location,remove.unsual=T,up.flank=1000,down.flank=1000,unique.prom=T) standardGeneric("read.transcript.features"))
+setGeneric("read.transcript.features", function(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE) standardGeneric("read.transcript.features"))
 
-#' @alias read.transcript.features,character,ANY-method
+#' @aliases read.transcript.features,character-method
 #' @rdname read.transcript.features-methods
 setMethod("read.transcript.features", signature(location = "character"),#,remove.unsual="logical",up.flank="numeric",down.flank="numeric",unique.prom="logical" ),
                     function(location,remove.unsual,up.flank ,down.flank ,unique.prom){
@@ -323,50 +323,53 @@ setMethod("read.transcript.features", signature(location = "character"),#,remove
 #' a function to get upstream and downstream adjecent regions to a genomic feature such as CpG islands
 #' 
 #' @param grange GRanges object for the feature
-#' @param flank: number of basepairs for the flanking regions
-#' @param clean: If set to TRUE, flanks overlapping with other main features will be trimmed, and overlapping flanks will be removed
+#' @param flank  number of basepairs for the flanking regions
+#' @param clean  If set to TRUE, flanks overlapping with other main features will be trimmed, and overlapping flanks will be removed
 #'        this will remove multiple counts when other features overlap with flanks
 #'
 #' @usage getFlanks(grange,flank=2000,clean=T)
-#' @return Granges object for flanking regions
+#' @return GRanges object for flanking regions
 #' @export
 #' @docType methods
 #' @rdname getFlanks-methods
 setGeneric("getFlanks", function(grange,flank=2000,clean=T) standardGeneric("getFlanks"))
 
-#' @alias getFlanks,GRanges-method
+#' @aliases getFlanks,GRanges-method
 #' @rdname getFlanks-methods
 setMethod("getFlanks", signature(grange= "GRanges"),
                     function(grange,flank=2000,clean=T){
           
-                    shores=c( flank(grange,flank),flank(grange,flank,FALSE) )
+                    shores=c( IRanges::flank(grange,flank),IRanges::flank(grange,flank,FALSE) )
                     if(clean){
-                      shores=GenomicRanges::reduce(GenomicRanges::setdiff(shores, grange)) # ,erge overlapping shores remove CpG coordinates from all shores, das ist so cool!!
+                      shores=IRanges::reduce(IRanges::setdiff(shores, grange)) # ,erge overlapping shores remove CpG coordinates from all shores, das ist so cool!!
                     }
                     shores
 })
 
 #' a function to read-in genomic features and their upstream and downstream adjecent regions such as CpG islands and their shores
 #'
-#' @param location: for the bed file of the feature 
-#' @param flank   : number of basepairs for the flanking regions
-#' @param clean   : If set to TRUE, flanks overlapping with other main features will be trimmed
-#' @param remove.unsual : remove chromsomes with unsual names random, Un and antyhing with "_" character
-#' @param feature.flank.name: the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
+#' @param location for the bed file of the feature 
+#' @param flank    number of basepairs for the flanking regions
+#' @param clean    If set to TRUE, flanks overlapping with other main features will be trimmed
+#' @param remove.unsual  remove chromsomes with unsual names random, Un and antyhing with "_" character
+#' @param feature.flank.name the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
 #' @usage  read.feature.flank(location,remove.unsual=T,flank=2000,clean=T,feature.flank.name=NULL)
-#' @returns a GRangesList contatining one GRanges object for flanks and one for GRanges object for the main feature
+#' @return a GenomicRangesList contatining one GRanges object for flanks and one for GRanges object for the main feature.
+#'   NOTE:This can not return a GRangesList at the moment because flanking regions do not have to have the same column name as the feature.
+#'   GRangesList elements should resemble eachother in the column content. We can not satisfy that criteria for the flanks
+#'
 #' @export
 #' @docType methods
 #' @rdname read.feature.flank-methods
 setGeneric("read.feature.flank", function(location,remove.unsual=T,flank=2000,clean=T,feature.flank.name=NULL) standardGeneric("read.feature.flank") )
 
-#' @alias read.feature.flank,character-method
+#' @aliases read.feature.flank,character-method
 #' @rdname read.feature.flank-methods
 setMethod("read.feature.flank", signature(location = "character"),
                     function(location,remove.unsual,flank ,clean,feature.flank.name){
                     feat=read.bed(location,remove.unsual)
                     flanks=getFlanks(feat,flank=flank,clean=clean)
-                    x=GRangesList(features=feat,flanks=flanks)
+                    x=GenomicRangesList(features=feat,flanks=flanks)
                     if(!is.null(feature.flank.name) & length(feature.flank.name)==2)
                     {
                       names(x)=feature.flank.name
@@ -376,7 +379,7 @@ setMethod("read.feature.flank", signature(location = "character"),
 
 ##############################################################################
 # SECTION 2:
-# annotate granges objects with annotations that read-in and converted to Granges objects
+# annotate granges objects with annotations that read-in and converted to GRanges objects
 ##############################################################################
 
 #######################################
@@ -394,7 +397,7 @@ setMethod("read.feature.flank", signature(location = "character"),
 #'
 #'                  \item{annotation}{a named vector of percentages}
 #'
-#'                  \item{hierarchical}{a named vector of percentages}
+#'                  \item{precedence}{a named vector of percentages}
 #'
 #'                  \item{num.hierarchica}{vector}
 #'
@@ -407,9 +410,9 @@ setMethod("read.feature.flank", signature(location = "character"),
 #' @export
 setClass("annotationByFeature", representation(members         ="matrix",
                                       annotation      ="numeric",
-                                      hierarchical    ="numeric",
+                                      precedence    ="numeric",
                                       num.annotation  ="numeric",
-                                      num.hierarchical="numeric",
+                                      num.precedence="numeric",
                                       no.of.OlapFeat  ="numeric",
                                       perc.of.OlapFeat="numeric"))
 
@@ -422,7 +425,7 @@ setClass("annotationByFeature", representation(members         ="matrix",
 #'
 #'                  \item{annotation}{a named vector of percentages}
 #'
-#'                  \item{hierarchical}{a named vector of percentages}
+#'                  \item{precedence}{a named vector of percentages}
 #'
 #'                  \item{num.hierarchica}{vector}
 #'
@@ -432,28 +435,29 @@ setClass("annotationByFeature", representation(members         ="matrix",
 #'
 #'                  \item{dist.to.TSS}{a data frame showing distances to TSS and gene/TSS names and strand}
 #' }
-#' @name annotationByFeature-class
-#' @rdname annotationByFeature-class
+#' @name annotationByGenicParts-class
+#' @rdname annotationByGenicParts-class
 #' @export
 setClass("annotationByGenicParts", representation(dist.to.TSS   ="data.frame"),contains="annotationByFeature")
 
 
 #new.obj=new("annotationByGenicParts",
 #            members=matrix(c(1,2,3,4)),annotation=c(1,2,0,3,4),
-#            hierarchical=c(a=1,b=2,c=0,d=3,e=4),
+#            precedence=c(a=1,b=2,c=0,d=3,e=4),
 #            num.annotation  =c(1,2,0,3,4),
-#            num.hierarchical=c(1,2,0,3,4),
+#            num.precedence=c(1,2,0,3,4),
 #            no.of.OlapFeat  =c(1,2,0,3,4),
 #            perc.of.OlapFeat=c(1,2,0,3,4),
 #            dist.to.TSS     =c(1,2,0,3,4) )
                                     
-
+#' @rdname show-methods
+#' @aliases show,annotationByGenicParts-method
 setMethod("show", "annotationByGenicParts", function(object) {
   
   cat("summary of target set annotation with genic parts\n");cat(nrow(object@members));cat(" rows in target set\n--------------\n")
   cat("--------------\n")
   cat("percentage of target features overlapping with annotation :\n");print(object@annotation);cat("\n\n")
-  cat("percentage of target features overlapping with annotation (with promoter>exon>intron precedence) :\n"); print(object@hierarchical) ;cat("\n\n")
+  cat("percentage of target features overlapping with annotation (with promoter>exon>intron precedence) :\n"); print(object@precedence) ;cat("\n\n")
   cat("percentage of annotation boundaries with feature overlap :\n");print(object@perc.of.OlapFeat);cat("\n\n")  
   cat("summary of distances to the nearest TSS :\n")
   print(summary(abs(object@dist.to.TSS[,2])))
@@ -466,6 +470,7 @@ setMethod("show", "annotationByGenicParts", function(object) {
 
 annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=F)
 {
+  #require(GenomicRanges)
   if( ! strand){strand(gr)="*"}
   memb=data.frame(matrix(rep(0,length(gr)*3),ncol=3) )  ;colnames(memb)=c("prom","exon","intron")
   memb[countOverlaps(gr,prom)>0,1]=1
@@ -482,12 +487,12 @@ annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=F)
                     intron    =sum(memb$intron>0) ,
                     intergenic=sum(rowSums(memb)==0) )
 
-  hierarchical=c(promoter  =100*sum(memb$prom>0)/nrow(memb) ,
+  precedence=c(promoter  =100*sum(memb$prom>0)/nrow(memb) ,
                exon      =100*sum(memb$exon>0 & memb$prom==0)/nrow(memb) ,
                intron    =100*sum(memb$intron>0 & memb$exon==0 & memb$prom==0)/nrow(memb) ,
                intergenic=100*sum(rowSums(memb)==0)/nrow(memb) )
 
-  num.hierarchical=c( promoter  =sum(memb$prom>0) ,
+  num.precedence=c( promoter  =sum(memb$prom>0) ,
                       exon      =sum(memb$exon>0 & memb$prom==0),
                       intron    =sum(memb$intron>0 & memb$exon==0 & memb$prom==0) ,
                       intergenic=sum(rowSums(memb)==0) )  
@@ -496,27 +501,31 @@ annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=F)
     exon=sum(countOverlaps(exon,gr)>0),
     intron=sum(countOverlaps(intron,gr)>0) )
   percOfOlapFeat =100*numberOfOlapFeat/c(length(prom),length(exon),length(intron))
-  return(list(members=memb,annotation=annotation,hierarchical=hierarchical,num.annotation=num.annotation,
-              num.hierarchical=num.hierarchical,
+  return(list(members=memb,annotation=annotation,precedence=precedence,num.annotation=num.annotation,
+              num.precedence=num.precedence,
               numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )
   
 }
 
 distance2nearestFeature<-function(g.idh,tss)
 {
-  
+  #require(GenomicRanges)
   elementMetadata(g.idh)=DataFrame(elementMetadata(g.idh),orig.row=1:length(g.idh))
-  id.col    =ncol(elementMetadata(g.idh))+5 # get the row number column
-  tss.id.col=ncol(elementMetadata(g.idh))+5+6 # get the id column for tss
-  met.tss   = .nearest.2bed(g.idh, tss)
+  id.col    =ncol( elementMetadata(g.idh))+5 # get the row number column
+
+  tss.id.col=ncol( elementMetadata(g.idh))+5+7 # get the id column for tss in the merged data.frame below
+  strnd.col=ncol( elementMetadata(g.idh))+5+7-2 # get the id column for tss
+ 
+  met.tss   = .nearest.2bed(g.idh, tss) # a merged data.frame is returned by this function
 
   dist.col=ncol(met.tss)
   met.tss[met.tss$end<met.tss$start.y & met.tss$strand.y=="+",dist.col] = -1* met.tss[met.tss$end<met.tss$start.y & met.tss$strand.y=="+",dist.col]
 
   met.tss[met.tss$end>met.tss$start.y & met.tss$strand.y=="-",dist.col] = -1* met.tss[met.tss$end>met.tss$start.y & met.tss$strand.y=="-",dist.col]
 
-  res=met.tss[order(met.tss[,id.col]),c(id.col,dist.col,tss.id.col,tss.id.col-1)]
+  res=met.tss[order(met.tss[,id.col]),c(id.col,dist.col,tss.id.col,strnd.col)]
   names(res)=c("target.row","dist.to.feature"   ,    "feature.name"  ,   "feature.strand")
+
   return(res)
 }
 
@@ -566,7 +575,7 @@ distance2nearestFeature<-function(g.idh,tss)
 #' @param target      : a granges object storing chromosome locations to be annotated
 #' @param GRangesList.obj  : A GRangesList object containing GRanges object for promoter,exons,introns and TSSes, or simply output of read.transcript.features function
 #' @param strand           : If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
-#' @usage \code{annotate.WithGenicParts(target,GRangesList.obj,strand=F)}
+#' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=F)
 #' @return \code{annotationByGenicParts} object
 #' 
 #' @export
@@ -585,9 +594,9 @@ setMethod("annotate.WithGenicParts", signature(target= "GRanges",GRangesList.obj
                       new("annotationByGenicParts",
                                   members         =as.matrix(a.list$members),
                                   annotation      =a.list$annotation,
-                                  hierarchical    =a.list$hierarchical,
+                                  precedence    =a.list$precedence,
                                   num.annotation  =a.list$num.annotation,
-                                  num.hierarchical=a.list$num.hierarchical,
+                                  num.precedence=a.list$num.precedence,
                                   no.of.OlapFeat  =a.list$numberOfOlapFeat,
                                   perc.of.OlapFeat=a.list$percOfOlapFeat,
                                   dist.to.TSS     = dist2TSS )
@@ -604,65 +613,66 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList
 
 #' function to annotate given GRanges object with promoter,exon,intron & intergenic values
 #'  
-#' @param target  : a granges object storing chromosome locations to be annotated
-#' @param feature : a granges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
-#' @param flank   : a granges object storing chromosome locations of the flanks of the feature
-#' @param flank.name   : string for the name o f the flanks
-#' @param feature.name   : string for the name of the feature
-#' @param strand  : If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
-#' @usage annotate.WithFeature(target,feature,flank,feature.name,flank.name,strand)
+#' @param target    a granges object storing chromosome locations to be annotated
+#' @param feature   a granges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
+#' @param flank     a granges object storing chromosome locations of the flanks of the feature
+#' @param feature.name     string for the name of the feature
+#' @param flank.name     string for the name o f the flanks
+#' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
+#' @usage annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
 #' @return returns an \code{annotationByFeature} object
 #' 
 #' @export
 #' @docType methods
 #' @rdname annotate.WithFeature.Flank-methods
-setGeneric("annotate.WithFeature.Flank", function(target,feature,flank,feature.name="feat",flank.name="flank",strand=F) standardGeneric("annotate.WithFeature.Flank") )
+setGeneric("annotate.WithFeature.Flank", function(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE) standardGeneric("annotate.WithFeature.Flank") )
 
-#' @aliases annotate.WithFeature.Flank,Granges,Granges,Granges-method
+#' @aliases annotate.WithFeature.Flank,GRanges,GRanges,GRanges-method
 #' @rdname annotate.WithFeature.Flank-methods
 setMethod( "annotate.WithFeature.Flank", signature(target = "GRanges",feature="GRanges",flank="GRanges"),
                     function(target, feature, flank,feature.name,flank.name,strand){
                       
                       if( ! strand){strand(target)="*"}
-                      memb=data.frame(matrix(rep(0,length(gr)*2),ncol=2) )  ;colnames(memb)=c(name1,name2)
+                      memb=data.frame(matrix(rep(0,length(target)*2),ncol=2) )  ;colnames(memb)=c(feature.name,flank.name)
                       memb[countOverlaps(target,feature)>0,1]=1
                       memb[countOverlaps(target,flank)>0,2]=1
                     
                       annotation=c(100*sum(memb[,1]>0)/nrow(memb) ,
                                    100*sum(memb[,2]>0)/nrow(memb) ,
                                    100*sum(rowSums(memb)==0)/nrow(memb) )
-                      names(annotation)=c(name1,name2,"other")
+                      names(annotation)=c(feature.name,flank.name,"other")
 
                       num.annotation=c( sum(memb[,1]>0) , sum(memb[,2]>0) , sum(rowSums(memb)==0) )
-                      names(num.annotation)=c(name1,name2,"other")                      
+                      names(num.annotation)=c(feature.name,flank.name,"other")                      
                       
                       
-                      hierarchical=c(100*sum(memb[,1]>0)/nrow(memb) ,
+                      precedence=c(100*sum(memb[,1]>0)/nrow(memb) ,
                                      100*sum(memb[,2]>0 & memb[,1]==0)/nrow(memb) ,
                                      100*sum(rowSums(memb)==0)/nrow(memb) )
-                      names(hierarchical)=c(name1,name2,"other")
-                      num.hierarchical=c( sum(memb[,1]>0)  , sum(memb[,2]>0 & memb[,1]==0) , sum(rowSums(memb)==0)  )
-                      names(num.hierarchical)=c(name1,name2,"other")                      
+                      names(precedence)=c(feature.name,flank.name,"other")
+                      
+                      num.precedence=c( sum(memb[,1]>0)  , sum(memb[,2]>0 & memb[,1]==0) , sum(rowSums(memb)==0)  )
+                      names(num.precedence)=c(feature.name,flank.name,"other")                      
                       
                       numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0),
                                          sum(countOverlaps(flank,target)>0) )
-                      names(numberOfOlapFeat)=c(name1, name2)
+                      names(numberOfOlapFeat)=c(feature.name,flank.name)
                       percOfOlapFeat =100*numberOfOlapFeat/c(length(feature),length(flank) )
                     
-                      #return(list(members=memb,annotation=annotation,hierarchical=hierarchical,
+                      #return(list(members=memb,annotation=annotation,precedence=precedence,
                       #            numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )                      
                       new("annotationByFeature",
                           members         =as.matrix(memb),
                           annotation      =annotation,
-                          hierarchical    =hierarchical,
+                          precedence    =precedence,
                           num.annotation  =num.annotation,
-                          num.hierarchical=num.hierarchical,
+                          num.precedence=num.precedence,
                           no.of.OlapFeat  =numberOfOlapFeat,
                           perc.of.OlapFeat=percOfOlapFeat)
                       
 })
 
-#' @aliases annotate.WithFeature.Flank,methylDiff,Granges,Granges-method
+#' @aliases annotate.WithFeature.Flank,methylDiff,GRanges,GRanges-method
 #' @rdname annotate.WithFeature.Flank-methods
 setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="GRanges",flank="GRanges"),
                     function(target, feature, flank,feature.name,flank.name,strand){
@@ -671,22 +681,22 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="
 })
 
 
-#' function to annotate given GRanges object with promoter,exon,intron & intergenic values
+#' function to annotate given GRanges object with a given genomic feature
 #' 
-#' @param target   a granges/or methylDiff object storing chromosome locations to be annotated
-#' @param feature  a granges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
+#' @param target   a GRanges/or methylDiff object storing chromosome locations to be annotated
+#' @param feature  a GRanges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
 #' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
-#' @param extend   DEFAULT:0, specifiying a positive value will extend the feature on both sides as much as \{extend}
-#' @param feature.name DEFAULT:feat1,name of the annotation feature. For example: H3K4me1,CpGisland etc.
-#' @usage annotate.WithFeature (target,feature,strand=F,extend=0,feature.name="feat1")
+#' @param extend   specifiying a positive value will extend the feature on both sides as much as \code{extend}
+#' @param feature.name name of the annotation feature. For example: H3K4me1,CpGisland etc.
+#' @usage annotate.WithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")
 #' @return returns an \code{annotationByFeature} object
 #' 
 #' @export
 #' @docType methods
 #' @rdname annotate.WithFeature-methods
-setGeneric("annotate.WithFeature", function(target,feature,strand=F,extend=0,feature.name="feat1") standardGeneric("annotate.WithFeature") )
+setGeneric("annotate.WithFeature", function(target,feature,strand=FALSE,extend=0,feature.name="feat1") standardGeneric("annotate.WithFeature") )
 
-#' @aliases annotate.WithFeature,Granges,Granges-method
+#' @aliases annotate.WithFeature,GRanges,GRanges-method
 #' @rdname annotate.WithFeature-methods
 setMethod("annotate.WithFeature", signature(target = "GRanges",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){
@@ -714,9 +724,9 @@ setMethod("annotate.WithFeature", signature(target = "GRanges",feature="GRanges"
                       new("annotationByFeature",
                           members         =as.matrix(memb),
                           annotation      =annotation,
-                          hierarchical    =0,
+                          precedence    =annotation,
                           num.annotation  =num.annotation,
-                          num.hierarchical=0,
+                          num.precedence=num.annotation,
                           no.of.OlapFeat  =numberOfOlapFeat,
                           perc.of.OlapFeat=percOfOlapFeat)
 
@@ -724,7 +734,7 @@ setMethod("annotate.WithFeature", signature(target = "GRanges",feature="GRanges"
 
 })
 
-#' @aliases annotate.WithFeature,methylDiff,Granges-method
+#' @aliases annotate.WithFeature,methylDiff,GRanges-method
 #' @rdname annotate.WithFeature-methods
 setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){                      
@@ -740,19 +750,21 @@ setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRang
 #' Get the membership slot of annotationByFeature
 #'
 #' Membership slot defines the overlap of target features with annotation features
-#' For example, if a target feature overlaps with an exon
+#'  For example, if a target feature overlaps with an exon
+#' 
 #' @param x a \code{annotationByFeature}  object
 #' 
 #' @return RETURNS a matrix showing overlap of target features with annotation features. 1 for overlap, 0 for non-overlap
 #' 
-#' @aliases getMembers,-methods getMembers,annotationByFeature-method
+#' @usage getMembers(x)
+#'
 #' @export
-#' docType methods
-#' rdname annotationByFeature-methods                      
+#' @docType methods
+#' @rdname getMembers-methods                      
 setGeneric("getMembers", def=function(x) standardGeneric("getMembers"))
 
-#' @rdname annotationByFeature-methods
-#' @aliases getMembers,annotationByFeature,ANY-method
+#' @aliases getMembers,annotationByFeature-method
+#' @rdname getMembers-methods
 setMethod("getMembers", signature(x = "annotationByFeature"),
                     function(x){
                       return(x@members)
@@ -766,29 +778,28 @@ setMethod("getMembers", signature(x = "annotationByFeature"),
 #'  
 #' @param x a \code{annotationByFeature}  object
 #' @param percentage TRUE|FALSE. If TRUE percentage of target features will be returned. If FALSE, number of target features will be returned
-#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
+#' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
 #' That means if a feature overlaps with a promoter it will be counted as promoter overlapping only, or if it is overlapping with a an exon but not a promoter, 
 #' it will be counted as exon overlapping only whether or not it overlaps with an intron.
 #'
-#' @usage getTargetAnnotation(x,percentage=T,hierarchical=T)
+#' @usage getTargetAnnotationStats(x,percentage=TRUE,precedence=TRUE)
+#'
 #' @return RETURNS  a vector of percentages or counts showing quantity of target features overlapping with annotation
 #' 
-#' @aliases getTargetAnnotation,-methods getTargetAnnotation,annotationByFeature-method
 #' @export
 #' @docType methods
-#' @rdname annotationByFeature-methods
-setGeneric("getTargetAnnotation", def=function(x,percentage=T,hierarchical=T) standardGeneric("getTargetAnnotation"))
+#' @rdname getTargetAnnotationStats-methods
+setGeneric("getTargetAnnotationStats", def=function(x,percentage=TRUE,precedence=TRUE) standardGeneric("getTargetAnnotationStats"))
 
-#' @docType methods
-#' @rdname annotationByFeature-methods
-#' @aliases getTargetAnnotation,annotationByFeature,ANY-method
-setMethod("getTargetAnnotation", signature(x = "annotationByFeature"),
-                    function(x,percentage ,hierarchical ){                      
+#' @rdname getTargetAnnotationStats-methods
+#' @aliases getTargetAnnotationStats,annotationByFeature-method
+setMethod("getTargetAnnotationStats", signature(x = "annotationByFeature"),
+                    function(x,percentage ,precedence ){                      
                       if(percentage){
-                        if(hierarchical){return(x@hierarchical)
+                        if(precedence){return(x@precedence)
                         }else{return(x@annotation)}
                       }else{
-                        if(hierarchical){return(x@num.hierarchical)
+                        if(precedence){return(x@num.precedence)
                         }else{return(x@num.annotation)}                        
                       }
 
@@ -805,17 +816,16 @@ setMethod("getTargetAnnotation", signature(x = "annotationByFeature"),
 #' @param percentage TRUE|FALSE. If TRUE percentage of annotation features will be returned. If FALSE, number of annotation features will be returned
 #'
 #' @return RETURNS  a vector of percentages or counts showing quantity of annotation features overlapping with target features
-#' 
-#' @aliases getFeaturesWithTargets,-methods getFeaturesWithTargets,annotationByFeature-method
+#' @usage getFeatsWithTargetsStats(x,percentage=TRUE)
 #' @export
 #' @docType methods
-#' @rdname annotationByFeature-methods
-setGeneric("getFeaturesWithTargets", def=function(x,percentage=T) standardGeneric("getFeaturesWithTargets"))
+#' @rdname getFeatsWithTargetsStats-methods
+setGeneric("getFeatsWithTargetsStats", def=function(x,percentage=TRUE) standardGeneric("getFeatsWithTargetsStats"))
 
-#' @docType methods
-#' @rdname annotationByFeature-methods
-#' @aliases getFeaturesWithTargets,annotationByFeature,ANY-method
-setMethod("getFeaturesWithTargets", signature(x = "annotationByFeature" ),
+
+#' @rdname getFeatsWithTargetsStats-methods
+#' @aliases getFeatsWithTargetsStats,annotationByFeature-method
+setMethod("getFeatsWithTargetsStats", signature(x = "annotationByFeature" ),
                     function( x,percentage ){                      
                       if(percentage){
                         return(x@perc.of.OlapFeat)
@@ -831,7 +841,7 @@ setMethod("getFeaturesWithTargets", signature(x = "annotationByFeature" ),
 #' @param x a \code{annotationByGenicParts}  object
 #' 
 #' @return RETURNS a data.frame containing row number of the target features,distance of target to nearest TSS, TSS/Gene name, TSS strand
-#' 
+#' @usage getAssociationWithTSS(x)
 #' @aliases getAssociationWithTSS,-methods getAssociationWithTSS,annotationByGenicParts-method
 #' @export
 #' @docType methods
@@ -840,7 +850,7 @@ setGeneric("getAssociationWithTSS", def=function(x) standardGeneric("getAssociat
 
 #' @rdname annotationByGenicParts-methods
 #' @docType methods
-#' @aliases getAssociationWithTSS,annotationByGenicParts,ANY-method
+#' @aliases getAssociationWithTSS,annotationByGenicParts-method
 setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
                     function(x){
                       return(x@dist.to.TSS)
@@ -849,32 +859,31 @@ setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
 
 # PLOTTING FUNCTIONS
 
-#' Get distance to nearest TSS and gene id from annotationByGenicParts
+#' Plot annotation categories from annotationByGenicParts pr annotationByFeature
 #'
-#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
-#' @param x a \code{annotationByFeature}  object
-#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
+#' This function plots a pie or bar chart for showing percentages of targets annotated by genic parts or other query features
+#' @param x a \code{annotationByFeature} or  \code{annotationByGenicParts} object
+#' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
 #' @param col a vector of colors for piechart or the par plot
 #' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
 #'
-#' usage \code{plotTargetAnnotation(x,hierarchical=T,col,...)}
+#' usage  plotTargetAnnotation(x,precedence=TRUE,col,...)
 #'
 #' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
 #' 
-#' @aliases plotTargetAnnotation,-methods plotTargetAnnotation,annotationByFeature-method
 #' @export
 #' @docType methods
 #' @rdname plotTargetAnnotation-methods
-setGeneric("plotTargetAnnotation", def=function(x,hierarchical=T,col=rainbow(length(x@annotation)),...) standardGeneric("plotTargetAnnotation"))
+setGeneric("plotTargetAnnotation", def=function(x,precedence=TRUE,col=rainbow(length(x@annotation)),...) standardGeneric("plotTargetAnnotation"))
 
 #' @rdname plotTargetAnnotation-methods
 #' @docType methods
-#' @aliases plotTargetAnnotation,annotationByFeature,ANY-method
+#' @aliases plotTargetAnnotation,annotationByFeature-method
 setMethod("plotTargetAnnotation", signature(x = "annotationByFeature"),
-                    function(x,hierarchical,col,...){
-                      props=getTargetAnnotation(x,hierarchical)
+                    function(x,precedence,col,...){
+                      props=getTargetAnnotationStats(x,precedence)
 
-                      if(hierarchical){
+                      if(precedence){
                         slice.names=names(props)
                         #names(props)=paste(names(props),paste(round(props),"%"),sep=" ")
                         names(props)=paste( paste(round(props),"%"),sep=" ")
@@ -894,4 +903,4 @@ setMethod("plotTargetAnnotation", signature(x = "annotationByFeature"),
 
 
 # SECTION 3:
-# annotate ML objects with annotations read-in and converted to Granges objects
+# annotate ML objects with annotations read-in and converted to GRanges objects

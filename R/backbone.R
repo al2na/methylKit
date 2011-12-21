@@ -94,7 +94,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' read file(s) to a methylrawList or methylraw object
 #'
 #' read a list of locations or one location and create a methylrawList or methylraw object
-#' @param file location(s), either a list of locations (each a character string) or one location string
+#' @param location file location(s), either a list of locations (each a character string) or one location string
 #' @param sample.id sample.id(s)
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
 #' @param header if the input file has a header or not (default: TRUE)
@@ -103,8 +103,6 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
 #' @usage read(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",treatment)
 #' @return returns methylRaw or methylRawList
-#' @aliases read,-methods read,methylRawList-method
-#' @aliases read,list,list,character,ANY-method
 #' @export
 #' @docType methods
 #' @rdname read-methods
@@ -119,7 +117,7 @@ setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T,
 # @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
 # @param header if the input file has a header or not (default: TRUE)
 #' @rdname read-methods
-#' @aliases read,character,character,character,ANY-method
+#' @aliases read,character,character,character-method
 setMethod("read", signature(location = "character",sample.id="character",assembly="character"),
           
         function(location,sample.id,assembly,pipeline,header,context){ 
@@ -149,7 +147,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 # @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 # @return returns a methylRawList object
 #' @rdname read-methods
-#' @aliases read,list,list,character,ANY-method
+#' @aliases read,list,list,character-method
 setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,pipeline,header,context,treatment){ 
             
@@ -183,10 +181,61 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
           })
 
 
+#' filter methylRaw and methylRawList object based on read coverage
+#'
+#' This function filters \code{methylRaw} and \code{methylRawList} objects.
+#' You can filter based on lower read cutoff or high read cutoff. Higher read cutoff is usefull to eliminate PCR effects
+#' Lower read cutoff is usefull for doing better statistical tests.
+#'
+#' @param methylObj a \code{methylRaw} or \code{methylRawList} object
+#' @param lo.count An integer for read counts.Bases/regions having lower coverage than this count is discarded
+#' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded
+#' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
+#' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
+#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
+#' @return \code{methylRaw} or \code{methylRawList} object depending on input object
+#' @export
+#' @docType methods
+#' @rdname filterByCoverage-methods
+setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL) standardGeneric("filterByCoverage") )
+
+#' @aliases filterByCoverage,methylRaw-method
+#' @rdname filterByCoverage-methods
+setMethod("filterByCoverage", signature(methylObj="methylRaw"),
+                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+                      if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
+                      
+                      data=getData(methylObj) # get the data part
+                      
+                      #figure out which cut-offs to use, maybe there is more elagent ways, quick&dirty works for now
+                      if(is.numeric(lo.count) ){lo.count=lo.count}
+                      if(is.numeric(lo.perc)){lo.count=quantile(data$coverage,lo.perc/100)}
+                      if(is.numeric(hi.count)){hi.count=hi.count}
+                      if(is.numeric(hi.perc)){hi.count=quantile(data$coverage,hi.perc/100)}
+                      
+                      if(is.numeric(lo.count)){data=data[data$coverage>=lo.count,]}
+                      if(is.numeric(hi.count)){data=data[data$coverage<hi.count,]}
+                      
+
+                      new("methylRaw",data,sample.id=methylObj@sample.id,
+                                           assembly=methylObj@assembly,
+                                           context=methylObj@context)
+
+                      
+})
+
+#' @aliases filterByCoverage,methylRawList-method
+#' @rdname filterByCoverage-methods
+setMethod("filterByCoverage", signature(methylObj="methylRawList"),
+                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+                      new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
+                      new("methylRawList", new.list,treatment=methylObj@treatment)
+})
+
 
 #' An S4 class that holds base-pair resolution methylation information for multiple experiments, only bases that are covered in all experiments are held in this class
 #'
-#' extends data.frame
+#' extends data.frame and creates an object that holds methylation information and genomic location
 #'          
 #' @section Slots:\describe{
 #'                  \item{sample.ids}{character vector for ids of samples in the object}
@@ -229,7 +278,7 @@ setClass("methylBase",contains="data.frame",representation(
 setGeneric("unite", function(.Object,destrand=F) standardGeneric("unite"))
 
 #' @rdname unite-methods
-#' @aliases unite,ANY-method
+#' @aliases unite,methylRawList-method
 setMethod("unite", "methylRawList",
                     function(.Object,destrand){
   
@@ -284,7 +333,7 @@ setMethod("unite", "methylRawList",
 setGeneric("getCorrelation", function(.Object,plot=F) standardGeneric("getCorrelation"))
 
 #' @rdname getCorrelation-methods
-# @aliases getCorrelation,ANY-method
+#' @aliases getCorrelation-method
 setMethod("getCorrelation", "methylBase",
                     function(.Object,plot){
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
@@ -356,7 +405,7 @@ setMethod("getCorrelation", "methylBase",
 setGeneric("getCoverageStats", function(.Object,plot=F,both.strands=F) standardGeneric("getCoverageStats"))
 
 #' @rdname getCoverageStats-methods
-#' @aliases getCorrelation,ANY-method
+#' @aliases getCoverageStats,methylRaw-method
 setMethod("getCoverageStats", "methylRaw",
                     function(.Object,plot,both.strands){
                       
@@ -434,14 +483,13 @@ setMethod("getCoverageStats", "methylRaw",
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
 #' @return a summary of Methylation statistics or plot a histogram of coverage
-#' @aliases MethylationStats,-methods getMethylationStats,methylRaw-method
 #' @export
 #' @docType methods
 #' @rdname getMethylationStats-methods
 setGeneric("getMethylationStats", function(.Object,plot=F,both.strands=F) standardGeneric("getMethylationStats"))
 
 #' @rdname getMethylationStats-methods
-# @aliases getMethylation,ANY-method
+#' @aliases getMethylationStats,methylRaw-method
 setMethod("getMethylationStats", "methylRaw",
                     function(.Object,plot,both.strands){
                       
@@ -512,6 +560,9 @@ setMethod("getMethylationStats", "methylRaw",
 })
 
 
+
+
+
 # get distribution of difference between samples in methylBase object
 # unites methylrawlist objects based on chromosomal positions of CpG dinucleotides
 #setGeneric("getDifference", function(.Object,plot=F) standardGeneric("getCorrelation"))
@@ -538,20 +589,19 @@ setMethod("getMethylationStats", "methylRaw",
 #' 
 #' @param x a methylBase object 
 #' @return the assembly string for the object
-#' @aliases getAssembly,-methods getAssembly,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getAssembly-methods
 setGeneric("getAssembly", def=function(x) standardGeneric("getAssembly"))
 
 #' @rdname getAssembly-methods
-#' @aliases getAssembly,methylBase,ANY-method
+#' @aliases getAssembly,methylBase-method
 setMethod("getAssembly", signature="methylBase", definition=function(x) {
                 return(x@assembly)
         }) 
 
 #' @rdname getAssembly-methods
-#' @aliases getAssembly,methylRaw,ANY-method
+#' @aliases getAssembly,methylRaw-method
 setMethod("getAssembly", signature="methylRaw", definition=function(x) {
                 return(x@assembly)
         })
@@ -560,20 +610,19 @@ setMethod("getAssembly", signature="methylRaw", definition=function(x) {
 #' 
 #' @param x a methylBase/methylRaw/methylDiff object 
 #' @return the context of methylation string
-#' @aliases getAssembly,-methods getAssembly,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getContext-methods
 setGeneric("getContext", def=function(x) standardGeneric("getContext"))
 
 #' @rdname getContext-methods
-#' @aliases getContext,ANY-method
+#' @aliases getContext,methylBase-method
 setMethod("getContext", signature="methylBase", definition=function(x) {
                 return(x@Context)
         })
 
 #' @rdname getContext-methods
-#' @aliases getContext,ANY-method
+#' @aliases getContext,methylRaw-method
 setMethod("getContext", signature="methylRaw", definition=function(x) {
                 return(x@Context)
         })
@@ -593,7 +642,7 @@ setMethod("getContext", signature="methylRaw", definition=function(x) {
 setGeneric("getData", def=function(x) standardGeneric("getData"))
 
 #' @rdname getData-methods
-#' @aliases getData,ANY-method
+#' @aliases getData-method
 setMethod("getData", signature="methylBase", definition=function(x) {
                 return(as(x,"data.frame"))
 }) 
@@ -605,7 +654,7 @@ setMethod("getData", signature="methylRaw", definition=function(x) {
 })
 
 ## CONVERTOR FUNCTIONS FOR methylRaw and methylBase OBJECT
-#convert methylRaw to Granges
+#convert methylRaw to GRanges
 setAs("methylRaw", "GRanges", function(from)
                       {
                         from2=getData(from)

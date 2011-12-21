@@ -1,11 +1,12 @@
 \docType{methods}
 \name{PCASamples}
 \alias{PCASamples}
-\alias{PCASamples,}
-\alias{PCASamples,-methods}
-\alias{PCASamples,ANY-method}
-\alias{methylBase-method}
+\alias{PCASamples,methylBase-method}
 \title{CpG Dinucleotide Methylation Principal Components Analysis}
+\usage{
+  PCASamples(.Object, cor=TRUE, screeplot=FALSE,
+  adj.lim=c(0.0004,0.1))
+}
 \arguments{
   \item{.Object}{a \code{methylBase} object}
 
@@ -16,6 +17,10 @@
   \item{screeplot}{a logical value indicating whether to
   plot the variances against the number of the principal
   component. (default: FALSE)}
+
+  \item{adj.lim}{a vector indicating the propotional
+  adjustment of xlim (adj.lim[1]) and ylim (adj.lim[2]).
+  (default: c(0.0004,0.1))}
 }
 \value{
   The form of the value returned by \code{PCASamples} is

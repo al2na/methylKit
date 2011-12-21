@@ -184,7 +184,7 @@ glm.set<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
         var.cf <- diag(covmat)
         s.err <- sqrt(var.cf)
         tvalue <- (coef.p/s.err)[2]    
-     }else if (df.r<=0)
+     }else if (obj$df.residual<=0)
      { tvalue=NaN }
  
     wald <- tvalue
@@ -204,8 +204,11 @@ glm.set<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
 # function to fix logistic regression pvalues and make qvalues
 fix.q.values.glm<-function(pvals,slim=FALSE)
 {
-  if(slim==FALSE){qvals=qvalue(pvals[,3])$qvalues # get qvalues
-  }else{slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)}                
+  # if(slim==FALSE){
+  #  qvals=qvalue::qvalue(pvals[,3])$qvalues # get qvalues
+  #}else{
+    slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)
+  #}                
 
   pvals=cbind(pvals,qvalue=qvals) # merge pvals and qvals
   return(pvals)
@@ -214,8 +217,10 @@ fix.q.values.glm<-function(pvals,slim=FALSE)
 # function to fix fisher.test pvalues and make qvalues
 fix.q.values.fisher<-function(pvals,slim=FALSE)
 {
-  if(slim==FALSE){qvals=qvalue(pvals)$qvalues # get qvalues
-  }else{slimObj=SLIMfunc(pvals);qvals=QValuesfun(pvals, slimObj$pi0_Est)}                
+  #if(slim==FALSE){qvals=qvalue::qvalue(pvals)$qvalues # get qvalues
+  #}else{
+  slimObj=SLIMfunc(pvals);qvals=QValuesfun(pvals, slimObj$pi0_Est)
+  #}                
 
   pvals=data.frame(pvalue=pvals,qvalue=qvals) # merge pvals and qvals
   return(pvals)
@@ -227,13 +232,13 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
     simulate.p.value = FALSE, B = 2000, cache=F) 
 {
     if (nrow(x)!=2 | ncol(x)!=2) stop("Incorrect input format for fast.fisher")
-    if (cache) {
-      key = paste(x,collapse="_")
-      cachedResult = hashTable[[key]]
-      if (!is.null(cachedResult)) {
-        return(cachedResult)
-      }
-    }
+    #if (cache) {
+    #  key = paste(x,collapse="_")
+    # cachedResult = hashTable[[key]]
+    #  if (!is.null(cachedResult)) {
+    #    return(cachedResult)
+    #  }
+    #}
     # ---- START: cut version of fisher.test ----
     DNAME <- deparse(substitute(x))
     METHOD <- "Fisher's Exact Test for Count Data"
@@ -320,7 +325,7 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
     RVAL <- c(RVAL, alternative = alternative, method = METHOD, data.name = DNAME)
     attr(RVAL, "class") <- "htest"
     # ---- END: cut version of fisher.test ----    
-    if (cache) hashTable[[key]] <<- RVAL # write to global variable
+    #if (cache) hashTable[[key]] <<- RVAL # write to global variable
     return(RVAL)                                                                         
 }
 
@@ -360,19 +365,19 @@ setClass("methylDiff",representation(
 #' Calculates differential methylation statistics
 #' 
 #' @param .Object a methylBase object to calculate differential methylation
-#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment
+#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment. Currently TRUE is the only valid value.
 #' @param coverage.cutoff a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
-#' @param weigthed.mean
-#' @usage calculateDiffMeth(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T)
-#' @returns a methylDiff object containing the differential methylation statistics and locations
-#' @note
+#' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
+#' @usage calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE)
+#' @return a methylDiff object containing the differential methylation statistics and locations
+#' @note The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
 #'
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=T,coverage.cutoff=0,weigthed.mean=T) standardGeneric("calculateDiffMeth"))
+setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE) standardGeneric("calculateDiffMeth"))
 
-#' @alias calculateDiffMeth,methylBase,ANY-method
+#' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
                     function(.Object,slim,coverage.cutoff,weigthed.mean){
@@ -482,7 +487,9 @@ setMethod("calculateDiffMeth", "methylBase",
 ##############################################################################
 
 
-# show method for methylDiff class
+#' show method for some of the methylKit classes
+#' @rdname show-methods
+#' @aliases show,methylDiff-method
 setMethod("show", "methylDiff", function(object) {
   
   cat("methylDiff object with",nrow(object),"rows\n--------------\n")
@@ -496,12 +503,14 @@ setMethod("show", "methylDiff", function(object) {
 })
 
 #' @rdname getContext-methods
-#' @aliases getContext,methylDiff,ANY-method
+#' @aliases getContext,methylDiff-method
 setMethod("getContext", signature="methylDiff", definition=function(x) {
                 return(x@Context)
         })
 
-# a function for getting data part of methylDiff                      
+# a function for getting data part of methylDiff    
+#' @rdname getData-methods
+#' @aliases getData,methylDiff-method
 setMethod(f="getData", signature="methylDiff", definition=function(x) {
                 return(as(x,"data.frame"))
         }) 
@@ -511,16 +520,17 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 #' @param .Object  a methylDiff object
 #' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
 #' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
+#' 
+#' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
+#' 
 #' @usage get.methylDiff(.Object,difference=25,qvalue=0.01)
-#' @returns a methylDiff object containing the differential methylated locations satisfying the criteria 
-#' @note
 #'
 #' @export
 #' @docType methods
 #' @rdname get.methylDiff-methods
 setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("get.methylDiff"))
 
-#' @alias get.methylDiff,methylDiff,ANY-method
+#' @aliases get.methylDiff,methylDiff-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue) {
@@ -536,24 +546,26 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 
 #' Gets and plots the number of hyper/hypo methylated regions per chromosome
 #'
-#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
+#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object.
+#'
 #' @param x a \code{annotationByFeature}  object
-#' @param hierarchical TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
-#' @param col a vector of colors for piechart or the par plot
-#' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
+#' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of hypo/hyper methylated bases/regions
+#' @param qvalue.cutoff  cutoff for q-value
+#' @param meth.cutoff cutoff for percent methylation difference
+#' @param exclude names of chromosomes to be excluded
+#' @param ... extra graphical parameters to be passed to \code{barplot} function
 #' 
-#' @usage \code{diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)}
 #' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
 #' 
-#' @aliases diffMethPerChr,-methods diffMethPerChr,methylDiff-method
+#' @usage diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)
+#'
 #' @export
-#' docType methods
-#' rdname diffMethPerChr-methods
+#' @docType methods
+#' @rdname diffMethPerChr-methods
 setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...) standardGeneric("diffMethPerChr"))
 
-#' @rdname diffMethPerChr-methods
-#' docType methods
-#' @aliases diffMethPerChr,methylDiff,ANY-method
+#' @aliases diffMethPerChr,methylDiff-method
+#' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiff"),
                     function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
                       temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]

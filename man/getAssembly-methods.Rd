@@ -1,9 +1,8 @@
 \docType{methods}
 \name{getAssembly}
 \alias{getAssembly}
-\alias{getAssembly,-methods}
-\alias{getAssembly,ANY-method}
 \alias{getAssembly,methylBase-method}
+\alias{getAssembly,methylRaw-method}
 \title{get assembly of the genome}
 \arguments{
   \item{x}{a methylBase object}
