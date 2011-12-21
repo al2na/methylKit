@@ -1,10 +1,10 @@
-%\VignetteIndexEntry{methylKit: how to use}
+%\VignetteIndexEntry{methylKit: User guide}
 %\VignetteKeywords{methylBase, methylRaw, calculateDiffMeth}
 %\VignettePackage{methylKit}
 
 
 \documentclass[a4paper]{article}
-\title{ methylKit: user guide}
+\title{ methylKit: User guide}
 \usepackage{url}               % used in bibliography
 \usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
 \author{Altuna Akalin}
@@ -66,17 +66,18 @@ getCoverageStats(myobj[[2]],plot=T,both.strands=F)
 \end{center}
 
 \subsection{Filtering samples based on read coverage}
-It might be useful to filter samples based on coverage. Particularly, if our samples are suffering from PCR bias it would be useful to discard bases with very high read coverage. Furthermore, we would also like to discard bases that have low read coverage, a high enough read coverage will increase the power of the statistical tests. The code below filters a \code{methylRawList} and discards bases that have coverage below 10X and also discards the bases that have more than 99.9th percentile of coverage in each sample.
+It might be useful to filter samples based on coverage. Particularly, if our samples are suffering from PCR bias it would be useful to discard bases with very high read coverage. Furthermore, we would also like to discard bases that have low read coverage, a high enough read coverage will increase the power of the statistical tests. The code below filters a \Rfunction{methylRawList} and discards bases that have coverage below 10X and also discards the bases that have more than 99.9th percentile of coverage in each sample.
 
 <<>>=
-filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
+filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
+                                      hi.count=NULL,hi.perc=99.9)
 @
 
 
 \section{Comparative analysis}
 \subsection{Merging samples}
 
-In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting destrand=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause in wrong results in subsequent analyses). This operation will return a methylBase object which will be our main object for all comparative analysis.
+In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting destrand=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). This operation will return a methylBase object which will be our main object for all comparative analysis.
 <<>>=
 methidh=unite(myobj,destrand=FALSE)
 @
@@ -122,7 +123,7 @@ PCASamples(methidh)
 
 
 \subsection{Tiling windows analysis}
-For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \code{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \code{methylRawList} object which can be fed into \code{unite} and \code{calculateDiffMeth} functions to get differentially methylated regions
+For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \Rfunction{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \Rfunction{methylRawList} object which can be fed into \Rfunction{unite} and \Rfunction{calculateDiffMeth} functions to get differentially methylated regions
 
 <<>>=
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
@@ -140,21 +141,23 @@ After q-value calculation, we can select the differentially methylated regions/b
 myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
 @
 
-We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The \code{list} shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
+We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The \Rfunction{list} shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
 
-\begin{center}
-<<fig=TRUE , echo =TRUE>>=
+ 
+<<>>=
 diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
 @
-\end{center}
+ 
 
 \section{Annotating differentially methylated bases or regions}
-We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using \code{\link{GenomicFeatures}} package available from Bioconductor.org.
+We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using \Rpackage{GenomicFeatures} package available from Bioconductor.org.
 
 <<>>=
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", 
+                                           package = "methylKit"))
+#
 # annotate differentially methylated Cs with promoter/exon/intron using annotation data
+#
 annotate.WithGenicParts(myDiff25p,gene.obj)
 @
 
@@ -162,14 +165,17 @@ Similarly, we can read the CpG island annotation and annotate our differentially
 
 <<>>=
 # read the shores and flanking regions and name the flanks as shores and CpG islands as CpGi
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
-
-annotate.WithFeature.Flank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="shores")
+cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),
+                           feature.flank.name=c("CpGi","shores"))
+#
+#
+diffCpGann=annotate.WithFeature.Flank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,
+                                      feature.name="CpGi",flank.name="shores")
 @
 
 
 \subsection{Regional analysis}
-We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a \code{methylRaw} or \code{methylRawList} object depending on the input.
+We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a \Rfunction{methylRaw} or \Rfunction{methylRawList} object depending on the input.
 
 <<>>=
 promoters=regionCounts(myobj,gene.obj$promoters)
@@ -180,11 +186,13 @@ head(promoters[[1]])
 
 
 \subsection{Convenience functions for annotation objects}
-After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the \code{getAssociationWithTSS} function.
+After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the \Rfunction{getAssociationWithTSS} function.
 
 <<>>=
-# read the annotation with unique.prom=FALSE does not collapse identical promoter boundaries and preserves gene names associated with TSS
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"),unique.prom=FALSE)
+# reading the annotation with unique.prom=FALSE does not collapse identical 
+# promoter boundaries and preserves gene names associated with TSS
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", 
+          package = "methylKit"),unique.prom=FALSE)
 
 diffAnn=annotate.WithGenicParts(myDiff25p,gene.obj)
 
@@ -202,15 +210,18 @@ We can also plot the percentage of differentially methylated bases overlapping w
 
 \begin{center}
 <<fig=TRUE , echo =TRUE>>=
-getTargetAnnotationStats(diffAnn,percentage=FALSE,precedence=TRUE)
+plotTargetAnnotation(diffAnn,precedence=TRUE,
+    main="differential methylation annotation")
 @
 \end{center}
+
 
 It might be also useful to get percentage/number of intron/exon/promoters that overlap with differentially methylated regions/bases.
 
 <<>>=
-plotTargetAnnotation(diffAnn,precedence=TRUE)
+getTargetAnnotationStats(diffAnn,percentage=FALSE,precedence=TRUE)
 @
+
 
 
 \bibliography{Vignette_methylKit.bib}

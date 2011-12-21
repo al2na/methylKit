@@ -463,6 +463,17 @@ setMethod("show", "annotationByGenicParts", function(object) {
   print(summary(abs(object@dist.to.TSS[,2])))
 })
 
+
+#' @rdname show-methods
+#' @aliases show,annotationByFeature-method
+setMethod("show", "annotationByFeature", function(object) {
+  
+  cat("summary of target set annotation with feature annotation\n");cat(nrow(object@members));cat(" rows in target set\n--------------\n")
+  cat("--------------\n")
+  cat("percentage of target features overlapping with annotation :\n");print(object@annotation);cat("\n\n")
+  cat("percentage of annotation boundaries with feature overlap :\n");print(object@perc.of.OlapFeat);cat("\n\n")  
+})
+
 #######################################
 # SECTION 2: S3 FUNCTIONS 
 # these shouldn't be exported
