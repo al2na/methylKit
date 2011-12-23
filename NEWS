@@ -1,0 +1,6 @@
+methylKit 0.3.1
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* syntax error when fisher.test applied at calculateMethDiff() is fixed.
