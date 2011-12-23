@@ -414,10 +414,10 @@ setMethod("calculateDiffMeth", "methylBase",
                         pvals    = fix.q.values.fisher(pvals,slim=slim)   
                         
                         # calculate mean methylation change
-                        mom.meth1    =rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1]) # get means of means
-                        mom.meth2    =rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1])
-                        mom.mean.diff=mom.meth1-mom.meth2
-                        x=data.frame(subst[,1:5],pvals,meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                        mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+                        mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+                        mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
+                        x=data.frame(subst[,1:5],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
                         obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                             treatment=.Object@treatment,destranded=.Object@destranded)
                         obj
