@@ -1,9 +1,9 @@
 Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
-    bisulfate sequencing
-Version: 0.3
-Date: 2011-11-10
+    bisulfate sequencing 
+Version: 0.3.1
+Date: 2011-11-23
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: Altuna Akalin <aakalin@gmail.com>
 Description: DNA methylation analysis RRBS,ERRBS,BS-seq

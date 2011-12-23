@@ -410,7 +410,7 @@ setMethod("calculateDiffMeth", "methylBase",
                       # if one control, one treatment case to the fisher's exact test
                       if(length(.Object@treatment)==2 )
                       {
-                        p.vals   =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
+                        pvals   =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
                         pvals    = fix.q.values.fisher(pvals,slim=slim)   
                         
                         # calculate mean methylation change
