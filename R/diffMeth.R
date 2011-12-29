@@ -506,7 +506,7 @@ setMethod("show", "methylDiff", function(object) {
 #' @rdname getContext-methods
 #' @aliases getContext,methylDiff-method
 setMethod("getContext", signature="methylDiff", definition=function(x) {
-                return(x@Context)
+                return(x@context)
         })
 
 # a function for getting data part of methylDiff    
