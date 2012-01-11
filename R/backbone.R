@@ -420,7 +420,7 @@ setMethod("getCorrelation", "methylBase",
                           pairs(meth.mat, 
                               lower.panel=panel.my.smooth2, 
                               upper.panel=panel.cor,
-                              diag.panel=panel.hist,main="CpG dinucleotide correlation")
+                              diag.panel=panel.hist,main=paste(.Object@context, .Object@resolution ,"correlation") )
                         }
                     }  
  )
@@ -432,17 +432,18 @@ setMethod("getCorrelation", "methylBase",
 #' @param .Object a \code{methylRaw} object 
 #' @param plot plot a histogram of coverage if TRUE (deafult:FALSE) 
 #' @param both.strands do stats and plot for both strands if TRUE (deafult:FALSE)
+#' @param ... options to be passed to \code{hist} function
 #' @return a summary of coverage statistics or plot a histogram of coverage
 #' @aliases getCoverageStats,-methods getCoverageStats,methylRaw-method
 #' @export
 #' @docType methods
 #' @rdname getCoverageStats-methods
-setGeneric("getCoverageStats", function(.Object,plot=F,both.strands=F) standardGeneric("getCoverageStats"))
+setGeneric("getCoverageStats", function(.Object,plot=F,both.strands=F,...) standardGeneric("getCoverageStats"))
 
 #' @rdname getCoverageStats-methods
 #' @aliases getCoverageStats,methylRaw-method
 setMethod("getCoverageStats", "methylRaw",
-                    function(.Object,plot,both.strands){
+                    function(.Object,plot,both.strands,...){
                       
                       if(!plot){
                         qts=seq(0,0.9,0.1) # get quantiles
@@ -487,14 +488,14 @@ setMethod("getCoverageStats", "methylRaw",
                           hist(log10(plus.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage: Forward strand"),
-                               labels=as.character(round(100*a$counts/length(plus.cov),1)))
+                               labels=as.character(round(100*a$counts/length(plus.cov),1)),...)
                           mtext(.Object$sample.id, side = 3)
                           
                           a=hist(log10(mnus.cov),plot=F)
                           hist(log10(mnus.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage: Reverse strand"),
-                               labels=as.character(round(100*a$counts/length(mnus.cov),1)))
+                               labels=as.character(round(100*a$counts/length(mnus.cov),1)),...)
                           mtext(.Object$sample.id, side = 3)
  
                         }else{
@@ -504,7 +505,7 @@ setMethod("getCoverageStats", "methylRaw",
                           hist(log10(all.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage"),
-                               labels=as.character(round(100*a$counts/length(all.cov),1)))
+                               labels=as.character(round(100*a$counts/length(all.cov),1)),...)
                           mtext(.Object$sample.id, side = 3)
 
                         }
@@ -520,16 +521,17 @@ setMethod("getCoverageStats", "methylRaw",
 #' @param .Object a \code{methylRaw} object 
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
+#' @param ... options to be passed to \code{hist} function. 
 #' @return a summary of Methylation statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
 #' @rdname getMethylationStats-methods
-setGeneric("getMethylationStats", function(.Object,plot=F,both.strands=F) standardGeneric("getMethylationStats"))
+setGeneric("getMethylationStats", function(.Object,plot=F,both.strands=F,...) standardGeneric("getMethylationStats"))
 
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRaw-method
 setMethod("getMethylationStats", "methylRaw",
-                    function(.Object,plot,both.strands){
+                    function(.Object,plot,both.strands,...){
                       
                       plus.met=100* .Object[.Object$strand=="+",]$numCs/.Object[.Object$strand=="+",]$coverage
                       mnus.met=100* .Object[.Object$strand=="-",]$numCs/.Object[.Object$strand=="-",]$coverage
@@ -573,14 +575,14 @@ setMethod("getMethylationStats", "methylRaw",
                           hist((plus.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation: Forward strand"),
-                               labels=as.character(round(100*a$counts/length(plus.met),1)))
+                               labels=as.character(round(100*a$counts/length(plus.met),1)),...)
                           mtext(.Object$sample.id, side = 3)
 
                           a=hist((mnus.met),plot=F)
                           hist((mnus.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation: Reverse strand"),
-                               labels=as.character(round(100*a$counts/length(mnus.met),1)))
+                               labels=as.character(round(100*a$counts/length(mnus.met),1)),...)
                           mtext(.Object$sample.id, side = 3)
  
                         }else{
@@ -589,7 +591,7 @@ setMethod("getMethylationStats", "methylRaw",
                           hist((all.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation"),
-                               labels=as.character(round(100*a$counts/length(all.met),1)))
+                               labels=as.character(round(100*a$counts/length(all.met),1)),...)
                           mtext(.Object$sample.id, side = 3)
 
                         }
