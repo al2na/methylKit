@@ -16,12 +16,16 @@ IMPROVEMENTS AND BUG FIXES
 * getCoverageStats() & getMethylationStats() now print the sample ids and methylation context automatically in the 
   title when plotting
 
+* getCoverageStats() & getMethylationStats() takes extra options to be passed to hist() function
+
 * destrand option of unite() function will be over-riden when methylRawList to be united contains regions rather than bases
 
 * unite() function checks if supplied elements of methylRawList object have the same context,assemlby and resolution before
   uniting data sets.
 
 * validity function checking the format of the data for a methylRaw object is implemented
+
+* clusterSamples() and PCASamples() take methylation context information automatically and use it in plot titles
 
 methylKit 0.3.1
 --------------

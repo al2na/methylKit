@@ -45,7 +45,7 @@
 # dist.method method to get the distance between samples
 # hclust.method the agglomeration method to be used
 # plot if TRUE, plot the hierarchical clustering
-.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE, treatment=treatment,sample.ids=sample.ids){
+.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE, treatment=treatment,sample.ids=sample.ids,context){
   DIST.METHODS <- c("correlation", "euclidean", "maximum", "manhattan", "canberra", 
         "binary", "minkowski")
   dist.method <- pmatch(dist.method, DIST.METHODS)
@@ -93,7 +93,7 @@
     dend = as.dendrogram(hc)
     dend_colored <- dendrapply(dend, colLab,col.list)
     
-    plot(dend_colored, main = "CpG dinucleotide methylation clustering", 
+    plot(dend_colored, main = paste(context, "methylation clustering"), 
          sub = paste("Distance method: \"", DIST.METHODS[dist.method],
          "\"; Clustering method: \"", HCLUST.METHODS[hclust.method],"\"",sep=""), 
          xlab = "Samples", ylab = "Height");
@@ -120,10 +120,10 @@
 # Principal Components Analysis on methylBase object
 # x matrix each column is a sample
 # cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-.pcaPlot = function(x, cor=TRUE, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids){
+.pcaPlot = function(x, cor=TRUE, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context){
   x.pr = princomp(x, cor=cor)
   if (screeplot){
-    i=5;screeplot(x.pr, type="barplot", main="CpG dinucleotide methylation PCA Screeplot", col = rainbow(i)[i])
+    i=5;screeplot(x.pr, type="barplot", main=paste(context,"methylation PCA Screeplot"), col = rainbow(i)[i])
   }
   else{
     loads = loadings(x.pr)
@@ -132,7 +132,7 @@
     sample.ids=sample.ids
     my.cols=rainbow(length(unique(treatment)), start=1, end=0.6)
     
-    plot(loads[,1:2], main = "CpG dinucleotide methylation PCA Analysis",col=my.cols[treatment+1],
+    plot(loads[,1:2], main = paste(context,"methylation PCA Analysis"),col=my.cols[treatment+1],
          xlim=.adjlim(loads[,1],adj.lim[1]), ylim=.adjlim(loads[,2], adj.lim[2]))
     text(loads[,1], loads[,2],labels=sample.ids,adj=c(-0.4,0.3), col=my.cols[treatment+1])
   }
@@ -163,7 +163,7 @@ setMethod("clusterSamples", "methylBase",
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot, treatment=.Object@treatment,sample.ids=.Object@sample.ids)
+                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context)
                         
                         }
 )
@@ -189,7 +189,7 @@ setMethod("PCASamples", "methylBase",
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .pcaPlot(meth.mat, cor=cor, screeplot=screeplot, adj.lim=adj.lim, treatment=.Object@treatment,sample.ids=.Object@sample.ids)
+                        .pcaPlot(meth.mat, cor=cor, screeplot=screeplot, adj.lim=adj.lim, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context)
                         
                         }
 )
