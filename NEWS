@@ -11,7 +11,7 @@ IMPROVEMENTS AND BUG FIXES
 * cov.bases option in tileMethylCounts() now works
 
 * methylRaw,methylBase and methylDiff objects have a new slot 'resolution', which designates
-  whether methylation information is base-pair resolution or regional resolution
+  whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'
 
 * getCoverageStats() & getMethylationStats() now print the sample ids and methylation context automatically in the 
   title when plotting
