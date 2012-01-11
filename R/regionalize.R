@@ -71,7 +71,7 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
                                           numCs   =sum.dt$numCs,
                                           numTs   =sum.dt$numTs)
                     
-                    new("methylRaw",new.data,sample.id=methylObj@sample.id,assembly=methylObj@assembly,context=methylObj@context)
+                    new("methylRaw",new.data,sample.id=methylObj@sample.id,assembly=methylObj@assembly,context=methylObj@context,resolution="region")
                       
                     }
 )
@@ -125,7 +125,7 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
                                           numCs   =sum.dt$numCs,
                                           numTs   =sum.dt$numTs)
                     
-                    new("methylRaw",new.data,sample.id=methylObj@sample.id,assembly=methylObj@assembly,context=methylObj@context)
+                    new("methylRaw",new.data,sample.id=methylObj@sample.id,assembly=methylObj@assembly,context=methylObj@context,resolution="region")
   
                     })
 # Note: some genes do not have intron, need to take care of it.
@@ -210,7 +210,7 @@ setMethod("tileMethylCounts", signature(methylObj="methylRaw"),
                         temp.wins=GRanges(seqnames=rep(chrs[i],numTiles),ranges=IRanges(start=1+0:(numTiles-1)*step.size,width=rep(win.size,numTiles)) )
                         all.wins=c(all.wins,temp.wins)
                       }
-                      regionCounts(methylObj,all.wins)
+                      regionCounts(methylObj,all.wins,cov.bases)
 
                       
 })

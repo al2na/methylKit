@@ -347,6 +347,7 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #'                  \item{\code{context}}{numeric vector identifying which samples are which group }
 #'                  \item{\code{treatment}}{numeric vector identifying which samples are which group }
 #'                  \item{\code{destranded}}{logical denoting if methylation inormation is destranded or not}
+#'                  \item{\code{resolution}}{string either 'base' or 'region' defining the resolution of methylation information}
 #'                  \item{\code{.Data}}{data.frame holding the locations and statistics}
 #'
 #' }
@@ -355,7 +356,7 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #' @export
 #' @docType class
 setClass("methylDiff",representation(
-  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical"),contains="data.frame")
+  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical",resolution="character"),contains="data.frame")
 
 
 ##############################################################################
@@ -419,7 +420,7 @@ setMethod("calculateDiffMeth", "methylBase",
                         mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
                         x=data.frame(subst[,1:5],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
                         obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                            treatment=.Object@treatment,destranded=.Object@destranded)
+                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                         obj
                       }
                       else # else do the GLM - logistic regression
@@ -442,14 +443,14 @@ setMethod("calculateDiffMeth", "methylBase",
                           if(weigthed.mean){
                             x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
                             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded)
+                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                             obj
   
                           }
                           else{
                             x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
                             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded)
+                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                             obj
                           }
                         
@@ -501,6 +502,7 @@ setMethod("show", "methylDiff", function(object) {
   cat("assembly:",object@assembly,"\n")
   cat("context:", object@context,"\n")
   cat("treament:", object@treatment,"\n")
+  cat("resolution:", object@resolution,"\n")
 })
 
 #' @rdname getContext-methods
@@ -541,17 +543,17 @@ setMethod(f="get.methylDiff", signature="methylDiff",
                     if(type=="all"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded)
+                              treatment=.Object@treatment,destranded=.Object@destranded,type=.Object@resolution)
                       return(new.obj)
                     }else if(type=="hyper"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded)
+                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                       return(new.obj)
                     }else if(type=="hypo"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded) 
+                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
                       return(new.obj)
                     }else{
                       stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")

@@ -60,7 +60,23 @@
 
 
 
+valid.methylRawObj <- function(object) {
+  
+    
+    data=getData(object)
+    check1=( (object@resolution == "base") | (object@resolution == "region") )
+    check2=(nrow(data)==8)
+    if(check1 & check2){
+      return(TRUE)
+    }
+    else if (! check1 ){
+        paste("resolution slot has to be either 'base' or 'region': other values not allowed")
+    }
+    else if(! check1){
+        paste("data part of methylRaw have",nrow(data),'columns, expected only 8 columns")
+    }
 
+}
 
 
 #' An S4 class for holding raw methylation data from alignment pipeline.
@@ -71,12 +87,13 @@
 #'                  \item{\code{sample.id}:}{string for an identifier of the sample}
 #'                  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
 #'                  \item{\code{context}:}{ methylation context string, ex: CpG,CpH,CHH, etc.}
+#'                  \item{\code{resolution}:}{ resolution of methylation information, 'base' or 'region'}
 #'                 }
 #' @name methylRaw-class
 #' @rdname methylRaw-class
 #' @export
 setClass("methylRaw", representation(
-  sample.id = "character", assembly = "character",context="character"),contains= "data.frame")
+  sample.id = "character", assembly = "character",context="character",resolution="character"),contains= "data.frame",validity=valid.methylRawObj)
 
 
 #' An S4 class for holding a list of methylRaw objects.
@@ -131,7 +148,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
                 stop("unknown 'pipeline' argument, supported alignment pipelines: amp ")
             }
 
-            obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context)
+            obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context,resolution="base")
             obj         
           }
 )
@@ -172,7 +189,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
                 stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
               }
                   
-              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context)
+              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution="base")
               outList[[i]]=obj       
             }
             myobj=new("methylRawList",outList,treatment=treatment)
@@ -219,7 +236,7 @@ setMethod("filterByCoverage", signature(methylObj="methylRaw"),
 
                       new("methylRaw",data,sample.id=methylObj@sample.id,
                                            assembly=methylObj@assembly,
-                                           context=methylObj@context)
+                                           context=methylObj@context,resolution=methylObj@resolution)
 
                       
 })
@@ -238,26 +255,26 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 #' extends data.frame and creates an object that holds methylation information and genomic location
 #'          
 #' @section Slots:\describe{
-#'                  \item{\code{sample.ids}}{character vector for ids of samples in the object}
+#'                  \item{\code{sample.ids}:}{character vector for ids of samples in the object}
 #'
-#'                  \item{\code{assembly}}{name of the genome assembly}
+#'                  \item{\code{assembly}:}{name of the genome assembly}
 #'
-#'                  \item{\code{context}}{context of methylation. Ex: CpG,CpH,CHH, etc}
+#'                  \item{\code{context}:}{context of methylation. Ex: CpG,CpH,CHH, etc}
 #'
-#'                  \item{\code{treatment}}{treatment vector denoting which samples are test and control}
+#'                  \item{\code{treatment}:}{treatment vector denoting which samples are test and control}
 #'
-#'                  \item{\code{coverage.index}}{vector denoting which columns in the data correspons to coverage values}
+#'                  \item{\code{coverage.index}:}{vector denoting which columns in the data correspons to coverage values}
 #'
-#'                  \item{\code{numCs.index}}{vector denoting which columns in the data correspons to number of methylatedCs values}
-#'
-#'                  \item{\code{numTs.index}}{vector denoting which columns in the data correspons to number of unmethylated Cs values}
+#'                  \item{\code{numCs.index}:}{vector denoting which columns in the data correspons to number of methylatedCs values}
+#'                  \item{\code{numTs.index}:}{vector denoting which columns in the data correspons to number of unmethylated Cs values}
+#'                  \item{\code{resolution}:}{ resolution of methylation information, allowed values: 'base' or 'region'}
 #' }
 #' @name methylBase-class
 #' @rdname methylBase-class
 #' @export
 setClass("methylBase",contains="data.frame",representation(
   sample.ids = "character", assembly = "character",context = "character",treatment="numeric",coverage.index="numeric",
-                                   numCs.index="numeric",numTs.index="numeric",destranded="logical"))
+                                   numCs.index="numeric",numTs.index="numeric",destranded="logical",resolution = "character"))
 
 
 #' unites methylRawList to a single table 
@@ -267,7 +284,8 @@ setClass("methylBase",contains="data.frame",representation(
 #'
 #' @param .Object a methylRawList object to be merged by common locations covered by reads
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
-#'   do not set to TRUE if not only interested in CpGs (default: FALSE)
+#'   do not set to TRUE if not only interested in CpGs (default: FALSE). If the methylRawList object
+#'   contains regions rather than bases setting destrand to TRUE will have no effect.
 #'
 #' @usage unite(.Object,destrand=F)
 #' @return a methylBase object
@@ -283,9 +301,26 @@ setMethod("unite", "methylRawList",
                     function(.Object,destrand){
   
                     
-                     #merge raw methylation calls together
+
+                    
+                     #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
+                     if( length(unique(vapply(.Object,function(x) x@context,FUN.VALUE="character"))) > 1)
+                     {
+                       stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
+                     }
+                     if( length(unique(vapply(.Object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
+                     {
+                       stop("supplied methylRawList object have different genome assemblies")
+                     }                     
+                     if( length(unique(vapply(.Object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
+                     {
+                       stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
+                     }           
+                     
+                      #merge raw methylation calls together
                      df=getData(.Object[[1]])
-                     if(destrand){df=.CpG.dinuc.unify(df)}
+                     if(destrand & (.Object@resolution == "base") ){df=.CpG.dinuc.unify(df)}
+                     
                      sample.ids=c(.Object[[1]]@sample.id)
                      assemblies=c(.Object[[1]]@assembly)
                      contexts  =c(.Object[[1]]@context)
@@ -315,7 +350,7 @@ setMethod("unite", "methylRawList",
                      obj=new("methylBase",as.data.frame(df),sample.ids=sample.ids,
                              assembly=unique(assemblies),context=unique(contexts),
                              treatment=.Object@treatment,coverage.index=coverage.ind,
-                             numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand )
+                             numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=.Object[[1]]@resolution )
                      obj
                     }
           )
@@ -450,24 +485,27 @@ setMethod("getCoverageStats", "methylRaw",
                           par(mfrow=c(1,2))
                           a=hist(log10(plus.cov),plot=F)
                           hist(log10(plus.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per base",
-                               main="Histogram of CpG coverage: Forward strand",
+                               xlab=paste("log10 of read coverage per",.Object@resolution),
+                               main=paste("Histogram of", .Object@context, "coverage: Forward strand"),
                                labels=as.character(round(100*a$counts/length(plus.cov),1)))
+                          mtext(.Object$sample.id, side = 3)
                           
                           a=hist(log10(mnus.cov),plot=F)
                           hist(log10(mnus.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per base",
-                               main="Histogram of CpG coverage: Reverse strand",
+                               xlab=paste("log10 of read coverage per",.Object@resolution),
+                               main=paste("Histogram of", .Object@context, "coverage: Reverse strand"),
                                labels=as.character(round(100*a$counts/length(mnus.cov),1)))
+                          mtext(.Object$sample.id, side = 3)
  
                         }else{
                           all.cov= .Object$coverage
                           
                           a=hist(log10(all.cov),plot=F)
                           hist(log10(all.cov),col="chartreuse4",
-                               xlab="log10 of read coverage per base",
-                               main="Histogram of CpG coverage",
+                               xlab=paste("log10 of read coverage per",.Object@resolution),
+                               main=paste("Histogram of", .Object@context, "coverage"),
                                labels=as.character(round(100*a$counts/length(all.cov),1)))
+                          mtext(.Object$sample.id, side = 3)
 
                         }
                         
@@ -533,23 +571,26 @@ setMethod("getMethylationStats", "methylRaw",
                           par(mfrow=c(1,2))
                           a=hist((plus.met),plot=F)
                           hist((plus.met),col="cornflowerblue",
-                               xlab="% methylation per CpG",
-                               main="Histogram of % methylation: Forward strand",
+                               xlab=paste("% methylation per",.Object@resolution),
+                               main=paste("Histogram of %", .Object@context,"methylation: Forward strand"),
                                labels=as.character(round(100*a$counts/length(plus.met),1)))
-                          
+                          mtext(.Object$sample.id, side = 3)
+
                           a=hist((mnus.met),plot=F)
                           hist((mnus.met),col="cornflowerblue",
-                               xlab="% methylation per base",
-                               main="Histogram of % methylation: Reverse strand",
+                               xlab=paste("% methylation per",.Object@resolution),
+                               main=paste("Histogram of %", .Object@context,"methylation: Reverse strand"),
                                labels=as.character(round(100*a$counts/length(mnus.met),1)))
+                          mtext(.Object$sample.id, side = 3)
  
                         }else{
                           
                           a=hist((all.met),plot=F)
                           hist((all.met),col="cornflowerblue",
-                               xlab="% methylation per base",
-                               main="Histogram of % methylation",
+                               xlab=paste("% methylation per",.Object@resolution),
+                               main=paste("Histogram of %", .Object@context,"methylation"),
                                labels=as.character(round(100*a$counts/length(all.met),1)))
+                          mtext(.Object$sample.id, side = 3)
 
                         }
                         
