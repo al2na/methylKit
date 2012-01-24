@@ -1,0 +1,1087 @@
+%\VignetteIndexEntry{methylKit: User Guide}
+%\VignetteKeywords{methylBase, methylRaw, calculateDiffMeth}
+%\VignettePackage{methylKit}
+
+
+\documentclass{article}
+\usepackage{graphicx, color}
+\newcommand{\hlnumber}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlfunctioncall}[1]{\textcolor[rgb]{.5,0,.33}{\textbf{#1}}}%
+\newcommand{\hlstring}[1]{\textcolor[rgb]{.6,.6,1}{#1}}%
+\newcommand{\hlkeyword}[1]{\textbf{#1}}%
+\newcommand{\hlargument}[1]{\textcolor[rgb]{.69,.25,.02}{#1}}%
+\newcommand{\hlcomment}[1]{\textcolor[rgb]{.18,.6,.34}{#1}}%
+\newcommand{\hlroxygencomment}[1]{\textcolor[rgb]{.44,.48,.7}{#1}}%
+\newcommand{\hlformalargs}[1]{\hlargument{#1}}%
+\newcommand{\hleqformalargs}[1]{\hlargument{#1}}%
+\newcommand{\hlassignement}[1]{\textbf{#1}}%
+\newcommand{\hlpackage}[1]{\textcolor[rgb]{.59,.71,.145}{#1}}%
+\newcommand{\hlslot}[1]{\textit{#1}}%
+\newcommand{\hlsymbol}[1]{#1}%
+\newcommand{\hlprompt}[1]{\textcolor[rgb]{.5,.5,.5}{#1}}%
+
+\usepackage{color}%
+ 
+\newsavebox{\hlnormalsizeboxclosebrace}%
+\newsavebox{\hlnormalsizeboxopenbrace}%
+\newsavebox{\hlnormalsizeboxbackslash}%
+\newsavebox{\hlnormalsizeboxlessthan}%
+\newsavebox{\hlnormalsizeboxgreaterthan}%
+\newsavebox{\hlnormalsizeboxdollar}%
+\newsavebox{\hlnormalsizeboxunderscore}%
+\newsavebox{\hlnormalsizeboxand}%
+\newsavebox{\hlnormalsizeboxhash}%
+\newsavebox{\hlnormalsizeboxat}%
+\newsavebox{\hlnormalsizeboxpercent}% 
+\newsavebox{\hlnormalsizeboxhat}%
+\newsavebox{\hlnormalsizeboxsinglequote}%
+\newsavebox{\hlnormalsizeboxbacktick}%
+
+\setbox\hlnormalsizeboxopenbrace=\hbox{\begin{normalsize}\verb.{.\end{normalsize}}%
+\setbox\hlnormalsizeboxclosebrace=\hbox{\begin{normalsize}\verb.}.\end{normalsize}}%
+\setbox\hlnormalsizeboxlessthan=\hbox{\begin{normalsize}\verb.<.\end{normalsize}}%
+\setbox\hlnormalsizeboxdollar=\hbox{\begin{normalsize}\verb.$.\end{normalsize}}%
+\setbox\hlnormalsizeboxunderscore=\hbox{\begin{normalsize}\verb._.\end{normalsize}}%
+\setbox\hlnormalsizeboxand=\hbox{\begin{normalsize}\verb.&.\end{normalsize}}%
+\setbox\hlnormalsizeboxhash=\hbox{\begin{normalsize}\verb.#.\end{normalsize}}%
+\setbox\hlnormalsizeboxat=\hbox{\begin{normalsize}\verb.@.\end{normalsize}}%
+\setbox\hlnormalsizeboxbackslash=\hbox{\begin{normalsize}\verb.\.\end{normalsize}}%
+\setbox\hlnormalsizeboxgreaterthan=\hbox{\begin{normalsize}\verb.>.\end{normalsize}}%
+\setbox\hlnormalsizeboxpercent=\hbox{\begin{normalsize}\verb.%.\end{normalsize}}%
+\setbox\hlnormalsizeboxhat=\hbox{\begin{normalsize}\verb.^.\end{normalsize}}%
+\setbox\hlnormalsizeboxsinglequote=\hbox{\begin{normalsize}\verb.'.\end{normalsize}}%
+\setbox\hlnormalsizeboxbacktick=\hbox{\begin{normalsize}\verb.`.\end{normalsize}}%
+\setbox\hlnormalsizeboxhat=\hbox{\begin{normalsize}\verb.^.\end{normalsize}}%
+
+
+
+\newsavebox{\hltinyboxclosebrace}%
+\newsavebox{\hltinyboxopenbrace}%
+\newsavebox{\hltinyboxbackslash}%
+\newsavebox{\hltinyboxlessthan}%
+\newsavebox{\hltinyboxgreaterthan}%
+\newsavebox{\hltinyboxdollar}%
+\newsavebox{\hltinyboxunderscore}%
+\newsavebox{\hltinyboxand}%
+\newsavebox{\hltinyboxhash}%
+\newsavebox{\hltinyboxat}%
+\newsavebox{\hltinyboxpercent}% 
+\newsavebox{\hltinyboxhat}%
+\newsavebox{\hltinyboxsinglequote}%
+\newsavebox{\hltinyboxbacktick}%
+
+\setbox\hltinyboxopenbrace=\hbox{\begin{tiny}\verb.{.\end{tiny}}%
+\setbox\hltinyboxclosebrace=\hbox{\begin{tiny}\verb.}.\end{tiny}}%
+\setbox\hltinyboxlessthan=\hbox{\begin{tiny}\verb.<.\end{tiny}}%
+\setbox\hltinyboxdollar=\hbox{\begin{tiny}\verb.$.\end{tiny}}%
+\setbox\hltinyboxunderscore=\hbox{\begin{tiny}\verb._.\end{tiny}}%
+\setbox\hltinyboxand=\hbox{\begin{tiny}\verb.&.\end{tiny}}%
+\setbox\hltinyboxhash=\hbox{\begin{tiny}\verb.#.\end{tiny}}%
+\setbox\hltinyboxat=\hbox{\begin{tiny}\verb.@.\end{tiny}}%
+\setbox\hltinyboxbackslash=\hbox{\begin{tiny}\verb.\.\end{tiny}}%
+\setbox\hltinyboxgreaterthan=\hbox{\begin{tiny}\verb.>.\end{tiny}}%
+\setbox\hltinyboxpercent=\hbox{\begin{tiny}\verb.%.\end{tiny}}%
+\setbox\hltinyboxhat=\hbox{\begin{tiny}\verb.^.\end{tiny}}%
+\setbox\hltinyboxsinglequote=\hbox{\begin{tiny}\verb.'.\end{tiny}}%
+\setbox\hltinyboxbacktick=\hbox{\begin{tiny}\verb.`.\end{tiny}}%
+\setbox\hltinyboxhat=\hbox{\begin{tiny}\verb.^.\end{tiny}}%
+
+
+
+\newsavebox{\hlscriptsizeboxclosebrace}%
+\newsavebox{\hlscriptsizeboxopenbrace}%
+\newsavebox{\hlscriptsizeboxbackslash}%
+\newsavebox{\hlscriptsizeboxlessthan}%
+\newsavebox{\hlscriptsizeboxgreaterthan}%
+\newsavebox{\hlscriptsizeboxdollar}%
+\newsavebox{\hlscriptsizeboxunderscore}%
+\newsavebox{\hlscriptsizeboxand}%
+\newsavebox{\hlscriptsizeboxhash}%
+\newsavebox{\hlscriptsizeboxat}%
+\newsavebox{\hlscriptsizeboxpercent}% 
+\newsavebox{\hlscriptsizeboxhat}%
+\newsavebox{\hlscriptsizeboxsinglequote}%
+\newsavebox{\hlscriptsizeboxbacktick}%
+
+\setbox\hlscriptsizeboxopenbrace=\hbox{\begin{scriptsize}\verb.{.\end{scriptsize}}%
+\setbox\hlscriptsizeboxclosebrace=\hbox{\begin{scriptsize}\verb.}.\end{scriptsize}}%
+\setbox\hlscriptsizeboxlessthan=\hbox{\begin{scriptsize}\verb.<.\end{scriptsize}}%
+\setbox\hlscriptsizeboxdollar=\hbox{\begin{scriptsize}\verb.$.\end{scriptsize}}%
+\setbox\hlscriptsizeboxunderscore=\hbox{\begin{scriptsize}\verb._.\end{scriptsize}}%
+\setbox\hlscriptsizeboxand=\hbox{\begin{scriptsize}\verb.&.\end{scriptsize}}%
+\setbox\hlscriptsizeboxhash=\hbox{\begin{scriptsize}\verb.#.\end{scriptsize}}%
+\setbox\hlscriptsizeboxat=\hbox{\begin{scriptsize}\verb.@.\end{scriptsize}}%
+\setbox\hlscriptsizeboxbackslash=\hbox{\begin{scriptsize}\verb.\.\end{scriptsize}}%
+\setbox\hlscriptsizeboxgreaterthan=\hbox{\begin{scriptsize}\verb.>.\end{scriptsize}}%
+\setbox\hlscriptsizeboxpercent=\hbox{\begin{scriptsize}\verb.%.\end{scriptsize}}%
+\setbox\hlscriptsizeboxhat=\hbox{\begin{scriptsize}\verb.^.\end{scriptsize}}%
+\setbox\hlscriptsizeboxsinglequote=\hbox{\begin{scriptsize}\verb.'.\end{scriptsize}}%
+\setbox\hlscriptsizeboxbacktick=\hbox{\begin{scriptsize}\verb.`.\end{scriptsize}}%
+\setbox\hlscriptsizeboxhat=\hbox{\begin{scriptsize}\verb.^.\end{scriptsize}}%
+
+
+
+\newsavebox{\hlfootnotesizeboxclosebrace}%
+\newsavebox{\hlfootnotesizeboxopenbrace}%
+\newsavebox{\hlfootnotesizeboxbackslash}%
+\newsavebox{\hlfootnotesizeboxlessthan}%
+\newsavebox{\hlfootnotesizeboxgreaterthan}%
+\newsavebox{\hlfootnotesizeboxdollar}%
+\newsavebox{\hlfootnotesizeboxunderscore}%
+\newsavebox{\hlfootnotesizeboxand}%
+\newsavebox{\hlfootnotesizeboxhash}%
+\newsavebox{\hlfootnotesizeboxat}%
+\newsavebox{\hlfootnotesizeboxpercent}% 
+\newsavebox{\hlfootnotesizeboxhat}%
+\newsavebox{\hlfootnotesizeboxsinglequote}%
+\newsavebox{\hlfootnotesizeboxbacktick}%
+
+\setbox\hlfootnotesizeboxopenbrace=\hbox{\begin{footnotesize}\verb.{.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxclosebrace=\hbox{\begin{footnotesize}\verb.}.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxlessthan=\hbox{\begin{footnotesize}\verb.<.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxdollar=\hbox{\begin{footnotesize}\verb.$.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxunderscore=\hbox{\begin{footnotesize}\verb._.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxand=\hbox{\begin{footnotesize}\verb.&.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxhash=\hbox{\begin{footnotesize}\verb.#.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxat=\hbox{\begin{footnotesize}\verb.@.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxbackslash=\hbox{\begin{footnotesize}\verb.\.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxgreaterthan=\hbox{\begin{footnotesize}\verb.>.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxpercent=\hbox{\begin{footnotesize}\verb.%.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxhat=\hbox{\begin{footnotesize}\verb.^.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxsinglequote=\hbox{\begin{footnotesize}\verb.'.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxbacktick=\hbox{\begin{footnotesize}\verb.`.\end{footnotesize}}%
+\setbox\hlfootnotesizeboxhat=\hbox{\begin{footnotesize}\verb.^.\end{footnotesize}}%
+
+
+
+\newsavebox{\hlsmallboxclosebrace}%
+\newsavebox{\hlsmallboxopenbrace}%
+\newsavebox{\hlsmallboxbackslash}%
+\newsavebox{\hlsmallboxlessthan}%
+\newsavebox{\hlsmallboxgreaterthan}%
+\newsavebox{\hlsmallboxdollar}%
+\newsavebox{\hlsmallboxunderscore}%
+\newsavebox{\hlsmallboxand}%
+\newsavebox{\hlsmallboxhash}%
+\newsavebox{\hlsmallboxat}%
+\newsavebox{\hlsmallboxpercent}% 
+\newsavebox{\hlsmallboxhat}%
+\newsavebox{\hlsmallboxsinglequote}%
+\newsavebox{\hlsmallboxbacktick}%
+
+\setbox\hlsmallboxopenbrace=\hbox{\begin{small}\verb.{.\end{small}}%
+\setbox\hlsmallboxclosebrace=\hbox{\begin{small}\verb.}.\end{small}}%
+\setbox\hlsmallboxlessthan=\hbox{\begin{small}\verb.<.\end{small}}%
+\setbox\hlsmallboxdollar=\hbox{\begin{small}\verb.$.\end{small}}%
+\setbox\hlsmallboxunderscore=\hbox{\begin{small}\verb._.\end{small}}%
+\setbox\hlsmallboxand=\hbox{\begin{small}\verb.&.\end{small}}%
+\setbox\hlsmallboxhash=\hbox{\begin{small}\verb.#.\end{small}}%
+\setbox\hlsmallboxat=\hbox{\begin{small}\verb.@.\end{small}}%
+\setbox\hlsmallboxbackslash=\hbox{\begin{small}\verb.\.\end{small}}%
+\setbox\hlsmallboxgreaterthan=\hbox{\begin{small}\verb.>.\end{small}}%
+\setbox\hlsmallboxpercent=\hbox{\begin{small}\verb.%.\end{small}}%
+\setbox\hlsmallboxhat=\hbox{\begin{small}\verb.^.\end{small}}%
+\setbox\hlsmallboxsinglequote=\hbox{\begin{small}\verb.'.\end{small}}%
+\setbox\hlsmallboxbacktick=\hbox{\begin{small}\verb.`.\end{small}}%
+\setbox\hlsmallboxhat=\hbox{\begin{small}\verb.^.\end{small}}%
+
+
+
+\newsavebox{\hllargeboxclosebrace}%
+\newsavebox{\hllargeboxopenbrace}%
+\newsavebox{\hllargeboxbackslash}%
+\newsavebox{\hllargeboxlessthan}%
+\newsavebox{\hllargeboxgreaterthan}%
+\newsavebox{\hllargeboxdollar}%
+\newsavebox{\hllargeboxunderscore}%
+\newsavebox{\hllargeboxand}%
+\newsavebox{\hllargeboxhash}%
+\newsavebox{\hllargeboxat}%
+\newsavebox{\hllargeboxpercent}% 
+\newsavebox{\hllargeboxhat}%
+\newsavebox{\hllargeboxsinglequote}%
+\newsavebox{\hllargeboxbacktick}%
+
+\setbox\hllargeboxopenbrace=\hbox{\begin{large}\verb.{.\end{large}}%
+\setbox\hllargeboxclosebrace=\hbox{\begin{large}\verb.}.\end{large}}%
+\setbox\hllargeboxlessthan=\hbox{\begin{large}\verb.<.\end{large}}%
+\setbox\hllargeboxdollar=\hbox{\begin{large}\verb.$.\end{large}}%
+\setbox\hllargeboxunderscore=\hbox{\begin{large}\verb._.\end{large}}%
+\setbox\hllargeboxand=\hbox{\begin{large}\verb.&.\end{large}}%
+\setbox\hllargeboxhash=\hbox{\begin{large}\verb.#.\end{large}}%
+\setbox\hllargeboxat=\hbox{\begin{large}\verb.@.\end{large}}%
+\setbox\hllargeboxbackslash=\hbox{\begin{large}\verb.\.\end{large}}%
+\setbox\hllargeboxgreaterthan=\hbox{\begin{large}\verb.>.\end{large}}%
+\setbox\hllargeboxpercent=\hbox{\begin{large}\verb.%.\end{large}}%
+\setbox\hllargeboxhat=\hbox{\begin{large}\verb.^.\end{large}}%
+\setbox\hllargeboxsinglequote=\hbox{\begin{large}\verb.'.\end{large}}%
+\setbox\hllargeboxbacktick=\hbox{\begin{large}\verb.`.\end{large}}%
+\setbox\hllargeboxhat=\hbox{\begin{large}\verb.^.\end{large}}%
+
+
+
+\newsavebox{\hlLargeboxclosebrace}%
+\newsavebox{\hlLargeboxopenbrace}%
+\newsavebox{\hlLargeboxbackslash}%
+\newsavebox{\hlLargeboxlessthan}%
+\newsavebox{\hlLargeboxgreaterthan}%
+\newsavebox{\hlLargeboxdollar}%
+\newsavebox{\hlLargeboxunderscore}%
+\newsavebox{\hlLargeboxand}%
+\newsavebox{\hlLargeboxhash}%
+\newsavebox{\hlLargeboxat}%
+\newsavebox{\hlLargeboxpercent}% 
+\newsavebox{\hlLargeboxhat}%
+\newsavebox{\hlLargeboxsinglequote}%
+\newsavebox{\hlLargeboxbacktick}%
+
+\setbox\hlLargeboxopenbrace=\hbox{\begin{Large}\verb.{.\end{Large}}%
+\setbox\hlLargeboxclosebrace=\hbox{\begin{Large}\verb.}.\end{Large}}%
+\setbox\hlLargeboxlessthan=\hbox{\begin{Large}\verb.<.\end{Large}}%
+\setbox\hlLargeboxdollar=\hbox{\begin{Large}\verb.$.\end{Large}}%
+\setbox\hlLargeboxunderscore=\hbox{\begin{Large}\verb._.\end{Large}}%
+\setbox\hlLargeboxand=\hbox{\begin{Large}\verb.&.\end{Large}}%
+\setbox\hlLargeboxhash=\hbox{\begin{Large}\verb.#.\end{Large}}%
+\setbox\hlLargeboxat=\hbox{\begin{Large}\verb.@.\end{Large}}%
+\setbox\hlLargeboxbackslash=\hbox{\begin{Large}\verb.\.\end{Large}}%
+\setbox\hlLargeboxgreaterthan=\hbox{\begin{Large}\verb.>.\end{Large}}%
+\setbox\hlLargeboxpercent=\hbox{\begin{Large}\verb.%.\end{Large}}%
+\setbox\hlLargeboxhat=\hbox{\begin{Large}\verb.^.\end{Large}}%
+\setbox\hlLargeboxsinglequote=\hbox{\begin{Large}\verb.'.\end{Large}}%
+\setbox\hlLargeboxbacktick=\hbox{\begin{Large}\verb.`.\end{Large}}%
+\setbox\hlLargeboxhat=\hbox{\begin{Large}\verb.^.\end{Large}}%
+
+
+
+\newsavebox{\hlLARGEboxclosebrace}%
+\newsavebox{\hlLARGEboxopenbrace}%
+\newsavebox{\hlLARGEboxbackslash}%
+\newsavebox{\hlLARGEboxlessthan}%
+\newsavebox{\hlLARGEboxgreaterthan}%
+\newsavebox{\hlLARGEboxdollar}%
+\newsavebox{\hlLARGEboxunderscore}%
+\newsavebox{\hlLARGEboxand}%
+\newsavebox{\hlLARGEboxhash}%
+\newsavebox{\hlLARGEboxat}%
+\newsavebox{\hlLARGEboxpercent}% 
+\newsavebox{\hlLARGEboxhat}%
+\newsavebox{\hlLARGEboxsinglequote}%
+\newsavebox{\hlLARGEboxbacktick}%
+
+\setbox\hlLARGEboxopenbrace=\hbox{\begin{LARGE}\verb.{.\end{LARGE}}%
+\setbox\hlLARGEboxclosebrace=\hbox{\begin{LARGE}\verb.}.\end{LARGE}}%
+\setbox\hlLARGEboxlessthan=\hbox{\begin{LARGE}\verb.<.\end{LARGE}}%
+\setbox\hlLARGEboxdollar=\hbox{\begin{LARGE}\verb.$.\end{LARGE}}%
+\setbox\hlLARGEboxunderscore=\hbox{\begin{LARGE}\verb._.\end{LARGE}}%
+\setbox\hlLARGEboxand=\hbox{\begin{LARGE}\verb.&.\end{LARGE}}%
+\setbox\hlLARGEboxhash=\hbox{\begin{LARGE}\verb.#.\end{LARGE}}%
+\setbox\hlLARGEboxat=\hbox{\begin{LARGE}\verb.@.\end{LARGE}}%
+\setbox\hlLARGEboxbackslash=\hbox{\begin{LARGE}\verb.\.\end{LARGE}}%
+\setbox\hlLARGEboxgreaterthan=\hbox{\begin{LARGE}\verb.>.\end{LARGE}}%
+\setbox\hlLARGEboxpercent=\hbox{\begin{LARGE}\verb.%.\end{LARGE}}%
+\setbox\hlLARGEboxhat=\hbox{\begin{LARGE}\verb.^.\end{LARGE}}%
+\setbox\hlLARGEboxsinglequote=\hbox{\begin{LARGE}\verb.'.\end{LARGE}}%
+\setbox\hlLARGEboxbacktick=\hbox{\begin{LARGE}\verb.`.\end{LARGE}}%
+\setbox\hlLARGEboxhat=\hbox{\begin{LARGE}\verb.^.\end{LARGE}}%
+
+
+
+\newsavebox{\hlhugeboxclosebrace}%
+\newsavebox{\hlhugeboxopenbrace}%
+\newsavebox{\hlhugeboxbackslash}%
+\newsavebox{\hlhugeboxlessthan}%
+\newsavebox{\hlhugeboxgreaterthan}%
+\newsavebox{\hlhugeboxdollar}%
+\newsavebox{\hlhugeboxunderscore}%
+\newsavebox{\hlhugeboxand}%
+\newsavebox{\hlhugeboxhash}%
+\newsavebox{\hlhugeboxat}%
+\newsavebox{\hlhugeboxpercent}% 
+\newsavebox{\hlhugeboxhat}%
+\newsavebox{\hlhugeboxsinglequote}%
+\newsavebox{\hlhugeboxbacktick}%
+
+\setbox\hlhugeboxopenbrace=\hbox{\begin{huge}\verb.{.\end{huge}}%
+\setbox\hlhugeboxclosebrace=\hbox{\begin{huge}\verb.}.\end{huge}}%
+\setbox\hlhugeboxlessthan=\hbox{\begin{huge}\verb.<.\end{huge}}%
+\setbox\hlhugeboxdollar=\hbox{\begin{huge}\verb.$.\end{huge}}%
+\setbox\hlhugeboxunderscore=\hbox{\begin{huge}\verb._.\end{huge}}%
+\setbox\hlhugeboxand=\hbox{\begin{huge}\verb.&.\end{huge}}%
+\setbox\hlhugeboxhash=\hbox{\begin{huge}\verb.#.\end{huge}}%
+\setbox\hlhugeboxat=\hbox{\begin{huge}\verb.@.\end{huge}}%
+\setbox\hlhugeboxbackslash=\hbox{\begin{huge}\verb.\.\end{huge}}%
+\setbox\hlhugeboxgreaterthan=\hbox{\begin{huge}\verb.>.\end{huge}}%
+\setbox\hlhugeboxpercent=\hbox{\begin{huge}\verb.%.\end{huge}}%
+\setbox\hlhugeboxhat=\hbox{\begin{huge}\verb.^.\end{huge}}%
+\setbox\hlhugeboxsinglequote=\hbox{\begin{huge}\verb.'.\end{huge}}%
+\setbox\hlhugeboxbacktick=\hbox{\begin{huge}\verb.`.\end{huge}}%
+\setbox\hlhugeboxhat=\hbox{\begin{huge}\verb.^.\end{huge}}%
+
+
+
+\newsavebox{\hlHugeboxclosebrace}%
+\newsavebox{\hlHugeboxopenbrace}%
+\newsavebox{\hlHugeboxbackslash}%
+\newsavebox{\hlHugeboxlessthan}%
+\newsavebox{\hlHugeboxgreaterthan}%
+\newsavebox{\hlHugeboxdollar}%
+\newsavebox{\hlHugeboxunderscore}%
+\newsavebox{\hlHugeboxand}%
+\newsavebox{\hlHugeboxhash}%
+\newsavebox{\hlHugeboxat}%
+\newsavebox{\hlHugeboxpercent}% 
+\newsavebox{\hlHugeboxhat}%
+\newsavebox{\hlHugeboxsinglequote}%
+\newsavebox{\hlHugeboxbacktick}%
+
+\setbox\hlHugeboxopenbrace=\hbox{\begin{Huge}\verb.{.\end{Huge}}%
+\setbox\hlHugeboxclosebrace=\hbox{\begin{Huge}\verb.}.\end{Huge}}%
+\setbox\hlHugeboxlessthan=\hbox{\begin{Huge}\verb.<.\end{Huge}}%
+\setbox\hlHugeboxdollar=\hbox{\begin{Huge}\verb.$.\end{Huge}}%
+\setbox\hlHugeboxunderscore=\hbox{\begin{Huge}\verb._.\end{Huge}}%
+\setbox\hlHugeboxand=\hbox{\begin{Huge}\verb.&.\end{Huge}}%
+\setbox\hlHugeboxhash=\hbox{\begin{Huge}\verb.#.\end{Huge}}%
+\setbox\hlHugeboxat=\hbox{\begin{Huge}\verb.@.\end{Huge}}%
+\setbox\hlHugeboxbackslash=\hbox{\begin{Huge}\verb.\.\end{Huge}}%
+\setbox\hlHugeboxgreaterthan=\hbox{\begin{Huge}\verb.>.\end{Huge}}%
+\setbox\hlHugeboxpercent=\hbox{\begin{Huge}\verb.%.\end{Huge}}%
+\setbox\hlHugeboxhat=\hbox{\begin{Huge}\verb.^.\end{Huge}}%
+\setbox\hlHugeboxsinglequote=\hbox{\begin{Huge}\verb.'.\end{Huge}}%
+\setbox\hlHugeboxbacktick=\hbox{\begin{Huge}\verb.`.\end{Huge}}%
+\setbox\hlHugeboxhat=\hbox{\begin{Huge}\verb.^.\end{Huge}}%
+ 
+
+\def\urltilda{\kern -.15em\lower .7ex\hbox{\~{}}\kern .04em}%
+
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.16,0.16,1}{#1}}
+\newcommand{\hlesc}[1]{\textcolor[rgb]{1,0,1}{#1}}
+\newcommand{\hlstr}[1]{\textcolor[rgb]{1,0,0}{#1}}
+\newcommand{\hldstr}[1]{\textcolor[rgb]{0.51,0.51,0}{#1}}
+\newcommand{\hlslc}[1]{\textcolor[rgb]{0.51,0.51,0.51}{\it{#1}}}
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.51,0.51,0.51}{\it{#1}}}
+\newcommand{\hldir}[1]{\textcolor[rgb]{0,0.51,0}{#1}}
+\newcommand{\hlsym}[1]{\textcolor[rgb]{0,0,0}{#1}}
+\newcommand{\hlline}[1]{\textcolor[rgb]{0.33,0.33,0.33}{#1}}
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0,0,0}{\bf{#1}}}
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.51,0,0}{#1}}
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0,0,0}{\bf{#1}}}
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0,0,0.51}{#1}}
+
+\definecolor{fgcolor}{rgb}{0,0,0}
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed}
+\makeatother
+
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\title{ methylKit: User Guide}
+\usepackage{url}               % used in bibliography
+\usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
+\usepackage{hyperref}
+\author{Altuna Akalin}
+\begin{document}
+\bibliographystyle{unsrt}
+
+% 
+
+
+
+
+
+\maketitle
+
+\tableofcontents
+
+
+\section{Introduction}
+In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
+
+\subsection{DNA methylation}
+DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
+
+\subsection{High-throughput bisulfite sequencing}
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfate treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
+
+
+
+
+\section{Basics}
+\subsection{Reading the methylation call files}
+We start by reading in the methylation call data from bisulfite
+sequencing with \texttt{read} function. Reading in the data this way
+will return a methylRawList object which stores methylation
+information per sample for each covered base. The methylation call files are basically text
+files that contain percent methylation score per base. A typical methylation call file looks like this:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+##         chrBase   chr    base strand coverage freqC  freqT
+## 1 chr21.9764539 chr21 9764539      R       12 25.00  75.00
+## 2 chr21.9764513 chr21 9764513      R       12  0.00 100.00
+## 3 chr21.9820622 chr21 9820622      F       13  0.00 100.00
+## 4 chr21.9837545 chr21 9837545      F       11  0.00 100.00
+## 5 chr21.9849022 chr21 9849022      F      124 72.58  27.42
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option as follows: 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{library}\hlkeyword{(}\hlsymbol{methylKit}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{file.list}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{list}\hlkeyword{(}\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}{\ }\hlstring{"{}test1.myCpG.txt"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}{\ }\hlstring{"{}test2.myCpG.txt"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}{\ }\hlstring{"{}control1.myCpG.txt"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}{\ }\hlstring{"{}control2.myCpG.txt"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }read{\ }the{\ }files{\ }to{\ }a{\ }methylRawList{\ }object:{\ }myobj}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{myobj}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{read}\hlkeyword{(}\hlsymbol{file.list}\hlkeyword{,}{\ }\hlargument{sample.id}{\ }\hlargument{=}{\ }\hlfunctioncall{list}\hlkeyword{(}\hlstring{"{}test1"{}}\hlkeyword{,}{\ }\hlstring{"{}test2"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}ctrl1"{}}\hlkeyword{,}{\ }\hlstring{"{}ctrl2"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlargument{assembly}{\ }\hlargument{=}{\ }\hlstring{"{}hg18"{}}\hlkeyword{,}{\ }\hlargument{treatment}{\ }\hlargument{=}{\ }\hlfunctioncall{c}\hlkeyword{(}\hlnumber{1}\hlkeyword{,}{\ }\hlnumber{1}\hlkeyword{,}{\ }\hlnumber{0}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlnumber{0}\hlkeyword{)}\hlkeyword{,}{\ }\hlargument{context}{\ }\hlargument{=}{\ }\hlstring{"{}CpG"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+\subsection{Reading the methylation calls from sorted  Bismark alignments}
+Alternatively, methylation percentage calls can be calculated from
+sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
+popular aligner for bisulfite sequencing reads \cite{Krueger2011}. \texttt{read.bismark} function is designed to read-in Bismark SAM files as \texttt{methylRaw} or \texttt{methylRawList} objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+
+The following command reads a sorted SAM file and creates a \texttt{methylRaw} object for CpG methylation.The user has the option to save the methylation call files to a folder given by \texttt{save.folder} option. The saved files can be read-in using the \texttt{read} function when needed. 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{my.methRaw}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{read.bismark}\hlkeyword{(}\hlargument{location}{\ }\hlargument{=}{\ }\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}test.fastq\usebox{\hlnormalsizeboxunderscore}bismark.sorted.min.sam"{}}\hlkeyword{,}{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{sample.id}{\ }\hlargument{=}{\ }\hlstring{"{}test1"{}}\hlkeyword{,}{\ }\hlargument{assembly}{\ }\hlargument{=}{\ }\hlstring{"{}hg18"{}}\hlkeyword{,}{\ }\hlargument{read.context}{\ }\hlargument{=}{\ }\hlstring{"{}CpG"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{save.folder}{\ }\hlargument{=}{\ }\hlfunctioncall{getwd}\hlkeyword{(}\hlkeyword{)}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+It is also possible to read multiple SAM files at the same time, check \texttt{read.bismark} documentation.
+
+
+\subsection{Descriptive statistics on samples}
+Since we read the methylation data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a \texttt{methylRawList} object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{getMethylationStats}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{[[}\hlnumber{2}\hlkeyword{]}\hlkeyword{]}\hlkeyword{,}{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlsymbol{F}\hlkeyword{,}{\ }\hlargument{both.strands}{\ }\hlargument{=}{\ }\hlsymbol{F}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## methylation statistics per base
+## summary:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     0.0    20.0    82.8    63.2    94.7   100.0 
+## percentiles:
+##     0%    10%    20%    30%    40%    50%    60%    70%    80%    90%    95%    99% 
+##   0.00   0.00   0.00  48.39  70.00  82.79  90.00  93.33  96.43 100.00 100.00 100.00 
+##  99.5%  99.9%   100% 
+## 100.00 100.00 100.00 
+## 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+The following command plots the histogram for percent methylation distribution.The figure below is the histogram and numbers on bars denote what percentage of locations are contained in that bin. Typically, percent methylation histogram should have two peaks on both ends. In any given cell, any given base are either methylated or not. Therefore, looking at many cells should yield a similar pattern where we see lots of locations with high methylation and lots of locations with low methylation.
+
+
+\begin{center}
+%%%%%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{library}\hlkeyword{(}\hlstring{"{}graphics"{}}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{getMethylationStats}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{[[}\hlnumber{2}\hlkeyword{]}\hlkeyword{]}\hlkeyword{,}{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlsymbol{T}\hlkeyword{,}{\ }\hlargument{both.strands}{\ }\hlargument{=}{\ }\hlsymbol{F}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-5} 
+
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+
+
+We can also plot the read coverage per base information in a similar way, again numbers on bars denote what percentage of locations are contained in that bin. Experiments that are highly suffering from PCR duplication bias will have a secondary peak towards the right hand side of the histogram.
+
+
+\begin{center}
+%%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{library}\hlkeyword{(}\hlstring{"{}graphics"{}}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{getCoverageStats}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{[[}\hlnumber{2}\hlkeyword{]}\hlkeyword{]}\hlkeyword{,}{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlsymbol{T}\hlkeyword{,}{\ }\hlargument{both.strands}{\ }\hlargument{=}{\ }\hlsymbol{F}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-6} 
+
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+\subsection{Filtering samples based on read coverage}
+It might be useful to filter samples based on coverage. Particularly, if our samples are suffering from PCR bias it would be useful to discard bases with very high read coverage. Furthermore, we would also like to discard bases that have low read coverage, a high enough read coverage will increase the power of the statistical tests. The code below filters a \texttt{methylRawList} and discards bases that have coverage below 10X and also discards the bases that have more than 99.9th percentile of coverage in each sample.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{filtered.myobj}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{filterByCoverage}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{,}{\ }\hlargument{lo.count}{\ }\hlargument{=}{\ }\hlnumber{10}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{lo.perc}{\ }\hlargument{=}{\ }NULL\hlkeyword{,}{\ }\hlargument{hi.count}{\ }\hlargument{=}{\ }NULL\hlkeyword{,}{\ }\hlargument{hi.perc}{\ }\hlargument{=}{\ }\hlnumber{99.9}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+
+\section{Comparative analysis}
+\subsection{Merging samples}
+
+In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting \texttt{destrand}=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). In addition, setting \texttt{destrand}=TRUE will only work when operating on base-pair resolution, otherwise setting this option TRUE will have no effect. The \texttt{unite()} function will return a \texttt{methylBase} object which will be our main object for all comparative analysis. The \texttt{methylBase} object contains methylation information for regions/bases that are covered in all samples.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{meth}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{unite}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{,}{\ }\hlargument{destrand}{\ }\hlargument{=}{\ }\hlnumber{FALSE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+Let us take a look at the data content of methylBase object:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{head}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##               id   chr    start      end strand coverage1 numCs1 numTs1 coverage2
+## 1 chr21.10011833 chr21 10011833 10011833      +       174    173      1        18
+## 2 chr21.10011841 chr21 10011841 10011841      +       173    164      9        20
+## 3 chr21.10011855 chr21 10011855 10011855      +       175    175      0        21
+## 4 chr21.10011858 chr21 10011858 10011858      +       175    131     44        21
+## 5 chr21.10011861 chr21 10011861 10011861      +       174    147     27        20
+## 6 chr21.10011872 chr21 10011872 10011872      +       167    160      7        20
+##   numCs2 numTs2 coverage3 numCs3 numTs3 coverage4 numCs4 numTs4
+## 1     18      0        40     34      6        14     14      0
+## 2     19      1        40     18     22        14      8      6
+## 3     21      0        39     29     10        14     12      2
+## 4     20      1        39     31      8        13      8      5
+## 5     15      5        39     13     26        13      9      4
+## 6     19      1        39     34      5        14      8      6
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+\subsection{Sample Correlation}
+We can check the correlation between samples using \texttt{getCorrelation}. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
+
+\begin{center}
+%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{getCorrelation}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlsymbol{T}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##        test1  test2  ctrl1  ctrl2
+## test1 1.0000 0.9253 0.8768 0.8738
+## test2 0.9253 1.0000 0.8792 0.8802
+## ctrl1 0.8768 0.8792 1.0000 0.9465
+## ctrl2 0.8738 0.8802 0.9465 1.0000
+\end{verbatim}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-10} 
+
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+\subsection{Clustering samples}
+We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
+\begin{center}
+%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{clusterSamples}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlargument{dist}{\ }\hlargument{=}{\ }\hlstring{"{}correlation"{}}\hlkeyword{,}{\ }\hlargument{method}{\ }\hlargument{=}{\ }\hlstring{"{}ward"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-11} 
+
+\begin{verbatim}
+## 
+## Call:
+## hclust(d = d, method = HCLUST.METHODS[hclust.method])
+## 
+## Cluster method   : ward 
+## Distance         : pearson 
+## Number of objects: 4 
+## 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+Setting the plot=FALSE will return a dendrogram object which can be manipulated by users or fed in to other user functions that can work with dendrograms.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{hc}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{clusterSamples}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlargument{dist}{\ }\hlargument{=}{\ }\hlstring{"{}correlation"{}}\hlkeyword{,}{\ }\hlargument{method}{\ }\hlargument{=}{\ }\hlstring{"{}ward"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlnumber{FALSE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
+\begin{center}
+%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{PCASamples}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlargument{screeplot}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-13} 
+
+\begin{verbatim}
+## Importance of components:
+##                        Comp.1  Comp.2  Comp.3  Comp.4
+## Standard deviation     1.9212 0.42546 0.27357 0.23081
+## Proportion of Variance 0.9227 0.04525 0.01871 0.01332
+## Cumulative Proportion  0.9227 0.96797 0.98668 1.00000
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+\\
+\\
+We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
+
+\begin{center}
+%%%%<<fig=TRUE , echo =TRUE >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{PCASamples}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-14} 
+
+\begin{verbatim}
+## Importance of components:
+##                        Comp.1  Comp.2  Comp.3  Comp.4
+## Standard deviation     1.9212 0.42546 0.27357 0.23081
+## Proportion of Variance 0.9227 0.04525 0.01871 0.01332
+## Cumulative Proportion  0.9227 0.96797 0.98668 1.00000
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+
+\subsection{Tiling windows analysis}
+For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{tiles}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{tileMethylCounts}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{,}{\ }\hlargument{win.size}{\ }\hlargument{=}{\ }\hlnumber{1000}\hlkeyword{,}{\ }\hlargument{step.size}{\ }\hlargument{=}{\ }\hlnumber{1000}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{head}\hlkeyword{(}\hlsymbol{tiles}\hlkeyword{[[}\hlnumber{1}\hlkeyword{]}\hlkeyword{]}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##                      id   chr   start     end strand coverage numCs numTs
+## 1 chr21.9764001.9765000 chr21 9764001 9765000      *       24     3    21
+## 2 chr21.9820001.9821000 chr21 9820001 9821000      *       13     0    13
+## 3 chr21.9837001.9838000 chr21 9837001 9838000      *       11     0    11
+## 4 chr21.9849001.9850000 chr21 9849001 9850000      *      124    90    34
+## 5 chr21.9853001.9854000 chr21 9853001 9854000      *       34    22    12
+## 6 chr21.9860001.9861000 chr21 9860001 9861000      *       39    38     1
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+\subsection{Finding differentially methylated bases or regions}
+\texttt{calculateDiffMeth()} function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using SLIM method \cite{Wang2011a}.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{myDiff}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{calculateDiffMeth}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+After q-value calculation, we can select the differentially methylated regions/bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%. If you specify \texttt{type="hyper"} or \texttt{type="hypo"} options, you will get hyper-methylated or hypo-methylated regions/bases.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }get{\ }hyper{\ }methylated{\ }bases}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{myDiff25p.hyper}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{get.methylDiff}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlargument{difference}{\ }\hlargument{=}{\ }\hlnumber{25}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{qvalue}{\ }\hlargument{=}{\ }\hlnumber{0.01}\hlkeyword{,}{\ }\hlargument{type}{\ }\hlargument{=}{\ }\hlstring{"{}hyper"{}}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }get{\ }hypo{\ }methylated{\ }bases}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{myDiff25p.hypo}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{get.methylDiff}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlargument{difference}{\ }\hlargument{=}{\ }\hlnumber{25}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{qvalue}{\ }\hlargument{=}{\ }\hlnumber{0.01}\hlkeyword{,}{\ }\hlargument{type}{\ }\hlargument{=}{\ }\hlstring{"{}hypo"{}}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }get{\ }all{\ }differentially{\ }methylated{\ }bases}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{myDiff25p}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{get.methylDiff}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlargument{difference}{\ }\hlargument{=}{\ }\hlnumber{25}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{qvalue}{\ }\hlargument{=}{\ }\hlnumber{0.01}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The \texttt{list} shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
+
+ 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{diffMethPerChr}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlargument{plot}{\ }\hlargument{=}{\ }\hlnumber{FALSE}\hlkeyword{,}{\ }\hlargument{qvalue.cutoff}{\ }\hlargument{=}{\ }\hlnumber{0.01}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{meth.cutoff}{\ }\hlargument{=}{\ }\hlnumber{25}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## $diffMeth.per.chr
+##     chr number.of.hypomethylated percentage.of.hypomethylated
+## 1 chr21                       59                        6.127
+##   number.of.hypermethylated percentage.of.hypermethylated
+## 1                        75                         7.788
+## 
+## $diffMeth.all
+##   percentage.of.hypermethylated number.of.hypermethylated
+## 1                         7.788                        75
+##   percentage.of.hypomethylated number.of.hypomethylated
+## 1                        6.127                       59
+## 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+ 
+\subsubsection{Finding differentially methylated bases using multiple-cores}
+The differential methylation calculation speed can be increased substantially by utilizing multiple-cores in a machine if available. Both Fisher's Exact test and logistic regression based test are able to use multiple-core option.
+\\
+The following piece of code will run differential methylation calculation using 2 cores.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{myDiff}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{calculateDiffMeth}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlargument{num.cores}{\ }\hlargument{=}{\ }\hlnumber{2}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+
+\section{Annotating differentially methylated bases or regions}
+We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using \texttt{GenomicFeatures} package available from Bioconductor.org.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{gene.obj}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{read.transcript.features}\hlkeyword{(}\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}refseq.hg18.bed.txt"{}}\hlkeyword{,}{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }annotate{\ }differentially{\ }methylated{\ }Cs{\ }with}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }{\ }{\ }promoter/exon/intron{\ }using{\ }annotation{\ }data}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{annotate.WithGenicParts}\hlkeyword{(}\hlsymbol{myDiff25p}\hlkeyword{,}{\ }\hlsymbol{gene.obj}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## summary of target set annotation with genic parts
+## 133 rows in target set
+## --------------
+## --------------
+## percentage of target features overlapping with annotation :
+##   promoter       exon     intron intergenic 
+##      27.82      15.04      34.59      57.14 
+## 
+## 
+## percentage of target features overlapping with annotation (with promoter>exon>intron precedence) :
+##   promoter       exon     intron intergenic 
+##      27.82       0.00      15.04      57.14 
+## 
+## 
+## percentage of annotation boundaries with feature overlap :
+## promoter     exon   intron 
+##  0.01813  0.00159  0.01004 
+## 
+## 
+## summary of distances to the nearest TSS :
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       5     828   45200   52000   94600  314000 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+Similarly, we can read the CpG island annotation and annotate our differentially methylated bases/regions with them.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }read{\ }the{\ }shores{\ }and{\ }flanking{\ }regions{\ }and{\ }name{\ }the{\ }flanks{\ }as}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }{\ }{\ }shores}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }and{\ }CpG{\ }islands{\ }as{\ }CpGi}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{cpg.obj}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{read.feature.flank}\hlkeyword{(}\hlfunctioncall{system.file}\hlkeyword{(}\hlstring{"{}extdata"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}cpgi.hg18.bed.txt"{}}\hlkeyword{,}{\ }\hlargument{package}{\ }\hlargument{=}{\ }\hlstring{"{}methylKit"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlargument{feature.flank.name}{\ }\hlargument{=}{\ }\hlfunctioncall{c}\hlkeyword{(}\hlstring{"{}CpGi"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}shores"{}}\hlkeyword{)}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}}\hspace*{\fill}\\
+\hlstd{}\hlsymbol{diffCpGann}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{annotate.WithFeature.Flank}\hlkeyword{(}\hlsymbol{myDiff25p}\hlkeyword{,}{\ }\hlsymbol{cpg.obj}\hlkeyword{\usebox{\hlnormalsizeboxdollar}}\hlsymbol{CpGi}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlsymbol{cpg.obj}\hlkeyword{\usebox{\hlnormalsizeboxdollar}}\hlsymbol{shores}\hlkeyword{,}{\ }\hlargument{feature.name}{\ }\hlargument{=}{\ }\hlstring{"{}CpGi"{}}\hlkeyword{,}{\ }\hlargument{flank.name}{\ }\hlargument{=}{\ }\hlstring{"{}shores"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\end{kframe}}
+\end{knitrout}
+
+
+
+\subsection{Regional analysis}
+We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a \texttt{methylRaw} or \texttt{methylRawList} object depending on the input.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{promoters}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{regionCounts}\hlkeyword{(}\hlsymbol{myobj}\hlkeyword{,}{\ }\hlsymbol{gene.obj}\hlkeyword{\usebox{\hlnormalsizeboxdollar}}\hlsymbol{promoters}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{head}\hlkeyword{(}\hlsymbol{promoters}\hlkeyword{[[}\hlnumber{1}\hlkeyword{]}\hlkeyword{]}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##                           id   chr    start      end strand coverage numCs numTs
+## 1 chr21.17806094.17808094.NA chr21 17806094 17808094      +     1834     7  1827
+## 2 chr21.10119796.10121796.NA chr21 10119796 10121796      -       79    44    35
+## 3 chr21.10011791.10013791.NA chr21 10011791 10013791      -     3697  2982   715
+## 4 chr21.10119808.10121808.NA chr21 10119808 10121808      -       79    44    35
+## 5 chr21.15357997.15359997.NA chr21 15357997 15359997      -     8613    16  8594
+## 6 chr21.16023366.16025366.NA chr21 16023366 16025366      +     6296     5  6291
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+
+
+\subsection{Convenience functions for annotation objects}
+After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the \texttt{getAssociationWithTSS} function.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlsymbol{diffAnn}{\ }\hlassignement{\usebox{\hlnormalsizeboxlessthan}-}{\ }\hlfunctioncall{annotate.WithGenicParts}\hlkeyword{(}\hlsymbol{myDiff25p}\hlkeyword{,}{\ }\hlsymbol{gene.obj}\hlkeyword{)}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlstd{}\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }target.row{\ }is{\ }the{\ }row{\ }number{\ }in{\ }myDiff25p}\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{head}\hlkeyword{(}\hlfunctioncall{getAssociationWithTSS}\hlkeyword{(}\hlsymbol{diffAnn}\hlkeyword{)}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##      target.row dist.to.feature feature.name feature.strand
+## 60            1             951    NM_199260              -
+## 60.1          2             931    NM_199260              -
+## 60.2          3             838    NM_199260              -
+## 60.3          4             828    NM_199260              -
+## 60.4          5             802    NM_199260              -
+## 60.5          6             723    NM_199260              -
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+It is also desirable to get percentage/number of differentially methylated regions that overlap with intron/exon/promoters
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{getTargetAnnotationStats}\hlkeyword{(}\hlsymbol{diffAnn}\hlkeyword{,}{\ }\hlargument{percentage}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlargument{precedence}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##   promoter       exon     intron intergenic 
+##      27.82       0.00      15.04      57.14 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+We can also plot the percentage of differentially methylated bases overlapping with exon/intron/promoters
+
+\begin{center}
+%%%%<<fig=TRUE , echo =TRUE>>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{plotTargetAnnotation}\hlkeyword{(}\hlsymbol{diffAnn}\hlkeyword{,}{\ }\hlargument{precedence}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{,}{\ }\hlargument{main}{\ }\hlargument{=}{\ }\hlstring{"{}differential{\ }methylation{\ }annotation"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-25} 
+
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
+
+\begin{center}
+%%%<<fig=TRUE , echo =TRUE>>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hspace*{\fill}\\
+\hlstd{}\hlfunctioncall{plotTargetAnnotation}\hlkeyword{(}\hlsymbol{diffCpGann}\hlkeyword{,}{\ }\hlargument{col}{\ }\hlargument{=}{\ }\hlfunctioncall{c}\hlkeyword{(}\hlstring{"{}green"{}}\hlkeyword{,}{\ }\hlstring{"{}gray"{}}\hlkeyword{,}\hspace*{\fill}\\
+\hlstd{}{\ }{\ }{\ }{\ }\hlstring{"{}white"{}}\hlkeyword{)}\hlkeyword{,}{\ }\hlargument{main}{\ }\hlargument{=}{\ }\hlstring{"{}differential{\ }methylation{\ }annotation"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+
+
+\centering{}\includegraphics[width=.9\linewidth]{figure/unnamed-chunk-26} 
+
+\end{kframe}}
+\end{knitrout}
+
+\end{center}
+
+It might be also useful to get percentage of intron/exon/promoters that overlap with differentially methylated bases.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{getFeatsWithTargetsStats}\hlkeyword{(}\hlsymbol{diffAnn}\hlkeyword{,}{\ }\hlargument{percentage}{\ }\hlargument{=}{\ }\hlnumber{TRUE}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## promoter     exon   intron 
+##  0.01813  0.00159  0.01004 
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+\section{R session info}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{sessionInfo}\hlkeyword{(}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## R version 2.14.1 (2011-12-22)
+## Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] methylKit_0.4 knitr_0.1    
+## 
+## loaded via a namespace (and not attached):
+##  [1] codetools_0.2-8     data.table_1.7.7    digest_0.5.1        evaluate_0.4.1     
+##  [5] formatR_0.3-4       GenomicRanges_1.6.4 highlight_0.3.1     IRanges_1.12.5     
+##  [9] KernSmooth_2.23-7   parallel_2.14.1     parser_0.0-14       plyr_1.7.1         
+## [13] Rcpp_0.9.9          stringr_0.6         tools_2.14.1       
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+\bibliography{Vignette_methylKit.bib}
+\end{document}
+
+
