@@ -6,7 +6,7 @@ NEW FUNCTIONS AND FEATURES
 
 * New read.bismark() function can read directly from a sorted SAM file output by Bismark aligner, the function can save methylation calls as text files or read them as methylRaw object to be used in analysis
 
-* calculateDiffMeth() can do all differentiall methylation calculations using multiple-cores if 'num.cores' is set to an integer denoting how many cores should be used.
+* calculateDiffMeth() can do all differential methylation calculations using multiple-cores if 'num.cores' is set to an integer denoting how many cores should be used.
 
 * getCoverageStats() & getMethylationStats() have a new option called 'labels', if set to FALSE, no labels will be drawn on top of the histogram bars.
 
