@@ -1,10 +1,14 @@
 
-methylKit 0.3.2
+methylKit 0.4
 --------------
 
 NEW FUNCTIONS AND FEATURES
 
+* New read.bismark() function can read directly from a sorted SAM file output by Bismark aligner, the function can save methylation calls as text files or read them as methylRaw object to be used in analysis
 
+* calculateDiffMeth() can do all differentiall methylation calculations using multiple-cores if 'num.cores' is set to an integer denoting how many cores should be used.
+
+* getCoverageStats() & getMethylationStats() have a new option called 'labels', if set to FALSE, no labels will be drawn on top of the histogram bars.
 
 IMPROVEMENTS AND BUG FIXES
 
@@ -18,9 +22,9 @@ IMPROVEMENTS AND BUG FIXES
 
 * getCoverageStats() & getMethylationStats() takes extra options to be passed to hist() function
 
-* destrand option of unite() function will be over-riden when methylRawList to be united contains regions rather than bases
+* destrand option of unite() function will be over-ridden when methylRawList to be united contains regions rather than bases
 
-* unite() function checks if supplied elements of methylRawList object have the same context,assemlby and resolution before
+* unite() function checks if supplied elements of methylRawList object have the same context,assembly and resolution before
   uniting data sets.
 
 * validity function checking the format of the data for a methylRaw object is implemented

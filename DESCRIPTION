@@ -1,9 +1,9 @@
 Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
-    bisulfite sequencing 
-Version: 0.3.1
-Date: 2011-11-23
+    bisulfite sequencing results
+Version: 0.4
+Date: 2012-01-23
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: Altuna Akalin <aakalin@gmail.com>
 Description: DNA methylation analysis RRBS,ERRBS,BS-seq
@@ -15,7 +15,8 @@ Depends:
 Imports:
     GenomicRanges,
     IRanges,
-    data.table
+    data.table,
+    parallel
 Suggests:
     testthat
 Collate:
@@ -24,5 +25,5 @@ Collate:
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
+    'read.bismark.R'
     'document_data.R'
-

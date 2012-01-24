@@ -14,4 +14,4 @@ methylBase.obj=unite(methylRawList.obj)
 methylDiff.obj=calculateDiffMeth(methylBase.obj)
 
 
-save(methylRawList.obj,methylBase.obj,methylDiff.obj,file="../../data/methylKit.RData")
+save(methylRawList.obj,methylBase.obj,methylDiff.obj,file="methylKit.RData")

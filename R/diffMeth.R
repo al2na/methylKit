@@ -201,6 +201,57 @@ glm.set<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
   return(res)
 }
 
+
+glm.set.mc<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
+{
+
+  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
+
+  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
+  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
+
+  sums=Cs+Ts # get number of Cs and Ts
+  Ps  =Cs/sums # get probability of Cs
+  
+  Tmod=model.matrix(~Treat)
+  glm.bare<-function(dat,indX,indY,Tmod) # X probs > Ps, Y total number > sums
+  {
+    #cat(Tmod)
+    obj=glm.fit(Tmod,dat[indX],weights=dat[indY],family=binomial(link=logit))
+    deviance <- obj$null.deviance - obj$deviance
+    dispersion=1 #(if binomial or poisson)
+    aliased <- is.na(coef(obj))
+    p <- obj$rank
+    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
+        p1 <- 1L:p
+        Qr <- obj$qr
+        coef.p <- obj$coefficients[Qr$pivot[p1]]
+        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
+        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
+        covmat <- dispersion * covmat.unscaled
+        var.cf <- diag(covmat)
+        s.err <- sqrt(var.cf)
+        tvalue <- (coef.p/s.err)[2]    
+     }else if (obj$df.residual<=0)
+     { tvalue=NaN }
+ 
+    wald <- tvalue
+    beta1 <- obj$coefficients[2]
+    p.value <- 1-pchisq(deviance,df=1)
+
+    return( c(wald,beta1,p.value) )
+  }
+
+  PWs=cbind(Ps,sums)
+  PWs.list=split(PWs,1:nrow(PWs) ) # get weights to feed into function
+  res=simplify2array(mclapply(PWs.list,glm.bare,indX=1:ncol(Ps),indY=ncol(Ps)+(1:ncol(sums)),Tmod=Tmod,  mc.cores=n.mc))
+  res=data.frame(t(res))
+  colnames(res)=c("wald","beta1","pvalue")
+  return(res)
+}
+
+
+
 # function to fix logistic regression pvalues and make qvalues
 fix.q.values.glm<-function(pvals,slim=FALSE)
 {
@@ -370,19 +421,20 @@ setClass("methylDiff",representation(
 #' @param slim If TRUE(default) SLIM method will be used for P-value adjustment. Currently TRUE is the only valid value.
 #' @param coverage.cutoff a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
 #' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
-#' @usage calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE)
+#' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
+#' @usage calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1)
 #' @return a methylDiff object containing the differential methylation statistics and locations
 #' @note The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
 #'
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE) standardGeneric("calculateDiffMeth"))
+setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1) standardGeneric("calculateDiffMeth"))
 
 #' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
-                    function(.Object,slim,coverage.cutoff,weigthed.mean){
+                    function(.Object,slim,coverage.cutoff,weigthed.mean,num.cores){
                       
                       #get CpGs with the cutoff
                       inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index)
@@ -411,7 +463,15 @@ setMethod("calculateDiffMeth", "methylBase",
                       # if one control, one treatment case to the fisher's exact test
                       if(length(.Object@treatment)==2 )
                       {
-                        pvals   =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
+                        if(num.cores>1){
+
+                          pvals   =simplify2array( mclapply( split(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1:nrow(subst))
+                                          ,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value,
+                                          mc.cores=num.cores) ) # apply fisher test
+
+                        }else{
+                          pvals =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
+                        }
                         pvals    = fix.q.values.fisher(pvals,slim=slim)   
                         
                         # calculate mean methylation change
@@ -427,8 +487,12 @@ setMethod("calculateDiffMeth", "methylBase",
                       { 
                                                 
                           # pvalues
-                          pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
-                           
+                          if(num.cores>1){
+                            pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+                          }else{
+                            pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+                          }
+
                           # get qvalues
                           pvals  = fix.q.values.glm(pvals,slim=slim)   
                           
@@ -543,7 +607,7 @@ setMethod(f="get.methylDiff", signature="methylDiff",
                     if(type=="all"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
                               sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,type=.Object@resolution)
+                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                       return(new.obj)
                     }else if(type=="hyper"){
                       new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],

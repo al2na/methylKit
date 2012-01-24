@@ -13,7 +13,9 @@
 
   \item{destrand}{if TRUE, reads covering both strands of a
   CpG dinucleotide will be merged, do not set to TRUE if
-  not only interested in CpGs (default: FALSE)}
+  not only interested in CpGs (default: FALSE). If the
+  methylRawList object contains regions rather than bases
+  setting destrand to TRUE will have no effect.}
 }
 \value{
   a methylBase object

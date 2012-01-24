@@ -6,7 +6,7 @@
 \title{read file(s) to a methylrawList or methylraw object}
 \usage{
   read(location,sample.id,assembly,pipeline="amp",header=T,
-  context="CpG",treatment)
+  context="CpG",resolution="base",treatment)
 }
 \arguments{
   \item{location}{file location(s), either a list of
@@ -22,7 +22,12 @@
   (default: TRUE)}
 
   \item{pipeline}{name of the alignment pipeline, currently
-  only supports AMP (default: AMP)}
+  only supports amp or bismark (default: 'amp')}
+
+  \item{resolution}{designates whether methylation
+  information is base-pair resolution or regional
+  resolution. allowed values 'base' or 'region'. Default
+  'base'}
 
   \item{treatment}{a vector contatining 0 and 1 denoting
   which samples are control which samples are test}

@@ -1,23 +1,54 @@
-%\VignetteIndexEntry{methylKit: User guide}
+%\VignetteIndexEntry{methylKit: User Guide}
 %\VignetteKeywords{methylBase, methylRaw, calculateDiffMeth}
 %\VignettePackage{methylKit}
 
 
-\documentclass[a4paper]{article}
-\title{ methylKit: User guide}
+\documentclass{article}
+\title{ methylKit: User Guide}
 \usepackage{url}               % used in bibliography
 \usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
+\usepackage{hyperref}
 \author{Altuna Akalin}
 \begin{document}
 \bibliographystyle{unsrt}
+
+% \SweaveOpts{fig.path=figure/,dev=pdf,external=TRUE,fig.align=center,cache=TRUE,message=FALSE,background=.97;.97;.97}
+<<set-options,echo=FALSE,results=hide,cache=FALSE>>=
+options(replace.assign=TRUE,width=85)
+knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
+@
+
+
+
 \maketitle
+
+\tableofcontents
+
 
 \section{Introduction}
 In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
+\subsection{DNA methylation}
+DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
+
+\subsection{High-throughput bisulfite sequencing}
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfate treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
+
+
+
+
 \section{Basics}
 \subsection{Reading the methylation call files}
-We start by reading in the methylation call data from bisulfite sequencing with \texttt{read} function. Reading in the data this way will return a methylRawList object which stores methylation information per sample.
+We start by reading in the methylation call data from bisulfite
+sequencing with \texttt{read} function. Reading in the data this way
+will return a methylRawList object which stores methylation
+information per sample for each covered base. The methylation call files are basically text
+files that contain percent methylation score per base. A typical methylation call file looks like this:
+<<echo=FALSE>>=
+read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
+@
+
+Most of the time bisulfite sequencing experiments have test and control samples. A test sample can be from a disease tissues while the control sample can be from healthy tissues. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option as follows: 
 
 <<>>=
 library(methylKit)
@@ -31,14 +62,32 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 myobj=read(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
-           pipeline="amp",
-           treatment=c(1,1,0,0))
+           treatment=c(1,1,0,0),
+           context="CpG"
+           )
 
 
 @
 
+\subsection{Reading the methylation calls from sorted  Bismark alignments}
+Alternatively, methylation percentage calls can be calculated from
+sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
+popular aligner for bisulfite sequencing reads \cite{Krueger2011}. \texttt{read.bismark} function is designed to read-in Bismark SAM files as \texttt{methylRaw} or \texttt{methylRawList} objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+
+The following command reads a sorted SAM file and creates a \texttt{methylRaw} object for CpG methylation.The user has the option to save the methylation call files to a folder given by \texttt{save.folder} option. The saved files can be read-in using the \texttt{read} function when needed. 
+
+<<eval=FALSE>>=
+my.methRaw=read.bismark(
+	   location=system.file("extdata", "test.fastq_bismark.sorted.min.sam", 
+	                    package = "methylKit"),
+             sample.id="test1",assembly="hg18",read.context="CpG",save.folder=getwd())
+@
+
+It is also possible to read multiple SAM files at the same time, check \texttt{read.bismark} documentation.
+
+
 \subsection{Descriptive statistics on samples}
-Since we read the data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a \texttt{methylRawList} object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
+Since we read the methylation data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a \texttt{methylRawList} object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
 
 <<>>=
 getMethylationStats(myobj[[2]],plot=F,both.strands=F)
@@ -48,7 +97,8 @@ The following command plots the histogram for percent methylation distribution.T
 
 
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%%%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6.5,out.width=.9\linewidth>>==
 library("graphics")
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 @
@@ -60,7 +110,9 @@ We can also plot the read coverage per base information in a similar way, again 
 
 
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6.5,out.width=.9\linewidth>>==
+
 library ("graphics")
 getCoverageStats(myobj[[2]],plot=T,both.strands=F)
 @
@@ -78,9 +130,9 @@ filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
 \section{Comparative analysis}
 \subsection{Merging samples}
 
-In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting destrand=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). This operation will return a methylBase object which will be our main object for all comparative analysis.
+In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting \texttt{destrand}=TRUE (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). In addition, setting \texttt{destrand}=TRUE will only work when operating on base-pair resolution, otherwise setting this option TRUE will have no effect. The \texttt{unite()} function will return a \texttt{methylBase} object which will be our main object for all comparative analysis. The \texttt{methylBase} object contains methylation information for regions/bases that are covered in all samples.
 <<>>=
-meth=unite(myobj,destrand=FALSE)
+meth=unite(myobj, destrand=FALSE)
 @
 
 Let us take a look at the data content of methylBase object:
@@ -92,7 +144,9 @@ head(meth)
 We can check the correlation between samples using \texttt{getCorrelation}. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
 
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 getCorrelation(meth,plot=T)
 @
 \end{center}
@@ -100,7 +154,9 @@ getCorrelation(meth,plot=T)
 \subsection{Clustering samples}
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 @
 \end{center}
@@ -111,20 +167,27 @@ hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 @
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 PCASamples(meth, screeplot=TRUE)
 @
 \end{center}
+\\
+\\
 We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
+
 \begin{center}
-<<fig=TRUE , echo =TRUE >>=
+%%%%<<fig=TRUE , echo =TRUE >>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 PCASamples(meth)
 @
 \end{center}
 
 
 \subsection{Tiling windows analysis}
-For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions to get differentially methylated regions
+For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions.
 
 <<>>=
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
@@ -157,6 +220,15 @@ We can also visualize the distribution of hypo/hyper-methylated bases/regions pe
 diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
 @
  
+\subsubsection{Finding differentially methylated bases using multiple-cores}
+The differential methylation calculation speed can be increased substantially by utilizing multiple-cores in a machine if available. Both Fisher's Exact test and logistic regression based test are able to use multiple-core option.
+\\
+The following piece of code will run differential methylation calculation using 2 cores.
+
+<<eval=FALSE>>=
+myDiff=calculateDiffMeth(meth,num.cores=2)
+@
+
 
 \section{Annotating differentially methylated bases or regions}
 We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using \texttt{GenomicFeatures} package available from Bioconductor.org.
@@ -215,7 +287,9 @@ getTargetAnnotationStats(diffAnn,percentage=TRUE,precedence=TRUE)
 We can also plot the percentage of differentially methylated bases overlapping with exon/intron/promoters
 
 \begin{center}
-<<fig=TRUE , echo =TRUE>>=
+%%%%<<fig=TRUE , echo =TRUE>>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 plotTargetAnnotation(diffAnn,precedence=TRUE,
     main="differential methylation annotation")
 @
@@ -224,7 +298,9 @@ plotTargetAnnotation(diffAnn,precedence=TRUE,
 We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
 
 \begin{center}
-<<fig=TRUE , echo =TRUE>>=
+%%%<<fig=TRUE , echo =TRUE>>=
+<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+
 plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
        main="differential methylation annotation")
 @
@@ -236,7 +312,10 @@ It might be also useful to get percentage of intron/exon/promoters that overlap 
 getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 @
 
-
+\section{R session info}
+<<>>=
+sessionInfo() 
+@
 
 \bibliography{Vignette_methylKit.bib}
 \end{document}

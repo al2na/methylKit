@@ -10,6 +10,7 @@
   identifier of the sample} \item{\code{assembly}:}{string
   for genome assembly, ex: hg18,hg19,mm9}
   \item{\code{context}:}{ methylation context string, ex:
-  CpG,CpH,CHH, etc.} }
+  CpG,CpH,CHH, etc.} \item{\code{resolution}:}{ resolution
+  of methylation information, 'base' or 'region'} }
 }
 

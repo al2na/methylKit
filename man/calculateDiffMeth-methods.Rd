@@ -4,7 +4,7 @@
 \alias{calculateDiffMeth,methylBase-method}
 \title{Calculates differential methylation statistics}
 \usage{
-  calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE)
+  calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1)
 }
 \arguments{
   \item{.Object}{a methylBase object to calculate
@@ -20,6 +20,10 @@
 
   \item{weigthed.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}
+
+  \item{num.cores}{integer for denoting how many cores
+  should be used for differential methylation calculations
+  (only can be used in machines with multiple cores)}
 }
 \value{
   a methylDiff object containing the differential

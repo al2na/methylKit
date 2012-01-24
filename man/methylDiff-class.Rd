@@ -15,6 +15,8 @@
   vector identifying which samples are which group }
   \item{\code{destranded}}{logical denoting if methylation
   inormation is destranded or not}
+  \item{\code{resolution}}{string either 'base' or 'region'
+  defining the resolution of methylation information}
   \item{\code{.Data}}{data.frame holding the locations and
   statistics}
 

@@ -73,7 +73,7 @@ valid.methylRawObj <- function(object) {
         paste("resolution slot has to be either 'base' or 'region': other values not allowed")
     }
     else if(! check1){
-        paste("data part of methylRaw have",nrow(data),'columns, expected only 8 columns")
+        paste("data part of methylRaw have",nrow(data),"columns, expected 8 columns")
     }
 
 }
@@ -115,32 +115,27 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param sample.id sample.id(s)
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
 #' @param header if the input file has a header or not (default: TRUE)
-#' @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
+#' @param pipeline name of the alignment pipeline, currently only supports amp or bismark (default: 'amp')
+#' @param resolution designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'
 #' @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
-#' @usage read(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",treatment)
+#' @usage read(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",resolution="base",treatment)
 #' @return returns methylRaw or methylRawList
 #' @export
 #' @docType methods
 #' @rdname read-methods
-setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",treatment) standardGeneric("read"))
+setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",resolution="base",treatment) standardGeneric("read"))
 
 
-# read one CpG methylation file that is a result of alignment pipeline
-#
-# @param location full path to CpG methylation file
-# @param name a string that defines the experiment
-# @param assembly a string that defines the genome assembly such as hg18, mm9
-# @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
-# @param header if the input file has a header or not (default: TRUE)
+
 #' @rdname read-methods
 #' @aliases read,character,character,character-method
 setMethod("read", signature(location = "character",sample.id="character",assembly="character"),
           
-        function(location,sample.id,assembly,pipeline,header,context){ 
+        function(location,sample.id,assembly,pipeline,header,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
             data<- .readTableFast(location,header=header)            
-            if(pipeline=="amp")
+            if(pipeline %in% c("amp","bismark") )
             {
               data<- .structureAMPoutput(data)
             }
@@ -166,7 +161,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 #' @rdname read-methods
 #' @aliases read,list,list,character-method
 setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
-          function(location,sample.id,assembly,pipeline,header,context,treatment){ 
+          function(location,sample.id,assembly,pipeline,header,context,resolution,treatment){ 
             
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
@@ -181,7 +176,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             for(i in 1:length(location))
             {
               data<- .readTableFast(location[[i]],header=header)# read data
-              if(pipeline=="amp")
+              if(pipeline %in% c("amp","bismark"))
               {
                 data<- .structureAMPoutput(data)
               }
@@ -189,7 +184,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
                 stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
               }
                   
-              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution="base")
+              obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
               outList[[i]]=obj       
             }
             myobj=new("methylRawList",outList,treatment=treatment)
@@ -319,7 +314,7 @@ setMethod("unite", "methylRawList",
                      
                       #merge raw methylation calls together
                      df=getData(.Object[[1]])
-                     if(destrand & (.Object@resolution == "base") ){df=.CpG.dinuc.unify(df)}
+                     if(destrand & (.Object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
                      
                      sample.ids=c(.Object[[1]]@sample.id)
                      assemblies=c(.Object[[1]]@assembly)
@@ -430,20 +425,22 @@ setMethod("getCorrelation", "methylBase",
 #' get coverage stats from methylRaw object
 #' 
 #' @param .Object a \code{methylRaw} object 
-#' @param plot plot a histogram of coverage if TRUE (deafult:FALSE) 
-#' @param both.strands do stats and plot for both strands if TRUE (deafult:FALSE)
+#' @param plot plot a histogram of coverage if TRUE (default:FALSE) 
+#' @param both.strands do stats and plot for both strands if TRUE (default:FALSE)
+#' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{hist} function
+#' @usage getCoverageStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
 #' @return a summary of coverage statistics or plot a histogram of coverage
 #' @aliases getCoverageStats,-methods getCoverageStats,methylRaw-method
 #' @export
 #' @docType methods
 #' @rdname getCoverageStats-methods
-setGeneric("getCoverageStats", function(.Object,plot=F,both.strands=F,...) standardGeneric("getCoverageStats"))
+setGeneric("getCoverageStats", function(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...) standardGeneric("getCoverageStats"))
 
 #' @rdname getCoverageStats-methods
 #' @aliases getCoverageStats,methylRaw-method
 setMethod("getCoverageStats", "methylRaw",
-                    function(.Object,plot,both.strands,...){
+                    function(.Object,plot,both.strands,labels,...){
                       
                       if(!plot){
                         qts=seq(0,0.9,0.1) # get quantiles
@@ -484,29 +481,40 @@ setMethod("getCoverageStats", "methylRaw",
                           mnus.cov=.Object[.Object$strand=="-",]$coverage
                           
                           par(mfrow=c(1,2))
-                          a=hist(log10(plus.cov),plot=F)
+                          if(labels){
+                            a=hist(log10(plus.cov),plot=F)
+                            my.labs=as.character(round(100*a$counts/length(plus.cov),1))
+                          }else{my.labs=F}
+ 
                           hist(log10(plus.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage: Forward strand"),
-                               labels=as.character(round(100*a$counts/length(plus.cov),1)),...)
-                          mtext(.Object$sample.id, side = 3)
-                          
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
+
+                         if(labels){
+                            a=hist(log10(mnus.cov),plot=F)
+                            my.labs=as.character(round(100*a$counts/length(mnus.cov),1))
+                          }else{my.labs=F}
                           a=hist(log10(mnus.cov),plot=F)
                           hist(log10(mnus.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage: Reverse strand"),
-                               labels=as.character(round(100*a$counts/length(mnus.cov),1)),...)
-                          mtext(.Object$sample.id, side = 3)
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
  
                         }else{
                           all.cov= .Object$coverage
-                          
-                          a=hist(log10(all.cov),plot=F)
+                         if(labels){
+                           a=hist(log10(all.cov),plot=F)
+                           my.labs=as.character(round(100*a$counts/length(all.cov),1))
+                          }else{my.labs=F}                          
+
                           hist(log10(all.cov),col="chartreuse4",
                                xlab=paste("log10 of read coverage per",.Object@resolution),
                                main=paste("Histogram of", .Object@context, "coverage"),
-                               labels=as.character(round(100*a$counts/length(all.cov),1)),...)
-                          mtext(.Object$sample.id, side = 3)
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
 
                         }
                         
@@ -521,17 +529,19 @@ setMethod("getCoverageStats", "methylRaw",
 #' @param .Object a \code{methylRaw} object 
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
-#' @param ... options to be passed to \code{hist} function. 
+#' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
+#' @param ... options to be passed to \code{hist} function.
+#' @usage  getMethylationStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
 #' @return a summary of Methylation statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
 #' @rdname getMethylationStats-methods
-setGeneric("getMethylationStats", function(.Object,plot=F,both.strands=F,...) standardGeneric("getMethylationStats"))
+setGeneric("getMethylationStats", function(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...) standardGeneric("getMethylationStats"))
 
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRaw-method
 setMethod("getMethylationStats", "methylRaw",
-                    function(.Object,plot,both.strands,...){
+                    function(.Object,plot,both.strands,labels,...){
                       
                       plus.met=100* .Object[.Object$strand=="+",]$numCs/.Object[.Object$strand=="+",]$coverage
                       mnus.met=100* .Object[.Object$strand=="-",]$numCs/.Object[.Object$strand=="-",]$coverage
@@ -571,28 +581,39 @@ setMethod("getMethylationStats", "methylRaw",
                         if(both.strands){   
                           
                           par(mfrow=c(1,2))
-                          a=hist((plus.met),plot=F)
+                          if(labels){
+                            a=hist((plus.met),plot=F)
+                            my.labs=as.character(round(100*a$counts/length(plus.met),1))
+                          }else{my.labs=FALSE}
                           hist((plus.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation: Forward strand"),
-                               labels=as.character(round(100*a$counts/length(plus.met),1)),...)
-                          mtext(.Object$sample.id, side = 3)
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
 
-                          a=hist((mnus.met),plot=F)
+                          if(labels){                          
+                            a=hist((mnus.met),plot=F)
+                            my.labs=as.character(round(100*a$counts/length(mnus.met),1))
+                          }
+                          else{my.labs=FALSE}
+                          
                           hist((mnus.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation: Reverse strand"),
-                               labels=as.character(round(100*a$counts/length(mnus.met),1)),...)
-                          mtext(.Object$sample.id, side = 3)
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
  
                         }else{
+                          if(labels){                          
                           
-                          a=hist((all.met),plot=F)
+                            a=hist((all.met),plot=F)
+                            my.labs=as.character(round(100*a$counts/length(all.met),1))
+                          }else{my.labs=FALSE}
                           hist((all.met),col="cornflowerblue",
                                xlab=paste("% methylation per",.Object@resolution),
                                main=paste("Histogram of %", .Object@context,"methylation"),
-                               labels=as.character(round(100*a$counts/length(all.met),1)),...)
-                          mtext(.Object$sample.id, side = 3)
+                               labels=my.labs,...)
+                          mtext(.Object@sample.id, side = 3)
 
                         }
                         
