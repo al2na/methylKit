@@ -48,7 +48,7 @@ files that contain percent methylation score per base. A typical methylation cal
 read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
 @
 
-Most of the time bisulfite sequencing experiments have test and control samples. A test sample can be from a disease tissues while the control sample can be from healthy tissues. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option as follows: 
+Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option as follows: 
 
 <<>>=
 library(methylKit)
