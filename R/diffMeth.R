@@ -380,6 +380,12 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
     return(RVAL)                                                                         
 }
 
+mc.fish<-function(my.list,num.cores)
+{
+
+unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x) ,ncol=2,byrow=T),conf.int = F)$p.value,
+                                                         mc.cores=num.cores,mc.preschedule = TRUE) ) 
+}
 
 # end of S3 functions
 
@@ -464,10 +470,10 @@ setMethod("calculateDiffMeth", "methylBase",
                       if(length(.Object@treatment)==2 )
                       {
                         if(num.cores>1){
-
-                          pvals   =simplify2array( mclapply( split(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1:nrow(subst))
-                                          ,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value,
-                                          mc.cores=num.cores) ) # apply fisher test
+                          my.f.list=split(as.matrix(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)]),1:nrow(subst))
+                          f.fisher=function(x){ fast.fisher(matrix( x ,ncol=2,byrow=T),conf.int = F)$p.value }
+                          pvals    = unlist( parallel::mclapply( my.f.list ,f.fisher, mc.cores=num.cores) ) # apply fisher test
+                          #pvals    =mc.fish(my.f.list,num.cores)
 
                         }else{
                           pvals =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
