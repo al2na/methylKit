@@ -5,12 +5,12 @@
 
 \documentclass{article}
 \title{ methylKit: User Guide}
-\usepackage{url}               % used in bibliography
-\usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
 \usepackage{hyperref}
+\usepackage{url}               % used in bibliography
+\bibliographystyle{unsrt}
 \author{Altuna Akalin}
 \begin{document}
-\bibliographystyle{unsrt}
+
 
 % \SweaveOpts{fig.path=figure/,dev=pdf,external=TRUE,fig.align=center,cache=TRUE,message=FALSE,background=.97;.97;.97}
 <<set-options,echo=FALSE,results=hide,cache=FALSE>>=
