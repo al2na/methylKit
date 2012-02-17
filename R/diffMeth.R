@@ -148,6 +148,7 @@ f1<-function(cutoff,rawp){sum(rawp<cutoff)/length(rawp)};
 QValuesfun<-function(rawp,pi0)
 {
   order_rawp=sort(rawp);
+  #order_rawp=sort(rawp,method="qu");
   qvalues=pi0*length(order_rawp)*order_rawp/c(1:length(order_rawp));
   temp=cummin(qvalues[seq(length(qvalues),1,-1)])
   qvalues=temp[seq(length(temp),1,-1)];
@@ -713,4 +714,25 @@ setAs("methylDiff", "GRanges", function(from)
                                        )
 
 })
+
+
+
+### subset methylDiff
+
+
+#' @aliases select,methylDiff-method
+#' @rdname select-methods
+setMethod("select", "methylDiff",
+          function(x, i)
+          {
+
+            new("methylDiff",getData(x)[i,],
+                             sample.ids = x@sample.ids,
+                             assembly = x@assembly,
+                            context = x@context,
+                            treatment=x@treatment,
+                            destranded=x@destranded,
+                            resolution=x@resolution)
+           }
+)
 

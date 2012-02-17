@@ -31,6 +31,14 @@
 #' @examples
 #' # read.bismark("/Users/altuna/Dropbox\\ Encore/Dropbox/temp/data/bismark_6.4_trial/test.fastq_bismark.sam","test",assembly="hg18",
 #' #    save.folder="/Users/altuna",save.context="CpG",read.context="none")
+#' # file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#' #               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#' #               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#' #               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
+#' #
+#' # objs=read.bismark(location=file.list2
+#' #             ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembl="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
+#' #                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 #' 
 setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,save.context=c("CpG"),read.context="CpG",
                                     nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment) standardGeneric("read.bismark"))
@@ -67,12 +75,12 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                         
                       }else{
                         try(
-                          dir.create(output.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
+                          dir.create(save.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
                           )
 
                         out.files=list()                        
                         for(mytype in unique(c(save.context,read.context)) ){
-                          out.files[[mytype]]=paste(output.folder,"/",sample.id,"_",mytype,".txt",sep="") 
+                          out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
                         }
                         
                       }

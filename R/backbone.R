@@ -92,8 +92,8 @@ valid.methylRawObj <- function(object) {
 #' @name methylRaw-class
 #' @rdname methylRaw-class
 #' @export
-setClass("methylRaw", representation(
-  sample.id = "character", assembly = "character",context="character",resolution="character"),contains= "data.frame",validity=valid.methylRawObj)
+setClass("methylRaw", contains= "data.frame",representation(
+  sample.id = "character", assembly = "character",context="character",resolution="character"),validity=valid.methylRawObj)
 
 
 #' An S4 class for holding a list of methylRaw objects.
@@ -742,4 +742,55 @@ setAs("methylBase", "GRanges", function(from)
                                        )
 
 })
+
+### subset methylBase and methylRaw objects
+
+#' selects rows from of methylRaw.methylBase and methylDiff objects
+#'
+#' @export
+#' @docType methods
+#' @rdname select-methods
+#' @examples
+#'  # select(methylRaw.obj,1:100) # selects first hundred rows, returns a methylRaw object
+#'  # select(methylBase.obj,1:100)
+#'  # select(methylDiff.obj,1:100)
+setGeneric("select", def=function(x,i) standardGeneric("select"))
+
+
+
+
+#' @aliases select,methylBase-method
+#' @rdname select-methods
+setMethod("select", "methylBase",
+          function(x, i)
+          {
+
+            new("methylBase",getData(x)[i,],
+                sample.ids = x@sample.ids, 
+                assembly = x@assembly,
+                context = x@context,
+                treatment=x@treatment,
+                coverage.index=x@coverage.index,
+                numCs.index=x@numCs.index,
+                numTs.index=x@numTs.index,
+                destranded=x@destranded,
+                resolution =x@resolution)
+           }
+)
+
+
+
+#' @aliases select,methylRaw-method
+#' @rdname select-methods
+setMethod("select", "methylRaw",
+          function(x, i)
+          {
+
+          new("methylRaw",getData(x)[i,],sample.id=x@sample.id,
+                                           assembly=x@assembly,
+                                           context=x@context,resolution=x@resolution)
+           }
+          
+
+)
 

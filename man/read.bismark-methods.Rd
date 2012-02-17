@@ -73,5 +73,13 @@
 \examples{
 # read.bismark("/Users/altuna/Dropbox\\\\ Encore/Dropbox/temp/data/bismark_6.4_trial/test.fastq_bismark.sam","test",assembly="hg18",
 #    save.folder="/Users/altuna",save.context="CpG",read.context="none")
+# file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+#               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
+#
+# objs=read.bismark(location=file.list2
+#             ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembl="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
+#                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 }
 

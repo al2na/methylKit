@@ -32,7 +32,7 @@ In this manual, we will show how to use the methylKit package. methylKit is an R
 DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
 
 \subsection{High-throughput bisulfite sequencing}
-Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfate treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
 
 
 
@@ -189,7 +189,7 @@ PCASamples(meth)
 \subsection{Tiling windows analysis}
 For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions.
 
-<<>>=
+<<warning=FALSE>>=
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
 head(tiles[[1]])
 @
@@ -311,6 +311,26 @@ It might be also useful to get percentage of intron/exon/promoters that overlap 
 <<>>=
 getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 @
+
+\section{methylKit convenience functions}
+Most \texttt{methylKit} objects (methylRaw,methylBase and methylDiff) can be coerced to \texttt{GRanges} objects from \texttt{GenomicRanges} package. Coercing methylKit objects to \texttt{GRanges} will give users additional flexiblity when customising their analyses.
+
+<<>>==
+class(meth)
+as(meth,"GRanges")
+class(myDiff)
+as(myDiff,"GRanges")
+@
+
+We can also select rows from methylRaw, methylBase and methylDiff objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. 
+<<>>==
+select(meth,1:10) # select first 10 rows
+select(myDiff,20:30) # select rows 10
+@
+
+
+\section{Acknowledgements}
+This package is developed at Weill Cornell Medical College by Altuna Akalin with significant code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
 
 \section{R session info}
 <<>>=

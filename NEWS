@@ -1,3 +1,13 @@
+methylKit 0.4.1
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function select() can be used to subset methylRaw, methylBase and methylDiff objects to create new objects with a subset of data
+
+IMPROVEMENTS AND BUG FIXES
+
+* read.bismark bug fixed, now it should be able to save methylation call files with no problem
 
 methylKit 0.4
 --------------
