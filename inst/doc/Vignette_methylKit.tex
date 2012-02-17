@@ -388,12 +388,20 @@
 \usepackage{hyperref}
 \usepackage{url}               % used in bibliography
 \bibliographystyle{unsrt}
-\author{Altuna Akalin}
+
+
+
+
+
 \begin{document}
 
+\author{Altuna Akalin\\ \texttt{ala2027@med.cornell.edu}\\
+\and
+Matthias Kormaksson \\ \texttt{mk375@cornell.edu} 
+\and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
+}
 
 % 
-
 
 
 
@@ -403,6 +411,7 @@
 \tableofcontents
 
 
+
 \section{Introduction}
 In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
@@ -410,7 +419,7 @@ In this manual, we will show how to use the methylKit package. methylKit is an R
 DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
 
 \subsection{High-throughput bisulfite sequencing}
-Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfate treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
 
 
 
@@ -1050,6 +1059,202 @@ It might be also useful to get percentage of intron/exon/promoters that overlap 
 \end{knitrout}
 
 
+\section{methylKit convenience functions}
+Most \texttt{methylKit} objects (methylRaw,methylBase and methylDiff) can be coerced to \texttt{GRanges} objects from \texttt{GenomicRanges} package. Coercing methylKit objects to \texttt{GRanges} will give users additional flexiblity when customising their analyses.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{class}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## [1] "methylBase"
+## attr(,"package")
+## [1] "methylKit"
+\end{verbatim}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{as}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlstring{"{}GRanges"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## GRanges with 963 ranges and 13 elementMetadata values:
+##         seqnames               ranges strand   |             id coverage1    numCs1
+##            <Rle>            <IRanges>  <Rle>   |       <factor> <integer> <numeric>
+##     [1]    chr21 [10011833, 10011833]      +   | chr21.10011833       174       173
+##     [2]    chr21 [10011841, 10011841]      +   | chr21.10011841       173       164
+##     [3]    chr21 [10011855, 10011855]      +   | chr21.10011855       175       175
+##     [4]    chr21 [10011858, 10011858]      +   | chr21.10011858       175       131
+##     [5]    chr21 [10011861, 10011861]      +   | chr21.10011861       174       147
+##     [6]    chr21 [10011872, 10011872]      +   | chr21.10011872       167       160
+##     [7]    chr21 [10011876, 10011876]      +   | chr21.10011876       160       148
+##     [8]    chr21 [10011878, 10011878]      +   | chr21.10011878       150       134
+##     [9]    chr21 [10011925, 10011925]      -   | chr21.10011925       120        65
+##     ...      ...                  ...    ... ...            ...       ...       ...
+##   [955]    chr21   [9944505, 9944505]      +   |  chr21.9944505        37         2
+##   [956]    chr21   [9944663, 9944663]      -   |  chr21.9944663        61        19
+##   [957]    chr21   [9959407, 9959407]      +   |  chr21.9959407        44        17
+##   [958]    chr21   [9959541, 9959541]      -   |  chr21.9959541        26        12
+##   [959]    chr21   [9959569, 9959569]      -   |  chr21.9959569        25        17
+##   [960]    chr21   [9959577, 9959577]      -   |  chr21.9959577        25        25
+##   [961]    chr21   [9959644, 9959644]      -   |  chr21.9959644        21         0
+##   [962]    chr21   [9959650, 9959650]      -   |  chr21.9959650        21         6
+##   [963]    chr21   [9967634, 9967634]      -   |  chr21.9967634        10         0
+##            numTs1 coverage2    numCs2    numTs2 coverage3    numCs3    numTs3
+##         <numeric> <integer> <numeric> <numeric> <integer> <numeric> <numeric>
+##     [1]         1        18        18         0        40        34         6
+##     [2]         9        20        19         1        40        18        22
+##     [3]         0        21        21         0        39        29        10
+##     [4]        44        21        20         1        39        31         8
+##     [5]        27        20        15         5        39        13        26
+##     [6]         7        20        19         1        39        34         5
+##     [7]        12        21        18         3        38        24        14
+##     [8]        16        20        19         1        37        20        17
+##     [9]        55        37        21        16        68        21        47
+##     ...       ...       ...       ...       ...       ...       ...       ...
+##   [955]        35       147        56        91        86        79         7
+##   [956]        42       116        71        45        45        35        10
+##   [957]        27       118        58        60        52        49         3
+##   [958]        14        76        44        32        39        37         2
+##   [959]         8        77        69         8        40        40         0
+##   [960]         0        77        71         6        40        40         0
+##   [961]        21        97        50        47        59        52         7
+##   [962]        15       103        57        46        59        51         8
+##   [963]        10        61        25        36        93        62        31
+##         coverage4    numCs4    numTs4
+##         <integer> <numeric> <numeric>
+##     [1]        14        14         0
+##     [2]        14         8         6
+##     [3]        14        12         2
+##     [4]        13         8         5
+##     [5]        13         9         4
+##     [6]        14         8         6
+##     [7]        11         9         2
+##     [8]        12        12         0
+##     [9]        20         6        14
+##     ...       ...       ...       ...
+##   [955]        40        25        15
+##   [956]        31        25         6
+##   [957]        40        27        13
+##   [958]        39        32         7
+##   [959]        39        35         4
+##   [960]        39        36         3
+##   [961]        31        14        17
+##   [962]        32        21        11
+##   [963]        56        29        27
+##   ---
+##   seqlengths:
+##    chr21
+##       NA
+\end{verbatim}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{class}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## [1] "methylDiff"
+## attr(,"package")
+## [1] "methylKit"
+\end{verbatim}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{as}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlstring{"{}GRanges"{}}\hlkeyword{)}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+## GRanges with 963 ranges and 3 elementMetadata values:
+##         seqnames               ranges strand   |             id    qvalue meth.diff
+##            <Rle>            <IRanges>  <Rle>   |       <factor> <numeric> <numeric>
+##     [1]    chr21 [10011833, 10011833]      +   | chr21.10011833 8.543e-04    10.590
+##     [2]    chr21 [10011841, 10011841]      +   | chr21.10011841 6.050e-13    46.671
+##     [3]    chr21 [10011855, 10011855]      +   | chr21.10011855 4.579e-09    22.642
+##     [4]    chr21 [10011858, 10011858]      +   | chr21.10011858 5.922e-01     2.041
+##     [5]    chr21 [10011861, 10011861]      +   | chr21.10011861 8.163e-08    41.197
+##     [6]    chr21 [10011872, 10011872]      +   | chr21.10011872 1.238e-03    16.477
+##     [7]    chr21 [10011876, 10011876]      +   | chr21.10011876 1.933e-04    24.366
+##     [8]    chr21 [10011878, 10011878]      +   | chr21.10011878 3.489e-04    24.694
+##     [9]    chr21 [10011925, 10011925]      -   | chr21.10011925 8.543e-04    24.095
+##     ...      ...                  ...    ... ...            ...       ...       ...
+##   [955]    chr21   [9944505, 9944505]      +   |  chr21.9944505 0.000e+00   -51.018
+##   [956]    chr21   [9944663, 9944663]      -   |  chr21.9944663 7.678e-05   -28.100
+##   [957]    chr21   [9959407, 9959407]      +   |  chr21.9959407 4.839e-08   -36.312
+##   [958]    chr21   [9959541, 9959541]      -   |  chr21.9959541 3.145e-06   -33.560
+##   [959]    chr21   [9959569, 9959569]      -   |  chr21.9959569 3.702e-02   -10.623
+##   [960]    chr21   [9959577, 9959577]      -   |  chr21.9959577 4.923e-01    -2.085
+##   [961]    chr21   [9959644, 9959644]      -   |  chr21.9959644 3.291e-05   -30.960
+##   [962]    chr21   [9959650, 9959650]      -   |  chr21.9959650 6.575e-05   -28.314
+##   [963]    chr21   [9967634, 9967634]      -   |  chr21.9967634 1.028e-03   -25.863
+##   ---
+##   seqlengths:
+##    chr21
+##       NA
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+We can also select rows from methylRaw, methylBase and methylDiff objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{select}\hlkeyword{(}\hlsymbol{meth}\hlkeyword{,}{\ }\hlnumber{1}\hlkeyword{:}\hlnumber{10}\hlkeyword{)}{\ }{\ }\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }select{\ }first{\ }10{\ }rows}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##                id   chr    start      end strand coverage1 numCs1 numTs1 coverage2
+## 1  chr21.10011833 chr21 10011833 10011833      +       174    173      1        18
+## 2  chr21.10011841 chr21 10011841 10011841      +       173    164      9        20
+## 3  chr21.10011855 chr21 10011855 10011855      +       175    175      0        21
+## 4  chr21.10011858 chr21 10011858 10011858      +       175    131     44        21
+## 5  chr21.10011861 chr21 10011861 10011861      +       174    147     27        20
+## 6  chr21.10011872 chr21 10011872 10011872      +       167    160      7        20
+## 7  chr21.10011876 chr21 10011876 10011876      +       160    148     12        21
+## 8  chr21.10011878 chr21 10011878 10011878      +       150    134     16        20
+## 9  chr21.10011925 chr21 10011925 10011925      -       120     65     55        37
+## 10 chr21.10011938 chr21 10011938 10011938      -       134    127      7        36
+##    numCs2 numTs2 coverage3 numCs3 numTs3 coverage4 numCs4 numTs4
+## 1      18      0        40     34      6        14     14      0
+## 2      19      1        40     18     22        14      8      6
+## 3      21      0        39     29     10        14     12      2
+## 4      20      1        39     31      8        13      8      5
+## 5      15      5        39     13     26        13      9      4
+## 6      19      1        39     34      5        14      8      6
+## 7      18      3        38     24     14        11      9      2
+## 8      19      1        37     20     17        12     12      0
+## 9      21     16        68     21     47        20      6     14
+## 10     34      2        74     64     10        20     17      3
+\end{verbatim}
+\begin{flushleft}
+\ttfamily\noindent
+\hlfunctioncall{select}\hlkeyword{(}\hlsymbol{myDiff}\hlkeyword{,}{\ }\hlnumber{20}\hlkeyword{:}\hlnumber{30}\hlkeyword{)}{\ }{\ }\hlcomment{\usebox{\hlnormalsizeboxhash}{\ }select{\ }rows{\ }10}\mbox{}
+\normalfont
+\end{flushleft}
+\begin{verbatim}
+##                id   chr    start      end strand    pvalue    qvalue meth.diff
+## 20 chr21.10012079 chr21 10012079 10012079      + 1.325e-07 1.050e-06    26.617
+## 21 chr21.10012089 chr21 10012089 10012089      + 6.797e-02 1.048e-01     9.564
+## 22 chr21.10012095 chr21 10012095 10012095      + 9.125e-02 1.324e-01     5.726
+## 23 chr21.10012101 chr21 10012101 10012101      + 8.882e-16 4.221e-14    39.808
+## 24 chr21.10012696 chr21 10012696 10012696      + 2.253e-03 6.033e-03     9.685
+## 25 chr21.10012699 chr21 10012699 10012699      + 1.783e-09 1.955e-08    44.703
+## 26 chr21.10012876 chr21 10012876 10012876      + 4.251e-01 4.224e-01     3.888
+## 27 chr21.10012881 chr21 10012881 10012881      + 1.000e+00 5.922e-01     0.000
+## 28 chr21.10012883 chr21 10012883 10012883      + 4.287e-01 4.252e-01     3.750
+## 29 chr21.10012887 chr21 10012887 10012887      + 1.645e-02 3.316e-02    20.808
+## 30 chr21.10012891 chr21 10012891 10012891      + 8.591e-01 5.922e-01     0.686
+\end{verbatim}
+\end{kframe}}
+\end{knitrout}
+
+
+
+\section{Acknowledgements}
+This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
+
 \section{R session info}
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{.97, .97, .97}{\color{fgcolor}\begin{kframe}
@@ -1069,13 +1274,13 @@ It might be also useful to get percentage of intron/exon/promoters that overlap 
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] methylKit_0.4 knitr_0.1    
+## [1] methylKit_0.4.1 knitr_0.1      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] codetools_0.2-8     data.table_1.7.7    digest_0.5.1        evaluate_0.4.1     
 ##  [5] formatR_0.3-4       GenomicRanges_1.6.4 highlight_0.3.1     IRanges_1.12.5     
-##  [9] KernSmooth_2.23-7   parser_0.0-14       plyr_1.7.1          Rcpp_0.9.9         
-## [13] stringr_0.6         tools_2.14.1       
+##  [9] KernSmooth_2.23-7   parallel_2.14.1     parser_0.0-14       plyr_1.7.1         
+## [13] Rcpp_0.9.9          stringr_0.6         tools_2.14.1       
 \end{verbatim}
 \end{kframe}}
 \end{knitrout}

@@ -8,9 +8,18 @@
 \usepackage{hyperref}
 \usepackage{url}               % used in bibliography
 \bibliographystyle{unsrt}
-\author{Altuna Akalin}
+
+
+
+
+
 \begin{document}
 
+\author{Altuna Akalin\\ \texttt{ala2027@med.cornell.edu}\\
+\and
+Matthias Kormaksson \\ \texttt{mk375@cornell.edu} 
+\and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
+}
 
 % \SweaveOpts{fig.path=figure/,dev=pdf,external=TRUE,fig.align=center,cache=TRUE,message=FALSE,background=.97;.97;.97}
 <<set-options,echo=FALSE,results=hide,cache=FALSE>>=
@@ -19,10 +28,10 @@ knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1
 @
 
 
-
 \maketitle
 
 \tableofcontents
+
 
 
 \section{Introduction}
@@ -330,7 +339,7 @@ select(myDiff,20:30) # select rows 10
 
 
 \section{Acknowledgements}
-This package is developed at Weill Cornell Medical College by Altuna Akalin with significant code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
+This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
 
 \section{R session info}
 <<>>=
