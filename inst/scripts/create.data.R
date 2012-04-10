@@ -6,7 +6,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
 methylRawList.obj=read( file.list,
-                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
+                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
 
 
 methylBase.obj=unite(methylRawList.obj)

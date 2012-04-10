@@ -1,9 +1,16 @@
+methylKit 0.4.2
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function reorganize() can be used to reorganize methylRawList and methylBase objects by creating new objects from subset of samples or can eb used to change the  order of samples and treatment vector.
+
 methylKit 0.4.1
 --------------
 
 NEW FUNCTIONS AND FEATURES
 
-* new function select() can be used to subset methylRaw, methylBase and methylDiff objects to create new objects with a subset of data
+* new function select() can be used to subset methylRaw, methylBase and methylDiff objects to create new objects with a subset of methylation data useful if you want to use only a particular portion of methylation events on the genome.
 
 IMPROVEMENTS AND BUG FIXES
 
