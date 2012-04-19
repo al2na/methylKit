@@ -3,7 +3,12 @@ methylKit 0.4.2
 
 NEW FUNCTIONS AND FEATURES
 
-* new function reorganize() can be used to reorganize methylRawList and methylBase objects by creating new objects from subset of samples or can eb used to change the  order of samples and treatment vector.
+* new function reorganize() can be used to reorganize methylRawList and methylBase objects to create new objects from subset of samples or can be used to change the order of samples and treatment vector.
+
+IMPROVEMENTS AND BUG FIXES
+
+* unite() bug that appeared with R 2.15 fixed
+
 
 methylKit 0.4.1
 --------------

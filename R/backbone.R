@@ -323,7 +323,7 @@ setMethod("unite", "methylRawList",
                      {
                        df2=getData(.Object[[i]])
                        if(destrand){df2=.CpG.dinuc.unify(df2)}
-                       df=merge(df,df2[,c(1,6:8)],by="id") # merge the dat to a data.frame
+                       df=merge(df,df2[,c(1,6:8)],by="id",suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
                        sample.ids=c(sample.ids,.Object[[i]]@sample.id)
                        contexts=c(contexts,.Object[[i]]@context)
                      }
