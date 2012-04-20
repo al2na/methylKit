@@ -281,19 +281,22 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
 #'   do not set to TRUE if not only interested in CpGs (default: FALSE). If the methylRawList object
 #'   contains regions rather than bases setting destrand to TRUE will have no effect.
+#' @param min.per.replicate an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
+#'        are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
+#'       For example, if min.per.replicate set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
 #'
-#' @usage unite(.Object,destrand=F)
+#' @usage unite(.Object,destrand=FALSE,min.per.replicate=NULL)
 #' @return a methylBase object
 #' @aliases unite,-methods unite,methylRawList-method
 #' @export
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(.Object,destrand=F) standardGeneric("unite"))
+setGeneric("unite", function(.Object,destrand=FALSE,min.per.replicate=NULL) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
 setMethod("unite", "methylRawList",
-                    function(.Object,destrand){
+                    function(.Object,destrand,min.per.replicate){
   
                     
 
@@ -310,9 +313,11 @@ setMethod("unite", "methylRawList",
                      if( length(unique(vapply(.Object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
                      {
                        stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
-                     }           
+                     } 
                      
-                      #merge raw methylation calls together
+                     if( (!is.null(min.per.replicate)) &  ( ! is.integer( min.per.replicate ) )  ){stop("min.per.replicate should be an integer\n")}
+                     
+                     #merge raw methylation calls together
                      df=getData(.Object[[1]])
                      if(destrand & (.Object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
                      
@@ -321,28 +326,60 @@ setMethod("unite", "methylRawList",
                      contexts  =c(.Object[[1]]@context)
                      for(i in 2:length(.Object))
                      {
-                       df2=getData(.Object[[i]])
-                       if(destrand){df2=.CpG.dinuc.unify(df2)}
-                       df=merge(df,df2[,c(1,6:8)],by="id",suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
-                       sample.ids=c(sample.ids,.Object[[i]]@sample.id)
-                       contexts=c(contexts,.Object[[i]]@context)
+                        df2=getData(.Object[[i]])
+                        if(destrand){df2=.CpG.dinuc.unify(df2)}
+                        if( is.null(min.per.replicate) ){
+                          df=merge(df,df2[,c(1,6:8)],by="id",suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
+                        }else{
+                          df=merge(df,df2,by="id",suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
+                        }
+                        sample.ids=c(sample.ids,.Object[[i]]@sample.id)
+                        contexts=c(contexts,.Object[[i]]@context)
                      }
 
                      # stop if the assembly of object don't match
                      if( length( unique(assemblies) ) != 1 ){stop("assemblies of methylrawList elements should be same\n")}
           
-                     # get indices of coverage,numCs and numTs in the data frame 
-                     coverage.ind=seq(6,by=3,length.out=length(.Object))
-                     numCs.ind   =seq(6,by=3,length.out=length(.Object))+1
-                     numTs.ind   =seq(6,by=3,length.out=length(.Object))+2
 
-                     # change column names
-                     names(df)[coverage.ind]=paste(c("coverage"),1:length(.Object),sep="" )
-                     names(df)[numCs.ind]   =paste(c("numCs"),1:length(.Object),sep="" )
-                     names(df)[numTs.ind]   =paste(c("numTs"),1:length(.Object),sep="" )
+                    if(  ! is.null(min.per.replicate) ){
+                      # if the the min.per.replicate argument is supplied, remove the rows that doesn't have enough coverage
 
-                     #make methylbase object and return the object
-                     obj=new("methylBase",as.data.frame(df),sample.ids=sample.ids,
+                      # get indices of coverage,numCs and numTs in the data frame 
+                      coverage.ind=seq(6,by=7,length.out=length(.Object))
+                      numCs.ind   =coverage.ind+1
+                      numTs.ind   =coverage.ind+2
+                      start.ind   =seq(3,by=7,length.out=length(.Object)) # will be needed to weed out NA values on chr/start/end/strand
+                      
+                      for(i in unique(.Object@treatment) ){
+                        my.ind=coverage.ind[.Object@treatment==i]
+                        ldat = !is.na(df[,my.ind])
+                        df=df[rowSums(ldat)>=min.per.replicate,]
+                      }
+                      mat=df[,c(start.ind-1,start.ind,start.ind+1,start.ind+2)] # get all location columns, they are now duplicated with possible NA values
+                      locs=t(apply(mat,1,function(x) unique(x[!is.na(x)]) ) ) # get location matrix
+                      if(ncol(locs)==3){ # if the resolution is base
+                        df[,c(2:5)]=data.frame(chr=locs[,1],start=as.numeric(locs[,2]),end=as.numeric(locs[,2]),strand=locs[,3])
+                      }else{   # if the resolution is region
+                        df[,c(2:5)]=data.frame(chr=locs[,1],start=as.numeric(locs[,2]),end=as.numeric(locs[,3]),strand=locs[,4])
+                      }
+                      start.ind   =seq(10,by=7,length.out=length(.Object)) # will be needed to weed out NA values on chr/start/end/strand
+                      
+                      df=df[,-c(start.ind-1,start.ind,start.ind+1,start.ind+2)]
+                      names(df)[2:5]=c("chr","start","end","strand")
+                    }
+                     
+                    # get indices of coverage,numCs and numTs in the data frame 
+                    coverage.ind=seq(6,by=3,length.out=length(.Object))
+                    numCs.ind   =seq(6,by=3,length.out=length(.Object))+1
+                    numTs.ind   =seq(6,by=3,length.out=length(.Object))+2
+
+                    # change column names
+                    names(df)[coverage.ind]=paste(c("coverage"),1:length(.Object),sep="" )
+                    names(df)[numCs.ind]   =paste(c("numCs"),1:length(.Object),sep="" )
+                    names(df)[numTs.ind]   =paste(c("numTs"),1:length(.Object),sep="" )
+                     
+                    #make methylbase object and return the object
+                    obj=new("methylBase",as.data.frame(df),sample.ids=sample.ids,
                              assembly=unique(assemblies),context=unique(contexts),
                              treatment=.Object@treatment,coverage.index=coverage.ind,
                              numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=.Object[[1]]@resolution )

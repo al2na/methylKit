@@ -1,14 +1,23 @@
-methylKit 0.4.2
+methylKit 0.5
 --------------
 
 NEW FUNCTIONS AND FEATURES
 
 * new function reorganize() can be used to reorganize methylRawList and methylBase objects to create new objects from subset of samples or can be used to change the order of samples and treatment vector.
 
+* new function bedgraph() can output UCSC bedgraph files for methylRaw and methylDiff objects
+
 IMPROVEMENTS AND BUG FIXES
 
-* unite() bug that appeared with R 2.15 fixed
+* unite() bug that appeared with R 2.15 is fixed
 
+* unite() now can merge bases/regions that are not covered by all samples by setting "min.per.replicate" option
+
+* calculateDiffMeth() can deal with NA values introduced by setting "min.per.replicate" option of unite() function
+
+* PCASamples() now uses "prcomp" function to do the PCA analysis
+
+* external annotation data (cpgi.hg18.bed.txt and refseq.hg18.bed.txt) that comes with the package is now only a subset of full datasets. Do not use them for your own analysis, download the complete annotation data from UCSC or other sources in BED format.
 
 methylKit 0.4.1
 --------------

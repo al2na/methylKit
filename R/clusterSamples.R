@@ -120,23 +120,25 @@
 # Principal Components Analysis on methylBase object
 # x matrix each column is a sample
 # cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-.pcaPlot = function(x, cor=TRUE, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context){
-  x.pr = princomp(x, cor=cor)
+.pcaPlot = function(x, cor=TRUE, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE){
+  #x.pr = princomp(x, cor=cor)
+  x.pr = prcomp(x,scale.=scale,center=center)
   if (screeplot){
     i=5;screeplot(x.pr, type="barplot", main=paste(context,"methylation PCA Screeplot"), col = rainbow(i)[i])
   }
   else{
-    loads = loadings(x.pr)
-
+    #loads = loadings(x.pr)
+    loads = x.pr$rotation
     treatment=treatment
     sample.ids=sample.ids
     my.cols=rainbow(length(unique(treatment)), start=1, end=0.6)
+
     
     plot(loads[,1:2], main = paste(context,"methylation PCA Analysis"),col=my.cols[treatment+1],
-         xlim=.adjlim(loads[,1],adj.lim[1]), ylim=.adjlim(loads[,2], adj.lim[2]))
+         xlim=.adjlim(loads[,1],adj.lim[1]), ylim=.adjlim(loads[,2], adj.lim[2]),xlab="loadings for PC1", ylab="loadings for PC2")
     text(loads[,1], loads[,2],labels=sample.ids,adj=c(-0.4,0.3), col=my.cols[treatment+1])
   }
-  return(summary(x.pr))
+  return((x.pr))
 }
 
 # end of regular functions to be used in S4 functions
@@ -160,7 +162,10 @@ setGeneric("clusterSamples", function(.Object, dist="correlation", method="ward"
 #' @aliases clusterSamples,methylBase-method
 setMethod("clusterSamples", "methylBase",
                     function(.Object, dist="correlation", method="ward", plot=TRUE){
-                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
+                        mat      =getData(.Object)
+                        mat      =mat[ rowSums(is.na(mat))==0, ] # remove rows containing NA values, they might be introduced at unite step
+
+                        meth.mat = mat[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
                         .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context)
@@ -171,25 +176,32 @@ setMethod("clusterSamples", "methylBase",
 #' CpG Dinucleotide Methylation Principal Components Analysis
 #' 
 #' @param .Object a \code{methylBase} object
-#' @param cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (default: TRUE)
+#' @param cor [Not used anymore] cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (default: TRUE)
 #' @param screeplot a logical value indicating whether to plot the variances against the number of the principal component. (default: FALSE)
 #' @param adj.lim a vector indicating the propotional adjustment of xlim (adj.lim[1]) and ylim (adj.lim[2]). (default: c(0.0004,0.1))
-#' @usage PCASamples(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1))
-#' @return The form of the value returned by \code{PCASamples} is the summary of principal component analysis by \code{princomp}.
+#' @param scale logical indicating if \code{prcomp} should scale the data to have unit variance or not (default: TRUE)
+#' @param center logical indicating if \code{prcomp} should center the data or not (default: TRUE)
+#' @usage PCASamples(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE)
+#' @return The form of the value returned by \code{PCASamples} is the summary of principal component analysis by \code{prcomp}.
+#' @note cor option is not in use anymore, since \code{prcomp} is used for PCA analysis instead of \code{princomp}
 #'
 #' @export
 #' @docType methods
 #' @rdname PCASamples-methods
-setGeneric("PCASamples", function(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1)) standardGeneric("PCASamples"))
+setGeneric("PCASamples", function(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE) standardGeneric("PCASamples"))
 
 #' @rdname PCASamples-methods
 #' @aliases PCASamples,methylBase-method
 setMethod("PCASamples", "methylBase",
-                    function(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1)){
-                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
+                    function(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE){
+                      
+                        mat      = getData(.Object)
+                        mat      = mat[ rowSums(is.na(mat))==0, ] # remove rows containing NA values, they might be introduced at unite step
+                        meth.mat = mat[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        .pcaPlot(meth.mat, cor=cor, screeplot=screeplot, adj.lim=adj.lim, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context)
+                        .pcaPlot(meth.mat, cor=cor, screeplot=screeplot, adj.lim=adj.lim, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context,scale=scale,
+                                 center=center)
                         
                         }
 )

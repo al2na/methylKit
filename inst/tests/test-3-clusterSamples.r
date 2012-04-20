@@ -18,5 +18,5 @@ test_that("check if clusterSamples output is a hclust tree object", {
 
 test_that("check if PCASamples output is a summary of princomp", {
     expect_that(PCASamples(methidh),
-        is_a('summary.princomp'))
+        is_a('prcomp'))
 })

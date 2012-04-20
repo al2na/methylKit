@@ -251,6 +251,116 @@ glm.set.mc<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
   return(res)
 }
 
+### GLMs that can deal with NA values
+
+glm.set.v1<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
+{
+
+  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
+
+  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
+  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
+
+  sums=Cs+Ts # get number of Cs and Ts
+  Ps  =Cs/sums # get probability of Cs
+  
+  #Tmod=model.matrix(~Treat)
+  #X=c(0.1,NA,0.6,0.8)
+  #Y=c(30,NA,40,100)
+  glm.bare<-function(X,Y,Treat) # X probs > Ps, Y total number > sums
+  {
+    #cat(Tmod)
+    Treat2=Treat[!is.na(X)]
+    Tmod=model.matrix(~Treat2)
+    obj=glm.fit(Tmod,X[!is.na(X)],weights=Y[! is.na(Y)],family=binomial(link=logit))
+    deviance <- obj$null.deviance - obj$deviance
+    dispersion=1 #(if binomial or poisson)
+    aliased <- is.na(coef(obj))
+    p <- obj$rank
+    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
+        p1 <- 1L:p
+        Qr <- obj$qr
+        coef.p <- obj$coefficients[Qr$pivot[p1]]
+        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
+        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
+        covmat <- dispersion * covmat.unscaled
+        var.cf <- diag(covmat)
+        s.err <- sqrt(var.cf)
+        tvalue <- (coef.p/s.err)[2]    
+     }else if (obj$df.residual<=0)
+     { tvalue=NaN }
+ 
+    wald <- tvalue
+    beta1 <- obj$coefficients[2]
+    p.value <- 1-pchisq(deviance,df=1)
+
+    return( c(wald,beta1,p.value) )
+  }
+
+  Ps.list=split(Ps,1:nrow(Ps) ) # get Probs
+  Ws.list=split(sums,1:nrow(sums) ) # get weights to feed into function
+  res=t(mapply(glm.bare,Ps.list,Ws.list,MoreArgs = list(Treat = Treat)))
+  colnames(res)=c("wald","beta1","pvalue")
+  return(res)
+}
+
+
+
+glm.set.mc.v1<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
+{
+
+  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
+
+  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
+  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
+
+  sums=Cs+Ts # get number of Cs and Ts
+  Ps  =Cs/sums # get probability of Cs
+  
+  #Tmod=model.matrix(~Treat)
+  glm.bare<-function(dat,indX,indY,Treat) # X probs > Ps, Y total number > sums
+  {
+    #cat(Tmod)
+
+    X=dat[indX]
+    Y=dat[indY]
+    Treat2=Treat[!is.na(X)]
+    Tmod=model.matrix(~Treat2)
+    obj=glm.fit(Tmod,X[! is.na(X)],weights=Y[! is.na(Y)],family=binomial(link=logit))
+    deviance <- obj$null.deviance - obj$deviance
+    dispersion=1 #(if binomial or poisson)
+    aliased <- is.na(coef(obj))
+    p <- obj$rank
+    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
+        p1 <- 1L:p
+        Qr <- obj$qr
+        coef.p <- obj$coefficients[Qr$pivot[p1]]
+        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
+        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
+        covmat <- dispersion * covmat.unscaled
+        var.cf <- diag(covmat)
+        s.err <- sqrt(var.cf)
+        tvalue <- (coef.p/s.err)[2]    
+     }else if (obj$df.residual<=0)
+     { tvalue=NaN }
+ 
+    wald <- tvalue
+    beta1 <- obj$coefficients[2]
+    p.value <- 1-pchisq(deviance,df=1)
+
+    return( c(wald,beta1,p.value) )
+  }
+
+  PWs=cbind(Ps,sums)
+  PWs.list=split(PWs,1:nrow(PWs) ) # get weights to feed into function
+  res=simplify2array(mclapply(PWs.list,glm.bare,indX=1:ncol(Ps),indY=ncol(Ps)+(1:ncol(sums)),Treat=Treat,  mc.cores=n.mc))
+  res=data.frame(t(res))
+  colnames(res)=c("wald","beta1","pvalue")
+  return(res)
+}
+
+
+### END OF GLMs that can deal with NA values
 
 
 # function to fix logistic regression pvalues and make qvalues
@@ -495,19 +605,22 @@ setMethod("calculateDiffMeth", "methylBase",
                                                 
                           # pvalues
                           if(num.cores>1){
-                            pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+                            #pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+                            pvals  = glm.set.mc.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+
                           }else{
-                            pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+                            #pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+                            pvals  = glm.set.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
                           }
 
                           # get qvalues
                           pvals  = fix.q.values.glm(pvals,slim=slim)   
                           
                           # calculate mean methylation change
-                          mom.meth1=rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1]) # get means of means
-                          mom.meth2=rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1])
-                          pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1]) # get weigthed means
-                          pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1]) # get weigthed means
+                          mom.meth1=rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
+                          mom.meth2=rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
+                          pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+                          pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
                           pm.mean.diff=pm.meth1-pm.meth2
                           mom.mean.diff=mom.meth1-mom.meth2
                           

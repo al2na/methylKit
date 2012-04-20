@@ -5,7 +5,7 @@
 \alias{unite,methylRawList-method}
 \title{unites methylRawList to a single table}
 \usage{
-  unite(.Object,destrand=F)
+  unite(.Object,destrand=FALSE,min.per.replicate=NULL)
 }
 \arguments{
   \item{.Object}{a methylRawList object to be merged by
@@ -16,6 +16,18 @@
   not only interested in CpGs (default: FALSE). If the
   methylRawList object contains regions rather than bases
   setting destrand to TRUE will have no effect.}
+
+  \item{min.per.replicate}{an integer denoting minimum
+  number of samples per replicate needed to cover a
+  region/base. By default only regions/bases that are
+  covered in all samples are united as methylBase object,
+  however by supplying an integer for this argument users
+  can control how many samples needed to cover region/base
+  to be united as methylBase object. For example, if
+  min.per.replicate set to 2 and there are 3 replicates per
+  condition, the bases/regions that are covered in at least
+  2 replicates will be united and missing data for
+  uncovered bases/regions will appear as NAs.}
 }
 \value{
   a methylBase object
