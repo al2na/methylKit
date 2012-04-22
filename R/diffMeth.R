@@ -796,7 +796,7 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                       names(dmc.hypo.hyper)=c("chr","number.of.hypomethylated","percentage.of.hypomethylated","number.of.hypermethylated","percentage.of.hypermethylated")
                       if(plot){
                         
-                        if(!is.null(exclude)){dmc.hypo.hype=dmc.hypo.hyper[! dmc.hypo.hyper$chr %in% exclude,]}
+                        if(!is.null(exclude)){dmc.hypo.hyper=dmc.hypo.hyper[! dmc.hypo.hyper$chr %in% exclude,]}
                         
                         barplot(
                           t(as.matrix(data.frame(hyper=dmc.hypo.hyper[,5],hypo=dmc.hypo.hyper[,3],row.names=dmc.hypo.hyper[,1]) ))
