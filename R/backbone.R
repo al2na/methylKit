@@ -393,11 +393,12 @@ setMethod("unite", "methylRawList",
 #' @param .Object a methylBase object 
 #' @param plot scatterPlot if TRUE (deafult:False) 
 #' @return a correlation matrix object and plot scatterPlot
+#' @usage getCorrelation(.Object,plot=FALSE)
 #' @aliases getCorrelation,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getCorrelation-methods
-setGeneric("getCorrelation", function(.Object,plot=F) standardGeneric("getCorrelation"))
+setGeneric("getCorrelation", function(.Object,plot=FALSE) standardGeneric("getCorrelation"))
 
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation-method

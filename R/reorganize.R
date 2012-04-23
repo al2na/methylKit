@@ -35,8 +35,8 @@ setMethod("reorganize", signature(methylObj="methylBase"),
                           stop("provided sample.ids is not a subset of the sample ids of the object")
                         }
           
-                        temp.id = methylObj@sample.ids[methylObj@sample.ids %in% sample.ids] # get the subset of ids
-                        col.ord = order(match(temp.id,sample.ids)) # get the column order in the original matrix
+                        temp.id = methylObj@sample.ids # get the subset of ids
+                        col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
                         
                         
                         ind.mat=rbind(methylObj@coverage.index[col.ord],  # make a matrix indices for easy access 
@@ -48,7 +48,7 @@ setMethod("reorganize", signature(methylObj="methylBase"),
                         newdat =dat[,1:5]
                         for(i in 1:ncol(ind.mat))
                         {
-                          newdat=cbind(newdat,dat[ind.mat[,i]])
+                          newdat=cbind(newdat,dat[,ind.mat[,i]])
                         }
                                                 
                         # get indices of coverage,numCs and numTs in the data frame 
@@ -93,7 +93,10 @@ setMethod("reorganize", signature(methylObj="methylRawList"),
           
                         outList=list()    
                         for(i in 1:length(sample.ids)){
+                          ind=which( orig.ids==sample.ids[i] )
                           outList[[i]]=methylObj[[ col.ord[i]  ]]
+                          outList[[i]]=methylObj[[ ind  ]]
+
                         }
           
                         new("methylRawList",outList,treatment=treatment)
