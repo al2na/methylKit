@@ -14,13 +14,14 @@
 #' @param methylObj a \code{methylRaw} or \code{methlRawList} object
 #' @param regions a GRanges or GRangesList object.
 #' @param cov.bases number minimum bases covered per region (Default:0). Only regions with base coverage above this threshold are returned.
+#' @param strand.aware if set to TRUE only CpGs that match the strand of the region will be summarized
 #' 
 #' @return RETURNS a new methylRaw or methylRawList object
-#' @usage regionCounts(methylObj,regions,cov.bases=0)
+#' @usage regionCounts(methylObj,regions,cov.bases=0,strand.aware=FALSE)
 #' @export
 #' @docType methods
 #' @rdname regionCounts-methods
-setGeneric("regionCounts", function(methylObj,regions,cov.bases=0) standardGeneric("regionCounts") )
+setGeneric("regionCounts", function(methylObj,regions,cov.bases=0,strand.aware=FALSE) standardGeneric("regionCounts") )
 
 
 # GETs regional counts for given GRanges object
@@ -30,14 +31,27 @@ setGeneric("regionCounts", function(methylObj,regions,cov.bases=0) standardGener
 #' @rdname regionCounts-methods
 #' @aliases regionCounts,methylRaw,GRanges-method
 setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
-                    function(methylObj,regions,cov.bases){
+                    function(methylObj,regions,cov.bases,strand.aware){
                       #require(GenomicRanges)
                       # overlap methylObj with regions
                       # convert methylObj to GRanges
-                      mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+                      if(strand.aware){
+                        g.meth=as(methylObj,"GRanges")
+                        strand(g.meth)="*"
+                        mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                        #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+
+                      }else{
+                        mat=IRanges::as.matrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+                        #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+
+                      }
                       
+                      require(data.table)
                       # create a temporary data.table row ids from regions and counts from methylObj
-                      dt=data.table(id=mat[,1],methylObj[mat[,2],c(6,7,8)] )
+                      df=data.frame(id = mat[, 1], methylObj[mat[, 2], c(6, 7, 8)])
+                      dt=data.table(df)
+                      #dt=data.table(id=mat[,1],methylObj[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
                       
                       # use data.table to sum up counts per region
                       sum.dt=dt[,list(coverage=sum(coverage),
@@ -88,14 +102,30 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
 #' @aliases regionCounts,methylRaw,GRangesList-method
 # assume that each name of the element in the GRangesList is unique and 
 setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList"),
-                    function(methylObj,regions,cov.bases){
+                    function(methylObj,regions,cov.bases,strand.aware){
                       
                       require(GenomicRanges)
                       
                       # overlap methylObj with regions
                       # convert methylObj to GRanges
-                      mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+                      #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
                       
+                      if(strand.aware){
+                        g.meth=as(methylObj,"GRanges")
+                        strand(g.meth)="*"
+                        mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                        #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+
+                      }else{
+                        mat=IRanges::as.matrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+                        #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+
+                      }
+ 
+                      
+                      
+                      
+                      require(data.table)
                       # create a temporary data.table row ids from regions and counts from methylObj
                       dt=data.table(id=mat[,1],methylObj[mat[,2],c(6,7,8)] )
                       
@@ -138,13 +168,13 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
 #' @rdname regionCounts-methods
 #' @aliases regionCounts,methylRawList,GRanges-method
 setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRanges"),
-                    function(methylObj,regions,cov.bases){
+                    function(methylObj,regions,cov.bases,strand.aware){
                      
                     outList=list()
 
                     for(i in 1:length(methylObj))
                     {
-                        obj = regionCounts(methylObj = methylObj[[i]],regions=regions,cov.bases)
+                        obj = regionCounts(methylObj = methylObj[[i]],regions=regions,cov.bases,strand.aware)
                         outList[[i]] = obj
                     }
                     
@@ -160,13 +190,13 @@ setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRanges")
 #' @rdname regionCounts-methods
 #' @aliases regionCounts,methylRawList,GRangesList-method
 setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRangesList"),
-                    function(methylObj,regions,cov.bases){
+                    function(methylObj,regions,cov.bases,strand.aware){
                      
                     outList=list()
 
                     for(i in 1:length(methylObj))
                     {
-                        obj = regionCounts(methylObj = methylObj[[i]],regions=regions,cov.bases)
+                        obj = regionCounts(methylObj = methylObj[[i]],regions=regions,cov.bases,strand.aware)
                         outList[[i]] = obj
                     }
                     
@@ -210,7 +240,7 @@ setMethod("tileMethylCounts", signature(methylObj="methylRaw"),
                         temp.wins=GRanges(seqnames=rep(chrs[i],numTiles),ranges=IRanges(start=1+0:(numTiles-1)*step.size,width=rep(win.size,numTiles)) )
                         all.wins=c(all.wins,temp.wins)
                       }
-                      regionCounts(methylObj,all.wins,cov.bases)
+                      regionCounts(methylObj,all.wins,cov.bases,strand.aware=FALSE)
 
                       
 })

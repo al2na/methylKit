@@ -17,6 +17,7 @@ importMethodsFrom("IRanges",nearest,as.data.frame)
 
 
 
+#import( data.table)
 importFrom("data.table", data.table)
 
 
