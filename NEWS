@@ -11,6 +11,8 @@ NEW FUNCTIONS AND FEATURES
 
 IMPROVEMENTS AND BUG FIXES
 
+* regionCounts() bug that appeared with data.table 1.8.0 is fixed
+
 * unite() bug that appeared with R 2.15 is fixed
 
 * unite() now can merge bases/regions that are not covered by all samples by setting "min.per.replicate" option

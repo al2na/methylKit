@@ -10,7 +10,7 @@ Description: DNA methylation analysis RRBS,ERRBS,BS-seq
 License: Artistic-2.0
 LazyLoad: yes
 Depends:
-    R (>= 2.14.0),
+    R (>= 2.15.0),
     methods
 Imports:
     GenomicRanges,
