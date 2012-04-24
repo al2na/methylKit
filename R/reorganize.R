@@ -88,14 +88,13 @@ setMethod("reorganize", signature(methylObj="methylRawList"),
                           stop("provided sample.ids is not a subset of the sample ids of the object")
                         }
           
-                        temp.id=orig.ids[orig.ids %in% sample.ids] # get the subset of ids
-                        col.ord=order(match(temp.id,sample.ids)) # get the column order in the original matrix
+                        col.ord=order(match(orig.ids,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
           
                         outList=list()    
                         for(i in 1:length(sample.ids)){
-                          ind=which( orig.ids==sample.ids[i] )
+                          #ind=which( orig.ids==sample.ids[i] )
                           outList[[i]]=methylObj[[ col.ord[i]  ]]
-                          outList[[i]]=methylObj[[ ind  ]]
+                          #outList[[i]]=methylObj[[ ind  ]]
 
                         }
           

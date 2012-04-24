@@ -7,6 +7,8 @@ NEW FUNCTIONS AND FEATURES
 
 * new function bedgraph() can output UCSC bedgraph files for methylRaw and methylDiff objects
 
+* new function percMethylation() extracts percent methylation values from a methylBase object and returns a matrix
+
 IMPROVEMENTS AND BUG FIXES
 
 * unite() bug that appeared with R 2.15 is fixed

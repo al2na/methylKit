@@ -29,3 +29,4 @@ Collate:
     'document_data.R'
     'bedgraph.R'
     'reorganize.R'
+    'percMethylation.R'
