@@ -15,6 +15,22 @@
 #'
 #' @return RETURNS a \code{methylRawList} or \code{methylBase} object depending on the input object
 #' @usage reorganize(methylObj,sample.ids,treatment)
+#' @examples
+#' # this is a list of example files, ships with the package
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+#'                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+#'                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+#'
+#'
+#' # read the files to a methylRawList object: myobj
+#' myobj=read( file.list,
+#'           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
+#' meth=unite(myobj,destrand=TRUE)
+#'
+#' myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+#' meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+#'
 #' @export
 #' @docType methods
 #' @rdname reorganize-methods
