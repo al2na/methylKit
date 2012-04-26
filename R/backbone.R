@@ -320,7 +320,7 @@ setMethod("unite", "methylRawList",
                        stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
                      } 
                      
-                     if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\n")}
+                     if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")}
                      
                      #merge raw methylation calls together
                      df=getData(.Object[[1]])
