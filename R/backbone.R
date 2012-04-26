@@ -281,22 +281,27 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
 #'   do not set to TRUE if not only interested in CpGs (default: FALSE). If the methylRawList object
 #'   contains regions rather than bases setting destrand to TRUE will have no effect.
-#' @param min.per.replicate an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
+#' @param min.per.group an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
 #'        are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
-#'       For example, if min.per.replicate set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
+#'       For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
 #'
-#' @usage unite(.Object,destrand=FALSE,min.per.replicate=NULL)
+#' @usage unite(.Object,destrand=FALSE,min.per.group=NULL)
 #' @return a methylBase object
 #' @aliases unite,-methods unite,methylRawList-method
 #' @export
+#' @examples
+#'  ## myobj is a methylRawList object 
+#'  # unite(myobj) 
+#'  # unite(myobj,min.per.group=1L) # at least 1 sample per group should be covered for any given base/region
+#'  # unite(myobj,destrand=TRUE)
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(.Object,destrand=FALSE,min.per.replicate=NULL) standardGeneric("unite"))
+setGeneric("unite", function(.Object,destrand=FALSE,min.per.group=NULL) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
 setMethod("unite", "methylRawList",
-                    function(.Object,destrand,min.per.replicate){
+                    function(.Object,destrand,min.per.group){
   
                     
 
@@ -315,7 +320,7 @@ setMethod("unite", "methylRawList",
                        stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
                      } 
                      
-                     if( (!is.null(min.per.replicate)) &  ( ! is.integer( min.per.replicate ) )  ){stop("min.per.replicate should be an integer\n")}
+                     if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\n")}
                      
                      #merge raw methylation calls together
                      df=getData(.Object[[1]])
@@ -328,7 +333,7 @@ setMethod("unite", "methylRawList",
                      {
                         df2=getData(.Object[[i]])
                         if(destrand){df2=.CpG.dinuc.unify(df2)}
-                        if( is.null(min.per.replicate) ){
+                        if( is.null(min.per.group) ){
                           df=merge(df,df2[,c(1,6:8)],by="id",suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
                         }else{
                           df=merge(df,df2,by="id",suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
@@ -341,8 +346,8 @@ setMethod("unite", "methylRawList",
                      if( length( unique(assemblies) ) != 1 ){stop("assemblies of methylrawList elements should be same\n")}
           
 
-                    if(  ! is.null(min.per.replicate) ){
-                      # if the the min.per.replicate argument is supplied, remove the rows that doesn't have enough coverage
+                    if(  ! is.null(min.per.group) ){
+                      # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
 
                       # get indices of coverage,numCs and numTs in the data frame 
                       coverage.ind=seq(6,by=7,length.out=length(.Object))
@@ -353,7 +358,7 @@ setMethod("unite", "methylRawList",
                       for(i in unique(.Object@treatment) ){
                         my.ind=coverage.ind[.Object@treatment==i]
                         ldat = !is.na(df[,my.ind])
-                        df=df[rowSums(ldat)>=min.per.replicate,]
+                        df=df[rowSums(ldat)>=min.per.group,]
                       }
                       mat=df[,c(start.ind-1,start.ind,start.ind+1,start.ind+2)] # get all location columns, they are now duplicated with possible NA values
                       locs=t(apply(mat,1,function(x) unique(x[!is.na(x)]) ) ) # get location matrix
