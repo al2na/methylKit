@@ -21,7 +21,7 @@ IMPROVEMENTS AND BUG FIXES
 
 * PCASamples() now uses "prcomp" function to do the PCA analysis
 
-* PCASamples() has new options "transpose" and "sd.threshold". Now one can do a PCA analysis on the transposed % methylation values. "sd.threshold" is for removing rows with small variation prior to PCA analysis  .see ?PCASamples for details
+* PCASamples() has new options "transpose" and "sd.threshold". Now, one can do PCA analysis on the transposed % methylation values. "sd.threshold" is for removing rows with small variation prior to PCA analysis  .see ?PCASamples for details
 
 * external annotation data (cpgi.hg18.bed.txt and refseq.hg18.bed.txt) that comes with the package is now only a subset of full datasets. Do not use them for your own analysis, download the complete annotation data from UCSC or other sources in BED format.
 
