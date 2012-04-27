@@ -4,6 +4,35 @@
 #---------------------------------------------------------------------------------------
 # regular R functions to be used in S4 functions
 
+
+
+
+rowSds <- function(x, center=NULL, ...) {
+  n <- !is.na(x);
+  n <- rowSums(n);
+  n[n <= 1] <- NA;
+
+  if (is.null(center)) {
+    center <- rowMeans(x, ...);
+  }
+
+  x <- x - center;
+  x <- x*x;
+  x <- rowSums(x, ...);
+  x <- x/(n-1);
+
+ sqrt(x);
+}
+
+
+colSds <- function(x, ...) {
+  x <- t(x);
+  rowSds(x, ...);
+}
+
+
+
+
 # correlation function return dist object
 # x matrix, each row is a sample.
 # method only support "pearson"
@@ -125,7 +154,8 @@
   
   if(!is.null(sd.threshold))
   {
-    sds=apply(x,1,sd)
+    #sds=apply(x,1,sd)
+    sds =rowSds(x)
     x.pr = prcomp((x[sds>sd.threshold,]),scale.=scale,center=center)
   }else{
     x.pr = prcomp((x),scale.=scale,center=center)
@@ -156,7 +186,8 @@
   #x.pr = princomp(x, cor=cor)
   if(!is.null(sd.threshold))
   {
-    sds=apply(x,1,sd)
+    #sds=apply(x,1,sd)
+    sds =rowSds(x)
     x.pr = prcomp(t(x[sds>sd.threshold,]),scale.=scale,center=center)
   }else{
     x.pr = prcomp(t(x),scale.=scale,center=center)
