@@ -536,7 +536,7 @@ setClass("methylDiff",representation(
 #' 
 #' @param .Object a methylBase object to calculate differential methylation
 #' @param slim If TRUE(default) SLIM method will be used for P-value adjustment. Currently TRUE is the only valid value.
-#' @param coverage.cutoff a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
+#' @param coverage.cutoff  [Deprecated option] a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
 #' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
 #' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
 #' @usage calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1)
@@ -554,8 +554,9 @@ setMethod("calculateDiffMeth", "methylBase",
                     function(.Object,slim,coverage.cutoff,weigthed.mean,num.cores){
                       
                       #get CpGs with the cutoff
-                      inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index)
-                      subst=S3Part(.Object)[inds,]
+                      #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)
+                      #subst=S3Part(.Object)[inds,]
+                      subst=S3Part(.Object)
                       
                       if(length(.Object@treatment)<2 ){
                         stop("can not do differential methylation calculation with less than two samples")
