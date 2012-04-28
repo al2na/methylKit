@@ -358,7 +358,11 @@ setMethod("unite", "methylRawList",
                       for(i in unique(.Object@treatment) ){
                         my.ind=coverage.ind[.Object@treatment==i]
                         ldat = !is.na(df[,my.ind])
-                        df=df[rowSums(ldat)>=min.per.group,]
+                        if(  is.null(dim(ldat))  ){  # if there is only one dimension
+                          df=df[ldat>=min.per.group,]
+                        }else{
+                          df=df[rowSums(ldat)>=min.per.group,]
+                        }
                       }
                       mat=df[,c(start.ind-1,start.ind,start.ind+1,start.ind+2)] # get all location columns, they are now duplicated with possible NA values
                       locs=t(apply(mat,1,function(x) unique(x[!is.na(x)]) ) ) # get location matrix
