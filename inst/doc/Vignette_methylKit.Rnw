@@ -5,6 +5,7 @@
 
 \documentclass{article}
 \title{ methylKit: User Guide}
+\usepackage{cite}
 \usepackage{hyperref}
 \usepackage{url}               % used in bibliography
 \bibliographystyle{unsrt}
@@ -21,9 +22,9 @@ Matthias Kormaksson \\ \texttt{mk375@cornell.edu}
 \and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
 }
 
-% \SweaveOpts{fig.path=figure/,dev=pdf,external=TRUE,fig.align=center,cache=TRUE,message=FALSE,background=.97;.97;.97}
-<<set-options,echo=FALSE,results=hide,cache=FALSE>>=
-options(replace.assign=TRUE,width=85)
+% \SweaveOpts{fig.path='figure/',dev='pdf',external=TRUE,fig.align='center',cache=TRUE,message=FALSE}
+<<setup,echo=FALSE,results='hide',cache=FALSE>>=
+options(replace.assign=TRUE,width=60)
 knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
 @
 
@@ -107,8 +108,7 @@ The following command plots the histogram for percent methylation distribution.T
 
 \begin{center}
 %%%%%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6.5,out.width=.9\linewidth>>==
-library("graphics")
+<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 @
 \end{center}
@@ -120,7 +120,7 @@ We can also plot the read coverage per base information in a similar way, again 
 
 \begin{center}
 %%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6.5,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
 
 library ("graphics")
 getCoverageStats(myobj[[2]],plot=T,both.strands=F)
@@ -160,7 +160,7 @@ We can check the correlation between samples using \texttt{getCorrelation}. This
 
 \begin{center}
 %%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 getCorrelation(meth,plot=T)
 @
@@ -170,7 +170,7 @@ getCorrelation(meth,plot=T)
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 \begin{center}
 %%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 @
@@ -183,7 +183,7 @@ hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 \begin{center}
 %%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 PCASamples(meth, screeplot=TRUE)
 @
@@ -194,7 +194,7 @@ We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axi
 
 \begin{center}
 %%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 PCASamples(meth)
 @
@@ -303,7 +303,7 @@ We can also plot the percentage of differentially methylated bases overlapping w
 
 \begin{center}
 %%%%<<fig=TRUE , echo =TRUE>>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 plotTargetAnnotation(diffAnn,precedence=TRUE,
     main="differential methylation annotation")
@@ -314,7 +314,7 @@ We can also plot the CpG island annotation the same way. The plot below shows wh
 
 \begin{center}
 %%%<<fig=TRUE , echo =TRUE>>=
-<<fig.width=6,fig.height=6,out.width=.9\linewidth>>==
+<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
 
 plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
        main="differential methylation annotation")

@@ -9,11 +9,14 @@ myobj=read( file.list,
             sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
 # unite function
-t=unite(myobj,destrand=T)
+ta=unite(myobj,destrand=T)
 methidh=unite(myobj)
+methidh2=unite(myobj,min.per.group=1L)
 
 
 test_that("test if output of unite is  methylBase object", {
-    expect_that(t, is_a('methylBase'))
+    expect_that(ta, is_a('methylBase'))
     expect_that(methidh, is_a('methylBase'))
+    expect_that(methidh2, is_a('methylBase'))
+
 })

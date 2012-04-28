@@ -22,7 +22,12 @@ myDiff2=calculateDiffMeth(methidh2)
 gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
 cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
+myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 
+test_that("check if reorganize works", {
+    expect_that(myobj2, 
+        is_a('methylRawList'))
+})
 
 test_that("check if calculateDiffMeth output is a methylDiff object", {
     expect_that(myDiff, 
@@ -30,8 +35,9 @@ test_that("check if calculateDiffMeth output is a methylDiff object", {
 })
 
 
+
 test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiff object", {
-    expect_that(myDiff, 
+    expect_that(myDiff2, 
         is_a('methylDiff'))
 })
 
