@@ -12,7 +12,7 @@ myobj=read( file.list,
 
 # unite function
 methidh=unite(myobj)
-methidh2=unite(myobj,min.per.group=1)
+methidh2=unite(myobj,min.per.group=1L)
 
 # differential methylation
 myDiff =calculateDiffMeth(methidh)
