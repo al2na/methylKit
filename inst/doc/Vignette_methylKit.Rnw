@@ -41,7 +41,7 @@ In this manual, we will show how to use the methylKit package. methylKit is an R
 DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
 
 \subsection{High-throughput bisulfite sequencing}
-Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 4) the other reasons you can think of (Homework for the reader : ) )
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 
 
 
 
@@ -57,7 +57,7 @@ files that contain percent methylation score per base. A typical methylation cal
 read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
 @
 
-Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option as follows: 
+Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option. For sake of subsequent analysis, file.list, sample.id and treatment option should have the same order. In the following example, first two files are have the sample ids "test1" and "test2" and as determined by treatment vector they belong to the same group. The third and fourth files have sample ids "ctrl1" and "ctrl2" and they belong to the same group as indicated by the treatment vector.
 
 <<>>=
 library(methylKit)
@@ -149,6 +149,12 @@ Let us take a look at the data content of methylBase object:
 head(meth)
 @
 
+By default, \texttt{unite} function produces bases/regions covered in all samples. That requirement can be relaxed using "min.per.group" option in \texttt{unite} function.
+<<eval=FALSE>>=
+# creates a methylBase object. Only CpGs covered at least in 1 sample per group will be returned
+# there were two groups defined by the treatment vector given during the creation of myobj treatment=c(1,1,0,0)
+meth.min=unite(myobj,min.per.group=1L)
+@
 \subsection{Sample Correlation}
 We can check the correlation between samples using \texttt{getCorrelation}. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
 
@@ -322,6 +328,7 @@ getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 @
 
 \section{methylKit convenience functions}
+\subsection{coercion}
 Most \texttt{methylKit} objects (methylRaw,methylBase and methylDiff) can be coerced to \texttt{GRanges} objects from \texttt{GenomicRanges} package. Coercing methylKit objects to \texttt{GRanges} will give users additional flexiblity when customising their analyses.
 
 <<>>==
@@ -330,13 +337,29 @@ as(meth,"GRanges")
 class(myDiff)
 as(myDiff,"GRanges")
 @
+\subsection{select}
 
-We can also select rows from methylRaw, methylBase and methylDiff objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. 
+We can also select rows from \texttt{methylRaw}, \texttt{methylBase} and \texttt{methylDiff} objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. 
 <<>>==
-select(meth,1:10) # select first 10 rows
-select(myDiff,20:30) # select rows 10
+select(meth,1:10) # select first 10 rows of a methylBase object
+select(myDiff,20:30) # select rows 10 of a methylDiff object
 @
 
+\subsection{reorganize}
+\texttt{methylBase} and \texttt{methylRawList} can be reorganized by \texttt{reorganize} function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
+<<eval=FALSE>>=
+# creates a new methylRawList object
+myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+# creates a new methylBase object
+meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+@
+
+\subsection{percMethylation}
+Percent methylation values can be extracted from \texttt{methylBase} object by using \texttt{percMethylation} function.
+<<eval=FALSE>>=
+# creates a matrix containing percent methylation values
+perc.meth=percMethylation(meth)
+@
 
 \section{Acknowledgements}
 This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
