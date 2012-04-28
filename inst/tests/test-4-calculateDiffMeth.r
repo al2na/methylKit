@@ -11,11 +11,12 @@ myobj=read( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
 # unite function
-t=unite(myobj,destrand=T)
 methidh=unite(myobj)
+methidh2=unite(myobj,min.per.group=1)
 
 # differential methylation
-myDiff=calculateDiffMeth(methidh)
+myDiff =calculateDiffMeth(methidh)
+myDiff2=calculateDiffMeth(methidh2)
 
 # load annotation
 gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
@@ -23,6 +24,12 @@ gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", 
 
 
 test_that("check if calculateDiffMeth output is a methylDiff object", {
+    expect_that(myDiff, 
+        is_a('methylDiff'))
+})
+
+
+test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiff object", {
     expect_that(myDiff, 
         is_a('methylDiff'))
 })

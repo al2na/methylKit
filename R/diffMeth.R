@@ -536,22 +536,21 @@ setClass("methylDiff",representation(
 #' 
 #' @param .Object a methylBase object to calculate differential methylation
 #' @param slim If TRUE(default) SLIM method will be used for P-value adjustment. Currently TRUE is the only valid value.
-#' @param coverage.cutoff  [Deprecated option] a numeric value (deafult: 0). The regions/bases without this coverage threshold will be removed
 #' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
 #' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
-#' @usage calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1)
+#' @usage calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
 #' @return a methylDiff object containing the differential methylation statistics and locations
 #' @note The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
 #'
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1) standardGeneric("calculateDiffMeth"))
+setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1) standardGeneric("calculateDiffMeth"))
 
 #' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
-                    function(.Object,slim,coverage.cutoff,weigthed.mean,num.cores){
+                    function(.Object,slim,weigthed.mean,num.cores){
                       
                       #get CpGs with the cutoff
                       #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)

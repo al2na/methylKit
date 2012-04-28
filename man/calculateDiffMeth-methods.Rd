@@ -4,7 +4,7 @@
 \alias{calculateDiffMeth,methylBase-method}
 \title{Calculates differential methylation statistics}
 \usage{
-  calculateDiffMeth(.Object,slim=TRUE,coverage.cutoff=0,weigthed.mean=TRUE,num.cores=1)
+  calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
 }
 \arguments{
   \item{.Object}{a methylBase object to calculate
@@ -13,10 +13,6 @@
   \item{slim}{If TRUE(default) SLIM method will be used for
   P-value adjustment. Currently TRUE is the only valid
   value.}
-
-  \item{coverage.cutoff}{a numeric value (deafult: 0). The
-  regions/bases without this coverage threshold will be
-  removed}
 
   \item{weigthed.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}
