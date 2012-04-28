@@ -22,8 +22,10 @@ Matthias Kormaksson \\ \texttt{mk375@cornell.edu}
 \and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
 }
 
+%%%%%%% YOU may need to introduce result='hide' to compile this again
+
 % \SweaveOpts{fig.path='figure/',dev='pdf',external=TRUE,fig.align='center',cache=TRUE,message=FALSE}
-<<setup,echo=FALSE,results='hide',cache=FALSE>>=
+<<set-options,echo=FALSE,results=hide,cache=FALSE>>=
 options(replace.assign=TRUE,width=60)
 knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
 @
