@@ -20,6 +20,7 @@ myDiff2=calculateDiffMeth(methidh2)
 
 # load annotation
 gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
 
 
@@ -46,3 +47,8 @@ test_that("annotate.WithGenicParts", {
         is_a('annotationByGenicParts'))
 })
 
+
+test_that("annotate.WithGenicParts", {
+    expect_that(annotate.WithFeature.Flank(myDiff,cpg.obj$CpGi,cpg.obj$shores),
+        is_a('annotationByFeature'))
+})

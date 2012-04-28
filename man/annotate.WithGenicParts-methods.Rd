@@ -5,11 +5,11 @@
 \alias{annotate.WithGenicParts,methylDiff,GRangesList-method}
 \title{function to annotate given GRanges object with promoter,exon,intron & intergenic values}
 \usage{
-  annotate.WithGenicParts(target,GRangesList.obj,strand=F)
+  annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
 }
 \arguments{
-  \item{target}{: a granges object storing chromosome
-  locations to be annotated}
+  \item{target}{: a methylDiff or a granges object storing
+  chromosome locations to be annotated}
 
   \item{GRangesList.obj}{: A GRangesList object containing
   GRanges object for promoter,exons,introns and TSSes, or
@@ -17,7 +17,7 @@
 
   \item{strand}{: If set to TRUE, annotation features and
   target features will be overlapped based on strand
-  (def:FAULT)}
+  (def:FALSE)}
 }
 \value{
   \code{annotationByGenicParts} object
@@ -25,5 +25,10 @@
 \description{
   function to annotate given GRanges object with
   promoter,exon,intron & intergenic values
+}
+\examples{
+data(methylKit)
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+annotate.WithGenicParts(methylDiff.obj,gene.obj)
 }
 

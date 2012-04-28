@@ -4,7 +4,7 @@
 \alias{read.bed,character-method}
 \title{read a bed file and convert it to GRanges}
 \usage{
-  read.bed(location,remove.unsual=T)
+  read.bed(location,remove.unsual=TRUE)
 }
 \arguments{
   \item{location}{location of the file, a character string

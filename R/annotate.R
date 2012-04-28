@@ -223,7 +223,7 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 #' @param location  location of the file, a character string such as: "/home/user/my.bed"
 #' @param remove.unsual if TRUE(default) remove the chromomesomes with unsual names, mainly random chromsomes etc
 #'
-#' @usage read.bed(location,remove.unsual=T)
+#' @usage read.bed(location,remove.unsual=TRUE)
 #' @return \code{\link{GRanges}} object
 #'
 #' @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
@@ -231,7 +231,7 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 #' @export
 #' @docType methods
 #' @rdname read.bed-methods
-setGeneric("read.bed", function(location,remove.unsual=T) standardGeneric("read.bed"))
+setGeneric("read.bed", function(location,remove.unsual=TRUE) standardGeneric("read.bed"))
 
 #' @aliases read.bed,character-method
 #' @rdname read.bed-methods
@@ -353,15 +353,18 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 #' @param clean    If set to TRUE, flanks overlapping with other main features will be trimmed
 #' @param remove.unsual  remove chromsomes with unsual names random, Un and antyhing with "_" character
 #' @param feature.flank.name the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
-#' @usage  read.feature.flank(location,remove.unsual=T,flank=2000,clean=T,feature.flank.name=NULL)
+#' @usage  read.feature.flank(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL)
 #' @return a GenomicRangesList contatining one GRanges object for flanks and one for GRanges object for the main feature.
-#'   NOTE:This can not return a GRangesList at the moment because flanking regions do not have to have the same column name as the feature.
-#'   GRangesList elements should resemble eachother in the column content. We can not satisfy that criteria for the flanks
+#'   
+#' @examples
+#'  # location of the example CpG file
+#'  my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+#'  cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
 #'
 #' @export
 #' @docType methods
 #' @rdname read.feature.flank-methods
-setGeneric("read.feature.flank", function(location,remove.unsual=T,flank=2000,clean=T,feature.flank.name=NULL) standardGeneric("read.feature.flank") )
+setGeneric("read.feature.flank", function(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL) standardGeneric("read.feature.flank") )
 
 #' @aliases read.feature.flank,character-method
 #' @rdname read.feature.flank-methods
@@ -583,16 +586,19 @@ distance2nearestFeature<-function(g.idh,tss)
 
 #' function to annotate given GRanges object with promoter,exon,intron & intergenic values
 #'
-#' @param target      : a granges object storing chromosome locations to be annotated
+#' @param target      : a methylDiff or a granges object storing chromosome locations to be annotated
 #' @param GRangesList.obj  : A GRangesList object containing GRanges object for promoter,exons,introns and TSSes, or simply output of read.transcript.features function
-#' @param strand           : If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
-#' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=F)
+#' @param strand           : If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
+#' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
 #' @return \code{annotationByGenicParts} object
-#' 
+#' @examples
+#' data(methylKit)
+#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' annotate.WithGenicParts(methylDiff.obj,gene.obj)
 #' @export
 #' @docType methods
 #' @rdname annotate.WithGenicParts-methods
-setGeneric("annotate.WithGenicParts", function(target,GRangesList.obj,strand=F) standardGeneric("annotate.WithGenicParts") )
+setGeneric("annotate.WithGenicParts", function(target,GRangesList.obj,strand=FALSE) standardGeneric("annotate.WithGenicParts") )
 
 #' @aliases annotate.WithGenicParts,GRanges,GRangesList-method
 #' @rdname annotate.WithGenicParts-methods
@@ -624,15 +630,20 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList
 
 #' function to annotate given GRanges object with promoter,exon,intron & intergenic values
 #'  
-#' @param target    a granges object storing chromosome locations to be annotated
+#' @param target    a methylDiff or a granges object storing chromosome locations to be annotated
 #' @param feature   a granges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
 #' @param flank     a granges object storing chromosome locations of the flanks of the feature
 #' @param feature.name     string for the name of the feature
 #' @param flank.name     string for the name o f the flanks
-#' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
+#' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @usage annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
 #' @return returns an \code{annotationByFeature} object
+#' @examples
+#' data(methylKit)
+#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
+#' annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores)
+#'
 #' @export
 #' @docType methods
 #' @rdname annotate.WithFeature.Flank-methods
@@ -696,7 +707,7 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="
 #' 
 #' @param target   a GRanges/or methylDiff object storing chromosome locations to be annotated
 #' @param feature  a GRanges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
-#' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FAULT)
+#' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @param extend   specifiying a positive value will extend the feature on both sides as much as \code{extend}
 #' @param feature.name name of the annotation feature. For example: H3K4me1,CpGisland etc.
 #' @usage annotate.WithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")

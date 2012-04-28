@@ -17,7 +17,7 @@
 
   \item{strand}{If set to TRUE, annotation features and
   target features will be overlapped based on strand
-  (def:FAULT)}
+  (def:FALSE)}
 
   \item{extend}{specifiying a positive value will extend
   the feature on both sides as much as \code{extend}}
