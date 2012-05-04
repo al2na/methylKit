@@ -72,7 +72,7 @@ valid.methylRawObj <- function(object) {
     else if (! check1 ){
         paste("resolution slot has to be either 'base' or 'region': other values not allowed")
     }
-    else if(! check1){
+    else if(! check2){
         paste("data part of methylRaw have",nrow(data),"columns, expected 8 columns")
     }
 
