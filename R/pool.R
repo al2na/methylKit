@@ -1,6 +1,6 @@
 #' function pools replicates within groups to a single sample per group
 #'
-#' The function sums up coverage values within each group so one representative sample for each group will be created in a new methylBase object
+#' The function sums up coverage, numCs and numTs values within each group so one representative sample for each group will be created in a new methylBase object
 #' @param obj  \code{methylBase} object with two groups or more and each group should have multiple samples
 #' @param sample.ids  a character vector of new sample.ids ex:c("test","control"), should follow the same order as unique treatment vector,
 #'                    and should be equal to the length of the unique treatment vector
