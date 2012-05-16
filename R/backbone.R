@@ -65,7 +65,7 @@ valid.methylRawObj <- function(object) {
     
     data=getData(object)
     check1=( (object@resolution == "base") | (object@resolution == "region") )
-    check2=(nrow(data)==8)
+    check2=(ncol(data)==8)
     if(check1 & check2){
       return(TRUE)
     }
@@ -73,7 +73,7 @@ valid.methylRawObj <- function(object) {
         paste("resolution slot has to be either 'base' or 'region': other values not allowed")
     }
     else if(! check2){
-        paste("data part of methylRaw have",nrow(data),"columns, expected 8 columns")
+        paste("data part of methylRaw have",ncol(data),"columns, expected 8 columns")
     }
 
 }
