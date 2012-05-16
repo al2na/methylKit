@@ -617,10 +617,21 @@ setMethod("calculateDiffMeth", "methylBase",
                           pvals  = fix.q.values.glm(pvals,slim=slim)   
                           
                           # calculate mean methylation change
-                          mom.meth1=rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
-                          mom.meth2=rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
-                          pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
-                          pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+                          if(length(set1.Cs) > 1){
+                            mom.meth1=100*rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
+                            pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+                          }else{
+                            mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+                            pm.meth1     = mom.meth1
+                          }
+
+                          if(length(set2.Cs)>1){
+                            mom.meth2=100*rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
+                            pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+                          }else{
+                            mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1]) # get % methylation
+                            pm.meth2     = mom.meth2
+                          }
                           pm.mean.diff=pm.meth1-pm.meth2
                           mom.mean.diff=mom.meth1-mom.meth2
                           

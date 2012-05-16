@@ -1,3 +1,11 @@
+methylKit 0.5.1
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* calculateDiffMeth() can now deal with differential methylation calculations where one group has multiple samples but the other one has only one.
+
+
 methylKit 0.5
 --------------
 
