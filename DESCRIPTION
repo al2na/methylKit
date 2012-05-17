@@ -16,7 +16,8 @@ Imports:
     GenomicRanges,
     IRanges,
     data.table,
-    parallel
+    parallel,
+    RHmm
 Suggests:
     testthat
 Collate:
@@ -32,3 +33,4 @@ Collate:
     'percMethylation.R'
     'normalizeCoverage.R'
     'pool.R'
+    'segDiffMeth.R'
