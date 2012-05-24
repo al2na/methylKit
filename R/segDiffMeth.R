@@ -387,7 +387,67 @@ setMethod("segDiffMeth.train", "methylBase",
 
 })
 
+#' function predict HMM states using \code{HMMFitClass} object that based on differential methylation scores per base and segments the genome 
+#'
+#' The functions uses a \code{HMMFitClass} object to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
+#' @param obj a \code{methylDiff} or \code{methylBase} object with two groups from methylKit package
+#' @param hmm.fit a \code{HMMFitClass} object from function \code{segDiffMeth.train}
+#' @param per.base If TRUE state predictions for each base will be returned instead of concatanated segment coordinates (default:FALSE)
+#' @param chop.th a base-pair threshold used to chop large segments with low read coverage to smaller segments. If NULL, this operation is not invoked (default:NULL)
+#' @return a data.frame with the region boundaries, HMM state for the regions, average diff.meth value ofthe region and number of covered bases. If per.base=TRUE, the function will return hmm.state per base. This option is provided just for convenience.
 
+#'
+#' @usage segDiffMeth.predict(obj,hmm.fit,chop.th=600, per.base=FALSE)
+#'
+#' @note if you get "Error: protect(): protection stack overflow" error, save your data and start R with " --max-ppsize=400000" option or higher
+#' @author Altuna Akalin and Sheng Li
+#' @examples
+#' library(methylKit)
+#' data(methylKit)
+#' seg.fit=segDiffMeth.train(methylDiff.obj,semi.supervised=TRUE,tol=1e-6, nStates=4)
+#' seg.df=segDiffMeth.predict(methylDiff.obj, seg.fit, chop.th=600, per.base=FALSE)
+#' @rdname segDiffMeth.predict
+setGeneric("segDiffMeth.predict", function(obj,hmm.fit,chop.th=NULL, per.base=FALSE) standardGeneric("segDiffMeth.predict"))
+
+#' @rdname segDiffMeth.predict 
+#' @aliases segDiffMeth.predict,methylDiff-method
+setMethod("segDiffMeth.predict", "methylDiff",
+                    function(obj, hmm.fit, chop.th, per.base){
+                      df=methylKit::getData(obj)
+                      .segDiffMeth.predict(df,hmm.fit, chop.th=chop.th, per.base=per.base)
+})
+
+#' @rdname segDiffMeth.predict
+#' @aliases segDiffMeth.predict,methylBase-method
+setMethod("segDiffMeth.predict", "methylBase",
+                    function(obj, hmm.fit, chop.th, per.base){
+                      if(unique(obj@treatment) != 2){stop("There must be two groups in the treatment vector, segDiffMeth will only work with two groups")}
+
+                      df=methylKit::getData(obj)
+
+                      # get the indices for numCs and numTs in each set
+                      set1.Cs=obj@numCs.index[obj@treatment==1]
+                      set2.Cs=obj@numCs.index[obj@treatment==0]
+                      set1.Ts=obj@numTs.index[obj@treatment==1]
+                      set2.Ts=obj@numTs.index[obj@treatment==0]
+
+                      if(length(set1.Cs)>1){
+                        pm.meth1 = 100*rowSums(df[,set1.Cs])/rowSums(df[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+                      }else{
+                        pm.meth1 = 100*(df[,set1.Cs]/df[,set1.Cs-1]) # get % methylation
+                      }
+
+                      if(length(set2.Cs)>1){
+                        pm.meth2 = 100*rowSums(df[,set2.Cs])/rowSums(df[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+                      }else{
+                        pm.meth2 = 100*(df[,set2.Cs]/df[,set2.Cs-1])
+                      }
+
+                      pm.mean.diff=pm.meth1-pm.meth2
+                      df=cbind(df[,1:7],meth.diff=pm.mean.diff)
+                      .segDiffMeth.predict(df,hmm.fit,chop.th=chop.th, per.base=per.base)
+
+})
 
 
 #' prints out BED track file for HMM segments
