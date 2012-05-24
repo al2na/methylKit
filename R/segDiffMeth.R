@@ -326,6 +326,67 @@ setMethod("segDiffMeth", "methylBase",
 
 })
 
+#' function the HMM fitting based on differential methylation scores per base
+#'
+#' The functions uses a 3 state HMM to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
+#' @param obj a \code{methylDiff} or \code{methylBase} object with two groups from methylKit package
+#' @param semi.supervised if TRUE HMM parameters are initialized with reasonable assumptions (default:TRUE)
+#' @param tol tolerance threshold for HMMfit() function (Baum-Welch algorithm) (default:1e-6)
+#' @param nStates number of states to be used in the unsupervised algorithm, only taken into account when semi.supervised=FALSE
+#' @return a \code{HMMFitClass} object
+#'
+#' @usage segDiffMeth.train(obj,semi.supervised=TRUE,tol=1e-6,nStates=3)
+#'
+#' @note if you get "Error: protect(): protection stack overflow" error, save your data and start R with " --max-ppsize=400000" option or higher
+#' @author Altuna Akalin and Sheng Li
+#' @examples
+#' library(methylKit)
+#' data(methylKit)
+#' seg.fit=segDiffMeth.train(methylDiff.obj,semi.supervised=TRUE,tol=1e-6 )
+#' seg.fit2=segDiffMeth.train(methylDiff.obj,semi.supervised=TRUE,tol=1e-6, nStates=4)
+#' @rdname segDiffMeth.train
+setGeneric("segDiffMeth.train", function(obj,semi.supervised=TRUE,tol=1e-6,nStates=3) standardGeneric("segDiffMeth.train"))
+
+#' @rdname segDiffMeth.train
+#' @aliases segDiffMeth.train,methylDiff-method
+setMethod("segDiffMeth.train", "methylDiff",
+                    function(obj, semi.supervised,tol, nStates){
+                      df=methylKit::getData(obj)
+                      .segDiffMeth.train(df,semi.supervised=semi.supervised,tol=tol, nStates=nStates)
+})
+
+#' @rdname segDiffMeth.train
+#' @aliases segDiffMeth.train,methylBase-method
+setMethod("segDiffMeth.train", "methylBase",
+                    function(obj, semi.supervised, tol, nStates){
+                      if(unique(obj@treatment) != 2){stop("There must be two groups in the treatment vector, segDiffMeth will only work with two groups")}
+
+                      df=methylKit::getData(obj)
+
+                      # get the indices for numCs and numTs in each 
+                      set1.Cs=obj@numCs.index[obj@treatment==1]
+                      set2.Cs=obj@numCs.index[obj@treatment==0]
+                      set1.Ts=obj@numTs.index[obj@treatment==1]
+                      set2.Ts=obj@numTs.index[obj@treatment==0]
+
+                      if(length(set1.Cs)>1){
+                        pm.meth1 = 100*rowSums(df[,set1.Cs])/rowSums(df[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+                      }else{
+                        pm.meth1 = 100*(df[,set1.Cs]/df[,set1.Cs-1]) # get % methylation
+                      }
+
+                      if(length(set2.Cs)>1){
+                        pm.meth2 = 100*rowSums(df[,set2.Cs])/rowSums(df[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+                      }else{
+                        pm.meth2 = 100*(df[,set2.Cs]/df[,set2.Cs-1])
+                      }
+
+                      pm.mean.diff=pm.meth1-pm.meth2
+                      df=cbind(df[,1:7],meth.diff=pm.mean.diff)
+                      .segDiffMeth.train(df,semi.supervised=semi.supervised,tol=tol,nStates=nStates,)
+
+})
+
 
 
 
