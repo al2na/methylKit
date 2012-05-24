@@ -186,6 +186,76 @@ chop.shop<-function(seg.df,df,chop.th){
 
 }
 
+.segDiffMeth.train<-function(df,semi.supervised=TRUE,tol=1e-6,nStates=3 ){
+  require(RHmm)
+  require(methylKit)
+
+  # get observations from data.frame
+  ####df =methylKit::getData(methylDiff.obj)
+  df =df[order(df$chr,df$start),]
+  obs=df$meth.diff
+
+  if(semi.supervised){
+    my.param=initializeParam(obs) # initialize the search parameters by reasonable assumptions
+    x=HMMFit(obs,nStates=3,control=list(verbose=0,initPoint=my.param,tol=tol) ) # fit the HMM
+  }else{
+    x=HMMFit(obs,nStates=nStates,control=list(verbose=0,init="KMEANS",tol=tol) )
+  }
+  # print summary
+  cat("\nLog-likelihood of the model: ",x$LLH,"\n")
+  cat("\nDoes it converge ? : ",x$convergence,"\n\n")
+
+  return(x)
+}
+
+.segDiffMeth.predict<-function(df, hmm.fit, chop.th=NULL, per.base=FALSE){
+  require(data.table)
+  require(RHmm)
+  require(methylKit)
+
+  # get observations from data.frame
+  ####df =methylKit::getData(methylDiff.obj)
+  df =df[order(df$chr,df$start),]
+  obs=df$meth.diff
+
+  vit.states=c()
+  for(my.chr in unique(as.character(df$chr)) )
+  {
+    vit.states=c(vit.states, RHmm::viterbi(x, obs[df$chr==my.chr])$states ) # get state predictions per chr and concat them 
+  }
+
+  # print summary
+  for(i in sort(unique(vit.states)) ){
+    cat("Summary of methylation info for state", i,": \n")
+    print( summary( obs[vit.states==i]) )
+  }
+
+  if(per.base){return(data.frame(id=df[,1],meth.diff=obs,hmm.state=vit.states))}
+
+  # create segment ids
+  seg.num=1:length(rle(vit.states)$lengths)
+  seg.len=rle(vit.states)$lengths
+  seg.id=rep(seg.num,seg.len)
+
+  dfs=data.table( cbind(df,vit.states,seg.id) ) # make a data table to be summarized
+  # summarize data on predicted segments
+  sum.df=dfs[,list(chr=unique(chr),
+                   start=min(start),
+                   end  =max(end),
+                   num.cov.base=length(start),
+                   avg.meth.diff=mean(meth.diff),
+                   med.meth.diff=median(meth.diff),
+                   hmm.state=unique(vit.states) ),by=list(chr,seg.id)]
+  res=as.data.frame(sum.df)[,c(-1,-2)] # return data as a data.frame
+
+  if(!is.null(chop.th) & is.numeric(chop.th)){
+
+    #stop("chop.th option not supported yet\n")
+    res=chop.shop(seg.df=res,df=df,chop.th=chop.th)
+  }
+
+  res
+}
 
 
 
