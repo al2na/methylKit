@@ -23,6 +23,24 @@
              ,strand=strand,coverage=data[,5],numCs=numCs,numTs=numTs)
 }
 
+# reformats a generic structure data.frame to a standard methylraw data.frame
+# based on the column number assignment and if freqC is fraction or not.
+.structureGeneric<-function(data, fraction=T,
+chr.col=1,start.col=2,end.col=2,
+coverage.col=4,strand.col=3,freqC.col=5){
+    
+    strand=rep("+",nrow(data))
+    strand[data[,strand.col]=="R" | data[,strand.col]=="-"]="-"
+    adj=ifelse(fraction, 1, 100)
+    numCs=round(data[,coverage.col]*data[,freqC.col]/adj)
+    numTs=data[,coverage.col] - numCs
+    id=paste(data[,chr.col], data[,start.col],sep=".")
+    
+    data.frame(id=id,chr=data[,chr.col],start=data[,start.col],end=data[,end.col]
+    ,strand=strand,coverage=data[,coverage.col],numCs=numCs,numTs=numTs)
+    
+}
+
 # unfies forward and reverse strand CpGs on the forward strand if the if both are on the same CpG
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
