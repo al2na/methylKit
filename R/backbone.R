@@ -211,9 +211,13 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             for(i in 1:length(location))
             {
               data<- .readTableFast(location[[i]],header=header)# read data
-              if(pipeline %in% c("amp","bismark"))
+              if(length(pipeline)==1 )
               {
-                data<- .structureAMPoutput(data)
+                if(pipeline %in% c("amp","bismark")){
+                  data<- .structureAMPoutput(data)
+                } else {
+                  stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
+                }
               }
               else{
                 #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
