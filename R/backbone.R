@@ -13,7 +13,7 @@
 # reformats a data.frame to a standard methylraw data.frame
 # no matter what the alignment pipeline
 .structureAMPoutput<-function(data)
-{
+{  
   strand=rep("+",nrow(data))
   strand[data[,4]=="R"]="-"
   numCs=round(data[,5]*data[,6]/100)
@@ -25,9 +25,15 @@
 
 # reformats a generic structure data.frame to a standard methylraw data.frame
 # based on the column number assignment and if freqC is fraction or not.
-.structureGeneric<-function(data, fraction=T,
-chr.col=1,start.col=2,end.col=2,
-coverage.col=4,strand.col=3,freqC.col=5){
+.structureGeneric<-function(data, pipeline)
+{
+    fraction=pipeline$fraction
+    chr.col=pipeline$chr.col
+    start.col=pipeline$start.col
+    end.col=pipeline$end.col
+    coverage.col=pipeline$coverage.col
+    strand.col=pipeline$strand.col
+    freqC.col=pipeline$freqC.col
     
     strand=rep("+",nrow(data))
     strand[data[,strand.col]=="R" | data[,strand.col]=="-"]="-"
@@ -39,6 +45,17 @@ coverage.col=4,strand.col=3,freqC.col=5){
     data.frame(id=id,chr=data[,chr.col],start=data[,start.col],end=data[,end.col]
     ,strand=strand,coverage=data[,coverage.col],numCs=numCs,numTs=numTs)
     
+}
+
+.check.pipeline.list<-function(pipeline){
+    if(!all(c("fraction", "chr.col", "start.col", "end.col", "coverage.col", "strand.col", "freqC.col") %in% names(pipeline))){
+        stop("Miss components for pipeline for the generic read. Try amp, or bismark, or give the correct format of pipeline list for generic read!")
+    }
+    
+    values=c(pipeline$chr.col, pipeline$start.col, pipeline$coverage.col, pipeline$strand.col, pipeline$freqC.col)
+    if(any(duplicated(values))){
+        stop("Find duplicated column number among chr.col, start.col, coverage.col, strand.col, freqC.col!")
+    }
 }
 
 # unfies forward and reverse strand CpGs on the forward strand if the if both are on the same CpG
@@ -172,7 +189,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 # @param a list containing locations(full paths) to CpG methylation files from alignment pipeline
 # @param name a list of strings that defines the experiment
 # @param assembly a string that defines the genome assembly such as hg18, mm9
-# @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP)
+# @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP), or for generic read, a list object contain \code{fraction}=TRUE/FALSE, \code{chr.col}, \code{strand.col}, \code{start.col}, \code{end.col}, \code{coverage.col},\code{freqC.col}, for example: \code{list(fraction=T, chr.col=1, strand.col=2, coverage.col=3, freqC.col=4, start.col=5, end.col=5)}  
 # @param header if the input files has a header or not (default: TRUE)
 # @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 # @return returns a methylRawList object
@@ -199,7 +216,9 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
                 data<- .structureAMPoutput(data)
               }
               else{
-                stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
+                #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
+                .check.pipeline.list(pipeline)
+                data<- .structureGeneric(data, pipeline)
               }
                   
               obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
