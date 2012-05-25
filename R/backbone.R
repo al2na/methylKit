@@ -23,6 +23,17 @@
              ,strand=strand,coverage=data[,5],numCs=numCs,numTs=numTs)
 }
 
+.structureGeneric<-function(data, fraction=T, chr.col=1,start.col=2,end.col=2,
+             coverage.col=4,strand.col=3,freqC=5){
+  strand=rep("+",nrow(data))
+  strand[data[,strand.col]=="R" | data[,strand.col]="-"]="-"
+  ifelse(fraction, 1, 100)
+  numCs=round(data[,5]*data[,6]/100)
+  numTs=round(data[,5]*data[,7]/100)
+
+
+
+}
 # unfies forward and reverse strand CpGs on the forward strand if the if both are on the same CpG
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
