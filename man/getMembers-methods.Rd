@@ -3,9 +3,6 @@
 \alias{getMembers}
 \alias{getMembers,annotationByFeature-method}
 \title{Get the membership slot of annotationByFeature}
-\usage{
-  getMembers(x)
-}
 \arguments{
   \item{x}{a \code{annotationByFeature} object}
 }

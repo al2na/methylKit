@@ -3,9 +3,6 @@
 \alias{getFeatsWithTargetsStats}
 \alias{getFeatsWithTargetsStats,annotationByFeature-method}
 \title{Get the percentage/count of annotation features overlapping with target features from annotationByFeature}
-\usage{
-  getFeatsWithTargetsStats(x,percentage=TRUE)
-}
 \arguments{
   \item{x}{a \code{annotationByFeature} object}
 

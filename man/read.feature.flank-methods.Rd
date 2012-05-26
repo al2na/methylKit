@@ -3,9 +3,6 @@
 \alias{read.feature.flank}
 \alias{read.feature.flank,character-method}
 \title{a function to read-in genomic features and their upstream and downstream adjecent regions such as CpG islands and their shores}
-\usage{
-  read.feature.flank(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL)
-}
 \arguments{
   \item{location}{for the bed file of the feature}
 
@@ -33,7 +30,7 @@
 }
 \examples{
 # location of the example CpG file
-my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
+ my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+ cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
 }
 

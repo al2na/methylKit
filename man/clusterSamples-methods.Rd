@@ -3,10 +3,6 @@
 \alias{clusterSamples}
 \alias{clusterSamples,methylBase-method}
 \title{CpG Dinucleotide Methylation Hierarchical Cluster Analysis}
-\usage{
-  clusterSamples(.Object, dist="correlation",
-  method="ward", plot=TRUE)
-}
 \arguments{
   \item{.Object}{a \code{methylBase} object}
 

@@ -5,9 +5,6 @@
 \alias{getCorrelation,methylBase-method}
 \alias{getCorrelation-method}
 \title{get correlation between samples in methylBase object}
-\usage{
-  getCorrelation(.Object,plot=FALSE)
-}
 \arguments{
   \item{.Object}{a methylBase object}
 

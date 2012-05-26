@@ -3,9 +3,6 @@
 \alias{getMethylationStats}
 \alias{getMethylationStats,methylRaw-method}
 \title{get Methylation stats from methylRaw object}
-\usage{
-  getMethylationStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
-}
 \arguments{
   \item{.Object}{a \code{methylRaw} object}
 

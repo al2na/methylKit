@@ -4,9 +4,6 @@
 \alias{unite,-methods}
 \alias{unite,methylRawList-method}
 \title{unites methylRawList to a single table}
-\usage{
-  unite(.Object,destrand=FALSE,min.per.group=NULL)
-}
 \arguments{
   \item{.Object}{a methylRawList object to be merged by
   common locations covered by reads}
@@ -23,7 +20,7 @@
   samples are united as methylBase object, however by
   supplying an integer for this argument users can control
   how many samples needed to cover region/base to be united
-  as methylBase object. For example, if min.per.group set
+  as methylBase object.  For example, if min.per.group set
   to 2 and there are 3 replicates per condition, the
   bases/regions that are covered in at least 2 replicates
   will be united and missing data for uncovered
@@ -39,8 +36,8 @@
 }
 \examples{
 ## myobj is a methylRawList object
-# unite(myobj)
-# unite(myobj,min.per.group=1L) # at least 1 sample per group should be covered for any given base/region
-# unite(myobj,destrand=TRUE)
+ # unite(myobj)
+ # unite(myobj,min.per.group=1L) # at least 1 sample per group should be covered for any given base/region
+ # unite(myobj,destrand=TRUE)
 }
 

@@ -3,9 +3,6 @@
 \alias{calculateDiffMeth}
 \alias{calculateDiffMeth,methylBase-method}
 \title{Calculates differential methylation statistics}
-\usage{
-  calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
-}
 \arguments{
   \item{.Object}{a methylBase object to calculate
   differential methylation}

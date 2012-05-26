@@ -269,7 +269,7 @@ setClass("HMMFitClass", contains="list")
 
 ####################### S4 FUNCTIONS  ##########################################################################################################################################  
 
-#' function the segments the genome based on differential methylation scores per base
+#' function that segments the genome based on differential methylation scores per base
 #'
 #' The functions uses a 3 state HMM to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
 #' @param obj a \code{methylDiff} or \code{methylBase} object with two groups from methylKit package
@@ -334,9 +334,9 @@ setMethod("segDiffMeth", "methylBase",
 
 })
 
-#' function the HMM fitting based on differential methylation scores per base
+#' Differential methylatin segmentation HMM fitting 
 #'
-#' The functions uses a 3 state HMM to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
+#' The functions uses a 3 state HMM to fit the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
 #' @param obj a \code{methylDiff} or \code{methylBase} object with two groups from methylKit package
 #' @param semi.supervised if TRUE HMM parameters are initialized with reasonable assumptions (default:TRUE)
 #' @param tol tolerance threshold for HMMfit() function (Baum-Welch algorithm) (default:1e-6)
@@ -395,7 +395,7 @@ setMethod("segDiffMeth.train", "methylBase",
 
 })
 
-#' function predict HMM states using \code{HMMFitClass} object that based on differential methylation scores per base and segments the genome 
+#' Predict differetial methylation states using \code{HMMFitClass} object and segments the genome 
 #'
 #' The functions uses a \code{HMMFitClass} object to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states. 
 #' @param obj a \code{methylDiff} or \code{methylBase} object with two groups from methylKit package
@@ -525,8 +525,8 @@ setMethod("seg2bed", "data.frame", function(seg.df, state.names, cols ,file.name
 #' @param seg.df data.frame resulting from \code{segDiffMeth}  function
 #' @param methylDiff.obj a \code{methylDiff} object used to create seg.df via \code{segDiffMeth}  function
 #' @param DMC.fraction threshold for fraction of DMCs over number of covered bases. Only segments having DMC fraction over this threshold will be retained
-#' @param difference cutoff for absolute value of methylation change between test and control when extracting DMCs from \object{methylDiff} object (default:25)
-#' @param qvalue cutoff for qvalue of differential methylation when extracting DMCs from \object{methylDiff} object (default:0.01)
+#' @param difference cutoff for absolute value of methylation change between test and control when extracting DMCs from \code{methylDiff} object (default:25)
+#' @param qvalue cutoff for qvalue of differential methylation when extracting DMCs from \code{methylDiff} object (default:0.01)
 #' @param covered.bases threshold for number of covered bases per segment. only segments with number of bases covered above this threshold will be retained
 #' @param retain.state vector containining HMM state numbers. Only these states in this vector will be retained. If NULL, every state will be retained.
 #' @return a data frame which is a subset of seg.df input data.frame

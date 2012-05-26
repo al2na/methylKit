@@ -3,10 +3,6 @@
 \alias{diffMethPerChr}
 \alias{diffMethPerChr,methylDiff-method}
 \title{Gets and plots the number of hyper/hypo methylated regions per chromosome}
-\usage{
-  diffMethPerChr(x,plot=T,qvalue.cutoff=0.01,
-  meth.cutoff=25,exclude=NULL,...)
-}
 \arguments{
   \item{x}{a \code{annotationByFeature} object}
 

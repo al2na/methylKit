@@ -3,10 +3,6 @@
 \alias{PCASamples}
 \alias{PCASamples,methylBase-method}
 \title{CpG Dinucleotide Methylation Principal Components Analysis}
-\usage{
-  PCASamples(.Object, cor=TRUE, screeplot=FALSE,
-  adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
-}
 \arguments{
   \item{.Object}{a \code{methylBase} object}
 
@@ -39,13 +35,13 @@
   plot will location of samples in the new coordinate
   system if FALSE the variables for the matrix will be
   samples and the resulting plot whill show how each sample
-  (variable) contributes to the principle component. the
+  (variable) contributes to the principle component.  the
   samples that are highly correlated should have similar
   contributions to the principal components.}
 
   \item{sd.threshold}{standard deviation threshold to
   remove bases/regions that have % methylation standard
-  dev. lower than this threshold. if NULL no strandard
+  dev. lower than this threshold.  if NULL no strandard
   deviation will be calculated and this threshold will not
   be applied.}
 
