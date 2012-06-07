@@ -34,3 +34,4 @@ Collate:
     'normalizeCoverage.R'
     'pool.R'
     'segDiffMeth.R'
+    'fastFisherTest.R'
