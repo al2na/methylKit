@@ -16,6 +16,7 @@ importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
                   RangesList, Rle,matchMatrix,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
+importFrom("qvalue",qvalue)
 
 
 

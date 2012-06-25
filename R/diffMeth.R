@@ -366,11 +366,11 @@ glm.set.mc.v1<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
 # function to fix logistic regression pvalues and make qvalues
 fix.q.values.glm<-function(pvals,slim=FALSE)
 {
-  # if(slim==FALSE){
-  #  qvals=qvalue::qvalue(pvals[,3])$qvalues # get qvalues
-  #}else{
+   if(slim==FALSE){
+    qvals=qvalue::qvalue(pvals[,3])$qvalues # get qvalues
+  }else{
     slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)
-  #}                
+  }                
 
   pvals=cbind(pvals,qvalue=qvals) # merge pvals and qvals
   return(pvals)
@@ -379,10 +379,10 @@ fix.q.values.glm<-function(pvals,slim=FALSE)
 # function to fix fisher.test pvalues and make qvalues
 fix.q.values.fisher<-function(pvals,slim=FALSE)
 {
-  #if(slim==FALSE){qvals=qvalue::qvalue(pvals)$qvalues # get qvalues
-  #}else{
+  if(slim==FALSE){qvals=qvalue::qvalue(pvals)$qvalues # get qvalues
+  }else{
   slimObj=SLIMfunc(pvals);qvals=QValuesfun(pvals, slimObj$pi0_Est)
-  #}                
+  }                
 
   pvals=data.frame(pvalue=pvals,qvalue=qvals) # merge pvals and qvals
   return(pvals)
@@ -535,7 +535,7 @@ setClass("methylDiff",representation(
 #' Calculates differential methylation statistics
 #' 
 #' @param .Object a methylBase object to calculate differential methylation
-#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment. Currently TRUE is the only valid value.
+#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.If FALSE, qvalue method from qvalue package will be used.
 #' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
 #' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
 #' @usage calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
