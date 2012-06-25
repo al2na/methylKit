@@ -175,7 +175,9 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
               data<- .structureAMPoutput(data)
             }
             else{
-                stop("unknown 'pipeline' argument, supported alignment pipelines: amp ")
+                #stop("unknown 'pipeline' argument, supported alignment pipelines: amp ")
+                .check.pipeline.list(pipeline)
+                data<- .structureGeneric(data, pipeline)
             }
 
             obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context,resolution="base")
