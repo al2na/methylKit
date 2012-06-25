@@ -39,9 +39,9 @@ setMethod("pool", "methylBase",
                            covs=rowSums(df[,set.cov],na.rm=TRUE)
 
                          }else{
-                           Cs=sum(df[,setCs],na.rm=TRUE)
-                           Ts=sum(df[,setTs],na.rm=TRUE)
-                           covs=sum(df[,set.cov],na.rm=TRUE)
+                           Cs  =df[,setCs]
+                           Ts  =df[,setTs]
+                           covs=df[,set.cov]
                          }
                          res=cbind(res,covs,Cs,Ts) # bind new data
                          names(res)[(3:5)+3*i]=paste( c("coverage" ,"numCs" ,"numTs"),i,sep="") # change names of columns
