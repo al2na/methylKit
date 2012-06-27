@@ -4,6 +4,9 @@
 \alias{read.bismark,character,character,character-method}
 \alias{read.bismark,list,list,character-method}
 \title{Function to read in pecent methylation scores from sorted Bismark SAM files}
+\usage{
+  read.bismark(location,sample.id,assembly,save.folder=NULL,save.context=c("CpG"),read.context="CpG",nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment)
+}
 \arguments{
   \item{location}{location of sam file(s). If multiple
   files are given this arugment must be a list.}
@@ -14,7 +17,7 @@
 
   \item{save.folder}{The folder which will be used to save
   methylation call files, if set to NULL no methylation
-  call file will be saved as a text file.  The files saved
+  call file will be saved as a text file. The files saved
   can be read into R in less time using \code{read}
   function in \code{methylKit}}
 
@@ -26,7 +29,7 @@
   \item{read.context}{One of the 'CpG','CHG','CHH' or
   'none' strings. Determines what type of methylation
   context will be read-in to the memory which can be
-  immediately used for analysis.  If given as 'none',
+  immediately used for analysis. If given as 'none',
   read.bismark will not return any object, but if a
   save.folder argument given it will save the methylation
   percentage call files.}

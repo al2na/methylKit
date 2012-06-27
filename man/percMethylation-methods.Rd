@@ -3,6 +3,9 @@
 \alias{percMethylation}
 \alias{percMethylation,methylBase-method}
 \title{get percent methylation scores from methylBase object}
+\usage{
+  percMethylation(methylBase.obj)
+}
 \arguments{
   \item{methylBase.obj}{a methylBase object}
 }

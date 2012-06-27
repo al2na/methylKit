@@ -3,6 +3,9 @@
 \alias{read.transcript.features}
 \alias{read.transcript.features,character-method}
 \title{function reading exon intron, promoter structure from a given bed file}
+\usage{
+  read.transcript.features(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
+}
 \arguments{
   \item{location}{location of the bed file with 12 or more
   columns}

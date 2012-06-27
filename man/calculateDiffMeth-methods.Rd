@@ -3,13 +3,16 @@
 \alias{calculateDiffMeth}
 \alias{calculateDiffMeth,methylBase-method}
 \title{Calculates differential methylation statistics}
+\usage{
+  calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+}
 \arguments{
   \item{.Object}{a methylBase object to calculate
   differential methylation}
 
   \item{slim}{If TRUE(default) SLIM method will be used for
-  P-value adjustment. Currently TRUE is the only valid
-  value.}
+  P-value adjustment.If FALSE, qvalue method from qvalue
+  package will be used.}
 
   \item{weigthed.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}

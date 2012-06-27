@@ -4,6 +4,9 @@
 \alias{annotate.WithGenicParts,GRanges,GRangesList-method}
 \alias{annotate.WithGenicParts,methylDiff,GRangesList-method}
 \title{function to annotate given GRanges object with promoter,exon,intron & intergenic values}
+\usage{
+  annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
+}
 \arguments{
   \item{target}{: a methylDiff or a granges object storing
   chromosome locations to be annotated}

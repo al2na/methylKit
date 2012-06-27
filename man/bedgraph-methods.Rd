@@ -5,6 +5,9 @@
 \alias{bedgraph,methylRaw-method}
 \alias{bedgraph,methylRawList-method}
 \title{GETs bedgraph from methylRaw, methylRawList and methylDiff objects}
+\usage{
+  bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+}
 \arguments{
   \item{methylObj}{a \code{methylRaw} or
   \code{methlRawList} object}
@@ -15,7 +18,7 @@
 
   \item{col.name}{name of the column in \code{methylRaw},
   \code{methylRawList} or \code{methylDiff} objects to be
-  used as a score for the bedgraph.  For \code{methylDiff},
+  used as a score for the bedgraph. For \code{methylDiff},
   col.name must be one of the following 'pvalue','qvalue',
   'meth.diff'. For \code{methylRaw} and
   \code{methylRawList} it must be one of the following

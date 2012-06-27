@@ -3,6 +3,9 @@
 \alias{normalizeCoverage}
 \alias{normalizeCoverage,methylRawList-method}
 \title{normalize read coverage between samples}
+\usage{
+  normalizeCoverage(obj,method="median")
+}
 \arguments{
   \item{obj}{\code{methylRawList} object}
 

@@ -9,7 +9,7 @@
 
   \item{precedence}{TRUE|FALSE. If TRUE there will be a
   hierachy of annotation features when calculating numbers
-  (with promoter>exon>intron precedence).  This option is
+  (with promoter>exon>intron precedence). This option is
   only valid when x is a \code{annotationByGenicParts}
   object}
 

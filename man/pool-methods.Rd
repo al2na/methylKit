@@ -3,6 +3,9 @@
 \alias{pool}
 \alias{pool,methylBase-method}
 \title{function pools replicates within groups to a single sample per group}
+\usage{
+  pool(obj,sample.ids)
+}
 \arguments{
   \item{obj}{\code{methylBase} object with two groups or
   more and each group should have multiple samples}

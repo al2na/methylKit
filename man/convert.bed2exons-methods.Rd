@@ -3,6 +3,9 @@
 \alias{convert.bed2exons}
 \alias{convert.bed2exons,data.frame-method}
 \title{convert a data frame read-in from a bed file to a GRanges object for exons}
+\usage{
+  convert.bed2exons(bed.df)
+}
 \arguments{
   \item{bed.df}{a data.frame where column order and content
   resembles a bed file with 12 columns}

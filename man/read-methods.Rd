@@ -4,6 +4,10 @@
 \alias{read,character,character,character-method}
 \alias{read,list,list,character-method}
 \title{read file(s) to a methylrawList or methylraw object}
+\usage{
+  read(location,sample.id,assembly,pipeline="amp",header=T,
+  context="CpG",resolution="base",treatment)
+}
 \arguments{
   \item{location}{file location(s), either a list of
   locations (each a character string) or one location

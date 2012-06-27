@@ -6,6 +6,9 @@
 \alias{regionCounts,methylRawList,GRanges-method}
 \alias{regionCounts,methylRawList,GRangesList-method}
 \title{GETs regional counts for given GRanges or GRangesList object}
+\usage{
+  regionCounts(methylObj,regions,cov.bases=0,strand.aware=FALSE)
+}
 \arguments{
   \item{methylObj}{a \code{methylRaw} or
   \code{methlRawList} object}

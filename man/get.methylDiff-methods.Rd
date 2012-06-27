@@ -3,6 +3,9 @@
 \alias{get.methylDiff}
 \alias{get.methylDiff,methylDiff-method}
 \title{gets differentially methylated regions/bases based on cutoffs}
+\usage{
+  get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
+}
 \arguments{
   \item{.Object}{a methylDiff object}
 
@@ -14,7 +17,7 @@
 
   \item{type}{one of the "hyper","hypo" or "all" strings.
   Specifies what type of differentially menthylated
-  bases/regions should be returned.  For retrieving
+  bases/regions should be returned. For retrieving
   Hyper-methylated regions/bases type="hyper", for
   hypo-methylated type="hypo" (default:"all")}
 }

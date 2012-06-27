@@ -4,6 +4,9 @@
 \alias{annotate.WithFeature,GRanges,GRanges-method}
 \alias{annotate.WithFeature,methylDiff,GRanges-method}
 \title{function to annotate given GRanges object with a given genomic feature}
+\usage{
+  annotate.WithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")
+}
 \arguments{
   \item{target}{a GRanges/or methylDiff object storing
   chromosome locations to be annotated}

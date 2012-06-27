@@ -4,6 +4,9 @@
 \alias{tileMethylCounts,methylRaw-method}
 \alias{tileMethylCounts,methylRawList-method}
 \title{Get methylated/unmethylated base counts for tilling windows}
+\usage{
+  tileMethylCounts(methylObj,win.size=1000,step.size=1000,cov.bases=0)
+}
 \arguments{
   \item{methylObj}{\code{methylRaw} or \code{methylRawList}
   object containing base pair resolution methylation

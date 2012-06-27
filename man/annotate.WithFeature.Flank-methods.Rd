@@ -4,6 +4,9 @@
 \alias{annotate.WithFeature.Flank,GRanges,GRanges,GRanges-method}
 \alias{annotate.WithFeature.Flank,methylDiff,GRanges,GRanges-method}
 \title{function to annotate given GRanges object with promoter,exon,intron & intergenic values}
+\usage{
+  annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
+}
 \arguments{
   \item{target}{a methylDiff or a granges object storing
   chromosome locations to be annotated}
