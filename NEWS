@@ -1,21 +1,13 @@
-methylKit 0.6
+methylKit 0.5.3
 --------------
 
-NEW FUNCTIONS AND FEATURES
+IMPROVEMENTS AND BUG FIXES
 
-* new function segDiffMeth()  uses a 3 state HMM (Hidden Markov Model) to segment the genome into hypo, hyper and not differentially methylated regions. Users can also run the function completely unsupervised with different number of states. Operates on methylBase or methylDiff objects.
+* pool() bug fixed where one of the groups have one sample the pool function was not returning correct values
 
-* new function segDiffMeth.train() uses a 3 state HMM to fit the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states.
+* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for qvalue calculation will be used. If FALSE, "qvalue" methos from "qvalue" package will be used for P-value correction.
 
-* new function segDiffMeth.predict() uses a HMMFitClass object from segDiffMeth.train() to segment the genome into hypo,hyper and not differentially methylated regions in the semi-supervised setting. Otherwise there is no limit on states.
-
-* new function segMeth()  uses a 3 state HMM to segment the genome into low, medium, high methylation regions. Operates on methylRaw objects.
-
-* new function segFilter()  filters the segments based on DMC content, HMM state and number of covered bases. Operates on segment data frame output by segDiffMeth() and a methylDiff object used to get HMM segmentation.
-
-* new function seg2bed()  writes out a color coded BED track file showing segmentation of genome by segDiffMeth() or segMeth() functions. Operates on segment data frame output by segDiffMeth() or segMeth() functions.
-
-* new function seg2GRanges()  produced GRanges object for segments. Operates on segment data frame output by segDiffMeth() or segMeth() functions.
+* read.bismark() function now works correctly under Windows.
 
 
 methylKit 0.5.2
