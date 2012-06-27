@@ -5,7 +5,7 @@ IMPROVEMENTS AND BUG FIXES
 
 * pool() bug fixed where one of the groups have one sample the pool function was not returning correct values
 
-* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for qvalue calculation will be used. If FALSE, "qvalue" methos from "qvalue" package will be used for P-value correction.
+* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for qvalue calculation will be used. If FALSE, p.adjust with method="BH" option will be used for P-value correction.
 
 * read.bismark() function now works correctly under Windows.
 

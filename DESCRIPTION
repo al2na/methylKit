@@ -16,8 +16,7 @@ Imports:
     GenomicRanges,
     IRanges,
     data.table,
-    parallel,
-    qvalue
+    parallel
 Suggests:
     testthat
 Collate:

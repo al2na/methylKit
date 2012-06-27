@@ -2,7 +2,7 @@ import(methods)
 
 import(GenomicRanges)
 
-import(RHmm)
+#import(RHmm)
 
 #importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
 
@@ -16,7 +16,7 @@ importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
                   RangesList, Rle,matchMatrix,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
-importFrom("qvalue",qvalue)
+#importFrom("qvalue",qvalue)
 
 
 
@@ -26,7 +26,7 @@ importFrom("data.table", data.table)
 
 importFrom("parallel", mclapply)
 
-exportClasses(HMMFitClass)
+#exportClasses(HMMFitClass)
 exportClasses(annotationByFeature)
 exportClasses(annotationByGenicParts)
 exportClasses(methylBase)
@@ -44,7 +44,7 @@ exportMethods(convert.bed.df)
 exportMethods(convert.bed2exons)
 exportMethods(convert.bed2introns)
 exportMethods(diffMethPerChr)
-exportMethods(fast.fisher.test)
+#exportMethods(fast.fisher.test)
 exportMethods(filterByCoverage)
 exportMethods(get.methylDiff)
 exportMethods(getAssembly)

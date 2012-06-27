@@ -11,8 +11,8 @@
   differential methylation}
 
   \item{slim}{If TRUE(default) SLIM method will be used for
-  P-value adjustment.If FALSE, qvalue method from qvalue
-  package will be used.}
+  P-value adjustment.If FALSE, p.adjust with method="BH"
+  option will be used for P-value correction.}
 
   \item{weigthed.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}
