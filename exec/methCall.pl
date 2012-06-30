@@ -326,23 +326,24 @@ sub process_sam{
 
     # get strand
     my $strand;
-    if($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:CT" ){$strand="+";}
-    elsif($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:GA"){$strand="-";}
-    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:CT"){$strand="-";}
-    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:GA"){$strand="+";}
+    if($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:CT" ){$strand="+";} ## original top strand
+    elsif($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:GA"){$strand="-";}## original bottom strand
+    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:CT"){$strand="+";} ## complementary to original top strand
+    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:GA"){$strand="-";}## complementary to original bottom strand
 
     # if there is no_overlap trim the mcalls and $quals
     # adjust the start
     if($nolap && ( ($mrnm eq "=") && $paired ) ){
       
       if( ($start+$slen-1)>$mpos){
-	if(($mpos-$start)<=0){next;}
+	if(($mpos-$start)>0){ #{continue;}
 	splice @mcalls,($mpos-$start);
 	splice @quals,($mpos-$start);
+        }
       }
 
     }
-
+    
 
 
     #checking if the file is sorted

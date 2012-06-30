@@ -86,7 +86,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                       }
                       
                       # create the system command accordingly
-                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type 'paired_sam'")
+                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
                       if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
                       
                       if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}

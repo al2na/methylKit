@@ -6,12 +6,17 @@
 \alias{getCorrelation-method}
 \title{get correlation between samples in methylBase object}
 \usage{
-  getCorrelation(.Object,plot=FALSE)
+  getCorrelation(.Object,method="pearson",plot=FALSE)
 }
 \arguments{
   \item{.Object}{a methylBase object}
 
-  \item{plot}{scatterPlot if TRUE (deafult:False)}
+  \item{method}{a character string indicating which
+  correlation coefficient (or covariance) is to be computed
+  (default:"pearson", other options are "kendall" and
+  "spearman")}
+
+  \item{plot}{scatterPlot if TRUE (default:FALSE)}
 }
 \value{
   a correlation matrix object and plot scatterPlot

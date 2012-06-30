@@ -443,35 +443,61 @@ setMethod("unite", "methylRawList",
 #' get correlation between samples in methylBase object
 #' 
 #' @param .Object a methylBase object 
-#' @param plot scatterPlot if TRUE (deafult:False) 
+#' @param method a character string indicating which correlation coefficient (or covariance) is to be computed (default:"pearson", other options are "kendall" and "spearman") 
+#' @param plot scatterPlot if TRUE (default:FALSE) 
 #' @return a correlation matrix object and plot scatterPlot
-#' @usage getCorrelation(.Object,plot=FALSE)
+#' @usage getCorrelation(.Object,method="pearson",plot=FALSE)
 #' @aliases getCorrelation,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getCorrelation-methods
-setGeneric("getCorrelation", function(.Object,plot=FALSE) standardGeneric("getCorrelation"))
+setGeneric("getCorrelation", function(.Object,method="pearson",plot=FALSE) standardGeneric("getCorrelation"))
 
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation-method
 setMethod("getCorrelation", "methylBase",
-                    function(.Object,plot){
+                    function(.Object,method,plot){
                         meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
-                        print( cor(meth.mat) )
+                        print( cor(meth.mat,method=method) )
+                      
                         
-                        panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
+                        panel.cor.pearson <- function(x, y, digits=2, prefix="", cex.cor, ...)
                         {
                           usr <- par("usr"); on.exit(par(usr))
                           par(usr = c(0, 1, 0, 1))
-                          r <- abs(cor(x, y))
+                          r <- abs(cor(x, y,method="pearson"))
                           txt <- format(c(r, 0.123456789), digits=digits)[1]
                           txt <- paste(prefix, txt, sep="")
                           if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
                           text(0.5, 0.5, txt, cex = cex.cor * r)
                         }
-                          
+
+                        panel.cor.kendall <- function(x, y, digits=2, prefix="", cex.cor, ...)
+                        {
+                          usr <- par("usr"); on.exit(par(usr))
+                          par(usr = c(0, 1, 0, 1))
+                          r <- abs(cor(x, y,method="kendall"))
+                          txt <- format(c(r, 0.123456789), digits=digits)[1]
+                          txt <- paste(prefix, txt, sep="")
+                          if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+                          text(0.5, 0.5, txt, cex = cex.cor * r)
+                        }
+                        
+                        panel.cor.spearman <- function(x, y, digits=2, prefix="", cex.cor, ...)
+                        {
+                          usr <- par("usr"); on.exit(par(usr))
+                          par(usr = c(0, 1, 0, 1))
+                          r <- abs(cor(x, y,method="spearman"))
+                          txt <- format(c(r, 0.123456789), digits=digits)[1]
+                          txt <- paste(prefix, txt, sep="")
+                          if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+                          text(0.5, 0.5, txt, cex = cex.cor * r)
+                        }
+                        
+                        
+                        
                         panel.my.smooth2<-function(x, y, col = par("col"), bg = NA, pch = par("pch"), cex = 1, col.smooth = "darkgreen", span = 2/3, iter = 3, ...) 
                         {
                              par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
@@ -502,10 +528,27 @@ setMethod("getCorrelation", "methylBase",
                         
                         if(plot)
                         {  
-                          pairs(meth.mat, 
+                         
+                          if(method=="spearman")
+                          { pairs(meth.mat, 
                               lower.panel=panel.my.smooth2, 
-                              upper.panel=panel.cor,
-                              diag.panel=panel.hist,main=paste(.Object@context, .Object@resolution ,"correlation") )
+                              upper.panel=panel.cor.spearman,
+                              diag.panel=panel.hist,main=paste(.Object@context, .Object@resolution ,method,"cor.") )
+                          }
+                          if(method=="kendall")
+                          { pairs(meth.mat, 
+                                  lower.panel=panel.my.smooth2, 
+                                  upper.panel=panel.cor.kendall,
+                                  diag.panel=panel.hist,main=paste(.Object@context, .Object@resolution ,method,"cor.") )
+                          }
+                          if(method=="pearson")
+                          { pairs(meth.mat, 
+                                  lower.panel=panel.my.smooth2, 
+                                  upper.panel=panel.cor.pearson,
+                                  diag.panel=panel.hist,main=paste(.Object@context, .Object@resolution ,method,"cor.") )
+                          }
+                          
+                          
                         }
                     }  
  )
