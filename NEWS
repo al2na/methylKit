@@ -3,11 +3,13 @@ methylKit 0.5.3
 
 IMPROVEMENTS AND BUG FIXES
 
-* pool() bug fixed where one of the groups have one sample the pool function was not returning correct values
+* pool() function bug fixed where one of the groups have one sample the pool function was not returning correct values
 
-* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for qvalue calculation will be used. If FALSE, p.adjust with method="BH" option will be used for P-value correction.
+* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for q-value calculation will be used. If FALSE, p.adjust with method="BH" option will be used for P-value correction.
 
 * read.bismark() function now works correctly under Windows.
+
+* read.bismark() bug occurring when the reads are paired and overlapping is fixed now.
 
 
 methylKit 0.5.2
