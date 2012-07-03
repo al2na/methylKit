@@ -11,6 +11,7 @@ IMPROVEMENTS AND BUG FIXES
 
 * read.bismark() bug occurring when the reads are paired and overlapping is fixed now.
 
+* getCorrelation() function has a new option called "method" can take the value of "spearman","person" or "kendall"
 
 methylKit 0.5.2
 --------------
