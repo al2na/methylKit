@@ -6,7 +6,7 @@ Version: 0.5.3
 Date: 2012-06-16
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: Altuna Akalin <aakalin@gmail.com>
-Description: DNA methylation analysis RRBS,ERRBS,BS-seq
+Description: DNA methylation analysis RRBS,ERRBS,BS-seq,5mC,5hmC
 License: Artistic-2.0
 LazyLoad: yes
 Depends:
@@ -32,4 +32,5 @@ Collate:
     'percMethylation.R'
     'normalizeCoverage.R'
     'pool.R'
+    'adjust.methylC.R'
 

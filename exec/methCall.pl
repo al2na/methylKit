@@ -328,8 +328,8 @@ sub process_sam{
     my $strand;
     if($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:CT" ){$strand="+";} ## original top strand
     elsif($cols[14] eq "XR:Z:CT" && $cols[15] eq "XG:Z:GA"){$strand="-";}## original bottom strand
-    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:CT"){$strand="-";} ## complementary to original top strand, bismark says - strand to this
-    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:GA"){$strand="+";}## complementary to original bottom strand, bismark says + strand to this
+    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:CT"){$strand="+";} ## complementary to original top strand, bismark says - strand to this
+    elsif($cols[14] eq "XR:Z:GA" && $cols[15] eq "XG:Z:GA"){$strand="-";}## complementary to original bottom strand, bismark says + strand to this
 
     # if there is no_overlap trim the mcalls and $quals
     # adjust the start

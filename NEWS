@@ -1,6 +1,11 @@
 methylKit 0.5.3
 --------------
 
+NEW FUNCTIONS AND FEATURES
+
+* new function adjust.methylC() can be used to adjust measured 5mC levels by measured 5hmC levels
+
+
 IMPROVEMENTS AND BUG FIXES
 
 * pool() function bug fixed where one of the groups have one sample the pool function was not returning correct values
@@ -10,6 +15,8 @@ IMPROVEMENTS AND BUG FIXES
 * read.bismark() function now works correctly under Windows.
 
 * read.bismark() bug occurring when the reads are paired and overlapping is fixed now.
+
+* read.bismark() bug occurring when the alignment is done in non-directional manner is fixed now. However, illumina sequencing protocols are directional and you are unlikely to have encountered this error if you aligned your sequences in a directional manner.
 
 * getCorrelation() function has a new option called "method" can take the value of "spearman","person" or "kendall"
 
