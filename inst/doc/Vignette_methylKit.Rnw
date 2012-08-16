@@ -10,7 +10,7 @@
 \usepackage{url}               % used in bibliography
 \bibliographystyle{unsrt}
 
-
+\usepackage{Sweave}
 
 
 
@@ -24,11 +24,11 @@ Matthias Kormaksson \\ \texttt{mk375@cornell.edu}
 
 %%%%%%% YOU may need to introduce result='hide' to compile this again
 
-% \SweaveOpts{fig.path='figure/',dev='pdf',external=TRUE,fig.align='center',cache=TRUE,message=FALSE}
-<<set-options,echo=FALSE,results=hide,cache=FALSE>>=
-options(replace.assign=TRUE,width=60)
-knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
-@
+\SweaveOpts{fig.path='figure/',dev='pdf',external=FALSE,fig.align='center',cache=TRUE,message=FALSE}
+%%%<<set-options,echo=FALSE,results='hide',cache=FALSE>>=
+%%%options(replace.assign=TRUE,width=60)
+%%%knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
+%%%@
 
 
 \maketitle
@@ -109,8 +109,8 @@ The following command plots the histogram for percent methylation distribution.T
 
 
 \begin{center}
-%%%%%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE,width=5, height=5 >>=
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 @
 \end{center}
@@ -121,8 +121,8 @@ We can also plot the read coverage per base information in a similar way, again 
 
 
 \begin{center}
-%%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6.5,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE,width=5, height=5 >>=
 
 library ("graphics")
 getCoverageStats(myobj[[2]],plot=T,both.strands=F)
@@ -161,8 +161,8 @@ meth.min=unite(myobj,min.per.group=1L)
 We can check the correlation between samples using \texttt{getCorrelation}. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
 
 \begin{center}
-%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE,width=6, height=6 >>=
 
 getCorrelation(meth,plot=T)
 @
@@ -171,8 +171,8 @@ getCorrelation(meth,plot=T)
 \subsection{Clustering samples}
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 \begin{center}
-%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE ,width=6, height=6 >>=
 
 clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 @
@@ -184,19 +184,19 @@ hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 @
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 \begin{center}
-%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE ,width=6, height=6 >>=
 
 PCASamples(meth, screeplot=TRUE)
 @
 \end{center}
-\\
-\\
+\ \\ \ \\
+\ \\ \ \\
 We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
 
 \begin{center}
-%%%%<<fig=TRUE , echo =TRUE >>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE ,width=6, height=6 >>=
 
 PCASamples(meth)
 @
@@ -208,7 +208,7 @@ For some situations, it might be desirable to summarize methylation information 
 
 <<warning=FALSE>>=
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
-head(tiles[[1]])
+head(tiles[[1]],3)
 @
 
 \subsection{Finding differentially methylated bases or regions}
@@ -304,8 +304,8 @@ getTargetAnnotationStats(diffAnn,percentage=TRUE,precedence=TRUE)
 We can also plot the percentage of differentially methylated bases overlapping with exon/intron/promoters
 
 \begin{center}
-%%%%<<fig=TRUE , echo =TRUE>>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE,width=6, height=6>>=
 
 plotTargetAnnotation(diffAnn,precedence=TRUE,
     main="differential methylation annotation")
@@ -315,8 +315,8 @@ plotTargetAnnotation(diffAnn,precedence=TRUE,
 We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
 
 \begin{center}
-%%%<<fig=TRUE , echo =TRUE>>=
-<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+%%%<<fig.width=6,fig.height=6,out.width='.9\\linewidth'>>=
+<<fig=TRUE , echo =TRUE,width=6, height=6>>=
 
 plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
        main="differential methylation annotation")
@@ -363,8 +363,16 @@ Percent methylation values can be extracted from \texttt{methylBase} object by u
 perc.meth=percMethylation(meth)
 @
 
+\section{Frequently Asked Questions}
+Answers to frequently asked questions and various how-tos can be found at \url{http://zvfak.blogspot.com/search/label/methylKit}. In addition, \url{http://code.google.com/p/methylkit/} has online documentation and links to tutorials and other related material.
+
+
+
 \section{Acknowledgements}
-This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas and support. Their support and discussions lead to development of methylKit.
+This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas, data and support. Their support and discussions lead to development of methylKit.
+
+
+
 
 \section{R session info}
 <<>>=
