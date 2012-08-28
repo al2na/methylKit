@@ -3,20 +3,22 @@
 \alias{annotate.WithFeature.Flank}
 \alias{annotate.WithFeature.Flank,GRanges,GRanges,GRanges-method}
 \alias{annotate.WithFeature.Flank,methylDiff,GRanges,GRanges-method}
-\title{function to annotate given GRanges object with promoter,exon,intron & intergenic values}
+\title{Annotate an object with two sets of genomic features}
 \usage{
   annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
 }
 \arguments{
-  \item{target}{a methylDiff or a granges object storing
+  \item{target}{a \code{\link[methylKit]{methylDiff}} or a
+  \code{\link[GenomicRanges]{GRanges}} object storing
   chromosome locations to be annotated}
 
-  \item{feature}{a granges object storing chromosome
-  locations of a feature (can be CpG islands, ChIP-seq
-  peaks, etc)}
+  \item{feature}{a \code{\link[GenomicRanges]{GRanges}}
+  object storing chromosome locations of a feature (can be
+  CpG islands, ChIP-seq peaks, etc)}
 
-  \item{flank}{a granges object storing chromosome
-  locations of the flanks of the feature}
+  \item{flank}{a \code{\link[GenomicRanges]{GRanges}}
+  object storing chromosome locations of the flanks of the
+  feature}
 
   \item{feature.name}{string for the name of the feature}
 
@@ -27,16 +29,25 @@
   (def:FALSE)}
 }
 \value{
-  returns an \code{annotationByFeature} object
+  returns an \code{\link[methylKit]{annotationByFeature}}
+  object
 }
 \description{
-  function to annotate given GRanges object with
-  promoter,exon,intron & intergenic values
+  The function annotates given genomic feature or methylKit
+  object with two sets of annotation. It is primarily
+  useful when annotating objects with CpG islands and
+  shores.
 }
 \examples{
 data(methylKit)
 cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
-annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores)
+annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+}
+\seealso{
+  \code{\link[methylKit]{getMembers}},
+  \code{\link[methylKit]{getTargetAnnotationStats}},
+  \code{\link[methylKit]{getFeatsWithTargetsStats}},
+  \code{\link[methylKit]{plotTargetAnnotation}}
 }
 

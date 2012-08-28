@@ -3,32 +3,46 @@
 \alias{annotate.WithGenicParts}
 \alias{annotate.WithGenicParts,GRanges,GRangesList-method}
 \alias{annotate.WithGenicParts,methylDiff,GRangesList-method}
-\title{function to annotate given GRanges object with promoter,exon,intron & intergenic values}
+\title{Annotate given object with gene annotation}
 \usage{
   annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
 }
 \arguments{
-  \item{target}{: a methylDiff or a granges object storing
+  \item{target}{a \code{\link[methylKit]{methylDiff}} or a
+  \code{\link[GenomicRanges]{GRanges}} object storing
   chromosome locations to be annotated}
 
-  \item{GRangesList.obj}{: A GRangesList object containing
-  GRanges object for promoter,exons,introns and TSSes, or
-  simply output of read.transcript.features function}
+  \item{GRangesList.obj}{A
+  \code{\link[GenomicRanges]{GRangesList}} object
+  containing GRanges object for promoter,exons,introns and
+  TSSes, or simply output of
+  \code{\link[methylKit]{read.transcript.features}}
+  function}
 
-  \item{strand}{: If set to TRUE, annotation features and
+  \item{strand}{If set to TRUE, annotation features and
   target features will be overlapped based on strand
   (def:FALSE)}
 }
 \value{
-  \code{annotationByGenicParts} object
+  \code{\link[methylKit]{annotationByGenicParts}} object
 }
 \description{
-  function to annotate given GRanges object with
-  promoter,exon,intron & intergenic values
+  The function annotates given genomic feature or methylKit
+  object with gene annotation such as promoter, exon,
+  intron & intergenic. It also gets the distance to nearest
+  TSS (transcription start site) for each genomic feature
+  or methylation event.
 }
 \examples{
 data(methylKit)
 gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-annotate.WithGenicParts(methylDiff.obj,gene.obj)
+annotate.WithGenicParts(methylDiff.obj, gene.obj)
+}
+\seealso{
+  \code{\link[methylKit]{getMembers}},
+  \code{\link[methylKit]{getTargetAnnotationStats}},
+  \code{\link[methylKit]{getFeatsWithTargetsStats}},
+  \code{\link[methylKit]{getAssociationWithTSS}},
+  \code{\link[methylKit]{plotTargetAnnotation}}
 }
 

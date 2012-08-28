@@ -38,9 +38,9 @@
   The resulting object is a class of \code{methylBase}
 }
 \examples{
-## myobj is a methylRawList object
-# unite(myobj)
-# unite(myobj,min.per.group=1L) # at least 1 sample per group should be covered for any given base/region
-# unite(myobj,destrand=TRUE)
+data(methylKit)
+## Following
+my.methylBase=unite(methylRawList.obj)
+my.methylBase=unite(methylRawList.obj,destrand=TRUE)
 }
 

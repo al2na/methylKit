@@ -21,8 +21,15 @@
   \item{header}{if the input file has a header or not
   (default: TRUE)}
 
-  \item{pipeline}{name of the alignment pipeline, currently
-  only supports amp or bismark (default: 'amp')}
+  \item{pipeline}{name of the alignment pipeline, it can be
+  either "amp" or "bismark". The methylation text files
+  generated from other pipelines can be read as generic
+  methylation text files by supplying a named
+  \code{\link[base]{list}} argument as "pipeline" argument.
+  The named \code{list} should containt column numbers
+  which denotes which column of the text file corresponds
+  to values and genomic location of the methylation events.
+  See Details for more.}
 
   \item{resolution}{designates whether methylation
   information is base-pair resolution or regional
@@ -39,7 +46,52 @@
   returns methylRaw or methylRawList
 }
 \description{
-  read a list of locations or one location and create a
-  methylrawList or methylraw object
+  The function reads a list of files or files with
+  methylation information for bases/region in the genome
+  and creates a methylrawList or methylraw object
+}
+\section{Details}{
+  When \code{pipeline} argument is a list, it is exptected
+  to provide a named list with following names. 'fraction'
+  is a logical value, denoting if the column frequency of
+  Cs has a range from [0-1] or [0-100]. If true it assumes
+  range is [0-1]. 'chr.col" is the number of the column
+  that has chrosome string. 'start.col' is the number of
+  the column that has start coordinate of the base/region
+  of the methylation event. 'end.col' is the number of the
+  column that has end coordinate of the base/region of the
+  methylation event. 'coverage.col' is the number of the
+  column that has read coverage values. 'strand.col' is the
+  number of the column that has strand information, the
+  strand information in the file has to be in the form of
+  '+' or '-', 'freqC.col' is the number of the column that
+  has the frequency of Cs. See examples to see how to read
+  a generic methylation text file.
+}
+\examples{
+# this is a list of example files, ships with the package
+# for your own analysis you will just need to provide set of paths to files
+#you will not need the "system.file(..."  part
+file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+
+# read the files to a methylRawList object: myobj
+myobj=read( file.list,
+sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+
+# read one file as methylRaw object
+myobj=read( file.list[[1]],
+sample.id="test1",assembly="hg18")
+
+# read a generic text file containing CpG methylation values
+# let's first look at the content of the file
+generic.file=system.file("extdata", "generic1.CpG.txt", package = "methylKit")
+read.table(generic.file,header=TRUE)
+
+# And this is how you can read that generic file as a methylKit object
+myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
+sample.id="test1",assembly="hg18")
 }
 

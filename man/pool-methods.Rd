@@ -2,7 +2,7 @@
 \name{pool}
 \alias{pool}
 \alias{pool,methylBase-method}
-\title{function pools replicates within groups to a single sample per group}
+\title{Pools replicates within groups to a single sample per group}
 \usage{
   pool(obj,sample.ids)
 }
@@ -26,7 +26,11 @@
 \examples{
 library(methylKit)
 data(methylKit)
-newBase=pool(methylBase.obj,sample.ids=c("test","control"))
+
+# methylBase.obj has two groups, each group has two samples,
+# the following function will pool the samples in each group
+# so that each group will be represented by one pooled sample
+pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 }
 \author{
   Altuna Akalin

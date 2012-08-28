@@ -1,13 +1,14 @@
 
 
 
-#' GETs bedgraph from methylRaw, methylRawList and methylDiff objects
+#' Get bedgraph from methylRaw, methylRawList and methylDiff objects
 #'
-#' Convert \code{methylRaw}, \code{methylRawList} or \code{methylDiff} object into a bedgraph format
+#' The function converts \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylDiff}} object 
+#' into a bedgraph format. It either writes as a file or returns a \code{data.frame}
 #' @param methylObj a \code{methylRaw} or \code{methlRawList} object
-#' @param file.name  Default: NULL, if given a bedgraph file will be written, if NULL a data.frame or a list of data frames will be returned
+#' @param file.name  Default: NULL. if a string is given a bedgraph file will be written, if NULL a data.frame or a list of data frames will be returned
 #' @param col.name   name of the column in \code{methylRaw}, \code{methylRawList} or \code{methylDiff} objects to be used as a score for the bedgraph.
-#'                   For \code{methylDiff}, col.name must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and \code{methylRawList}
+#'                   For \code{methylDiff}, \code{col.name} must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and \code{methylRawList}
 #'                   it must be one of the following 'coverage', 'numCs','numTs', 'perc.meth'
 #' @param unmeth     when working with \code{methylRaw} or \code{methylRawList} objects should you output unmethylated C percentage
 #'                   this makes it easier to see the unmethylated bases because their % methylation values will be zero. Only invoked when file.name is not NULL.
@@ -15,8 +16,24 @@
 #' @param negative Default FALSE, If TRUE, the score column of the bedgraph will be multiplied by -1. Ignored when col.name='perc.meth'
 #' @param add.on additional string to be add on the track line of bedgraph. can be viewlimits,priority etc. Check bedgraph track line options at UCSC browser
 #'
-#' @return RETURNS a data.frame or list of data.frames if file.name=NULL, if a file.name given appropriate bed file will be written to that file
+#' @return Returns a \code{data.frame} or list of data.frames if \code{file.name=NULL}, if a file.name given appropriate bed file will be written to that file
 #' @usage bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' @examples
+#' data(methylKit)
+#' 
+#' # getting a bedgraph file from a methylDiff object containing differential methylation percentages
+#' bedgraph(methylDiff.obj,file.name="test.bed",col.name="meth.diff",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' 
+#' # remove the file
+#' unlink("test.bed")
+#' 
+#' # getting a bedgraph file from a methylBase object containing percent methylation values
+#' bedgraph(methylRawList.obj[[1]],file.name="test2.bed",col.name="perc.meth",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' 
+#' unlink("test2.bed") # remove the file
+#' 
+#' 
+#' 
 #' @export
 #' @docType methods
 #' @rdname bedgraph-methods

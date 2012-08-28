@@ -17,4 +17,9 @@
 \description{
   get percent methylation scores from methylBase object
 }
+\examples{
+data(methylKit)
+mat=percMethylation(methylBase.obj)
+head(mat)
+}
 

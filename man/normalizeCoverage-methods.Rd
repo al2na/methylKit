@@ -22,9 +22,8 @@
   mean or median of coverage distributions
 }
 \examples{
-library(methylKit)
 data(methylKit)
-newObj=normalizeCoverage(methylRawList.obj)
+newObj=normalizeCoverage(methylRawList.obj,method="median")
 }
 \author{
   Altuna Akalin

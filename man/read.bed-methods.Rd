@@ -18,10 +18,15 @@
   \code{\link{GRanges}} object
 }
 \description{
-  read a bed file and convert it to GRanges
+  The function reads a BED file and coverts it to a
+  \code{\link[GenomicRanges]{GRanges}} object
 }
 \note{
   one bed track per file is only accepted, the bed files
-  with multiple tracks will cause en error
+  with multiple tracks will cause an error
+}
+\examples{
+bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
 }
 

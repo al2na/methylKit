@@ -149,7 +149,7 @@ colSds <- function(x, ...) {
 # Principal Components Analysis on methylBase object
 # x matrix each column is a sample
 # cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-.pcaPlot = function(x, cor=TRUE,comp1=1,comp2=2, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
+.pcaPlot = function(x,comp1=1,comp2=2, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
   #x.pr = princomp(x, cor=cor)
   
   if(!is.null(sd.threshold))
@@ -182,7 +182,7 @@ colSds <- function(x, ...) {
 
 # Principal Components Analysis on methylBase object on transposed data
 # x matrix each column is a sample
-.pcaPlotT = function(x,cor=TRUE,comp1=1,comp2=2,screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
+.pcaPlotT = function(x,comp1=1,comp2=2,screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
   #x.pr = princomp(x, cor=cor)
   if(!is.null(sd.threshold))
   {
@@ -216,13 +216,24 @@ colSds <- function(x, ...) {
 # end of regular functions to be used in S4 functions
 #---------------------------------------------------------------------------------------
 
-#' CpG Dinucleotide Methylation Hierarchical Cluster Analysis
+#' Hierarchical Clustering using methylation data
+#'  
+#' The function clusters samples using \code{\link[stats]{hclust}} function and various distance metrics derived from percent methylation 
+#' per base or per region for each sample.
+#' 
 #' 
 #' @param .Object a \code{methylBase} object
 #' @param dist the distance measure to be used. This must be one of "\code{correlation}", "\code{euclidean}", "\code{maximum}", "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". Any unambiguous substring can be given. (default:"\code{correlation}")
 #' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" or "\code{centroid}". (default:"\code{ward}")
 #' @param plot a logical value indicating whether to plot hierarchical clustering. (default:TRUE) 
 #' @usage clusterSamples(.Object, dist="correlation", method="ward", plot=TRUE)
+#' @examples
+#' data(methylKit)
+#' 
+#' clusterSamples(methylBase.obj, dist="correlation", method="ward", plot=TRUE)
+#' 
+#' 
+#' 
 #' @return a \code{tree} object of a hierarchical cluster analysis using a set of dissimilarities for the n objects being clustered.
 #'
 #' @export
@@ -245,10 +256,11 @@ setMethod("clusterSamples", "methylBase",
                         }
 )
 
-#' CpG Dinucleotide Methylation Principal Components Analysis
+#' Principal Components Analysis of Methylation data
+#' 
+#' The function does a PCA analysis using \code{\link[stats]{prcomp}} function using percent methylation matrix as an input.
 #' 
 #' @param .Object a \code{methylBase} object
-#' @param cor [Not used anymore] cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (default: TRUE)
 #' @param screeplot a logical value indicating whether to plot the variances against the number of the principal component. (default: FALSE)
 #' @param adj.lim a vector indicating the propotional adjustment of xlim (adj.lim[1]) and ylim (adj.lim[2]). (default: c(0.0004,0.1))
 #' @param scale logical indicating if \code{prcomp} should scale the data to have unit variance or not (default: TRUE)
@@ -260,7 +272,13 @@ setMethod("clusterSamples", "methylBase",
 #' @param sd.threshold standard deviation threshold to remove bases/regions that have % methylation standard dev. lower than this threshold.
 #'        if NULL no strandard deviation will be calculated and this threshold will not be applied.
 #' @param obj.return if the result of \code{prcomp} function should be returned or not. Default:FALSE
-#' @usage PCASamples(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
+#' @usage PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
+#' 
+#' @examples
+#' data(methylKit) 
+#' PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
+#' 
+#' 
 #' @return The form of the value returned by \code{PCASamples} is the summary of principal component analysis by \code{prcomp}.
 #' @note cor option is not in use anymore, since \code{prcomp} is used for PCA analysis instead of \code{princomp}
 #'  
@@ -268,12 +286,12 @@ setMethod("clusterSamples", "methylBase",
 #' @export
 #' @docType methods
 #' @rdname PCASamples-methods
-setGeneric("PCASamples", function(.Object, cor=TRUE, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE) standardGeneric("PCASamples"))
+setGeneric("PCASamples", function(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE) standardGeneric("PCASamples"))
 
 #' @rdname PCASamples-methods
 #' @aliases PCASamples,methylBase-method
 setMethod("PCASamples", "methylBase",
-                    function(.Object, cor, screeplot, adj.lim,scale,center,comp,transpose,sd.threshold,obj.return){
+                    function(.Object, screeplot, adj.lim,scale,center,comp,transpose,sd.threshold,obj.return){
                       
                         mat      = getData(.Object)
                         mat      = mat[ rowSums(is.na(mat))==0, ] # remove rows containing NA values, they might be introduced at unite step
@@ -281,12 +299,12 @@ setMethod("PCASamples", "methylBase",
                         names(meth.mat)=.Object@sample.ids
                         
                         if(transpose){
-                          .pcaPlotT(meth.mat,cor=cor,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
+                          .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
                                     treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context
                                     ,scale=scale,center=center,sd.threshold=sd.threshold,obj.return=obj.return)
 
                         }else{
-                          .pcaPlot(meth.mat, cor=cor,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
+                          .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
                                   treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context,scale=scale,
                                  center=center,sd.threshold=sd.threshold,obj.return=obj.return)
                         }

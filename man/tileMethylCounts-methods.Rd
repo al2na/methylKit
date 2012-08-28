@@ -8,9 +8,9 @@
   tileMethylCounts(methylObj,win.size=1000,step.size=1000,cov.bases=0)
 }
 \arguments{
-  \item{methylObj}{\code{methylRaw} or \code{methylRawList}
-  object containing base pair resolution methylation
-  information}
+  \item{methylObj}{\code{\link{methylRaw}} or
+  \code{\link{methylRawList}} object containing base pair
+  resolution methylation information}
 
   \item{win.size}{an integer for the size of the tiling
   windows}
@@ -29,5 +29,10 @@
   counts over tilling windows accross genome. This function
   can be used when differential methylated analysis is
   preferable to tilling windows instead of base pairs.
+}
+\examples{
+data(methylKit)
+
+tiled.methylRaw=tileMethylCounts(methylObj=methylRawList.obj,win.size=1000,step.size=1000,cov.bases=0)
 }
 

@@ -132,21 +132,21 @@ check.bed.validity<-function(bed.df,type="none")
 # SECTION 1: S4 functions
 #######################################
 
-#' convert a data frame read-in from a bed file to a GRanges object
-#'  
-#' @param bed  a data.frame where column order and content resembles a bed file with 12 columns
-#' @usage convert.bed.df(bed)
-#' @return \code{\link{GRanges}} object
-#'
-#' @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
-#'
-#' @export
-#' @docType methods
-#' @rdname convert.bed.df-methods
+# convert a data frame read-in from a bed file to a GRanges object
+#  
+# @param bed  a data.frame where column order and content resembles a bed file with 12 columns
+# @usage convert.bed.df(bed)
+# @return \code{\link{GRanges}} object
+#
+# @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
+#
+#  @export
+#  @docType methods
+#  @rdname convert.bed.df-methods
 setGeneric("convert.bed.df",function(bed) standardGeneric("convert.bed.df"))
 
-#' @aliases convert.bed.df,data.frame-method
-#' @rdname convert.bed.df-methods
+#  @aliases convert.bed.df,data.frame-method
+#  @rdname convert.bed.df-methods
 setMethod("convert.bed.df" ,signature(bed = "data.frame" ),
                             function(bed){
                               
@@ -173,21 +173,21 @@ setMethod("convert.bed.df" ,signature(bed = "data.frame" ),
                             return(grange)
 })
 
-#' convert a data frame read-in from a bed file to a GRanges object for exons
-#'  
-#' @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
-#' @usage convert.bed2exons(bed.df)
-#' @return \code{\link{GRanges}} object
-#'
-#' @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
-#'
-#' @export
-#' @docType methods
-#' @rdname convert.bed2exons-methods
+# convert a data frame read-in from a bed file to a GRanges object for exons
+#  
+# @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
+# @usage convert.bed2exons(bed.df)
+# @return \code{\link{GRanges}} object
+#
+# @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
+#
+#  @export 
+#  @docType methods
+#  @rdname convert.bed2exons-methods
 setGeneric("convert.bed2exons",function(bed.df) standardGeneric("convert.bed2exons"))
 
-#' @aliases convert.bed2exons,data.frame-method
-#' @rdname convert.bed2exons-methods
+#  @aliases convert.bed2exons,data.frame-method
+#  @rdname convert.bed2exons-methods
 setMethod("convert.bed2exons" ,signature(bed.df = "data.frame" ),
                             function(bed.df){
                               
@@ -195,21 +195,21 @@ setMethod("convert.bed2exons" ,signature(bed.df = "data.frame" ),
                             bed12.to.exons(bed.df)
 })
 
-#' convert a data frame read-in from a bed file to a GRanges object for introns
-#'  
-#' @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
-#' @usage convert.bed2introns(bed.df)
-#' @return \code{\link{GRanges}} object
-#'
-#' @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
-#'
-#' @export
-#' @docType methods
-#' @rdname convert.bed2introns-methods
+# convert a data frame read-in from a bed file to a GRanges object for introns
+#  
+# @param bed.df  a data.frame where column order and content resembles a bed file with 12 columns
+# @usage convert.bed2introns(bed.df)
+# @return \code{\link{GRanges}} object
+#
+# @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
+#
+#  @export
+#  @docType methods
+# @rdname convert.bed2introns-methods
 setGeneric("convert.bed2introns",function(bed.df) standardGeneric("convert.bed2introns"))
 
-#' @aliases convert.bed2introns,data.frame-method
-#' @rdname convert.bed2introns-methods
+#  @aliases convert.bed2introns,data.frame-method
+#  @rdname convert.bed2introns-methods
 setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
                             function(bed.df){
                               
@@ -219,14 +219,19 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 
 
 #' read a bed file and convert it to GRanges
-#'  
+#' 
+#' The function reads a BED file and coverts it to a \code{\link[GenomicRanges]{GRanges}} object  
+#'    
 #' @param location  location of the file, a character string such as: "/home/user/my.bed"
 #' @param remove.unsual if TRUE(default) remove the chromomesomes with unsual names, mainly random chromsomes etc
 #'
 #' @usage read.bed(location,remove.unsual=TRUE)
 #' @return \code{\link{GRanges}} object
-#'
-#' @note one bed track per file is only accepted, the bed files with multiple tracks will cause en error
+#' @examples
+#' bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+#' bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
+#' 
+#' @note one bed track per file is only accepted, the bed files with multiple tracks will cause an error
 #'
 #' @export
 #' @docType methods
@@ -250,7 +255,9 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
                     
 })
 
-#' function reading exon intron, promoter structure from a given bed file
+#' Read  transcript features from a BED file
+#' 
+#' The function returns a \code{\link[GenomicRanges]{GRangesList}} containing exon, intron, TSS(transcription start site) and promoter locations
 #'
 #' @param location location of the bed file with 12 or more columns
 #' @param remove.unsual remove the chromomesomes with unsual names, mainly random chromsomes etc
@@ -258,7 +265,10 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
 #' @param down.flank down-stream from TSS to detect promoter boundaries
 #' @param unique.prom     get only the unique promoters, promoter boundaries will not have a gene name if you set this option to be TRUE
 #' @usage read.transcript.features(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
-#' @return a \code{\link{GRangesList}} containing locations of exon/intron/promoter/TSS
+#' @return a \code{\link[GenomicRanges]{GRangesList}} containing locations of exon/intron/promoter/TSS
+#' @examples
+#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' 
 #' @note  one bed track per file is only accepted, the bed files with multiple tracks will cause en error
 #'
 #' @export
@@ -320,15 +330,26 @@ setMethod("read.transcript.features", signature(location = "character"),#,remove
                     GRangesList(exons=exons,introns=introns,promoters=prom,TSSes=tssg)
 })
 
-#' a function to get upstream and downstream adjecent regions to a genomic feature such as CpG islands
+#' Get upstream and downstream adjacent regions to a genomic feature
 #' 
-#' @param grange GRanges object for the feature
+#' The function returns flanking regions on either side of a genomic feature. It is useful for getting flanking regions such as CpG island shores.
+#' 
+#' @param grange \code{\link[GenomicRanges]{GRanges}} object for the feature
 #' @param flank  number of basepairs for the flanking regions
 #' @param clean  If set to TRUE, flanks overlapping with other main features will be trimmed, and overlapping flanks will be removed
 #'        this will remove multiple counts when other features overlap with flanks
 #'
 #' @usage getFlanks(grange,flank=2000,clean=T)
-#' @return GRanges object for flanking regions
+#' @examples
+#' 
+#' # read the bed file as GRanges object
+#' bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+#' bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
+#' 
+#' # get flanks on the either side
+#' bed.flanks=getFlanks(bed.gr,flank=2000,clean=TRUE)
+#' 
+#' @return \code{\link[GenomicRanges]{GRanges}} object for flanking regions
 #' @export
 #' @docType methods
 #' @rdname getFlanks-methods
@@ -354,7 +375,7 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 #' @param remove.unsual  remove chromsomes with unsual names random, Un and antyhing with "_" character
 #' @param feature.flank.name the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
 #' @usage  read.feature.flank(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL)
-#' @return a GenomicRangesList contatining one GRanges object for flanks and one for GRanges object for the main feature.
+#' @return a \code{\link[GenomicRanges]{GenomicRangesList}} contatining one GRanges object for flanks and one for GRanges object for the main feature.
 #'   
 #' @examples
 #'  # location of the example CpG file
@@ -391,24 +412,34 @@ setMethod("read.feature.flank", signature(location = "character"),
 
 # A set of objects that will hold statistics about feature and annotation overlap
 
-#' An S4 class that information on overlap of target features with annotation features  
+#' An S4 class for  overlap of target features with a generic annotation 
 #'
-#' This object is desgined to hold statistics and information about genomic feature overlaps
+#' This object is desgined to hold statistics and information about genomic feature overlaps it extends \code{\link{list}} class.
 #'          
 #' @section Slots:\describe{
 #'                  \item{\code{members}}{a matrix showing overlap of target features with annotation genomic features}
-#'
-#'                  \item{\code{annotation}}{a named vector of percentages}
-#'
-#'                  \item{\code{precedence}}{a named vector of percentages}
-#'
-#'                  \item{\code{num.hierarchica}}{vector}
-#'
+#'                  \item{\code{annotation}}{a named vector of percentages of overlap between feature and annotation}'
+#'                  \item{\code{precedence}}{a named vector of percentages of overlap between feature and annotation}
+#'                  \item{\code{num.annotation}}{a named vector of numbers of overlap between feature and annotation}
+#'                  \item{\code{num.precedence}}{a named vector of numbers of overlap between feature and annotation}
 #'                  \item{\code{no.of.OlapFeat}}{vector}
-#'
 #'                  \item{\code{perc.of.OlapFeat}}{vector}
 #' }
+#' @examples
+#' data(methylKit)
+#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+#' 
+#' # the following function returns annotationByFeature object
+#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+#' ann
+#' 
+#' @seealso see \code{\link[methylKit]{annotate.WithFeature.Flank}} and \code{\link[methylKit]{annotate.WithFeature}} on how to create this object.
+#'          see following functions that operates on this object:
+#'            \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
+#'            \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{plotTargetAnnotation}}
 #' @name annotationByFeature-class
+#' @aliases annotationByFeature
+#' @docType class
 #' @rdname annotationByFeature-class
 #' @export
 setClass("annotationByFeature", representation(members         ="matrix",
@@ -419,26 +450,35 @@ setClass("annotationByFeature", representation(members         ="matrix",
                                       no.of.OlapFeat  ="numeric",
                                       perc.of.OlapFeat="numeric"))
 
-#' An S4 class that information on overlap of target features with annotation features  
+#' An S4 class for overlap of target features with gene annotation 
 #'
-#' This object is desgined to hold statistics and information about genomic feature overlaps
+#' This object is desgined to hold basic statistics and information about genomic feature overlaps. It extends \code{\link[methylKit]{annotationByFeature}} class.
+#' The class contains an additional slot for data containing distance to nearest transcription start site (TSS).
 #'          
 #' @section Slots:\describe{
-#'                  \item{\code{members}}{a matrix showing overlap of target features with annotation genomic features}
-#'
-#'                  \item{\code{annotation}}{a named vector of percentages}
-#'
-#'                  \item{\code{precedence}}{a named vector of percentages}
-#'
-#'                  \item{\code{num.hierarchica}}{vector}
-#'
-#'                  \item{\code{no.of.OlapFeat}}{vector}
-#'
-#'                  \item{\code{perc.of.OlapFeat}}{vector}
-#'
-#'                  \item{dist.to.TSS}{a data frame showing distances to TSS and gene/TSS names and strand}
+#'                  \item{\code{members}}{a matrix showing overlap of target features with gene annotation  features}
+#'                  \item{\code{annotation}}{a named vector of percentages of overlap between feature and gene annotation}
+#'                  \item{\code{precedence}}{a named vector of percentages of overlap between feature and  gene annotation}
+#'                  \item{\code{num.annotation}}{a named vector of numbers of overlap between feature and gene annotation}
+#'                  \item{\code{num.precedence}}{a named vector of numbers of overlap between feature and gene annotation}
+#'                  \item{\code{no.of.OlapFeat}}{a named vector of numbers of overlap between gene annotation and the feature}
+#'                  \item{\code{perc.of.OlapFeat}}{a named vector of percentages of overlap between gene annotation and the feature }
+#'                  \item{\code{dist.to.TSS}}{a data frame showing distances to TSS and gene/TSS names and strand}
 #' }
+#' @examples
+#' data(methylKit)
+#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' 
+#' # the following function returns an annotationByGenicParts object
+#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' 
+#' @seealso see \code{\link[methylKit]{annotate.WithGenicParts}} on how to create this object, see following functions that operates on this object  
+#' \code{\link[methylKit]{getTargetAnnotationStats}}, \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getAssociationWithTSS}},
+#' \code{\link[methylKit]{getTargetAnnotationStats}}, code{\link[methylKit]{getFeatsWithTargetsStats}},\code{\link[methylKit]{plotTargetAnnotation}}
+#' 
 #' @name annotationByGenicParts-class
+#' @aliases annotationByGenicParts
+#' @docType class
 #' @rdname annotationByGenicParts-class
 #' @export
 setClass("annotationByGenicParts", representation(dist.to.TSS   ="data.frame"),contains="annotationByFeature")
@@ -584,17 +624,25 @@ distance2nearestFeature<-function(g.idh,tss)
 #######################################
 
 
-#' function to annotate given GRanges object with promoter,exon,intron & intergenic values
+#' Annotate given object with gene annotation
 #'
-#' @param target      : a methylDiff or a granges object storing chromosome locations to be annotated
-#' @param GRangesList.obj  : A GRangesList object containing GRanges object for promoter,exons,introns and TSSes, or simply output of read.transcript.features function
-#' @param strand           : If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
+#' The function annotates given genomic feature or methylKit object with gene annotation such as promoter, exon, intron & intergenic.
+#' It also gets the distance to nearest TSS (transcription start site) for each genomic feature or methylation event.
+#' 
+#'
+#' @param target  a \code{\link[methylKit]{methylDiff}} or a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations to be annotated
+#' @param GRangesList.obj   A \code{\link[GenomicRanges]{GRangesList}} object containing GRanges object for promoter,exons,introns and TSSes, or simply output of \code{\link[methylKit]{read.transcript.features}} function
+#' @param strand If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
-#' @return \code{annotationByGenicParts} object
+#' @return \code{\link[methylKit]{annotationByGenicParts}} object
 #' @examples
 #' data(methylKit)
 #' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-#' annotate.WithGenicParts(methylDiff.obj,gene.obj)
+#' annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' @seealso 
+#' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
+#' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{getAssociationWithTSS}},
+#' \code{\link[methylKit]{plotTargetAnnotation}}
 #' @export
 #' @docType methods
 #' @rdname annotate.WithGenicParts-methods
@@ -628,23 +676,32 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList
 })
 
 
-#' function to annotate given GRanges object with promoter,exon,intron & intergenic values
+#' Annotate an object with two sets of genomic features
+#'
+#' The function annotates given genomic feature or methylKit object with two sets of annotation. 
+#' It is primarily useful when annotating objects with CpG islands and shores.
+#' 
 #'  
-#' @param target    a methylDiff or a granges object storing chromosome locations to be annotated
-#' @param feature   a granges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
-#' @param flank     a granges object storing chromosome locations of the flanks of the feature
+#' @param target    a \code{\link[methylKit]{methylDiff}} or a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations to be annotated
+#' @param feature   a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
+#' @param flank     a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations of the flanks of the feature
 #' @param feature.name     string for the name of the feature
 #' @param flank.name     string for the name o f the flanks
 #' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @usage annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
-#' @return returns an \code{annotationByFeature} object
+#' @return returns an \code{\link[methylKit]{annotationByFeature}} object
 #' @examples
 #' data(methylKit)
 #' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
-#' annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores)
+#' annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
 #'
+#' @seealso
+#' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
+#' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{plotTargetAnnotation}}
+#' 
 #' @export
+#' 
 #' @docType methods
 #' @rdname annotate.WithFeature.Flank-methods
 setGeneric("annotate.WithFeature.Flank", function(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE) standardGeneric("annotate.WithFeature.Flank") )
@@ -702,16 +759,29 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="
                       annotate.WithFeature.Flank(gr,feature, flank,feature.name,flank.name,strand)
 })
 
-
-#' function to annotate given GRanges object with a given genomic feature
-#' 
-#' @param target   a GRanges/or methylDiff object storing chromosome locations to be annotated
-#' @param feature  a GRanges object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
+ 
+#' Annotate object with a set of genomic features
+#'
+#' The function annotates given genomic feature or methylKit object with a set of annotation. 
+#' It is primarily useful when annotating objects with simple genomic features, such as enhancer locations.
+# 
+#' @param target    a \code{\link[methylKit]{methylDiff}} or a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations to be annotated
+#' @param feature  a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations of a feature (can be CpG islands, ChIP-seq peaks, etc)
 #' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @param extend   specifiying a positive value will extend the feature on both sides as much as \code{extend}
 #' @param feature.name name of the annotation feature. For example: H3K4me1,CpGisland etc.
 #' @usage annotate.WithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")
-#' @return returns an \code{annotationByFeature} object
+#' @examples
+#' data(methylKit)
+#' cpg.gr=read.bed(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),remove.unsual=TRUE)
+#' 
+#' annotate.WithFeature(methylDiff.obj,cpg.gr,strand=FALSE,extend=0,feature.name="CpGi")
+#' 
+#' @return returns an \code{\link[methylKit]{annotationByFeature}} object
+#' 
+#' @seealso
+#' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
+#' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{plotTargetAnnotation}}
 #' 
 #' @export
 #' @docType methods
@@ -771,15 +841,26 @@ setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRang
                       
 #' Get the membership slot of annotationByFeature
 #'
-#' Membership slot defines the overlap of target features with annotation features
-#'  For example, if a target feature overlaps with an exon
+#' Membership slot defines the overlap of target features with annotation features as a matrix.
+#'
 #' 
-#' @param x a \code{annotationByFeature}  object
+#' @param x an \code{\link[methylKit]{annotationByFeature}}  object
 #' 
-#' @return RETURNS a matrix showing overlap of target features with annotation features. 1 for overlap, 0 for non-overlap
+#' @return a matrix showing overlap of target features with annotation features. 1 for overlap, 0 for non-overlap. 
+#' Each row in the matrix corresponds to a genomic feature that is annoted by one of the following functions:
+#' \code{\link[methylKit]{annotate.WithFeature}},
+#' \code{\link[methylKit]{annotate.WithFeature.Flank}},
+#' \code{\link[methylKit]{annotate.WithGenicParts}}
 #' 
 #' @usage getMembers(x)
-#'
+#' @examples
+#' data(methylKit)
+#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+#' 
+#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+#' mat=getMembers(ann)
+#' head(mat)
+#' 
 #' @export
 #' @docType methods
 #' @rdname getMembers-methods                      
@@ -798,15 +879,21 @@ setMethod("getMembers", signature(x = "annotationByFeature"),
 #'
 #' This function retrieves percentage/number of target features overlapping with annotation
 #'  
-#' @param x a \code{annotationByFeature}  object
+#' @param x an \code{\link[methylKit]{annotationByFeature}} or an \code{\link[methylKit]{annotationByGenicParts}} object
 #' @param percentage TRUE|FALSE. If TRUE percentage of target features will be returned. If FALSE, number of target features will be returned
 #' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
 #' That means if a feature overlaps with a promoter it will be counted as promoter overlapping only, or if it is overlapping with a an exon but not a promoter, 
 #' it will be counted as exon overlapping only whether or not it overlaps with an intron.
 #'
 #' @usage getTargetAnnotationStats(x,percentage=TRUE,precedence=TRUE)
-#'
-#' @return RETURNS  a vector of percentages or counts showing quantity of target features overlapping with annotation
+#' @examples
+#' data(methylKit)
+#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+#' 
+#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+#' getTargetAnnotationStats(ann,percentage=TRUE,precedence=TRUE)
+#' 
+#' @return a \code{vector} of percentages or counts showing quantity of target features overlapping with annotation
 #' 
 #' @export
 #' @docType methods
@@ -827,18 +914,25 @@ setMethod("getTargetAnnotationStats", signature(x = "annotationByFeature"),
 
 })
 
-#' Get the percentage/count of annotation features overlapping with target features from annotationByFeature
+#' Get the percentage/count of annotation features overlapping with target features
 #'
 #' This function retrieves percentage/number of annotation features overlapping with targets. 
 #' For example, if \code{annotationByFeature}  object is containing statistics of differentially methylated 
 #' regions overlapping with gene annotation. This function will return number/percentage of introns,exons and promoters
 #' overlapping with differentially methylated regions.
 #'  
-#' @param x a \code{annotationByFeature}  object
+#' @param x an \code{\link[methylKit]{annotationByFeature}} or an \code{\link[methylKit]{annotationByGenicParts}} object
 #' @param percentage TRUE|FALSE. If TRUE percentage of annotation features will be returned. If FALSE, number of annotation features will be returned
 #'
-#' @return RETURNS  a vector of percentages or counts showing quantity of annotation features overlapping with target features
+#' @return a vector of percentages or counts showing quantity of annotation features overlapping with target features
 #' @usage getFeatsWithTargetsStats(x,percentage=TRUE)
+#' @examples
+#' data(methylKit)
+#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+#' 
+#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+#' getFeatsWithTargetsStats(ann,percentage=TRUE)
+#' 
 #' @export
 #' @docType methods
 #' @rdname getFeatsWithTargetsStats-methods
@@ -860,11 +954,17 @@ setMethod("getFeatsWithTargetsStats", signature(x = "annotationByFeature" ),
 #' Get distance to nearest TSS and gene id from annotationByGenicParts
 #'
 #' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object
-#' @param x a \code{annotationByGenicParts}  object
+#' @param x an \code{\link[methylKit]{annotationByGenicParts}}  object
 #' 
-#' @return RETURNS a data.frame containing row number of the target features,distance of target to nearest TSS, TSS/Gene name, TSS strand
+#' @return a \code{\link{data.frame}} containing row number of the target features,distance of target to nearest TSS, TSS/Gene name, TSS strand
 #' @usage getAssociationWithTSS(x)
-#' @aliases getAssociationWithTSS,-methods getAssociationWithTSS,annotationByGenicParts-method
+#' @examples
+#' data(methylKit)
+#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' df=getAssociationWithTSS(ann)
+#' head(df)
+#' 
 #' @export
 #' @docType methods
 #' @rdname annotationByGenicParts-methods
@@ -883,14 +983,21 @@ setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
 
 #' Plot annotation categories from annotationByGenicParts or annotationByFeature
 #'
-#' This function plots a pie or bar chart for showing percentages of targets annotated by genic parts or other query features
-#' @param x a \code{annotationByFeature} or  \code{annotationByGenicParts} object
+#' This function plots a pie or bar chart for showing percentages of targets annotated by genic parts or other query features.
+#' @param x an \code{\link[methylKit]{annotationByFeature}} or an \code{\link[methylKit]{annotationByGenicParts}} object
 #' @param precedence TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence). 
 #'  This option is only valid when x is a \code{annotationByGenicParts} object
 #' @param col a vector of colors for piechart or the bar plot
 #' @param ... graphical parameters to be passed to \code{pie} or \code{barplot} functions
 #'
-#' usage  plotTargetAnnotation(x,precedence=TRUE,col,...)
+#' @usage  plotTargetAnnotation(x,precedence=TRUE,col=rainbow(length(x@@annotation)), ...)
+#' @examples
+#' data(methylKit)
+#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' plotTargetAnnotation(ann,precedence=FALSE)
+#' 
+#'
 #'
 #' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
 #' 

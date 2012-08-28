@@ -36,4 +36,13 @@
   is usefull to eliminate PCR effects Lower read cutoff is
   usefull for doing better statistical tests.
 }
+\examples{
+data(methylKit)
+
+# filter out bases with covereage above 500 reads
+filtered1=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=500,hi.perc=NULL)
+
+# filter out bases with cread coverage above 99.9th percentile of coverage distribution
+filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
+}
 

@@ -4,9 +4,9 @@
 
 #' reorganize methylRawList and methylBase objects by creating new objects from subset of samples
 #' 
-#' Create a new  \code{methylRawList} or \code{methylBase} object by selecting a subset of samples from the input object, which is 
+#' Function creates a new  \code{methylRawList} or \code{methylBase} object by selecting a subset of samples from the input object, which is 
 #' a \code{methylRawList} or \code{methylBase} object. You can use the function to partition a large methylRawList or methylBase object
-#' to smaller object based on sample ids or when you want to reorder samples and treatmet vector.
+#' to smaller object based on sample ids or when you want to reorder samples and/or give a new treatmet vector.
 #'
 #' @param methylObj a \code{methylRawList} or \code{methylBase} object
 #' @param sample.ids a vector for sample.ids to be subset. Order is important and the order should be similar to treatment. sample.ids should be
@@ -28,7 +28,10 @@
 #'           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 #' meth=unite(myobj,destrand=TRUE)
 #'
+#' # get samples named "test1" and "ctrl2" from myobj and create a new methylRawList object
 #' myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+#' 
+#' # # get samples named "test1" and "ctrl2" from meth and create a new methylBase object
 #' meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 #'
 #' @export

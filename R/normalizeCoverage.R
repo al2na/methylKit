@@ -9,9 +9,9 @@
 #' @author  Altuna Akalin
 #' @export
 #' @examples
-#' library(methylKit)
+#' 
 #' data(methylKit)
-#' newObj=normalizeCoverage(methylRawList.obj)
+#' newObj=normalizeCoverage(methylRawList.obj,method="median")
 #'
 #' @docType methods
 #' @rdname normalizeCoverage-methods

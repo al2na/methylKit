@@ -1,3 +1,19 @@
+methylKit 0.5.4
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* Examples added to help pages
+
+* Changes to DESCRIPTION for complying with the bioconductor guidelines
+
+* unused "cor" option removed from PCASamples() function
+
+* some irrelevant functions are not exported (i.e they are not public) anymore.
+
+* getContext() looks for the correct slot name now
+
+
 methylKit 0.5.3
 --------------
 

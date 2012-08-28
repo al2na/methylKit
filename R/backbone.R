@@ -114,9 +114,10 @@ valid.methylRawObj <- function(object) {
 }
 
 
-#' An S4 class for holding raw methylation data from alignment pipeline.
+#' An S4 class for holding raw methylation data from an alignment pipeline.
 #'
-#' This object stores the raw mehylation data that is read in through read function and extends data.frame
+#' This object stores the raw mehylation data that is read in through read function and extends \code{data.frame}.
+#' The raw methylation data is basically percent methylation values and read coverage values per genomic region.
 #'
 #' @section Slots:\describe{
 #'                  \item{\code{sample.id}:}{string for an identifier of the sample}
@@ -124,7 +125,36 @@ valid.methylRawObj <- function(object) {
 #'                  \item{\code{context}:}{ methylation context string, ex: CpG,CpH,CHH, etc.}
 #'                  \item{\code{resolution}:}{ resolution of methylation information, 'base' or 'region'}
 #'                 }
+#' @section Details:
+#' \code{methylRaw} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
+#' 
+#' 
+#' @section Accessors:
+#' The following functions provides access to data slots of methylDiff:
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' 
+#' @section Coercion:
+#'   \code{methylRaw} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#' 
+#' @examples
+#' 
+#' # example of a raw methylation data contained as a text file
+#' read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),header=TRUE,nrows=5)
+#' 
+#' data(methylKit)
+#' 
+#' # example of a methylRaw object
+#' head(methylRawList.obj[[1]])
+#' str(head(methylRawList.obj[[1]]))
+#' 
+#' library(GenomicRanges)
+#' 
+#' #coercing methylRaw object to GRanges object
+#' my.gr=as(methylRawList.obj[[1]],"GRanges")
+#' 
 #' @name methylRaw-class
+#' @aliases methylRaw
+#' @docType class
 #' @rdname methylRaw-class
 #' @export
 setClass("methylRaw", contains= "data.frame",representation(
@@ -133,29 +163,80 @@ setClass("methylRaw", contains= "data.frame",representation(
 
 #' An S4 class for holding a list of methylRaw objects.
 #'
-#' This object stores the list of raw mehylation data that is read in through read function and extends data.frame
+#' This class stores the list of  \code{\link[methylKit]{methylRaw}} objects.
+#' Functions such as \code{lapply} can be used on this list. It extends \code{\link[base]{list}} class. This object is primarily produced
+#' by \code{\link[methylKit]{read}} function.
 #'
 #' @section Slots:\describe{
-#'                  \item{\code{treatment}:}{numeric vector denoting control and test samples}
+#'                  \item{\code{treatment}}{numeric vector denoting control and test samples}
+#'                  \item{\code{.Data}}{a list of \code{\link{methylRaw}} objects  } 
 #'                }
+#'                
+#' @examples
+#' data(methylKit)
+#' 
+#' #applying functions designed for methylRaw on methylRawList object
+#' lapply(methylRawList.obj,"getAssembly")
+#'
 #' @name methylRawList-class
+#' @aliases methylRawList
+#' @docType class
 #' @rdname methylRawList-class
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
 
 #' read file(s) to a methylrawList or methylraw object
 #'
-#' read a list of locations or one location and create a methylrawList or methylraw object
+#' The function reads a list of files or files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object
 #' @param location file location(s), either a list of locations (each a character string) or one location string
 #' @param sample.id sample.id(s)
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
 #' @param header if the input file has a header or not (default: TRUE)
-#' @param pipeline name of the alignment pipeline, currently only supports amp or bismark (default: 'amp')
+#' @param pipeline name of the alignment pipeline, it can be either "amp" or "bismark". The methylation text files generated from other pipelines can be read as generic methylation text files by supplying a named \code{\link[base]{list}} argument as "pipeline" argument.
+#' The named \code{list} should containt column numbers which denotes which column of the text file corresponds to values and genomic location of the methylation events. See Details for more.
 #' @param resolution designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'
 #' @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
 #' @usage read(location,sample.id,assembly,pipeline="amp",header=T, context="CpG",resolution="base",treatment)
+#' @examples
+#' 
+#' # this is a list of example files, ships with the package
+#' # for your own analysis you will just need to provide set of paths to files
+#' #you will not need the "system.file(..."  part
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+#'
+#' # read the files to a methylRawList object: myobj
+#' myobj=read( file.list,
+#'             sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+#'             
+#' # read one file as methylRaw object
+#' myobj=read( file.list[[1]],
+#'             sample.id="test1",assembly="hg18")
+#'             
+#' # read a generic text file containing CpG methylation values
+#' # let's first look at the content of the file
+#' generic.file=system.file("extdata", "generic1.CpG.txt", package = "methylKit")
+#' read.table(generic.file,header=TRUE)
+#' 
+#' # And this is how you can read that generic file as a methylKit object            
+#'  myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
+#'             sample.id="test1",assembly="hg18")
+#'             
+#' @section Details:
+#'  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
+#'  'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
+#'  'chr.col" is the number of the column that has chrosome string.   
+#'  'start.col' is the number of the column that has start coordinate of the base/region of the methylation event.
+#'  'end.col'  is the number of the column that has end coordinate of the base/region of the methylation event.
+#'  'coverage.col' is the number of the column that has read coverage values. 
+#'  'strand.col' is the number of the column that has strand information, the strand information in the file has to be in the form of '+' or '-', 
+#'  'freqC.col' is the number of the column that has the frequency of Cs. See examples to see how to read a generic methylation text file.
+#'  
 #' @return returns methylRaw or methylRawList
+#' 
 #' @export
 #' @docType methods
 #' @rdname read-methods
@@ -169,13 +250,18 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           
         function(location,sample.id,assembly,pipeline,header,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- .readTableFast(location,header=header)            
-            if(pipeline %in% c("amp","bismark") )
-            {
+            data<- .readTableFast(location,header=header)    
+            if(length(pipeline)==1 ){
+              
+              if(pipeline %in% c("amp","bismark") )
+              {
               data<- .structureAMPoutput(data)
+              }
+              else{stop("unknown 'pipeline' argument, supported alignment pipelines: 'amp' or 'bismark' " )
+                   }
+              
             }
             else{
-                #stop("unknown 'pipeline' argument, supported alignment pipelines: amp ")
                 .check.pipeline.list(pipeline)
                 data<- .structureGeneric(data, pipeline)
             }
@@ -248,6 +334,17 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
 #' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
 #' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
+#' @examples
+#' data(methylKit)
+#' 
+#' # filter out bases with covereage above 500 reads
+#' filtered1=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=500,hi.perc=NULL)
+#' 
+#' # filter out bases with cread coverage above 99.9th percentile of coverage distribution
+#' filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
+#' 
+#' 
+#' 
 #' @return \code{methylRaw} or \code{methylRawList} object depending on input object
 #' @export
 #' @docType methods
@@ -288,9 +385,12 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 })
 
 
-#' An S4 class that holds base-pair resolution methylation information for multiple experiments, only bases that are covered in all experiments are held in this class
+#' An S4 class for methylation events sampled in multiple experiments
 #'
-#' extends data.frame and creates an object that holds methylation information and genomic location
+#' This class is designed to contain methylation information such as coverage, number of methylated bases, etc.. 
+#' The methylation events contained in the class must be sampled in multiple experiments (ex: only CpG bases covered in multiple experiments are stored in the object of this class).
+#' The class extends \code{data.frame} and creates an object that holds methylation information and genomic location.
+#' The object belonging to this class is produced by \code{\link{unite}} function.
 #'          
 #' @section Slots:\describe{
 #'                  \item{\code{sample.ids}:}{character vector for ids of samples in the object}
@@ -305,9 +405,31 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 #'
 #'                  \item{\code{numCs.index}:}{vector denoting which columns in the data correspons to number of methylatedCs values}
 #'                  \item{\code{numTs.index}:}{vector denoting which columns in the data correspons to number of unmethylated Cs values}
+#'                  \item{\code{destranded}:}{ logical value. If \code{TRUE} object is destranded, if \code{FALSE} it is not.}
 #'                  \item{\code{resolution}:}{ resolution of methylation information, allowed values: 'base' or 'region'}
 #' }
+#' 
+#' @section Details:
+#' \code{methylBase} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
+#' 
+#' 
+#' @section Accessors:
+#' The following functions provides access to data slots of methylDiff:
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+
+#' 
+#' @section Coercion:
+#'   \code{methylBase} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#' 
+#' 
+#' @examples
+#' data(methylKit)
+#' library(GenomicRanges)
+#' my.gr=as(methylBase.obj,"GRanges")
+#' 
 #' @name methylBase-class
+#' @aliases methylBase
+#' @docType class
 #' @rdname methylBase-class
 #' @export
 setClass("methylBase",contains="data.frame",representation(
@@ -333,10 +455,12 @@ setClass("methylBase",contains="data.frame",representation(
 #' @aliases unite,-methods unite,methylRawList-method
 #' @export
 #' @examples
-#'  ## myobj is a methylRawList object 
-#'  # unite(myobj) 
-#'  # unite(myobj,min.per.group=1L) # at least 1 sample per group should be covered for any given base/region
-#'  # unite(myobj,destrand=TRUE)
+#' 
+#'  data(methylKit)
+#'  ## Following 
+#'  my.methylBase=unite(methylRawList.obj) 
+#'  my.methylBase=unite(methylRawList.obj,destrand=TRUE)
+#'  
 #' @docType methods
 #' @rdname unite-methods
 setGeneric("unite", function(.Object,destrand=FALSE,min.per.group=NULL) standardGeneric("unite"))
@@ -442,11 +566,18 @@ setMethod("unite", "methylRawList",
 
 #' get correlation between samples in methylBase object
 #' 
+#' The functions returns a matrix of correlation coefficients and/or a set of scatterplots showing the relationship between samples
+#' 
 #' @param .Object a methylBase object 
 #' @param method a character string indicating which correlation coefficient (or covariance) is to be computed (default:"pearson", other options are "kendall" and "spearman") 
 #' @param plot scatterPlot if TRUE (default:FALSE) 
 #' @return a correlation matrix object and plot scatterPlot
 #' @usage getCorrelation(.Object,method="pearson",plot=FALSE)
+#' @examples
+#' 
+#' data(methylKit)
+#' getCorrelation(methylBase.obj,method="pearson",plot=FALSE)
+#' 
 #' @aliases getCorrelation,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods
@@ -557,14 +688,23 @@ setMethod("getCorrelation", "methylBase",
 
 #' get coverage stats from methylRaw object
 #' 
+#' The function returns basic statistics about read coverage per base. It can also plot a histogram of read coverage values.
+#' 
 #' @param .Object a \code{methylRaw} object 
 #' @param plot plot a histogram of coverage if TRUE (default:FALSE) 
 #' @param both.strands do stats and plot for both strands if TRUE (default:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
-#' @param ... options to be passed to \code{hist} function
+#' @param ... options to be passed to \code{\link[graphics]{hist}} function
 #' @usage getCoverageStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
+#' @examples
+#' data(methylKit)
+#' 
+#' # gets coverage stats for the first sample in methylRawList.obj object
+#' getCoverageStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
+#' 
+#' 
 #' @return a summary of coverage statistics or plot a histogram of coverage
-#' @aliases getCoverageStats,-methods getCoverageStats,methylRaw-method
+#' @aliases getCoverageStats,methylRaw
 #' @export
 #' @docType methods
 #' @rdname getCoverageStats-methods
@@ -659,12 +799,20 @@ setMethod("getCoverageStats", "methylRaw",
 
 #' get Methylation stats from methylRaw object
 #' 
+#' The function returns basic statistics about % methylation per base/region. It can also plot a histogram of % methylation values.
+#' 
 #' @param .Object a \code{methylRaw} object 
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
-#' @param ... options to be passed to \code{hist} function.
+#' @param ... options to be passed to \code{\link[graphics]{hist}} function.
 #' @usage  getMethylationStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
+#' @examples
+#' data(methylKit)
+#' 
+#' # gets coverage stats for the first sample in methylRawList.obj object
+#' getMethylationStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
+#'
 #' @return a summary of Methylation statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
@@ -784,7 +932,19 @@ setMethod("getMethylationStats", "methylRaw",
 
 #' get assembly of the genome
 #' 
-#' @param x a methylBase object 
+#' The function returns the genome assembly stored in any of the \code{\link{methylBase}},\code{\link{methylRaw}},\code{\link{methylDiff}} objects
+#' 
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
+#' @usage getAssembly(x)
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' getAssembly(methylBase.obj)
+#' getAssembly(methylDiff.obj)
+#' getAssembly(methylRawList.obj[[1]])
+#' 
+#' 
 #' @return the assembly string for the object
 #' @export
 #' @docType methods
@@ -805,8 +965,19 @@ setMethod("getAssembly", signature="methylRaw", definition=function(x) {
 
 #' get the context of methylation
 #' 
-#' @param x a methylBase/methylRaw/methylDiff object 
-#' @return the context of methylation string
+#' The function returns the context of methylation. For example: "CpG","CHH" or "CHG"
+#' 
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or an \code{\link{methylDiff}} object
+#' @usage getContext(x)
+#' @examples 
+#' 
+#' data(methylKit)
+#' 
+#' getContext(methylBase.obj)
+#' getContext(methylDiff.obj)
+#' getContext(methylRawList.obj[[1]])
+#'
+#' @return a string for the context methylation 
 #' @export
 #' @docType methods
 #' @rdname getContext-methods
@@ -815,22 +986,37 @@ setGeneric("getContext", def=function(x) standardGeneric("getContext"))
 #' @rdname getContext-methods
 #' @aliases getContext,methylBase-method
 setMethod("getContext", signature="methylBase", definition=function(x) {
-                return(x@Context)
+                return(x@context)
         })
 
 #' @rdname getContext-methods
 #' @aliases getContext,methylRaw-method
 setMethod("getContext", signature="methylRaw", definition=function(x) {
-                return(x@Context)
+                return(x@context)
         })
 
 
 
-#' gets the data slot from the methylBase object
+#' get the data slot from the methylKit objects
 #' 
-#' The data retrived from this function is of a \code{data.frame}. This is basically containing all relevant methylation information per region
+#' The functions retrieves the table containing methylation information from \code{methylKit} Objects.
+#' The data retrived from this function is of a \code{\link{data.frame}}. This is basically containing all relevant methylation information per genomic region or base.
 #'
-#' @param x a methylBase object 
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
+#' @usage getData(x)
+#' @examples
+#' data(methylKit)
+#' 
+#' # following commands show first lines of returned data.frames from getData() function
+#' head(
+#' getData(methylBase.obj)
+#' )
+#' 
+#' head( getData(methylDiff.obj))
+#'
+#' head(getData(methylRawList.obj[[1]]))
+#' 
+#' 
 #' @return data.frame for methylation events
 #' @aliases getData,-methods getData,methylBase-method
 #' @export
@@ -878,15 +1064,24 @@ setAs("methylBase", "GRanges", function(from)
 
 ### subset methylBase and methylRaw objects
 
-#' selects rows from of methylRaw.methylBase and methylDiff objects
+#' selects rows from of methylKit objects
 #'
+#' The function returns a subset of data contained in the \code{methylKit} objects.
+#' 
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
+#' @param i a numeric or logical vector. This vector corresponds to bases or regions contained in \code{methylKit} objects.
+#'            The vector is used to subset the data.  
+#' @usage select(x,i)
+#' @examples
+#' data(methylKit)
+#' subset1=select(methylRawList.obj[[1]],1:100) # selects first hundred rows, returns a methylRaw object
+#' subset2=select(methylBase.obj,1:100) # selects first hundred rows, returns a methylBase object
+#' subset3=select(methylDiff.obj,1:100) # selects first hundred rows, returns a methylDiff object
+#' 
+#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object depending on the input object.
 #' @export
 #' @docType methods
 #' @rdname select-methods
-#' @examples
-#'  # select(methylRaw.obj,1:100) # selects first hundred rows, returns a methylRaw object
-#'  # select(methylBase.obj,1:100)
-#'  # select(methylDiff.obj,1:100)
 setGeneric("select", def=function(x,i) standardGeneric("select"))
 
 

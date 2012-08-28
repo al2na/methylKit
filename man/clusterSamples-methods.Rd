@@ -2,7 +2,7 @@
 \name{clusterSamples}
 \alias{clusterSamples}
 \alias{clusterSamples,methylBase-method}
-\title{CpG Dinucleotide Methylation Hierarchical Cluster Analysis}
+\title{Hierarchical Clustering using methylation data}
 \usage{
   clusterSamples(.Object, dist="correlation",
   method="ward", plot=TRUE)
@@ -31,7 +31,14 @@
   clustered.
 }
 \description{
-  CpG Dinucleotide Methylation Hierarchical Cluster
-  Analysis
+  The function clusters samples using
+  \code{\link[stats]{hclust}} function and various distance
+  metrics derived from percent methylation per base or per
+  region for each sample.
+}
+\examples{
+data(methylKit)
+
+clusterSamples(methylBase.obj, dist="correlation", method="ward", plot=TRUE)
 }
 

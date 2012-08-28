@@ -3,9 +3,14 @@
 \alias{plotTargetAnnotation}
 \alias{plotTargetAnnotation,annotationByFeature-method}
 \title{Plot annotation categories from annotationByGenicParts or annotationByFeature}
+\usage{
+  plotTargetAnnotation(x,precedence=TRUE,col=rainbow(length(x@annotation)),
+  ...)
+}
 \arguments{
-  \item{x}{a \code{annotationByFeature} or
-  \code{annotationByGenicParts} object}
+  \item{x}{an \code{\link[methylKit]{annotationByFeature}}
+  or an \code{\link[methylKit]{annotationByGenicParts}}
+  object}
 
   \item{precedence}{TRUE|FALSE. If TRUE there will be a
   hierachy of annotation features when calculating numbers
@@ -17,9 +22,7 @@
   plot}
 
   \item{...}{graphical parameters to be passed to
-  \code{pie} or \code{barplot} functions
-
-  usage plotTargetAnnotation(x,precedence=TRUE,col,...)}
+  \code{pie} or \code{barplot} functions}
 }
 \value{
   plots a piechart or a barplot for percentage of the
@@ -28,6 +31,12 @@
 \description{
   This function plots a pie or bar chart for showing
   percentages of targets annotated by genic parts or other
-  query features
+  query features.
+}
+\examples{
+data(methylKit)
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+plotTargetAnnotation(ann,precedence=FALSE)
 }
 

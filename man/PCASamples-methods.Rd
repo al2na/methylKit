@@ -2,18 +2,13 @@
 \name{PCASamples}
 \alias{PCASamples}
 \alias{PCASamples,methylBase-method}
-\title{CpG Dinucleotide Methylation Principal Components Analysis}
+\title{Principal Components Analysis of Methylation data}
 \usage{
-  PCASamples(.Object, cor=TRUE, screeplot=FALSE,
+  PCASamples(.Object, screeplot=FALSE,
   adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
 }
 \arguments{
   \item{.Object}{a \code{methylBase} object}
-
-  \item{cor}{[Not used anymore] cor a logical value
-  indicating whether the calculation should use the
-  correlation matrix or the covariance matrix. (default:
-  TRUE)}
 
   \item{screeplot}{a logical value indicating whether to
   plot the variances against the number of the principal
@@ -58,11 +53,16 @@
   \code{prcomp}.
 }
 \description{
-  CpG Dinucleotide Methylation Principal Components
-  Analysis
+  The function does a PCA analysis using
+  \code{\link[stats]{prcomp}} function using percent
+  methylation matrix as an input.
 }
 \note{
   cor option is not in use anymore, since \code{prcomp} is
   used for PCA analysis instead of \code{princomp}
+}
+\examples{
+data(methylKit)
+PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
 }
 

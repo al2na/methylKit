@@ -1,10 +1,14 @@
 \docType{class}
 \name{methylDiff-class}
+\alias{methylDiff}
 \alias{methylDiff-class}
 \title{An S4 class that holds differential methylation information}
 \description{
-  This object is desgined to hold statistics and locations
-  for differentially methylated regions/bases
+  This class is designed to hold statistics and locations
+  for differentially methylated regions/bases. It extends
+  \code{\link{data.frame}} class.
+  \code{\link[methylKit]{calculateDiffMeth}} function
+  returns an object with \code{methylDiff} class.
 }
 \section{Slots}{
   \describe{ \item{\code{sample.ids}}{ids/names of samples
@@ -21,5 +25,29 @@
   statistics}
 
   }
+}
+
+\section{Details}{
+  \code{methylDiff} class extends \code{\link{data.frame}}
+  class therefore providing novice and experienced R users
+  with a data structure that is well known and ubiquitous
+  in many R packages.
+}
+
+\section{Coercion}{
+  \code{methylDiff} object can be coerced to
+  \code{\link[GenomicRanges]{GRanges}} object via
+  \code{\link{as}} function.
+}
+
+\section{Accessors}{
+  The following functions provides access to data slots of
+  methylDiff:
+  \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+}
+\examples{
+data(methylKit)
+library(GenomicRanges)
+my.gr=as(methylDiff.obj,"GRanges")
 }
 

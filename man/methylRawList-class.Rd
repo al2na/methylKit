@@ -1,12 +1,25 @@
+\docType{class}
 \name{methylRawList-class}
+\alias{methylRawList}
 \alias{methylRawList-class}
 \title{An S4 class for holding a list of methylRaw objects.}
 \description{
-  This object stores the list of raw mehylation data that
-  is read in through read function and extends data.frame
+  This class stores the list of
+  \code{\link[methylKit]{methylRaw}} objects. Functions
+  such as \code{lapply} can be used on this list. It
+  extends \code{\link[base]{list}} class. This object is
+  primarily produced by \code{\link[methylKit]{read}}
+  function.
 }
 \section{Slots}{
-  \describe{ \item{\code{treatment}:}{numeric vector
-  denoting control and test samples} }
+  \describe{ \item{\code{treatment}}{numeric vector
+  denoting control and test samples} \item{\code{.Data}}{a
+  list of \code{\link{methylRaw}} objects } }
+}
+\examples{
+data(methylKit)
+
+#applying functions designed for methylRaw on methylRawList object
+lapply(methylRawList.obj,"getAssembly")
 }
 

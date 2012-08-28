@@ -2,7 +2,7 @@
 \name{read.transcript.features}
 \alias{read.transcript.features}
 \alias{read.transcript.features,character-method}
-\title{function reading exon intron, promoter structure from a given bed file}
+\title{Read  transcript features from a BED file}
 \usage{
   read.transcript.features(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
 }
@@ -24,15 +24,20 @@
   this option to be TRUE}
 }
 \value{
-  a \code{\link{GRangesList}} containing locations of
-  exon/intron/promoter/TSS
+  a \code{\link[GenomicRanges]{GRangesList}} containing
+  locations of exon/intron/promoter/TSS
 }
 \description{
-  function reading exon intron, promoter structure from a
-  given bed file
+  The function returns a
+  \code{\link[GenomicRanges]{GRangesList}} containing exon,
+  intron, TSS(transcription start site) and promoter
+  locations
 }
 \note{
   one bed track per file is only accepted, the bed files
   with multiple tracks will cause en error
+}
+\examples{
+gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
 }
 

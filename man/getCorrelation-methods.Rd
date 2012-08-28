@@ -1,9 +1,9 @@
 \docType{methods}
 \name{getCorrelation}
 \alias{getCorrelation}
+\alias{getCorrelation-method}
 \alias{getCorrelation,-methods}
 \alias{getCorrelation,methylBase-method}
-\alias{getCorrelation-method}
 \title{get correlation between samples in methylBase object}
 \usage{
   getCorrelation(.Object,method="pearson",plot=FALSE)
@@ -22,6 +22,12 @@
   a correlation matrix object and plot scatterPlot
 }
 \description{
-  get correlation between samples in methylBase object
+  The functions returns a matrix of correlation
+  coefficients and/or a set of scatterplots showing the
+  relationship between samples
+}
+\examples{
+data(methylKit)
+getCorrelation(methylBase.obj,method="pearson",plot=FALSE)
 }
 

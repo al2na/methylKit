@@ -2,12 +2,12 @@
 \name{get.methylDiff}
 \alias{get.methylDiff}
 \alias{get.methylDiff,methylDiff-method}
-\title{gets differentially methylated regions/bases based on cutoffs}
+\title{get differentially methylated regions/bases based on cutoffs}
 \usage{
   get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
 }
 \arguments{
-  \item{.Object}{a methylDiff object}
+  \item{.Object}{a \code{\link{methylDiff}} object}
 
   \item{difference}{cutoff for absolute value of %
   methylation change between test and control (default:25)}
@@ -26,7 +26,20 @@
   methylated locations satisfying the criteria
 }
 \description{
-  gets differentially methylated regions/bases based on
-  cutoffs
+  The function subsets a \code{\link{methylDiff}} object in
+  order to get differentially methylated bases/regions
+  satisfying thresholds.
+}
+\examples{
+data(methylKit)
+
+# get differentially methylated bases/regions with specific cutoffs
+all.diff=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
+
+# get hyper-methylated
+hyper=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
+
+# get hypo-methylated
+hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 }
 

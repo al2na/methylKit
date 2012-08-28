@@ -19,13 +19,22 @@
   labels showing the percentage of values in each bin
   (default:TRUE)}
 
-  \item{...}{options to be passed to \code{hist} function.}
+  \item{...}{options to be passed to
+  \code{\link[graphics]{hist}} function.}
 }
 \value{
   a summary of Methylation statistics or plot a histogram
   of coverage
 }
 \description{
-  get Methylation stats from methylRaw object
+  The function returns basic statistics about % methylation
+  per base/region. It can also plot a histogram of %
+  methylation values.
+}
+\examples{
+data(methylKit)
+
+# gets coverage stats for the first sample in methylRawList.obj object
+getMethylationStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
 }
 

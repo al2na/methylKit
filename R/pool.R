@@ -1,4 +1,4 @@
-#' function pools replicates within groups to a single sample per group
+#' Pools replicates within groups to a single sample per group
 #'
 #' The function sums up coverage, numCs and numTs values within each group so one representative sample for each group will be created in a new methylBase object
 #' @param obj  \code{methylBase} object with two groups or more and each group should have multiple samples
@@ -12,7 +12,11 @@
 #' @examples
 #' library(methylKit)
 #' data(methylKit)
-#' newBase=pool(methylBase.obj,sample.ids=c("test","control"))
+#' 
+#' # methylBase.obj has two groups, each group has two samples,
+#' # the following function will pool the samples in each group
+#' # so that each group will be represented by one pooled sample
+#' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 #'
 #' @docType methods
 #' @rdname pool-methods

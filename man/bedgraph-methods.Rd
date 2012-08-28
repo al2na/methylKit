@@ -4,7 +4,7 @@
 \alias{bedgraph,methylDiff-method}
 \alias{bedgraph,methylRaw-method}
 \alias{bedgraph,methylRawList-method}
-\title{GETs bedgraph from methylRaw, methylRawList and methylDiff objects}
+\title{Get bedgraph from methylRaw, methylRawList and methylDiff objects}
 \usage{
   bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 }
@@ -12,15 +12,15 @@
   \item{methylObj}{a \code{methylRaw} or
   \code{methlRawList} object}
 
-  \item{file.name}{Default: NULL, if given a bedgraph file
-  will be written, if NULL a data.frame or a list of data
-  frames will be returned}
+  \item{file.name}{Default: NULL. if a string is given a
+  bedgraph file will be written, if NULL a data.frame or a
+  list of data frames will be returned}
 
   \item{col.name}{name of the column in \code{methylRaw},
   \code{methylRawList} or \code{methylDiff} objects to be
   used as a score for the bedgraph. For \code{methylDiff},
-  col.name must be one of the following 'pvalue','qvalue',
-  'meth.diff'. For \code{methylRaw} and
+  \code{col.name} must be one of the following
+  'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and
   \code{methylRawList} it must be one of the following
   'coverage', 'numCs','numTs', 'perc.meth'}
 
@@ -43,12 +43,28 @@
   bedgraph track line options at UCSC browser}
 }
 \value{
-  RETURNS a data.frame or list of data.frames if
-  file.name=NULL, if a file.name given appropriate bed file
-  will be written to that file
+  Returns a \code{data.frame} or list of data.frames if
+  \code{file.name=NULL}, if a file.name given appropriate
+  bed file will be written to that file
 }
 \description{
-  Convert \code{methylRaw}, \code{methylRawList} or
-  \code{methylDiff} object into a bedgraph format
+  The function converts \code{\link{methylRaw}},
+  \code{\link{methylRawList}} or \code{\link{methylDiff}}
+  object into a bedgraph format. It either writes as a file
+  or returns a \code{data.frame}
+}
+\examples{
+data(methylKit)
+
+# getting a bedgraph file from a methylDiff object containing differential methylation percentages
+bedgraph(methylDiff.obj,file.name="test.bed",col.name="meth.diff",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+
+# remove the file
+unlink("test.bed")
+
+# getting a bedgraph file from a methylBase object containing percent methylation values
+bedgraph(methylRawList.obj[[1]],file.name="test2.bed",col.name="perc.meth",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+
+unlink("test2.bed") # remove the file
 }
 

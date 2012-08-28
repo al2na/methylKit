@@ -10,7 +10,7 @@
 
 #' GETs regional counts for given GRanges or GRangesList object
 #'
-#' Convert \code{methylRaw} or \code{methylRawList} object into regional counts for a given GRanges or GRangesList object.
+#' Convert \code{\link{methylRaw}} or \code{\link{methylRawList}} object into regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
 #' @param methylObj a \code{methylRaw} or \code{methlRawList} object
 #' @param regions a GRanges or GRangesList object.
 #' @param cov.bases number minimum bases covered per region (Default:0). Only regions with base coverage above this threshold are returned.
@@ -18,6 +18,17 @@
 #' 
 #' @return RETURNS a new methylRaw or methylRawList object
 #' @usage regionCounts(methylObj,regions,cov.bases=0,strand.aware=FALSE)
+#' @examples
+#' data(methylKit)
+#' 
+#' # get the windows of interest as a GRanges object, this can be any set of genomic locations
+#' library(GenomicRanges)
+#' my.win=GRanges(seqnames="chr21",ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+#' 
+#' # getting counts per region
+#' regional.methylRaw=regionCounts(methylObj=methylRawList.obj, regions=my.win, cov.bases=0,strand.aware=FALSE)
+#' 
+#' 
 #' @export
 #' @docType methods
 #' @rdname regionCounts-methods
@@ -212,13 +223,19 @@ setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRangesLi
 #' This function can be used when differential methylated analysis is preferable to tilling windows instead of 
 #' base pairs.
 #'
-#' @param methylObj \code{methylRaw} or \code{methylRawList} object containing base pair resolution methylation information
+#' @param methylObj \code{\link{methylRaw}} or \code{\link{methylRawList}} object containing base pair resolution methylation information
 #' @param win.size an integer for the size of the tiling windows
 #' @param step.size an integer for the step size of tiling windows
 #' @param cov.bases minimum number of bases to be covered in a given window
 #' @usage tileMethylCounts(methylObj,win.size=1000,step.size=1000,cov.bases=0)
 #' @return \code{methylRaw} or \code{methylRawList} object
 #' @export
+#' @examples
+#' data(methylKit)
+#' 
+#' tiled.methylRaw=tileMethylCounts(methylObj=methylRawList.obj,win.size=1000,step.size=1000,cov.bases=0)
+#' 
+#' 
 #' @docType methods
 #' @rdname tileMethylCounts-methods
 setGeneric("tileMethylCounts", function(methylObj,win.size=1000,step.size=1000,cov.bases=0) standardGeneric("tileMethylCounts") )

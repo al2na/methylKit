@@ -1,7 +1,7 @@
 \docType{methods}
 \name{getCoverageStats}
 \alias{getCoverageStats}
-\alias{getCoverageStats,-methods}
+\alias{getCoverageStats,methylRaw}
 \alias{getCoverageStats,methylRaw-method}
 \title{get coverage stats from methylRaw object}
 \usage{
@@ -20,13 +20,22 @@
   labels showing the percentage of values in each bin
   (default:TRUE)}
 
-  \item{...}{options to be passed to \code{hist} function}
+  \item{...}{options to be passed to
+  \code{\link[graphics]{hist}} function}
 }
 \value{
   a summary of coverage statistics or plot a histogram of
   coverage
 }
 \description{
-  get coverage stats from methylRaw object
+  The function returns basic statistics about read coverage
+  per base. It can also plot a histogram of read coverage
+  values.
+}
+\examples{
+data(methylKit)
+
+# gets coverage stats for the first sample in methylRawList.obj object
+getCoverageStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
 }
 

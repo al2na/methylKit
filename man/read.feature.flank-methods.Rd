@@ -23,8 +23,9 @@
   example: c("CpGi","shores")}
 }
 \value{
-  a GenomicRangesList contatining one GRanges object for
-  flanks and one for GRanges object for the main feature.
+  a \code{\link[GenomicRanges]{GenomicRangesList}}
+  contatining one GRanges object for flanks and one for
+  GRanges object for the main feature.
 }
 \description{
   a function to read-in genomic features and their upstream

@@ -3,6 +3,13 @@
 #' @param methylBase.obj a methylBase object 
 #' @return matrix with percent methylation values per base/region across all samples, row names would be base/region identifiers
 #' @usage percMethylation(methylBase.obj)
+#' @examples
+#' 
+#' data(methylKit)
+#' mat=percMethylation(methylBase.obj)
+#' head(mat)
+#' 
+#' 
 #' @export
 #' @docType methods
 #' @rdname percMethylation-methods

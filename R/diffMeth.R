@@ -511,7 +511,8 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 
 #' An S4 class that holds differential methylation information
 #'
-#' This object is desgined to hold statistics and locations for differentially methylated regions/bases
+#' This class is designed to hold statistics and locations for differentially methylated regions/bases. It extends \code{\link{data.frame}} class.
+#'  \code{\link[methylKit]{calculateDiffMeth}} function returns an object with \code{methylDiff} class.
 #'          
 #' @section Slots:\describe{
 #'                  \item{\code{sample.ids}}{ids/names of samples in a vector}
@@ -523,7 +524,25 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 #'                  \item{\code{.Data}}{data.frame holding the locations and statistics}
 #'
 #' }
+#' 
+#' @section Details:
+#' \code{methylDiff} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
+#' 
+#' 
+#' @section Coercion:
+#'   \code{methylDiff} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#' 
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiff:
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' 
+#' @examples
+#' data(methylKit)
+#' library(GenomicRanges)
+#' my.gr=as(methylDiff.obj,"GRanges")
+#' 
 #' @name methylDiff-class
+#' @aliases methylDiff
 #' @rdname methylDiff-class
 #' @export
 #' @docType class
@@ -538,14 +557,37 @@ setClass("methylDiff",representation(
 
 #' Calculates differential methylation statistics
 #' 
+#' The function calculates differential methylation statistics between two groups of samples. The function uses either logistic regression test
+#' or Fisher's Exact test to calculate differential methylation. See references for detailed explanation on statistics.
+#' 
 #' @param .Object a methylBase object to calculate differential methylation
-#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.If FALSE, p.adjust with method="BH" option will be used for P-value correction.
+#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.If FALSE, \code{\link{p.adjust}} with method="BH" option will be used for P-value correction.
 #' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
 #' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
 #' @usage calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' # Logistic regression test will be applied since there are multiple samples in each group
+#' # in methylBase.obj object
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' 
+#' # pool samples in each group
+#' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
+#' 
+#' # After applying pool() function, there is one sample in each group.
+#' # Fisher's exact test will be applied for differential methylation
+#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' 
+#' 
+#' 
 #' @return a methylDiff object containing the differential methylation statistics and locations
-#' @note The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
-#'
+#' @section Details:
+#'  The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
+#' @references Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, Christopher E. Mason. (2012). "methylKit: A comprehensive R package for the analysis of genome-wide DNA methylation profiles." Genome Biology.(In Press) 
+#' @seealso \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
+#' 
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
@@ -688,7 +730,15 @@ setMethod("calculateDiffMeth", "methylBase",
 ##############################################################################
 
 
-#' show method for some of the methylKit classes
+#' show method for methylDiff class
+#' 
+#' @examples
+#' data(methylKit)
+#' methylDiff.obj
+#' show(methylDiff.obj)
+#' 
+#' 
+#' 
 #' @rdname show-methods
 #' @aliases show,methylDiff-method
 setMethod("show", "methylDiff", function(object) {
@@ -710,16 +760,73 @@ setMethod("getContext", signature="methylDiff", definition=function(x) {
                 return(x@context)
         })
 
+
+#' @rdname getAssembly-methods
+#' @aliases getAssembly,methylDiff-method
+setMethod("getAssembly", signature="methylDiff", definition=function(x) {
+  return(x@assembly)
+})
+
+
 # a function for getting data part of methylDiff    
 #' @rdname getData-methods
 #' @aliases getData,methylDiff-method
 setMethod(f="getData", signature="methylDiff", definition=function(x) {
                 return(as(x,"data.frame"))
         }) 
+
+
+
+##############################################################################
+## CONVERTOR FUNCTIONS FOR methylDiff OBJECT
+##############################################################################
+
+setAs("methylDiff", "GRanges", function(from)
+{
+  
+  GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
+          strand=from$strand, 
+          id=from$id,
+          qvalue=from$qvalue,
+          meth.diff=from$meth.diff
+  )
+  
+})
+
+
+
+### subset methylDiff
+
+
+#' @aliases select,methylDiff-method
+#' @rdname select-methods
+setMethod("select", "methylDiff",
+          function(x, i)
+          {
+            
+            new("methylDiff",getData(x)[i,],
+                sample.ids = x@sample.ids,
+                assembly = x@assembly,
+                context = x@context,
+                treatment=x@treatment,
+                destranded=x@destranded,
+                resolution=x@resolution)
+          }
+)
+
+
+
+
+
+
+
                       
-#' gets differentially methylated regions/bases based on cutoffs 
+#' get differentially methylated regions/bases based on cutoffs 
 #' 
-#' @param .Object  a methylDiff object
+#' The function subsets a \code{\link{methylDiff}} object in order to get differentially methylated bases/regions
+#' satisfying thresholds.
+#' 
+#' @param .Object  a \code{\link{methylDiff}} object
 #' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
 #' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
 #' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
@@ -728,6 +835,19 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 #' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
 #' 
 #' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' # get differentially methylated bases/regions with specific cutoffs
+#' all.diff=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
+#' 
+#' # get hyper-methylated
+#' hyper=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
+#' 
+#' # get hypo-methylated
+#' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
+#' 
 #'
 #' @export
 #' @docType methods
@@ -763,11 +883,12 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 ## PLOTTING FUNCTIONS FOR methylDiff OBJECT
 ##############################################################################
 
-#' Gets and plots the number of hyper/hypo methylated regions per chromosome
+#' Get and plot the number of hyper/hypo methylated regions/bases per chromosome
 #'
-#' This accessor function gets the nearest TSS, its distance to target feature,strand and name of TSS/gene from annotationByGenicParts object.
+#' This function gets number of  hyper/hypo methylated regions/bases from \code{\link{methylDiff}} object. 
+#' It can also plot percentages of differentially methylated bases per chromosome.
 #'
-#' @param x a \code{annotationByFeature}  object
+#' @param x a \code{\link{methylDiff}}  object
 #' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of hypo/hyper methylated bases/regions
 #' @param qvalue.cutoff  cutoff for q-value
 #' @param meth.cutoff cutoff for percent methylation difference
@@ -777,6 +898,12 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 #' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
 #' 
 #' @usage diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)
+#' @examples
+#' 
+#' data(methylKit)
+#'  
+#' # get a list of differentially methylated bases/regions per chromosome and overall
+#' diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL)
 #'
 #' @export
 #' @docType methods
@@ -827,40 +954,4 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
 })
 
 
-##############################################################################
-## CONVERTOR FUNCTIONS FOR methylDiff OBJECT
-##############################################################################
-
-setAs("methylDiff", "GRanges", function(from)
-                      {
-
-                        GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
-                                       strand=from$strand, 
-                                       id=from$id,
-                                       qvalue=from$qvalue,
-                                       meth.diff=from$meth.diff
-                                       )
-
-})
-
-
-
-### subset methylDiff
-
-
-#' @aliases select,methylDiff-method
-#' @rdname select-methods
-setMethod("select", "methylDiff",
-          function(x, i)
-          {
-
-            new("methylDiff",getData(x)[i,],
-                             sample.ids = x@sample.ids,
-                             assembly = x@assembly,
-                            context = x@context,
-                            treatment=x@treatment,
-                            destranded=x@destranded,
-                            resolution=x@resolution)
-           }
-)
 

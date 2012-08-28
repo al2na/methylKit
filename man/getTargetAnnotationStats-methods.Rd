@@ -7,7 +7,9 @@
   getTargetAnnotationStats(x,percentage=TRUE,precedence=TRUE)
 }
 \arguments{
-  \item{x}{a \code{annotationByFeature} object}
+  \item{x}{an \code{\link[methylKit]{annotationByFeature}}
+  or an \code{\link[methylKit]{annotationByGenicParts}}
+  object}
 
   \item{percentage}{TRUE|FALSE. If TRUE percentage of
   target features will be returned. If FALSE, number of
@@ -23,11 +25,18 @@
   intron.}
 }
 \value{
-  RETURNS a vector of percentages or counts showing
-  quantity of target features overlapping with annotation
+  a \code{vector} of percentages or counts showing quantity
+  of target features overlapping with annotation
 }
 \description{
   This function retrieves percentage/number of target
   features overlapping with annotation
+}
+\examples{
+data(methylKit)
+cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+
+ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+getTargetAnnotationStats(ann,percentage=TRUE,precedence=TRUE)
 }
 
