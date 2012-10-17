@@ -1,0 +1,20 @@
+citHeader("To cite methylKit:")
+
+citEntry(entry="article",  
+   author="Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick and Christopher E Mason",
+   title="methylKit: a comprehensive R package for the
+analysis of genome-wide DNA methylation profiles",
+   journal="Genome Biology",
+   year="2012",
+   volume="13",
+   number="10",
+   pages="R87",
+   textVersion = paste("Altuna Akalin, Matthias Kormaksson3, Sheng Li, Francine E Garrett-Bakelman, Maria E Figueroa, Ari Melnick and Christopher E Mason.",
+    "methylKit: a comprehensive R package for the analysis of genome-wide DNA methylation profiles.",
+    "Genome Biology 13:R87 (2012)."))
+
+citFooter("Thanks very much for using methylKit!,",
+          "we appreciate if you remember to cite it in your paper : ).")
+
+
+   
