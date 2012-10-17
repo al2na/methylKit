@@ -9,7 +9,7 @@ analysis of genome-wide DNA methylation profiles",
    volume="13",
    number="10",
    pages="R87",
-   textVersion = paste("Altuna Akalin, Matthias Kormaksson3, Sheng Li, Francine E Garrett-Bakelman, Maria E Figueroa, Ari Melnick and Christopher E Mason.",
+   textVersion = paste("Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E Garrett-Bakelman, Maria E Figueroa, Ari Melnick and Christopher E Mason.",
     "methylKit: a comprehensive R package for the analysis of genome-wide DNA methylation profiles.",
     "Genome Biology 13:R87 (2012)."))
 
