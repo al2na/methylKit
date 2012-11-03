@@ -1,3 +1,11 @@
+methylKit 0.5.5
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* Differential methylation percentage calculation bug fixed. The bug occurred when "min.per.group" argument used in unite() function and when "weighted.mean=TRUE" in calculateDiffMeth() function.
+
+
 methylKit 0.5.4
 --------------
 

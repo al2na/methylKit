@@ -665,7 +665,7 @@ setMethod("calculateDiffMeth", "methylBase",
                           # calculate mean methylation change
                           if(length(set1.Cs) > 1){
                             mom.meth1=100*rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
-                            pm.meth1=100*rowSums(subst[,set1.Cs])/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+                            pm.meth1=100*rowSums(subst[,set1.Cs],na.rm=TRUE)/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
                           }else{
                             mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
                             pm.meth1     = mom.meth1
@@ -673,7 +673,7 @@ setMethod("calculateDiffMeth", "methylBase",
 
                           if(length(set2.Cs)>1){
                             mom.meth2=100*rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
-                            pm.meth2=100*rowSums(subst[,set2.Cs])/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+                            pm.meth2=100*rowSums(subst[,set2.Cs],na.rm=TRUE)/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
                           }else{
                             mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1]) # get % methylation
                             pm.meth2     = mom.meth2
