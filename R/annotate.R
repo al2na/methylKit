@@ -1011,7 +1011,7 @@ setGeneric("plotTargetAnnotation", def=function(x,precedence=TRUE,col=rainbow(le
 #' @aliases plotTargetAnnotation,annotationByFeature-method
 setMethod("plotTargetAnnotation", signature(x = "annotationByFeature"),
                     function(x,precedence,col,...){
-                      props=getTargetAnnotationStats(x,precedence)
+                      props=getTargetAnnotationStats(x,percentage=TRUE,precedence=precedence)
 
                       if(precedence | ( is(x,"annotationByFeature") & !is(x,"annotationByGenicParts")) ){
                         slice.names=names(props)
