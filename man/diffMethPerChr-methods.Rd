@@ -21,7 +21,7 @@
   \item{exclude}{names of chromosomes to be excluded}
 
   \item{...}{extra graphical parameters to be passed to
-  \code{barplot} function}
+  \code{\link{barplot}} function}
 }
 \value{
   plots a piechart or a barplot for percentage of the

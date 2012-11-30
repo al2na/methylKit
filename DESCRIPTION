@@ -2,11 +2,16 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.5.5
-Date: 2012-11-03
+Version: 0.5.6
+Date: 2012-12-29
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: Altuna Akalin <aakalin@gmail.com>
-Description: methylKit is an R package for DNA methylation analysis and annotation from high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants, but also target-capture methods and whole genome bisulfite sequencing. It also has functions to analyze base-pair resolution 5hmC data from experimental protocols such as oxBS-Seq and TAB-Seq.
+Description: methylKit is an R package for DNA methylation analysis and
+  annotation from high-throughput bisulfite sequencing. The package is designed 
+  to deal with sequencing data from RRBS and its variants, but also target-capture 
+  methods and whole genome bisulfite sequencing. It also has functions to analyze 
+  base-pair resolution 5hmC data from experimental protocols such as oxBS-Seq 
+  and TAB-Seq.
 License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
@@ -15,9 +20,9 @@ Depends:
     R (>= 2.15.0),
     methods
 Imports:
-    GenomicRanges,
+    GenomicRanges (>= 1.8.6),
     IRanges,
-    data.table,
+    data.table (>= 1.8.6),
     parallel
 Suggests:
     testthat

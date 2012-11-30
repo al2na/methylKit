@@ -50,8 +50,11 @@ setMethod("bedgraph", signature(methylObj="methylDiff"),
                       {
                         stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
                       }
-                      df=data.frame(chr=methylObj[,2],start=methylObj[,3]-1,end=methylObj[,4])
-                      df=cbind(df, score=methylObj[col.name] )
+                      mdata=getData(methylObj)
+                      df=data.frame(chr=mdata[,2],
+                                    start=mdata[,3]-1,
+                                    end=mdata[,4] )
+                      df=cbind(df, score=mdata[col.name] )
                       if(log.transform){
                         df[,4]=log10(df[,4])
                       }
@@ -80,11 +83,14 @@ setMethod("bedgraph", signature(methylObj="methylRaw"),
                       if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
                         stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth'")
                       }
-                      df=data.frame(chr=methylObj[,2],start=methylObj[,3]-1,end=methylObj[,4])
+                      mdata=getData(methylObj)
+                      df=data.frame(chr=mdata[,2],
+                                    start=(mdata[,3])-1,
+                                    end=(mdata[,4]) )
                       if(col.name=="perc.meth"){
-                        df=cbind(df, score=100*methylObj[,7]/methylObj[,6] )
+                        df=cbind(df, score=100*mdata[,7]/mdata[,6] )
                       }else{
-                        df=cbind(df, score=methylObj[col.name] )
+                        df=cbind(df, score=mdata[col.name] )
                         if(log.transform){
                           df[,4]=log10(df[,4])
                         }

@@ -515,19 +515,30 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 #'  \code{\link[methylKit]{calculateDiffMeth}} function returns an object with \code{methylDiff} class.
 #'          
 #' @section Slots:\describe{
-#'                  \item{\code{sample.ids}}{ids/names of samples in a vector}
-#'                  \item{\code{assembly}}{a name of genome assembly, such as :hg18,mm9, etc}
-#'                  \item{\code{context}}{numeric vector identifying which samples are which group }
-#'                  \item{\code{treatment}}{numeric vector identifying which samples are which group }
-#'                  \item{\code{destranded}}{logical denoting if methylation inormation is destranded or not}
-#'                  \item{\code{resolution}}{string either 'base' or 'region' defining the resolution of methylation information}
-#'                  \item{\code{.Data}}{data.frame holding the locations and statistics}
+#'    \item{\code{sample.ids}}{ids/names of samples in a vector}
+#'    \item{\code{assembly}}{a name of genome assembly, such as :hg18,mm9, etc}
+#'    \item{\code{context}}{numeric vector identifying which samples are which
+#'    group }
+#'    \item{\code{treatment}}{numeric vector identifying which samples are which
+#'     group }
+#'    \item{\code{destranded}}{logical denoting if methylation inormation is
+#'     destranded or not}
+#'    \item{\code{resolution}}{string either 'base' or 'region' defining the 
+#'    resolution of methylation information}
+#'    \item{\code{.Data}}{data.frame holding the locations and statistics}
 #'
 #' }
 #' 
 #' @section Details:
-#' \code{methylDiff} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
+#' \code{methylDiff} class extends \code{\link{data.frame}} class therefore
+#'  providing novice and experienced R users with a data structure that is 
+#'  well known and ubiquitous in many R packages.
 #' 
+#' @section Subsetting:
+#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
+#'  rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
 #'   \code{methylDiff} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
@@ -601,7 +612,7 @@ setMethod("calculateDiffMeth", "methylBase",
                       #get CpGs with the cutoff
                       #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)
                       #subst=S3Part(.Object)[inds,]
-                      subst=S3Part(.Object)
+                      subst=S3Part(.Object,strictS3 = TRUE)
                       
                       if(length(.Object@treatment)<2 ){
                         stop("can not do differential methylation calculation with less than two samples")
@@ -730,17 +741,8 @@ setMethod("calculateDiffMeth", "methylBase",
 ##############################################################################
 
 
-#' show method for methylDiff class
-#' 
-#' @examples
-#' data(methylKit)
-#' methylDiff.obj
-#' show(methylDiff.obj)
-#' 
-#' 
-#' 
 #' @rdname show-methods
-#' @aliases show,methylDiff-method
+#' @aliases show,methylDiff
 setMethod("show", "methylDiff", function(object) {
   
   cat("methylDiff object with",nrow(object),"rows\n--------------\n")
@@ -772,7 +774,8 @@ setMethod("getAssembly", signature="methylDiff", definition=function(x) {
 #' @rdname getData-methods
 #' @aliases getData,methylDiff-method
 setMethod(f="getData", signature="methylDiff", definition=function(x) {
-                return(as(x,"data.frame"))
+                #return(as(x,"data.frame"))
+                return(S3Part(x, strictS3 = TRUE))
         }) 
 
 
@@ -815,6 +818,20 @@ setMethod("select", "methylDiff",
 )
 
 
+#' @rdname extract-methods
+#' @aliases [,methylDiff-method
+setMethod("[","methylDiff", 
+          function(x,i,j){
+            #cat(missing(i),"\n",missing(j),"\n",missing(drop))
+            if(!missing(j)){
+              stop(paste("subsetting on columns is not allowed for",class(x),
+                         "object\nif you want to do extraction on the data part", 
+                         "of the object use getData() first"),
+                   call. = FALSE)
+            }
+            select(x,i)
+          }
+)
 
 
 
@@ -823,7 +840,8 @@ setMethod("select", "methylDiff",
                       
 #' get differentially methylated regions/bases based on cutoffs 
 #' 
-#' The function subsets a \code{\link{methylDiff}} object in order to get differentially methylated bases/regions
+#' The function subsets a \code{\link{methylDiff}} object in order to get 
+#' differentially methylated bases/regions
 #' satisfying thresholds.
 #' 
 #' @param .Object  a \code{\link{methylDiff}} object
@@ -893,7 +911,7 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 #' @param qvalue.cutoff  cutoff for q-value
 #' @param meth.cutoff cutoff for percent methylation difference
 #' @param exclude names of chromosomes to be excluded
-#' @param ... extra graphical parameters to be passed to \code{barplot} function
+#' @param ... extra graphical parameters to be passed to \code{\link{barplot}} function
 #' 
 #' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
 #' 
@@ -914,6 +932,7 @@ setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, meth.cuto
 #' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiff"),
                     function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
+                      x=getData(x)
                       temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]
                       temp.hypo =x[x$qvalue < qvalue.cutoff & x$meth.diff <= -meth.cutoff,]
                       

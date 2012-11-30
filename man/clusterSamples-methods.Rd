@@ -5,7 +5,8 @@
 \title{Hierarchical Clustering using methylation data}
 \usage{
   clusterSamples(.Object, dist="correlation",
-  method="ward", plot=TRUE)
+  method="ward", sd.filter=TRUE,sd.threshold=0.5,
+  filterByQuantile=TRUE, plot=TRUE)
 }
 \arguments{
   \item{.Object}{a \code{methylBase} object}
@@ -14,13 +15,31 @@
   one of "\code{correlation}", "\code{euclidean}",
   "\code{maximum}", "\code{manhattan}", "\code{canberra}",
   "\code{binary}" or "\code{minkowski}". Any unambiguous
-  substring can be given. (default:"\code{correlation}")}
+  abbreviation can be given.
+  (default:"\code{correlation}")}
 
   \item{method}{the agglomeration method to be used. This
   should be (an unambiguous abbreviation of) one of
   "\code{ward}", "\code{single}", "\code{complete}",
   "\code{average}", "\code{mcquitty}", "\code{median}" or
   "\code{centroid}". (default:"\code{ward}")}
+
+  \item{sd.filter}{If \code{TRUE}, the bases/regions with
+  low variation will be discarded prior to clustering
+  (default:TRUE)}
+
+  \item{sd.threshold}{A numeric value. If
+  \code{filterByQuantile} is \code{TRUE}, features whose
+  standard deviations is less than the quantile denoted by
+  \code{sd.threshold} will be removed. If
+  \code{filterByQuantile} is \code{FALSE}, then features
+  whose standard deviations is less than the value of
+  \code{sd.threshold} will be removed.(default:0.5)}
+
+  \item{filterByQuantile}{A logical determining if
+  \code{sd.threshold} is to be interpreted as a quantile of
+  all Standard Deviation values from bases/regions (the
+  default), or as an absolute value}
 
   \item{plot}{a logical value indicating whether to plot
   hierarchical clustering. (default:TRUE)}

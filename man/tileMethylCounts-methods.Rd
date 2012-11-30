@@ -33,6 +33,7 @@
 \examples{
 data(methylKit)
 
-tiled.methylRaw=tileMethylCounts(methylObj=methylRawList.obj,win.size=1000,step.size=1000,cov.bases=0)
+tiled.methylRaw=tileMethylCounts(methylObj=methylRawList.obj,win.size=1000,
+step.size=1000,cov.bases=0)
 }
 

@@ -2,10 +2,15 @@
 \alias{show}
 \alias{show,annotationByFeature-method}
 \alias{show,annotationByGenicParts-method}
-\alias{show,methylDiff-method}
-\title{show method for methylDiff class}
+\alias{show,methylBase}
+\alias{show,methylDiff}
+\alias{show,methylRaw}
+\alias{show,methylRawList}
+\title{show method for methylKit classes}
 \description{
-  show method for methylDiff class
+  The show method works for
+  \code{methylRaw},\code{methylRawList}, \code{methylBase}
+  and \code{methylDiff} objects
 }
 \examples{
 data(methylKit)

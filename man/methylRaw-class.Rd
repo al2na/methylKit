@@ -5,9 +5,10 @@
 \title{An S4 class for holding raw methylation data from an alignment pipeline.}
 \description{
   This object stores the raw mehylation data that is read
-  in through read function and extends \code{data.frame}.
-  The raw methylation data is basically percent methylation
-  values and read coverage values per genomic region.
+  in through read function and extends
+  \code{data.frame}.The raw methylation data is basically
+  percent methylation values and read coverage values per
+  genomic base/region.
 }
 \section{Slots}{
   \describe{ \item{\code{sample.id}:}{string for an
@@ -25,10 +26,19 @@
   in many R packages.
 }
 
+\section{Subsetting}{
+  In the following code snippets, \code{x} is a
+  \code{methylDiff}. Subsetting by \code{x[i,]} will
+  produce a new object if subsetting is done on rows.
+  Column subsetting is not directly allowed to prevent
+  errors in the downstream analysis. see ?methylKit[ .
+}
+
 \section{Accessors}{
   The following functions provides access to data slots of
   methylDiff:
-  \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+  \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+  \code{\link[methylKit]{getContext}}
 }
 
 \section{Coercion}{
@@ -38,7 +48,8 @@
 }
 \examples{
 # example of a raw methylation data contained as a text file
-read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),header=TRUE,nrows=5)
+read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+header=TRUE,nrows=5)
 
 data(methylKit)
 

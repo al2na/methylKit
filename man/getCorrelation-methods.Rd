@@ -1,9 +1,9 @@
 \docType{methods}
 \name{getCorrelation}
 \alias{getCorrelation}
-\alias{getCorrelation-method}
 \alias{getCorrelation,-methods}
 \alias{getCorrelation,methylBase-method}
+\alias{getCorrelation-method}
 \title{get correlation between samples in methylBase object}
 \usage{
   getCorrelation(.Object,method="pearson",plot=FALSE)

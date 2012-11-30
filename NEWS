@@ -1,3 +1,42 @@
+methylKit 0.5.6
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new arguments for clusterSamples() and PCASamples() functions are added. With 
+  the new options "sd.filter","sd.threshold","filterByQuantile" are added. These 
+  options help finetune how low variation bases/regions are discarded prior to 
+  clustering or PCA. See ?PCASamples and ?clusterSamples() for details on the 
+  new options
+
+* FAQ section added to the vignette 
+
+* show methods added for each class. Now, typing the variable name containing the
+  object will display concise information about the contents of the object.
+
+* Subsetting objects via "[" notation is now enabled. You can subset rows of the 
+  objects and it will return a new object rather than just a data frame.
+
+
+IMPROVEMENTS AND BUG FIXES
+
+* tileMethylCounts() error  is fixed. Error occurred when tilling sparsely 
+  covered small chromosomes like chrM in human RRBS data.
+
+* read.bismark() can deal with Bismark output with Bowtie2. Bowtie2 can put gaps 
+  in the alignment, now read.bismark() can deal with those gaps when parsing the 
+  SAM file.
+
+* Coverage columns are coerced to integer when reading generic methylation per 
+  base files. BSMAP scripts can produce a methylation ratio file where coverages 
+  (or "effective CT counts" as they are called)  are not always integers, which 
+  causes a problem in the downstream analysis. Now, these non-integer columns 
+  are rounded to nearest integer while reading. 
+  See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html 
+  for example usage of this functionality. 
+
+
+
 methylKit 0.5.5
 --------------
 

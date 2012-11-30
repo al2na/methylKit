@@ -47,10 +47,19 @@
   in many R packages.
 }
 
+\section{Subsetting}{
+  In the following code snippets, \code{x} is a
+  \code{methylDiff}. Subsetting by \code{x[i,]} will
+  produce a new object if subsetting is done on rows.
+  Column subsetting is not directly allowed to prevent
+  errors in the downstream analysis. see ?methylKit[ .
+}
+
 \section{Accessors}{
   The following functions provides access to data slots of
   methylDiff:
-  \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+  \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+  \code{\link[methylKit]{getContext}}
 }
 
 \section{Coercion}{

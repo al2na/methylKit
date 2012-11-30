@@ -74,7 +74,8 @@ colSds <- function(x, ...) {
 # dist.method method to get the distance between samples
 # hclust.method the agglomeration method to be used
 # plot if TRUE, plot the hierarchical clustering
-.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE, treatment=treatment,sample.ids=sample.ids,context){
+.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE,
+                  treatment=treatment,sample.ids=sample.ids,context){
   DIST.METHODS <- c("correlation", "euclidean", "maximum", "manhattan", "canberra", 
         "binary", "minkowski")
   dist.method <- pmatch(dist.method, DIST.METHODS)
@@ -149,17 +150,12 @@ colSds <- function(x, ...) {
 # Principal Components Analysis on methylBase object
 # x matrix each column is a sample
 # cor a logical value indicating whether the calculation should use the correlation matrix or the covariance matrix. (The correlation matrix can only be used if there are no constant variables.)
-.pcaPlot = function(x,comp1=1,comp2=2, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
+.pcaPlot = function(x,comp1=1,comp2=2, screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,obj.return=FALSE){
   #x.pr = princomp(x, cor=cor)
   
-  if(!is.null(sd.threshold))
-  {
-    #sds=apply(x,1,sd)
-    sds =rowSds(x)
-    x.pr = prcomp((x[sds>sd.threshold,]),scale.=scale,center=center)
-  }else{
-    x.pr = prcomp((x),scale.=scale,center=center)
-  }
+
+  x.pr = prcomp((x),scale.=scale,center=center)
+
   if (screeplot){
     i=5;screeplot(x.pr, type="barplot", main=paste(context,"methylation PCA Screeplot"), col = rainbow(i)[i])
   }
@@ -171,9 +167,15 @@ colSds <- function(x, ...) {
     my.cols=rainbow(length(unique(treatment)), start=1, end=0.6)
 
     
-    plot(loads[,comp1],loads[,comp2], main = paste(context,"methylation PCA Analysis"),col=my.cols[treatment+1],
-         xlim=.adjlim(loads[,comp1],adj.lim[1]), ylim=.adjlim(loads[,comp2], adj.lim[2]),xlab=paste("loadings for PC",comp1,sep=""), ylab=paste("loadings for PC",comp2,sep=""))
-    text(loads[,comp1], loads[,comp2],labels=sample.ids,adj=c(-0.4,0.3), col=my.cols[treatment+1])
+    plot(loads[,comp1],loads[,comp2], main = paste(context,"methylation PCA Analysis"),
+         col=my.cols[treatment+1],
+         xlim=.adjlim(loads[,comp1],adj.lim[1]), 
+         ylim=.adjlim(loads[,comp2], adj.lim[2]),
+         xlab=paste("loadings for PC",comp1,sep=""), 
+         ylab=paste("loadings for PC",comp2,sep=""))
+    
+    text(loads[,comp1], loads[,comp2],labels=sample.ids,adj=c(-0.4,0.3), 
+         col=my.cols[treatment+1])
   }
   if(obj.return){  return((x.pr))}
 
@@ -182,19 +184,16 @@ colSds <- function(x, ...) {
 
 # Principal Components Analysis on methylBase object on transposed data
 # x matrix each column is a sample
-.pcaPlotT = function(x,comp1=1,comp2=2,screeplot=FALSE, adj.lim=c(0.001,0.1), treatment=treatment,sample.ids=sample.ids,context,scale=TRUE,center=TRUE,sd.threshold=0,obj.return=FALSE){
-  #x.pr = princomp(x, cor=cor)
-  if(!is.null(sd.threshold))
-  {
-    #sds=apply(x,1,sd)
-    sds =rowSds(x)
-    x.pr = prcomp(t(x[sds>sd.threshold,]),scale.=scale,center=center)
-  }else{
-    x.pr = prcomp(t(x),scale.=scale,center=center)
-  }
-  
+.pcaPlotT = function(x,comp1=1,comp2=2,screeplot=FALSE, adj.lim=c(0.001,0.1),
+                     treatment=treatment,sample.ids=sample.ids,context,
+                     scale=TRUE,center=TRUE,obj.return=FALSE){
+
+  x.pr = prcomp(t(x),scale.=scale,center=center)
+ 
   if (screeplot){
-    i=5;screeplot(x.pr, type="barplot", main=paste(context,"methylation PCA Screeplot"), col = rainbow(i)[i])
+    i=5;screeplot(x.pr, type="barplot", 
+                  main=paste(context,"methylation PCA Screeplot"), 
+                  col = rainbow(i)[i])
   }
   else{
     #loads = loadings(x.pr)
@@ -205,8 +204,10 @@ colSds <- function(x, ...) {
     pc1=x.pr$x[,comp1]
     pc2=x.pr$x[,comp2]
     
-    plot(pc1,pc2, main = paste(context,"methylation PCA Analysis"),col=my.cols[treatment+1],
-         xlim=.adjlim(pc1,adj.lim[1]), ylim=.adjlim(pc2, adj.lim[2]),xlab=paste("PC",comp1,sep=""), ylab=paste("PC",comp2,sep=""))
+    plot(pc1,pc2, main = paste(context,"methylation PCA Analysis"),
+         col=my.cols[treatment+1],
+         xlim=.adjlim(pc1,adj.lim[1]), ylim=.adjlim(pc2, adj.lim[2]),
+         xlab=paste("PC",comp1,sep=""), ylab=paste("PC",comp2,sep=""))
     text(pc1, pc2,labels=sample.ids,adj=c(-0.4,0.3), col=my.cols[treatment+1])
   }
   if(obj.return){  return((x.pr))}
@@ -218,15 +219,36 @@ colSds <- function(x, ...) {
 
 #' Hierarchical Clustering using methylation data
 #'  
-#' The function clusters samples using \code{\link[stats]{hclust}} function and various distance metrics derived from percent methylation 
-#' per base or per region for each sample.
+#' The function clusters samples using \code{\link[stats]{hclust}} function and 
+#' various distance metrics derived from percent methylation per base or per 
+#' region for each sample.
 #' 
 #' 
 #' @param .Object a \code{methylBase} object
-#' @param dist the distance measure to be used. This must be one of "\code{correlation}", "\code{euclidean}", "\code{maximum}", "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". Any unambiguous substring can be given. (default:"\code{correlation}")
-#' @param method the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" or "\code{centroid}". (default:"\code{ward}")
-#' @param plot a logical value indicating whether to plot hierarchical clustering. (default:TRUE) 
-#' @usage clusterSamples(.Object, dist="correlation", method="ward", plot=TRUE)
+#' @param dist the distance measure to be used. This must be one of 
+#'        "\code{correlation}", "\code{euclidean}", "\code{maximum}", 
+#'        "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". 
+#'        Any unambiguous abbreviation can be given. (default:"\code{correlation}")
+#' @param method the agglomeration method to be used. This should be 
+#'        (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", 
+#'        "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" 
+#'        or "\code{centroid}". (default:"\code{ward}")
+#' @param sd.filter  If \code{TRUE}, the bases/regions with low variation will be 
+#'        discarded prior to clustering (default:TRUE)
+#' @param sd.threshold A numeric value. If \code{filterByQuantile} is \code{TRUE}, 
+#'        features whose standard deviations is less than the quantile denoted by 
+#'        \code{sd.threshold} will be removed.
+#'         If \code{filterByQuantile} is \code{FALSE}, then features whose 
+#'         standard deviations is less than the value of \code{sd.threshold} 
+#'         will be removed.(default:0.5)
+#' @param filterByQuantile A logical determining if \code{sd.threshold} is to 
+#'        be interpreted as a quantile of all Standard Deviation values from 
+#'        bases/regions (the default), or as an absolute value
+#' @param plot a logical value indicating whether to plot hierarchical 
+#'        clustering. (default:TRUE) 
+#' @usage clusterSamples(.Object, dist="correlation", method="ward",
+#'                        sd.filter=TRUE,sd.threshold=0.5,
+#'                        filterByQuantile=TRUE, plot=TRUE)
 #' @examples
 #' data(methylKit)
 #' 
@@ -234,82 +256,159 @@ colSds <- function(x, ...) {
 #' 
 #' 
 #' 
-#' @return a \code{tree} object of a hierarchical cluster analysis using a set of dissimilarities for the n objects being clustered.
+#' @return a \code{tree} object of a hierarchical cluster analysis using a set 
+#'          of dissimilarities for the n objects being clustered.
 #'
 #' @export
 #' @docType methods
 #' @rdname clusterSamples-methods
-setGeneric("clusterSamples", function(.Object, dist="correlation", method="ward", plot=TRUE) standardGeneric("clusterSamples"))
+setGeneric("clusterSamples", function(.Object, dist="correlation", method="ward",
+                                      sd.filter=TRUE,sd.threshold=0.5,
+                                      filterByQuantile=TRUE, plot=TRUE) 
+                                              standardGeneric("clusterSamples"))
 
 #' @rdname clusterSamples-methods
 #' @aliases clusterSamples,methylBase-method
 setMethod("clusterSamples", "methylBase",
-                    function(.Object, dist="correlation", method="ward", plot=TRUE){
-                        mat      =getData(.Object)
-                        mat      =mat[ rowSums(is.na(mat))==0, ] # remove rows containing NA values, they might be introduced at unite step
-
-                        meth.mat = mat[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
-                        names(meth.mat)=.Object@sample.ids
-                        
-                        .cluster(meth.mat, dist.method=dist, hclust.method=method, plot=plot, treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context)
-                        
-                        }
+  function(.Object, dist, method ,sd.filter, sd.threshold, 
+                   filterByQuantile, plot)
+  {
+    mat      =getData(.Object)
+    # remove rows containing NA values, they might be introduced at unite step
+    mat      =mat[ rowSums(is.na(mat))==0, ] 
+    
+    meth.mat = mat[, .Object@numCs.index]/
+      (mat[,.Object@numCs.index] + mat[,.Object@numTs.index] )                                      
+    names(meth.mat)=.Object@sample.ids
+    
+    # if Std. Dev. filter is on remove rows with low variation
+    if(sd.filter){
+      if(filterByQuantile){
+        sds=rowSds(as.matrix(meth.mat))
+        cutoff=quantile(sds,sd.threshold)
+        meth.mat=meth.mat[sds>cutoff,]
+      }else{
+        meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
+      }
+    }
+    
+    .cluster(meth.mat, dist.method=dist, hclust.method=method, 
+             plot=plot, treatment=.Object@treatment,
+             sample.ids=.Object@sample.ids,
+             context=.Object@context)
+    
+  }
 )
 
 #' Principal Components Analysis of Methylation data
 #' 
-#' The function does a PCA analysis using \code{\link[stats]{prcomp}} function using percent methylation matrix as an input.
+#' The function does a PCA analysis using \code{\link[stats]{prcomp}} function 
+#' using percent methylation matrix as an input.
 #' 
 #' @param .Object a \code{methylBase} object
-#' @param screeplot a logical value indicating whether to plot the variances against the number of the principal component. (default: FALSE)
-#' @param adj.lim a vector indicating the propotional adjustment of xlim (adj.lim[1]) and ylim (adj.lim[2]). (default: c(0.0004,0.1))
-#' @param scale logical indicating if \code{prcomp} should scale the data to have unit variance or not (default: TRUE)
-#' @param center logical indicating if \code{prcomp} should center the data or not (default: TRUE)
-#' @param comp vector of integers with 2 elements specifying which components to be plotted.
-#' @param transpose if TRUE (default) percent methylation matrix will be transposed, this is equivalent to doing PCA on variables that are regions/bases. The resulting plot will location of samples in the new coordinate system
-#'        if FALSE the variables for the matrix will be samples and the resulting plot whill show how each sample (variable) contributes to the principle component.
-#'        the samples that are highly correlated should have similar contributions to the principal components.       
-#' @param sd.threshold standard deviation threshold to remove bases/regions that have % methylation standard dev. lower than this threshold.
-#'        if NULL no strandard deviation will be calculated and this threshold will not be applied.
-#' @param obj.return if the result of \code{prcomp} function should be returned or not. Default:FALSE
-#' @usage PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
+#' @param screeplot a logical value indicating whether to plot the variances 
+#'        against the number of the principal component. (default: FALSE)
+#' @param adj.lim a vector indicating the propotional adjustment of 
+#'        xlim (adj.lim[1]) and 
+#'        ylim (adj.lim[2]). This is primarily used for adjusting the visibility
+#'        of sample labels on the on the PCA plot. (default: c(0.0004,0.1))
+#' @param scale logical indicating if \code{prcomp} should scale the data to 
+#'        have unit variance or not (default: TRUE)
+#' @param center logical indicating if \code{prcomp} should center the data 
+#'        or not (default: TRUE)
+#' @param comp vector of integers with 2 elements specifying which components 
+#'        to be plotted.
+#' @param transpose if TRUE (default) percent methylation matrix will be 
+#'        transposed, this is equivalent to doing PCA on variables that are 
+#'        regions/bases. The resulting plot will location of samples in the new 
+#'        coordinate system if FALSE the variables for the matrix will be samples 
+#'        and the resulting plot whill show how each sample (variable) 
+#'        contributes to the principle component.the samples that are highly 
+#'        correlated should have similar contributions to the principal components.       
+#' @param sd.filter  If \code{TRUE}, the bases/regions with low variation will 
+#'        be discarded prior to PCA (default:TRUE)
+#' @param sd.threshold A numeric value. If \code{filterByQuantile} is \code{TRUE}, 
+#'        the value should be between 0 and 1 and the features whose standard 
+#'        deviations is less than the quantile denoted by \code{sd.threshold} 
+#'        will be removed. If \code{filterByQuantile} is \code{FALSE}, 
+#'        then features whose standard deviations is less than the value 
+#'        of \code{sd.threshold} will be removed.(default:0.5)
+#' @param filterByQuantile A logical determining if \code{sd.threshold} is to be 
+#'        interpreted as a quantile of all standard deviation values from 
+#'        bases/regions (the default), or as an absolute value
+#' @param obj.return if the result of \code{prcomp} function should be returned 
+#'        or not. (Default:FALSE)
+#' @usage PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1), scale=TRUE,
+#' center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
+#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 #' 
 #' @examples
 #' data(methylKit) 
-#' PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE)
+#' 
+#' # do PCA with filtering rows with low variation, filter rows with standard 
+#' # deviation lower than the 50th percentile of Standard deviation distribution
+#' PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),
+#'            scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
+#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 #' 
 #' 
-#' @return The form of the value returned by \code{PCASamples} is the summary of principal component analysis by \code{prcomp}.
-#' @note cor option is not in use anymore, since \code{prcomp} is used for PCA analysis instead of \code{princomp}
+#' @return The form of the value returned by \code{PCASamples} is the summary 
+#'         of principal component analysis by \code{prcomp}.
+#' @note cor option is not in use anymore, since \code{prcomp} is used for PCA 
+#'        analysis instead of \code{princomp}
 #'  
 #'
 #' @export
 #' @docType methods
 #' @rdname PCASamples-methods
-setGeneric("PCASamples", function(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.threshold=0,obj.return=FALSE) standardGeneric("PCASamples"))
+setGeneric("PCASamples", function(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),
+                                  scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,
+                                  sd.filter=TRUE,sd.threshold=0.5,
+                                  filterByQuantile=TRUE,obj.return=FALSE) 
+          standardGeneric("PCASamples"))
 
 #' @rdname PCASamples-methods
 #' @aliases PCASamples,methylBase-method
 setMethod("PCASamples", "methylBase",
-                    function(.Object, screeplot, adj.lim,scale,center,comp,transpose,sd.threshold,obj.return){
-                      
-                        mat      = getData(.Object)
-                        mat      = mat[ rowSums(is.na(mat))==0, ] # remove rows containing NA values, they might be introduced at unite step
-                        meth.mat = mat[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
-                        names(meth.mat)=.Object@sample.ids
-                        
-                        if(transpose){
-                          .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
-                                    treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context
-                                    ,scale=scale,center=center,sd.threshold=sd.threshold,obj.return=obj.return)
-
-                        }else{
-                          .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, adj.lim=adj.lim, 
-                                  treatment=.Object@treatment,sample.ids=.Object@sample.ids,context=.Object@context,scale=scale,
-                                 center=center,sd.threshold=sd.threshold,obj.return=obj.return)
-                        }
-                        
-                    }      
+  function(.Object, screeplot, adj.lim,scale,center,comp,
+                             transpose,sd.filter, sd.threshold, 
+                             filterByQuantile,obj.return)
+  {
+    
+    mat      = getData(.Object)
+    # remove rows containing NA values, they might be introduced at unite step
+    mat      = mat[ rowSums(is.na(mat))==0, ] 
+    meth.mat = mat[, .Object@numCs.index]/
+      (mat[,.Object@numCs.index] + mat[,.Object@numTs.index] )                                      
+    names(meth.mat)=.Object@sample.ids
+    
+    # if Std. Dev. filter is on remove rows with low variation
+    if(sd.filter){
+      if(filterByQuantile){
+        sds=rowSds(as.matrix(meth.mat))
+        cutoff=quantile(sds,sd.threshold)
+        meth.mat=meth.mat[sds>cutoff,]
+      }else{
+        meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
+      }
+    }
+    
+    if(transpose){
+      .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+                adj.lim=adj.lim, 
+                treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+                context=.Object@context
+                ,scale=scale,center=center,obj.return=obj.return)
+      
+    }else{
+      .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+               adj.lim=adj.lim, 
+               treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+               context=.Object@context,
+               scale=scale,center=center,  obj.return=obj.return)
+    }
+    
+  }      
 )
 
 #numC=grep("numCs", names(methidh))
@@ -317,8 +416,3 @@ setMethod("PCASamples", "methylBase",
 #meth.mat=methidh[,numC]/(methidh[,numC]+methidh[,numT])
 
 
-## ACESSOR FUNCTIONS FOR methylDiff OBJECT
-# a function for getting data part of methylDiff                      
-setMethod(f="getData", signature="methylDiff", definition=function(x) {
-                return(as(x,"data.frame"))
-        }) 

@@ -5,9 +5,11 @@
 # reads a table in a fast way to a dataframe
 .readTableFast<-function(filename,header=T,skip=0,sep="")
 {
-  tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, nrows = 100)
+  tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
+                         nrows = 100)
   classes  <- sapply(tab5rows, class)
-  return( read.table(filename, header = header,skip=skip,sep=sep, colClasses = classes)  )
+  return( read.table(filename, header = header,skip=skip,sep=sep, 
+                     colClasses = classes)  )
 }
 
 # reformats a data.frame to a standard methylraw data.frame
@@ -35,6 +37,9 @@
     strand.col=pipeline$strand.col
     freqC.col=pipeline$freqC.col
     
+    #coerce coverage column to integer
+    data[,coverage.col]=round(data[,coverage.col])
+    
     strand=rep("+",nrow(data))
     strand[data[,strand.col]=="R" | data[,strand.col]=="-"]="-"
     adj=ifelse(fraction, 1, 100)
@@ -48,17 +53,23 @@
 }
 
 .check.pipeline.list<-function(pipeline){
-    if(!all(c("fraction", "chr.col", "start.col", "end.col", "coverage.col", "strand.col", "freqC.col") %in% names(pipeline))){
-        stop("Miss components for pipeline for the generic read. Try amp, or bismark, or give the correct format of pipeline list for generic read!")
+    if(!all(c("fraction", "chr.col", "start.col", "end.col", "coverage.col", 
+              "strand.col", "freqC.col") %in% names(pipeline))){
+        stop("Miss components for pipeline for the generic read.",
+             "Try amp, or bismark, or a list in the correct format for",
+             "for generic methylation file reading!")
     }
     
-    values=c(pipeline$chr.col, pipeline$start.col, pipeline$coverage.col, pipeline$strand.col, pipeline$freqC.col)
+    values=c(pipeline$chr.col, pipeline$start.col, pipeline$coverage.col, 
+             pipeline$strand.col, pipeline$freqC.col)
     if(any(duplicated(values))){
-        stop("Find duplicated column number among chr.col, start.col, coverage.col, strand.col, freqC.col!")
+        stop("Find duplicated column number among chr.col, start.col,", 
+             "coverage.col, strand.col, freqC.col!")
     }
 }
 
-# unfies forward and reverse strand CpGs on the forward strand if the if both are on the same CpG
+# unfies forward and reverse strand CpGs on the forward strand if the if
+# both are on the same CpG
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
 {
@@ -105,10 +116,11 @@ valid.methylRawObj <- function(object) {
       return(TRUE)
     }
     else if (! check1 ){
-        paste("resolution slot has to be either 'base' or 'region': other values not allowed")
+        cat("resolution slot has to be either 'base' or 'region':",
+              "other values not allowed")
     }
     else if(! check2){
-        paste("data part of methylRaw have",ncol(data),"columns, expected 8 columns")
+        cat("data part of methylRaw have",ncol(data),"columns, expected 8 columns")
     }
 
 }
@@ -116,30 +128,42 @@ valid.methylRawObj <- function(object) {
 
 #' An S4 class for holding raw methylation data from an alignment pipeline.
 #'
-#' This object stores the raw mehylation data that is read in through read function and extends \code{data.frame}.
-#' The raw methylation data is basically percent methylation values and read coverage values per genomic region.
+#' This object stores the raw mehylation data that is read in through read 
+#' function and extends \code{data.frame}.The raw methylation data is basically
+#' percent methylation values and read coverage values per genomic base/region.
 #'
 #' @section Slots:\describe{
-#'                  \item{\code{sample.id}:}{string for an identifier of the sample}
-#'                  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
-#'                  \item{\code{context}:}{ methylation context string, ex: CpG,CpH,CHH, etc.}
-#'                  \item{\code{resolution}:}{ resolution of methylation information, 'base' or 'region'}
+#'  \item{\code{sample.id}:}{string for an identifier of the sample}
+#'  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
+#'  \item{\code{context}:}{ methylation context string, ex: CpG,CpH,CHH, etc.}
+#'  \item{\code{resolution}:}{ resolution of methylation information, 'base' or 
+#'  'region'}
 #'                 }
 #' @section Details:
-#' \code{methylRaw} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
+#' \code{methylRaw} class extends \code{\link{data.frame}} class therefore 
+#' providing novice and experienced R users with a data structure that is well 
+#' known and ubiquitous in many R packages.
 #' 
+#' @section Subsetting:
+#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
+#'  rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Accessors:
 #' The following functions provides access to data slots of methylDiff:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+#' \code{\link[methylKit]{getContext}}
 #' 
 #' @section Coercion:
-#'   \code{methylRaw} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{methylRaw} object can be coerced to 
+#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' @examples
 #' 
 #' # example of a raw methylation data contained as a text file
-#' read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),header=TRUE,nrows=5)
+#' read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#' header=TRUE,nrows=5)
 #' 
 #' data(methylKit)
 #' 
@@ -158,13 +182,15 @@ valid.methylRawObj <- function(object) {
 #' @rdname methylRaw-class
 #' @export
 setClass("methylRaw", contains= "data.frame",representation(
-  sample.id = "character", assembly = "character",context="character",resolution="character"),validity=valid.methylRawObj)
+  sample.id = "character", assembly = "character",context="character",
+  resolution="character"),validity=valid.methylRawObj)
 
 
 #' An S4 class for holding a list of methylRaw objects.
 #'
 #' This class stores the list of  \code{\link[methylKit]{methylRaw}} objects.
-#' Functions such as \code{lapply} can be used on this list. It extends \code{\link[base]{list}} class. This object is primarily produced
+#' Functions such as \code{lapply} can be used on this list. It extends
+#'  \code{\link[base]{list}} class. This object is primarily produced
 #' by \code{\link[methylKit]{read}} function.
 #'
 #' @section Slots:\describe{
@@ -413,10 +439,17 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 #' \code{methylBase} class extends \code{\link{data.frame}} class therefore providing novice and experienced R users with a data structure that is well known and ubiquitous in many R packages.
 #' 
 #' 
+#' @section Subsetting:
+#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
+#'  rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  downstream analysis. see ?methylKit[ .
+#' 
 #' @section Accessors:
 #' The following functions provides access to data slots of methylDiff:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
-
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+#' \code{\link[methylKit]{getContext}}
+#' 
 #' 
 #' @section Coercion:
 #'   \code{methylBase} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
@@ -588,7 +621,8 @@ setGeneric("getCorrelation", function(.Object,method="pearson",plot=FALSE) stand
 #' @aliases getCorrelation-method
 setMethod("getCorrelation", "methylBase",
                     function(.Object,method,plot){
-                        meth.mat = getData(.Object)[, .Object@numCs.index]/(.Object[,.Object@numCs.index] + .Object[,.Object@numTs.index] )                                      
+                        meth.mat = getData(.Object)[, .Object@numCs.index]/
+                          (getData(.Object)[,.Object@numCs.index] + getData(.Object)[,.Object@numTs.index] )                                      
                         names(meth.mat)=.Object@sample.ids
                         
                         print( cor(meth.mat,method=method) )
@@ -923,11 +957,66 @@ setMethod("getMethylationStats", "methylRaw",
 #                          d.list=cbind(d.list,meth.mat[,ind[i,1]]-meth.mat[,ind[i,2]])
 #                        }
 #                    }                       
-#                  )      
+#                  ) 
+
+
+
                         
 #
-#  methylBase accessor functions
+#  methylBase accessor and show functions
 #
+
+
+#' show method for methylKit classes
+#' 
+#' The show method works for \code{methylRaw},\code{methylRawList},
+#' \code{methylBase} and \code{methylDiff} objects
+#' 
+#' @examples
+#' data(methylKit)
+#' methylDiff.obj
+#' show(methylDiff.obj)
+#' 
+#' 
+#'
+#' @rdname show-methods
+#' @aliases show,methylBase
+setMethod("show", "methylBase", function(object) {
+  
+  cat("methylBase object with",nrow(object),"rows\n--------------\n")
+  print(head(object))
+  cat("--------------\n")
+  cat("sample.ids:",object@sample.ids,"\n")
+  cat("destranded",object@destranded,"\n")
+  cat("assembly:",object@assembly,"\n")
+  cat("context:", object@context,"\n")
+  cat("treament:", object@treatment,"\n")
+  cat("resolution:", object@resolution,"\n")
+})
+
+#' @rdname show-methods
+#' @aliases show,methylRaw
+setMethod("show", "methylRaw", function(object) {
+  
+  cat("methylRaw object with",nrow(object),"rows\n--------------\n")
+  print(head(object))
+  cat("--------------\n")
+  cat("sample.id:",object@sample.id,"\n")
+  cat("assembly:",object@assembly,"\n")
+  cat("context:", object@context,"\n")
+  cat("resolution:", object@resolution,"\n\n")
+})
+
+#' @rdname show-methods
+#' @aliases show,methylRawList
+setMethod("show", "methylRawList", function(object) {
+  
+  cat("methylRawList object with",length(object),"methylRaw objects\n\n")
+  
+  lapply(object,show)
+  cat("treament:", object@treatment,"\n")
+  
+})
 
 
 #' get assembly of the genome
@@ -1017,7 +1106,7 @@ setMethod("getContext", signature="methylRaw", definition=function(x) {
 #' head(getData(methylRawList.obj[[1]]))
 #' 
 #' 
-#' @return data.frame for methylation events
+#' @return data frame for methylation events
 #' @aliases getData,-methods getData,methylBase-method
 #' @export
 #' @docType methods
@@ -1027,13 +1116,15 @@ setGeneric("getData", def=function(x) standardGeneric("getData"))
 #' @rdname getData-methods
 #' @aliases getData-method
 setMethod("getData", signature="methylBase", definition=function(x) {
-                return(as(x,"data.frame"))
+                #return(as(x,"data.frame"))
+                return(S3Part(x, strictS3 = TRUE))
 }) 
 
 #' @rdname getData-methods
 #' @aliases getData,methylRaw-method
 setMethod("getData", signature="methylRaw", definition=function(x) {
-                return(as(x,"data.frame"))
+                #return(as(x,"data.frame"))
+                return(S3Part(x, strictS3 = TRUE))
 })
 
 ## CONVERTOR FUNCTIONS FOR methylRaw and methylBase OBJECT
@@ -1053,7 +1144,7 @@ setAs("methylRaw", "GRanges", function(from)
 
 setAs("methylBase", "GRanges", function(from)
                       {
-                        #from=getData(from1)
+                        from=getData(from)
                         GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
                                        strand=from$strand, 
                                        id=from$id,
@@ -1066,19 +1157,28 @@ setAs("methylBase", "GRanges", function(from)
 
 #' selects rows from of methylKit objects
 #'
-#' The function returns a subset of data contained in the \code{methylKit} objects.
+#' The function returns a subset of data contained in the \code{methylKit} 
+#' objects.
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
-#' @param i a numeric or logical vector. This vector corresponds to bases or regions contained in \code{methylKit} objects.
-#'            The vector is used to subset the data.  
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or
+#'  \code{\link{methylDiff}} object
+#' @param i a numeric or logical vector. This vector corresponds to bases or 
+#'          regions contained in \code{methylKit} objects.The vector is used to 
+#'          subset the data.  
 #' @usage select(x,i)
 #' @examples
 #' data(methylKit)
-#' subset1=select(methylRawList.obj[[1]],1:100) # selects first hundred rows, returns a methylRaw object
-#' subset2=select(methylBase.obj,1:100) # selects first hundred rows, returns a methylBase object
-#' subset3=select(methylDiff.obj,1:100) # selects first hundred rows, returns a methylDiff object
+#'  # selects first hundred rows, returns a methylRaw object
+#' subset1=select(methylRawList.obj[[1]],1:100)
 #' 
-#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object depending on the input object.
+#' # selects first hundred rows, returns a methylBase object
+#' subset2=select(methylBase.obj,1:100) 
+#' 
+#' # selects first hundred rows, returns a methylDiff object
+#' subset3=select(methylDiff.obj,1:100)
+#' 
+#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
+#'           \code{\link{methylDiff}} object depending on the input object.
 #' @export
 #' @docType methods
 #' @rdname select-methods
@@ -1116,9 +1216,75 @@ setMethod("select", "methylRaw",
 
           new("methylRaw",getData(x)[i,],sample.id=x@sample.id,
                                            assembly=x@assembly,
-                                           context=x@context,resolution=x@resolution)
+                                           context=x@context,
+                                           resolution=x@resolution)
            }
           
 
 )
 
+#' extract parts of methylRaw,methylBase and methylDiff data
+#' 
+#' The function extracts part of the data and returns a new object.
+#' @name extract
+#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or 
+#'          \code{\link{methylDiff}} object
+#' @param i a numeric or logical vector. This vector corresponds to bases or 
+#'          regions contained in \code{methylKit} objects.The vector is used to 
+#'          subset the data.
+#' @param j This argument can not be used for the extraction of columns.
+#'          As unintentional extraction of the columns will cause an error in
+#'          the downstream analysis. Using this argument will cause an error.
+#'           Use \code{\link[methylKit]{getData}} to access the data part of 
+#'           the objects. 
+#' 
+#'
+#'        
+#'        
+#' @examples
+#' data(methylKit)
+#' 
+#' # selects first hundred rows, returns a methylRaw object
+#' subset1=methylRawList.obj[[1]][1:100] 
+#' 
+#' # selects first hundred rows, returns a methylBase object
+#' subset2=methylBase.obj[1:100,] 
+#' 
+#' # selects first hundred rows, returns a methylDiff object
+#' subset3=methylDiff.obj[1:100,] 
+#' 
+#' # This will get chromomsomes, will return a factor
+#' # That means the resulting object will ceases to be a methylKit object
+#' chrs=methylDiff.obj[[2]]
+#' 
+#' @aliases [,methylRaw-method
+#' @aliases [
+#' @docType methods
+#' @rdname extract-methods
+setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
+          function(x,i,j){
+            #cat(missing(i),"\n",missing(j),"\n",missing(drop))
+            if(!missing(j)){
+              stop(paste("subsetting on columns is not allowed for",class(x),
+                         "object\nif you want to do extraction on the data part", 
+                          "of the object use getData() first"),
+                   call. = FALSE)
+            }
+            select(x,i)
+          }
+              )
+
+#' @aliases [,methylBase-method
+#' @rdname extract-methods
+setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
+          function(x,i,j,drop){
+            #cat(missing(i),"\n",missing(j),"\n",missing(drop))
+            if(!missing(j)){
+              stop(paste("subsetting on columns is not allowed for",class(x),
+                         "object\nif you want to do extraction on the data part", 
+                          "of the object use getData() first"),
+                   call. = FALSE)
+            }
+            select(x,i)
+          }
+)

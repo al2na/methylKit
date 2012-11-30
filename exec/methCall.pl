@@ -152,7 +152,7 @@ sub processCGmethHash
 }
 
 # process a given non CG methlation hash
-# writes the filter passing Cs to a hash, that hash will be used to calculate conversion rate later on
+# writes the filter passing Cs to a hash of arrays, that hash will be used to calculate conversion rate later on
 sub processnonCGmethHash
 {
   my($nonCGmethHash,$CTconvArray,$mincov)=(@_);
@@ -173,6 +173,32 @@ sub processnonCGmethHash
   return 1;
 }
 
+# process a given non CG methlation hash
+# writes the filter passing Cs to a hash, that hash will be used to calculate conversion rate later on
+# hash only contains total number of non-CpGs Cs and total methylation value to calculate average conversion rate
+# using this we won't be able to calculate median conversion rate, just the mean conversion rate
+# this is better for memory management
+sub processnonCGmethHash2
+{
+  my($nonCGmethHash,$CTconvArray,$mincov)=(@_);
+
+  foreach my $key (keys %{$nonCGmethHash})
+  {
+        my($strand,$chr,$loc)=split(/\|/,$key);
+	my $noCs=$nonCGmethHash->{$key}->[0];
+	my $noTs=$nonCGmethHash->{$key}->[1];
+	my $noOs=$nonCGmethHash->{$key}->[2];
+	my $Cperc=sprintf("%.2f", 100*$noCs/($noTs+$noCs+$noOs) );
+	my $Tperc=sprintf("%.2f", 100*$noTs/($noTs+$noCs+$noOs) );
+       	if(($noTs+$noCs)/($noTs+$noCs+$noOs) > 0.95 && ($noTs+$noCs+$noOs)>=$mincov ){
+	  #print join("\t",($chr.".".$loc,$chr,$loc,$strand,$noCs+$noTs+$noOs,$Cperc,$Tperc)  ),"\n"; 
+	  #push @{$CTconvArray->{$strand}},(($noTs*100)/($noTs+$noCs+$noOs));
+	  $CTconvArray->{$strand}{"num"}++;
+	  $CTconvArray->{$strand}{"total"} += (($noTs*100)/($noTs+$noCs+$noOs));
+        }
+  }
+  return 1;
+}
 
 
 sub processCHmethHash
@@ -264,6 +290,54 @@ sub median {
     return $ret;
 }
 
+
+# processes the cigar string and remove and delete elements from mcalls and quality scores
+sub processCigar {
+  my($cigar,$methc,$qual)=@_;
+  my $position = 0;
+
+  my @insPos =(); # location of the insertions
+  my @insLen =();   # location of the insert lengths
+  while ($cigar !~ /^$/){
+         if ($cigar =~ /^([0-9]+[MIDS])/){
+            my $cigar_part = $1;
+            if ($cigar_part =~ /(\d+)M/){ # count matches
+               $position += $1;
+            } elsif ($cigar_part =~ /(\d+)I/){ # count inserts
+                my $insertion = '-' x $1;
+                unshift(  @insPos, $position); 
+                unshift(  @insLen , $1); 
+
+               #substr($reference,$position,0,$insertion);
+               $position += $1;
+            } elsif ($cigar_part =~ /(\d+)D/){ # count deletions
+               my $insertion = '.' x $1;
+               substr($$methc,$position,0,$insertion);
+               substr($$qual,$position,0,$insertion);
+
+               $position += $1;
+            } elsif ($cigar_part =~ /(\d+)S/){ 
+               die "Not ready for this!\n";
+               #my $insertion = 'x' x $1;
+               #substr($new_ref,$position,0,$insertion);
+               #$position += $1;
+            }
+            $cigar =~ s/$cigar_part//;
+         } else {
+            die "Unexpected cigar: $id $cigar\n";
+         }
+  }
+
+  # if there are insertions remove it from the mcalls and 
+  if((scalar @insPos)>0){
+    for(my $i=0;$i < @insPos;$i++){
+      substr($$methc,$insPos[$i],$insLen[$i],"");
+      substr($$qual, $insPos[$i],$insLen[$i],"");
+    }
+  }
+ 
+}
+
 # processed the sam file
 sub process_sam{
   my($fh,$CpGfile,$CHHfile,$CHGfile,$offset,$mincov,$minqual,$nolap,$paired)=(@_);
@@ -316,13 +390,22 @@ sub process_sam{
     my $start  = $cols[3];
     my $end    = $start+length($cols[9])-1;
     my $chr    = $cols[2];
+    my $cigar  = $cols[5];
     my $methc  = $cols[13]; $methc =~ s/^XM:Z://;
-    my @mcalls = split("", $methc); # get the bismark methylation calls
-    my @quals  = split("",$cols[10]);# get the quality scores
+    my $qual   = $cols[10];
     my $mrnm   = $cols[6];
     my $mpos   = $cols[7];
     my $isize  = $cols[8];
-    my $slen   = length($cols[9]);
+
+
+    # process cigar string to get indels
+    # get 
+    if( $cigar =~/[DI]/){
+      processCigar($cigar,\$methc,\$qual);
+    }
+    my @mcalls = split("", $methc); # get the bismark methylation calls
+    my @quals  = split("",$qual);# get the quality scores
+    my $slen   = length($methc); # aligned sequence length
 
     # get strand
     my $strand;
@@ -367,7 +450,9 @@ sub process_sam{
       if($CHHstatus){ processCHmethHash(\%CHHmethHash,$CHHout,$mincov); }
       if($CHGstatus){ processCHmethHash(\%CHGmethHash,$CHGout,$mincov);}
 
-      processnonCGmethHash(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+      #processnonCGmethHash(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+      processnonCGmethHash2(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+
       %nonCGmethHash=();
       %CGmethHash=();
       %CHHmethHash=();
@@ -394,49 +479,54 @@ sub process_sam{
   if($CpGstatus){ processCGmethHash(\%CGmethHash,$out,$mincov);}
   if($CHHstatus){ processCHmethHash(\%CHHmethHash,$CHHout,$mincov); }
   if($CHGstatus){ processCHmethHash(\%CHGmethHash,$CHGout,$mincov);}
-  processnonCGmethHash(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+  #processnonCGmethHash(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+  processnonCGmethHash2(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
 
   #close $out;
 
 
   # get the conversion rate and write it out!!
 
-  my $numF=scalar @{$pMeth_nonCG{"F"}};
-  my $numR=scalar @{$pMeth_nonCG{"R"}};
+  #my $numF=scalar @{$pMeth_nonCG{"F"}};
+  #my $numR=scalar @{$pMeth_nonCG{"R"}};
 
+  my $numF= $pMeth_nonCG{"F"}->{"num"};
+  my $numR= $pMeth_nonCG{"R"}->{"num"};
+  print $numF," ", $numR,"\n";
   if($numF==0 && $numR==0){
-    #if($CpGstatus){unlink($CpGfile);}
-    #if($CHHstatus){unlink($CHHfile);}
-    #if($CHGstatus){unlink($CHGfile);}
+    if($CpGstatus){unlink($CpGfile);}
+    if($CHHstatus){unlink($CHHfile);}
+    if($CHGstatus){unlink($CHGfile);}
     die("\nnot enough alignments that pass coverage and phred score thresholds to calculate conversion rates\n EXITING....\n\n");}
 
   my $AvFconvRate=0;
   my $AvRconvRat=0;
   my $medFconvRate=0;
   my $medRconvRate=0;
-  if($numF>0){ $AvFconvRate=(sum(@{$pMeth_nonCG{"F"}}))/$numF; }
- if($numR>0){ $AvRconvRate=(sum(@{$pMeth_nonCG{"R"}}))/$numR; }
-  my $AvconvRate =(sum(@{$pMeth_nonCG{"F"}})+ sum( @{$pMeth_nonCG{"R"}}))/($numF+$numR);
+  if($numF>0){ $AvFconvRate =$pMeth_nonCG{"F"}{"total"}/$numF; }
+  if($numR>0){ $AvRconvRate =$pMeth_nonCG{"R"}{"total"}/$numR; }
+  my $AvconvRate =($pMeth_nonCG{"F"}{"total"} + $pMeth_nonCG{"R"}{"total"})/($numF+$numR);
 
-  my @allesSchon;push @allesSchon,@{$pMeth_nonCG{"F"}},@{$pMeth_nonCG{"R"}};
-  if($numF>0){ $medFconvRate=median($pMeth_nonCG{"F"}); }
-  if($numR>0){ $medRconvRate=median($pMeth_nonCG{"R"}); }
-  my $medconvRate =median(\@allesSchon);
+  #my @allesSchon;push @allesSchon,@{$pMeth_nonCG{"F"}},@{$pMeth_nonCG{"R"}};
+  #if($numF>0){ $medFconvRate=median($pMeth_nonCG{"F"}); }
+  #if($numR>0){ $medRconvRate=median($pMeth_nonCG{"R"}); }
+  #my $medconvRate =median(\@allesSchon);
 
-  my $totCpG=(scalar(@allesSchon));
+  #my $totCs=(scalar(@allesSchon));
+  my $totCs=$numF + $numR;
 
   my $res="";
-  $res .= "total otherC considered (>95% C+T): $totCpG\n";
+  $res .= "total otherC considered (>95% C+T): $totCs\n";
   $res .= "average conversion rate = $AvconvRate\n"; 
-  $res .= "median conversion rate = $medconvRate\n\n"; 
+  #$res .= "median conversion rate = $medconvRate\n\n"; 
 
   $res .= "total otherC considered (Forward) (>95% C+T): $numF\n";
   $res .= "average conversion rate (Forward) = $AvFconvRate\n"; 
-  $res .= "median conversion rate (Forward) = $medFconvRate\n\n"; 
+  #$res .= "median conversion rate (Forward) = $medFconvRate\n\n"; 
 
   $res .= "total otherC considered (Reverse) (>95% C+T): $numR\n";
   $res .= "average conversion rate (Reverse) = $AvRconvRate\n"; 
-  $res .= "median conversion rate (Reverse) = $medRconvRate\n"; 
+  #$res .= "median conversion rate (Reverse) = $medRconvRate\n"; 
 
   #open (my $hd,">".$prefix."_conversionRate.txt");
   #print $hd $res;

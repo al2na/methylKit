@@ -204,7 +204,7 @@ PCASamples(meth)
 
 
 \subsection{Tiling windows analysis}
-For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions.
+For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.
 
 <<warning=FALSE>>=
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
@@ -364,12 +364,76 @@ perc.meth=percMethylation(meth)
 @
 
 \section{Frequently Asked Questions}
-Answers to frequently asked questions and various how-tos can be found at \url{http://zvfak.blogspot.com/search/label/methylKit}. In addition, \url{http://code.google.com/p/methylkit/} has online documentation and links to tutorials and other related material.
+Detailed answers to some of the frequently asked questions and various how-tos 
+can be found at \url{http://zvfak.blogspot.com/search/label/methylKit}. 
+In addition, \url{http://code.google.com/p/methylkit/} has online documentation
+and links to tutorials and other related material. Apart from those here are 
+some of the frequently asked questions.
 
+\subsection{How can I select certain regions/bases from \texttt{methylRaw} or \texttt{methylBase} objects ?}
+see \texttt{?select} or \texttt{help("[", package = "methylKit")}
+
+\subsection{How can I find if my regions of interest overlap with 
+exon/intron/promoter/CpG island etc.?}
+Currently, we will be able to tell you if your regions/bases overlap with
+the genomic features or not. 
+see ?getMembers. 
+
+\subsection{How can I find the nearest TSS associated with my CpGs}
+see ?getAssociationWithTSS
+
+\subsection{How do you define promoters and CpG island shores}
+Promoters are defined by options at \texttt{read.transcript.features} function. 
+The default option is to take -1000,+1000bp around the TSS and you can change that. 
+Same goes for CpG islands when reading them in via \texttt{read.feature.flank} function. 
+Default is to take 2000bp flanking regions on each side of the CpG island as shores. 
+But you can change that as well.
+
+\subsection{What is Bismark SAM output look like, where can I get more info?}
+Check tbe Bismark website and there are  also example files that ship with the 
+package. Look at their formats and try to run different variations of 
+\texttt{read.bismark()} command on example files.
+
+\subsection{How can I reorder or remove samples at/from  \texttt{methylRawList} or \texttt{methylBase} objects ?}
+see ?reorganize
+
+\subsection{Should I normalize my data?}
+\texttt{methylKit} comes with a simple \texttt{normalizeCoverage()} function to normalize read 
+coverage distributions between samples. Ideally, you should first filter bases
+with extreme coverage to account for PCR bias using \texttt{filterByCoverage()}
+function, then run \texttt{normalizeCoverage()} function to normalize coverages
+between samples. These two functions will help reduce the bias in the statistical
+tests that might occur due to systematic over-sampling of reads in certain samples.
+
+
+\subsection{How can I force methylKit to use Fisher's exact test?}
+\texttt{methylKit} decides which test to use based on number of samples per group.
+In order to use Fisher's exact there must be one sample in each of the test and
+control groups. So if you have multiple samples for group, the package will
+employ Logistic Regression based test. However, you can use \texttt{pool()} 
+function to pool samples in each group so that you have one representative sample
+per group. \texttt{pool()} function will sum up number of Cs and Ts in each group.
+We recommend using \texttt{filterByCoverage()} and \texttt{normalizeCoverage()} 
+functions prior to using \texttt{pool()}.
+see ?pool
+
+\subsection{Can use data from other aligners than Bismark in methylKit ?}
+Yes, you can. methylKit can read any generic methylation percentage/ratio file
+as long as that text file contains columns for chrosome, start, end, strand, 
+coverage and number of unmethylated cytosines. However, methylKit can only 
+process SAM files from Bismark. For other aligners, you need to get a text file
+containing the minimal information described above. Some aligners will come with
+scripts or built-in tools to provide such files.
+See \url{http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html} 
+for how to read methylation ratio files from BSMAP\cite{Xi2009} aligner.
 
 
 \section{Acknowledgements}
-This package is developed at Weill Cornell Medical College by Altuna Akalin with important code contributions from Sheng Li and Matthias Kormaksson. We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, Chrisopher Mason and Ari Melnick for their contribution of ideas, data and support. Their support and discussions lead to development of methylKit.
+This package is developed at Weill Cornell Medical College by Altuna Akalin 
+with important code contributions from Sheng Li and Matthias Kormaksson. 
+We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
+Chrisopher Mason and Ari Melnick for their contribution of ideas, data and 
+support. Their support and discussions lead to development of methylKit.
 
 
 

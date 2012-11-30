@@ -15,8 +15,8 @@
 
   \item{i}{a numeric or logical vector. This vector
   corresponds to bases or regions contained in
-  \code{methylKit} objects. The vector is used to subset
-  the data.}
+  \code{methylKit} objects.The vector is used to subset the
+  data.}
 }
 \value{
   a \code{\link{methylBase}},\code{\link{methylRaw}} or
@@ -29,8 +29,13 @@
 }
 \examples{
 data(methylKit)
-subset1=select(methylRawList.obj[[1]],1:100) # selects first hundred rows, returns a methylRaw object
-subset2=select(methylBase.obj,1:100) # selects first hundred rows, returns a methylBase object
-subset3=select(methylDiff.obj,1:100) # selects first hundred rows, returns a methylDiff object
+# selects first hundred rows, returns a methylRaw object
+subset1=select(methylRawList.obj[[1]],1:100)
+
+# selects first hundred rows, returns a methylBase object
+subset2=select(methylBase.obj,1:100)
+
+# selects first hundred rows, returns a methylDiff object
+subset3=select(methylDiff.obj,1:100)
 }
 

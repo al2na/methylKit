@@ -34,11 +34,14 @@
 \examples{
 data(methylKit)
 
-# get the windows of interest as a GRanges object, this can be any set of genomic locations
+# get the windows of interest as a GRanges object, this can be any set
+# of genomic locations
 library(GenomicRanges)
-my.win=GRanges(seqnames="chr21",ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+my.win=GRanges(seqnames="chr21",
+ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
 
 # getting counts per region
-regional.methylRaw=regionCounts(methylObj=methylRawList.obj, regions=my.win, cov.bases=0,strand.aware=FALSE)
+regional.methylRaw=regionCounts(methylObj=methylRawList.obj, regions=my.win,
+cov.bases=0,strand.aware=FALSE)
 }
 
