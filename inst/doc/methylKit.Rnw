@@ -390,7 +390,7 @@ Default is to take 2000bp flanking regions on each side of the CpG island as sho
 But you can change that as well.
 
 \subsection{What is Bismark SAM output look like, where can I get more info?}
-Check tbe Bismark website and there are  also example files that ship with the 
+Check tbe Bismark\cite{Krueger2011} website and there are  also example files that ship with the 
 package. Look at their formats and try to run different variations of 
 \texttt{read.bismark()} command on example files.
 
@@ -420,7 +420,7 @@ see ?pool
 \subsection{Can use data from other aligners than Bismark in methylKit ?}
 Yes, you can. methylKit can read any generic methylation percentage/ratio file
 as long as that text file contains columns for chrosome, start, end, strand, 
-coverage and number of unmethylated cytosines. However, methylKit can only 
+coverage and number of methylated cytosines. However, methylKit can only 
 process SAM files from Bismark. For other aligners, you need to get a text file
 containing the minimal information described above. Some aligners will come with
 scripts or built-in tools to provide such files.
