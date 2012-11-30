@@ -389,10 +389,10 @@ Same goes for CpG islands when reading them in via \texttt{read.feature.flank} f
 Default is to take 2000bp flanking regions on each side of the CpG island as shores. 
 But you can change that as well.
 
-\subsection{What is Bismark SAM output look like, where can I get more info?}
+\subsection{What does Bismark SAM output look like, where can I get more info?}
 Check tbe Bismark\cite{Krueger2011} website and there are  also example files that ship with the 
 package. Look at their formats and try to run different variations of 
-\texttt{read.bismark()} command on example files.
+\texttt{read.bismark()} command on the example files.
 
 \subsection{How can I reorder or remove samples at/from  \texttt{methylRawList} or \texttt{methylBase} objects ?}
 see ?reorganize
