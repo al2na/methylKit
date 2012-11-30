@@ -20,10 +20,15 @@
   threshold are returned.}
 
   \item{strand.aware}{if set to TRUE only CpGs that match
-  the strand of the region will be summarized}
+  the strand of the region will be summarized.
+  (default:FALSE)}
 }
 \value{
-  RETURNS a new methylRaw or methylRawList object
+  a new methylRaw or methylRawList object. If
+  \code{strand.aware} is set to FALSE (default). Even
+  though the resulting object will have the strand
+  information of \code{regions} it will still contain
+  methylation information from both strands.
 }
 \description{
   Convert \code{\link{methylRaw}} or

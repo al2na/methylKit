@@ -17,9 +17,13 @@
 #' @param cov.bases number minimum bases covered per region (Default:0). 
 #' Only regions with base coverage above this threshold are returned.
 #' @param strand.aware if set to TRUE only CpGs that match the strand of 
-#' the region will be summarized
+#' the region will be summarized. (default:FALSE)
 #' 
-#' @return RETURNS a new methylRaw or methylRawList object
+#' @return  a new methylRaw or methylRawList object. If \code{strand.aware} is
+#'          set to FALSE (default). Even though the resulting object will have
+#'          the strand information of \code{regions} it will still contain 
+#'          methylation information from both strands.
+#'         
 #' @usage regionCounts(methylObj,regions,cov.bases=0,strand.aware=FALSE)
 #' @examples
 #' data(methylKit)

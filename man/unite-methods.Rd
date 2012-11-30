@@ -3,7 +3,7 @@
 \alias{unite}
 \alias{unite,-methods}
 \alias{unite,methylRawList-method}
-\title{unites methylRawList to a single table}
+\title{unite methylRawList to a single table}
 \usage{
   unite(.Object,destrand=FALSE,min.per.group=NULL)
 }

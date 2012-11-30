@@ -470,7 +470,7 @@ setClass("methylBase",contains="data.frame",representation(
                                    numCs.index="numeric",numTs.index="numeric",destranded="logical",resolution = "character"))
 
 
-#' unites methylRawList to a single table 
+#' unite methylRawList to a single table 
 #' 
 #' This functions unites \code{methylRawList} object that only bases with coverage from all samples are retained.
 #' The resulting object is a class of \code{methylBase}
@@ -532,7 +532,7 @@ setMethod("unite", "methylRawList",
                      for(i in 2:length(.Object))
                      {
                         df2=getData(.Object[[i]])
-                        if(destrand){df2=.CpG.dinuc.unify(df2)}
+                        if(destrand & (.Object[[1]]@resolution == "base") ){df2=.CpG.dinuc.unify(df2)}
                         if( is.null(min.per.group) ){
                           df=merge(df,df2[,c(1,6:8)],by="id",suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
                         }else{
