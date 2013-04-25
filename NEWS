@@ -1,3 +1,15 @@
+methylKit 0.5.7
+--------------
+
+
+IMPROVEMENTS AND BUG FIXES
+
+* tested with R 3.0
+
+* depracated matchMatrix import from IRanges was causing a problem with package installation. v0.5.7 fixes that problem.
+
+
+
 methylKit 0.5.6
 --------------
 

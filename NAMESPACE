@@ -13,7 +13,7 @@ importClassesFrom("IRanges", RangedData, RangedDataList, DataTable,
                   RangedSelection, SimpleList, DataFrame)
 
 importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
-                  RangesList, Rle,matchMatrix,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
+                  RangesList, Rle,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
 #importFrom("qvalue",qvalue)
