@@ -115,16 +115,16 @@ check.bed.validity<-function(bed.df,type="none")
   col1.2= (is.integer(bed.df[,2]) & is.integer(bed.df[,3]) )
   
   # does it have chr string in 1st column
-  chr= sum(grepl("chr",bed.df[,1]) )
+  #chr= sum(grepl("chr",bed.df[,1]) )
 
   if(type=="exons" | type=="introns")
   {
     #does it have 12>= columns
     ex=(ncol(bed.df)>=12) 
     
-    return(num.col & col1.2 & chr & ex)
+    return(num.col & col1.2  & ex)
   }
-  return(num.col & col1.2 & chr )
+  return(num.col & col1.2  )
 
 }
 

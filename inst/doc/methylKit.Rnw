@@ -15,8 +15,9 @@
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
-\author{Altuna Akalin\\ \texttt{ala2027@med.cornell.edu}\\
+\author{Altuna Akalin\\ \texttt{altuna.akalin@fmi.ch}\\
 \and
 Matthias Kormaksson \\ \texttt{mk375@cornell.edu} 
 \and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
@@ -41,7 +42,7 @@ Matthias Kormaksson \\ \texttt{mk375@cornell.edu}
 In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
 \subsection{DNA methylation}
-DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA Methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
+DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
 
 \subsection{High-throughput bisulfite sequencing}
 Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 
@@ -331,7 +332,7 @@ getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 
 \section{methylKit convenience functions}
 \subsection{coercion}
-Most \texttt{methylKit} objects (methylRaw,methylBase and methylDiff) can be coerced to \texttt{GRanges} objects from \texttt{GenomicRanges} package. Coercing methylKit objects to \texttt{GRanges} will give users additional flexiblity when customising their analyses.
+Most \texttt{methylKit} objects (methylRaw,methylBase and methylDiff) can be coerced to \texttt{GRanges} objects from \texttt{GenomicRanges} package. Coercing methylKit objects to \texttt{GRanges} will give users additional flexibility when customizing their analyses.
 
 <<>>==
 class(meth)
@@ -390,7 +391,7 @@ Default is to take 2000bp flanking regions on each side of the CpG island as sho
 But you can change that as well.
 
 \subsection{What does Bismark SAM output look like, where can I get more info?}
-Check tbe Bismark\cite{Krueger2011} website and there are  also example files that ship with the 
+Check the Bismark\cite{Krueger2011} website and there are  also example files that ship with the 
 package. Look at their formats and try to run different variations of 
 \texttt{read.bismark()} command on the example files.
 
@@ -401,7 +402,7 @@ see ?reorganize
 \texttt{methylKit} comes with a simple \texttt{normalizeCoverage()} function to normalize read 
 coverage distributions between samples. Ideally, you should first filter bases
 with extreme coverage to account for PCR bias using \texttt{filterByCoverage()}
-function, then run \texttt{normalizeCoverage()} function to normalize coverages
+function, then run \texttt{normalizeCoverage()} function to normalize coverage
 between samples. These two functions will help reduce the bias in the statistical
 tests that might occur due to systematic over-sampling of reads in certain samples.
 
@@ -419,7 +420,7 @@ see ?pool
 
 \subsection{Can use data from other aligners than Bismark in methylKit ?}
 Yes, you can. methylKit can read any generic methylation percentage/ratio file
-as long as that text file contains columns for chrosome, start, end, strand, 
+as long as that text file contains columns for chromosome, start, end, strand, 
 coverage and number of methylated cytosines. However, methylKit can only 
 process SAM files from Bismark. For other aligners, you need to get a text file
 containing the minimal information described above. Some aligners will come with
@@ -432,7 +433,7 @@ for how to read methylation ratio files from BSMAP\cite{Xi2009} aligner.
 This package is developed at Weill Cornell Medical College by Altuna Akalin 
 with important code contributions from Sheng Li and Matthias Kormaksson. 
 We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
-Chrisopher Mason and Ari Melnick for their contribution of ideas, data and 
+Christopher Mason and Ari Melnick for their contribution of ideas, data and 
 support. Their support and discussions lead to development of methylKit.
 
 
