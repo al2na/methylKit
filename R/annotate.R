@@ -21,7 +21,7 @@ bed12.to.exons<-function(ref)
   b.start.size=cbind(as.integer(unlist(strsplit(as.character(ref$V12),"," ))),as.integer(unlist(strsplit(as.character(ref$V11),"," ))))
   rep.ref     =ref[rep(1:nrow(ref),ref[,10]),] # replicate rows occurs as many as its exon number
   #exon.id     =unlist(sapply(ref[,10],function(x) 1:x));rep.ref$V5=exon.id
-  exon.id     =unlist( mapply( function(x,y) ifelse(x=="+",return(1:y),return(y:1) ),ref[,6],ref[,10]  ) );rep.ref$V5=exon.id
+  exon.id     =unlist( mapply( function(x,y) if(x=="+"){return(1:y)}else{return(y:1)} ,ref[,6],ref[,10]  ) );rep.ref$V5=exon.id
 
   rep.ref$V3  =rep.ref$V2+b.start.size[,1]+b.start.size[,2] # calculate exon start and ends
   rep.ref$V2  =rep.ref$V2+b.start.size[,1]
@@ -68,7 +68,7 @@ bed12.to.introns<-function(ref)
   b.start.size=cbind(as.integer(unlist(strsplit(as.character(ref$V12),"," ))),as.integer(unlist(strsplit(as.character(ref$V11),"," ))))
   rep.ref     =ref[rep(1:nrow(ref),ref[,10]),] # replicate rows occurs as many as its exon number
   #exon.id     =unlist(sapply(ref[,10],function(x) 1:x));rep.ref$V5=exon.id
-  exon.id     =unlist( mapply( function(x,y) ifelse(x=="+",return(1:y),return(y:1) ),ref[,6],ref[,10]  ) );rep.ref$V5=exon.id
+  exon.id     =unlist( mapply( function(x,y) if(x=="+"){return(1:y)}else{return(y:1)} ,ref[,6],ref[,10]  ) );rep.ref$V5=exon.id
   rep.ref$V3  =rep.ref$V2+b.start.size[,1]+b.start.size[,2] # calculate exon start and ends
   rep.ref$V2  =rep.ref$V2+b.start.size[,1]
   rep.ref     =rep.ref[,c(1:6,13)]

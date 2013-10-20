@@ -43,8 +43,8 @@ setMethod("adjust.methylC", c("methylRaw","methylRaw"),function(mc,hmc){
   diff[diff<0]=0
   data$numCs1=diff
   data$numTs1=data$coverage1-data$numCs1
-  colnames(data)[6:8]=c("coverage","numCs","numTs")
-  new("methylRaw",data[,1:8],sample.id=mc@sample.id,  assembly=mc@assembly, 
+  colnames(data)[5:7]=c("coverage","numCs","numTs")
+  new("methylRaw",data[,1:7],sample.id=mc@sample.id,  assembly=mc@assembly, 
                              context =mc@context,     resolution=mc@resolution)
   
 })

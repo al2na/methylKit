@@ -64,14 +64,14 @@ setMethod("reorganize", signature(methylObj="methylBase"),
                         dat    =getData(methylObj) # get data
                         
                         #newdat =cbind(dat[,1:5],dat[ind.mat[,1]],dat[ind.mat[,2]],dat[ind.mat[,3]]) # reorder columns using ind.mat
-                        newdat =dat[,1:5]
+                        newdat =dat[,1:4]
                         for(i in 1:ncol(ind.mat))
                         {
                           newdat=cbind(newdat,dat[,ind.mat[,i]])
                         }
                                                 
                         # get indices of coverage,numCs and numTs in the data frame 
-                        coverage.ind=seq(6,by=3,length.out=length(sample.ids))
+                        coverage.ind=seq(5,by=3,length.out=length(sample.ids))
                         numCs.ind   =coverage.ind+1
                         numTs.ind   =coverage.ind+2
                         

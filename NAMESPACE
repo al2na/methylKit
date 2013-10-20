@@ -1,6 +1,7 @@
 import(methods)
 
 import(GenomicRanges)
+import(KernSmooth)
 
 #import(RHmm)
 
@@ -70,3 +71,4 @@ exportMethods(reorganize)
 exportMethods(select)
 exportMethods(tileMethylCounts)
 exportMethods(unite)
+exportMethods(updateMethObject)

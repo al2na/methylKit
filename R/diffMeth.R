@@ -652,7 +652,7 @@ setMethod("calculateDiffMeth", "methylBase",
                         mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
                         mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
                         mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
-                        x=data.frame(subst[,1:5],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                        x=data.frame(subst[,1:4],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
                         obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                             treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                         obj
@@ -693,14 +693,14 @@ setMethod("calculateDiffMeth", "methylBase",
                           mom.mean.diff=mom.meth1-mom.meth2
                           
                           if(weigthed.mean){
-                            x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                            x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
                             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                             obj
   
                           }
                           else{
-                            x=data.frame(subst[,1:5],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
+                            x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
                             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                               treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
                             obj
@@ -789,7 +789,6 @@ setAs("methylDiff", "GRanges", function(from)
   
   GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
           strand=from$strand, 
-          id=from$id,
           qvalue=from$qvalue,
           meth.diff=from$meth.diff
   )
@@ -945,10 +944,10 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                                                 number.of.hypomethylated=nrow(temp.hypo))
                       
                       # plot barplot for percentage of DMCs per chr
-                      dmc.hyper.chr=merge(as.data.frame(table(temp.hyper[,2])), as.data.frame(table(x[, 2])),by="Var1")
+                      dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), as.data.frame(table(x$chr)),by="Var1")
                       dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
 
-                      dmc.hypo.chr=merge(as.data.frame(table(temp.hypo[,2])), as.data.frame(table(x[, 2])),by="Var1")
+                      dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), as.data.frame(table(x$chr)),by="Var1")
                       dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
 
                       dmc.hypo.hyper=merge(dmc.hypo.chr[,c(1,2,4)],dmc.hyper.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome

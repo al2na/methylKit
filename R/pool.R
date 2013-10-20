@@ -29,7 +29,7 @@ setMethod("pool", "methylBase",
                       df=getData(obj)
 
                       treat=unique(obj@treatment)
-                      res=df[,1:5]
+                      res=df[,1:4]
                       for(i in 1:length(treat) ){
 
                          # get indices
@@ -48,10 +48,10 @@ setMethod("pool", "methylBase",
                            covs=df[,set.cov]
                          }
                          res=cbind(res,covs,Cs,Ts) # bind new data
-                         names(res)[(3:5)+3*i]=paste( c("coverage" ,"numCs" ,"numTs"),i,sep="") # change names of columns
+                         names(res)[(2:4)+3*i]=paste( c("coverage" ,"numCs" ,"numTs"),i,sep="") # change names of columns
 
                       }
-                      coverage.ind=3*(1+(1:length(treat)))
+                      coverage.ind=3*(1:length(treat)) + 2
                       obj1=new("methylBase",as.data.frame(res),sample.ids=sample.ids,
                              assembly=obj@assembly,context=obj@context,
                              treatment=treat,coverage.index=coverage.ind,

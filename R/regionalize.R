@@ -10,21 +10,21 @@
 
 #' GETs regional counts for given GRanges or GRangesList object
 #'
-#' Convert \code{\link{methylRaw}} or \code{\link{methylRawList}} object into 
+#' Convert \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}}  object into 
 #' regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
-#' @param methylObj a \code{methylRaw} or \code{methlRawList} object
+#' @param object a \code{methylRaw} or \code{methlRawList} object
 #' @param regions a GRanges or GRangesList object.
 #' @param cov.bases number minimum bases covered per region (Default:0). 
 #' Only regions with base coverage above this threshold are returned.
 #' @param strand.aware if set to TRUE only CpGs that match the strand of 
 #' the region will be summarized. (default:FALSE)
 #' 
-#' @return  a new methylRaw or methylRawList object. If \code{strand.aware} is
+#' @return  a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
 #'          set to FALSE (default). Even though the resulting object will have
 #'          the strand information of \code{regions} it will still contain 
 #'          methylation information from both strands.
 #'         
-#' @usage regionCounts(methylObj,regions,cov.bases=0,strand.aware=FALSE)
+#' @usage regionCounts(object,regions,cov.bases=0,strand.aware=FALSE)
 #' @examples
 #' data(methylKit)
 #' 
@@ -35,46 +35,46 @@
 #' ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
 #' 
 #' # getting counts per region
-#' regional.methylRaw=regionCounts(methylObj=methylRawList.obj, regions=my.win, 
+#' regional.methylRaw=regionCounts(object=methylRawList.obj, regions=my.win, 
 #' cov.bases=0,strand.aware=FALSE)
 #' 
 #' 
 #' @export
 #' @docType methods
-#' @rdname regionCounts-methods
+#' @rdname regionCounts
 setGeneric("regionCounts", 
-           function(methylObj,regions,cov.bases=0,strand.aware=FALSE)
+           function(object,regions,cov.bases=0,strand.aware=FALSE)
            standardGeneric("regionCounts") )
 
 
 # GETs regional counts for given GRanges object
 # RETURNS a new methylRaw object
-# @param methylObj a \code{methylRaw} object
+# @param object a \code{methylRaw} object
 # @param regions a GRanges object.
-#' @rdname regionCounts-methods
+#' @rdname regionCounts
 #' @aliases regionCounts,methylRaw,GRanges-method
-setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
-  function(methylObj,regions,cov.bases,strand.aware){
+setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
+  function(object,regions,cov.bases,strand.aware){
     #require(GenomicRanges)
-    # overlap methylObj with regions
-    # convert methylObj to GRanges
+    # overlap object with regions
+    # convert object to GRanges
     if(strand.aware){
-      g.meth=as(methylObj,"GRanges")
+      g.meth=as(object,"GRanges")
       strand(g.meth)="*"
       mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
       #mat=matchMatrix( findOverlaps(regions,g.meth ) )
       
     }else{
-      mat=IRanges::as.matrix( findOverlaps(regions,as(methylObj,"GRanges")) )
-      #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+      mat=IRanges::as.matrix( findOverlaps(regions,as(object,"GRanges")) )
+      #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
       
     }
     
     #require(data.table)
-    # create a temporary data.table row ids from regions and counts from methylObj
-    df=data.frame(id = mat[, 1], getData(methylObj)[mat[, 2], c(6, 7, 8)])
+    # create a temporary data.table row ids from regions and counts from object
+    df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
     dt=data.table::data.table(df)
-    #dt=data.table(id=mat[,1],methylObj[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
+    #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
     # use data.table to sum up counts per region
     sum.dt=dt[,list(coverage=sum(coverage),
@@ -101,7 +101,7 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
     }
     
     #create a new methylRaw object to return
-    new.data=data.frame(id      =new.ids,
+    new.data=data.frame(#id      =new.ids,
                         chr     =temp.df[sum.dt$id,"seqnames"],
                         start   =temp.df[sum.dt$id,"start"],
                         end     =temp.df[sum.dt$id,"end"],
@@ -110,13 +110,67 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
                         numCs   =sum.dt$numCs,
                         numTs   =sum.dt$numTs)
     
-    new("methylRaw",new.data,sample.id=methylObj@sample.id,
-        assembly=methylObj@assembly,context=methylObj@context,
+    new("methylRaw",new.data,sample.id=object@sample.id,
+        assembly=object@assembly,context=object@context,
         resolution="region")
     
   }
 )
 
+#' @rdname regionCounts
+#' @aliases regionCounts,methylBase,GRanges-method
+setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
+          function(object,regions,cov.bases,strand.aware){
+            #require(GenomicRanges)
+            # overlap object with regions
+            # convert object to GRanges
+            if(strand.aware){
+              g.meth=as(object,"GRanges")
+              strand(g.meth)="*"
+              mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+              #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+              
+            }else{
+              mat=IRanges::as.matrix( findOverlaps(regions,as(object,"GRanges")) )
+              #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+              
+            }
+            
+            #require(data.table)
+            # create a temporary data.table row ids from regions and counts from object
+            df=data.frame(id = mat[, 1], getData(object)[mat[, 2], 5:ncol(object) ])
+            dt=data.table::data.table(df)
+            #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
+            
+            # use data.table to sum up counts per region
+            sum.dt=dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
+            sum.dt=sum.dt[sum.dt$covered>=cov.bases,]
+            temp.df=as.data.frame(regions) # get regions to a dataframe
+            
+            # look for values with "name" in it, eg. "tx_name" or "name"
+            # valuesList = names(values(regions))
+            # nameid = valuesList[grep (valuesList, pattern="name")]
+            
+
+
+            
+            #create a new methylRaw object to return
+            new.data=data.frame(#id      =new.ids,
+              chr     =temp.df[sum.dt$id,"seqnames"],
+              start   =temp.df[sum.dt$id,"start"],
+              end     =temp.df[sum.dt$id,"end"],
+              strand  =temp.df[sum.dt$id,"strand"],
+              as.data.frame(sum.dt[,,c(2:(ncol(sum.dt)-1))]),stringsAsFactors=FALSE)
+            
+            if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
+            new("methylBase",new.data,sample.ids=object@sample.ids,
+                assembly=object@assembly,context=object@context,treatment=object@treatment,
+                coverage.index=object@coverage.index,numCs.index=object@numCs.index,
+                numTs.index=object@numTs.index,destranded=destranded,
+                resolution="region")
+            
+          }
+)
 
 # RETURNS a new methylRawList object
 # gets regional counts for all elements in methylRawList for given regions
@@ -124,29 +178,29 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRanges"),
 #  are not on different chromsomes and strands
 # Also, make sure id column of returned methylRaw object is unique
 # you can add refseq id to the id column: chr.start.end.refseqid
-# @param methylObj a \code{methylRaw} object
+# @param object a \code{methylRaw} object
 # @param regions a GRangesList object.
-#' @rdname regionCounts-methods
+#' @rdname regionCounts
 #' @aliases regionCounts,methylRaw,GRangesList-method
 # assume that each name of the element in the GRangesList is unique and 
-setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList"),
-  function(methylObj,regions,cov.bases,strand.aware){
+setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
+  function(object,regions,cov.bases,strand.aware){
             
     #require(GenomicRanges)
     
-    # overlap methylObj with regions
-    # convert methylObj to GRanges
-    #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+    # overlap object with regions
+    # convert object to GRanges
+    #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
     
     if(strand.aware){
-      g.meth=as(methylObj,"GRanges")
+      g.meth=as(object,"GRanges")
       strand(g.meth)="*"
       mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
       #mat=matchMatrix( findOverlaps(regions,g.meth ) )
       
     }else{
-      mat=IRanges::as.matrix( findOverlaps(regions,as(methylObj,"GRanges")) )
-      #mat=matchMatrix( findOverlaps(regions,as(methylObj,"GRanges")) )
+      mat=IRanges::as.matrix( findOverlaps(regions,as(object,"GRanges")) )
+      #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
       
     }
     
@@ -154,8 +208,8 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
     
     
     #require(data.table)
-    # create a temporary data.table row ids from regions and counts from methylObj
-    dt=data.table::data.table(id=mat[,1],getData(methylObj)[mat[,2],c(6,7,8)] )
+    # create a temporary data.table row ids from regions and counts from object
+    dt=data.table::data.table(id=mat[,1],getData(object)[mat[,2],c(5,6,7)] )
     
     # use data.table to sum up counts per region
     sum.dt=dt[,list(coverage=sum(coverage),
@@ -175,7 +229,7 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
     sum.id=names(regions)[sum.dt$id]
     #create a new methylRaw object to return
     new.data=data.frame(
-      id      =sum.id,
+      #id      =sum.id,
       chr     =sum.temp.dt$chr[sum.temp.dt$element %in% sum.id],
       start   =sum.temp.dt$start[sum.temp.dt$element %in% sum.id],
       end     =sum.temp.dt$end[sum.temp.dt$element %in% sum.id],
@@ -184,8 +238,8 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
       numCs   =sum.dt$numCs,
       numTs   =sum.dt$numTs)
     
-    new("methylRaw",new.data,sample.id=methylObj@sample.id,
-        assembly=methylObj@assembly,context=methylObj@context,
+    new("methylRaw",new.data,sample.id=object@sample.id,
+        assembly=object@assembly,context=object@context,
         resolution="region")
     
   }
@@ -195,48 +249,48 @@ setMethod("regionCounts", signature(methylObj="methylRaw",regions="GRangesList")
 
 # GETs regional counts for given GRanges object
 # RETURNS a new methylRawList object
-# @param methylObj a \code{methylRawList} object
+# @param object a \code{methylRawList} object
 # @param regions a GRanges object.
-#' @rdname regionCounts-methods
+#' @rdname regionCounts
 #' @aliases regionCounts,methylRawList,GRanges-method
-setMethod("regionCounts", signature(methylObj="methylRawList",regions="GRanges"),
-  function(methylObj,regions,cov.bases,strand.aware){
+setMethod("regionCounts", signature(object="methylRawList",regions="GRanges"),
+  function(object,regions,cov.bases,strand.aware){
     
     outList=list()
     
-    for(i in 1:length(methylObj))
+    for(i in 1:length(object))
     {
-      obj = regionCounts(methylObj = methylObj[[i]],
+      obj = regionCounts(object = object[[i]],
                          regions=regions,
                          cov.bases,strand.aware)
       outList[[i]] = obj
     }
     
-    myobj=new("methylRawList", outList,treatment=methylObj@treatment)
+    myobj=new("methylRawList", outList,treatment=object@treatment)
     myobj
   }
 )
 
 # GETs regional counts for given GRangesList object
 # RETURNS a new methylRawList object
-# @param methylObj a \code{methylRawList} object
+# @param object a \code{methylRawList} object
 # @param regions a GRangesList object.
-#' @rdname regionCounts-methods
+#' @rdname regionCounts
 #' @aliases regionCounts,methylRawList,GRangesList-method
-setMethod("regionCounts", signature(methylObj="methylRawList",
+setMethod("regionCounts", signature(object="methylRawList",
                                     regions="GRangesList"),
-  function(methylObj,regions,cov.bases,strand.aware){
+  function(object,regions,cov.bases,strand.aware){
     
     outList=list()
     
-    for(i in 1:length(methylObj))
+    for(i in 1:length(object))
     {
-      obj = regionCounts(methylObj = methylObj[[i]],regions=regions,
+      obj = regionCounts(object = object[[i]],regions=regions,
                          cov.bases,strand.aware)
       outList[[i]] = obj
     }
     
-    myobj=new("methylRawList", outList,treatment=methylObj@treatment)
+    myobj=new("methylRawList", outList,treatment=object@treatment)
     myobj
   }
 )
@@ -248,33 +302,33 @@ setMethod("regionCounts", signature(methylObj="methylRawList",
 #' windows accross genome. This function can be used when differential 
 #' methylated analysis is preferable to tilling windows instead of base pairs.
 #'
-#' @param methylObj \code{\link{methylRaw}} or \code{\link{methylRawList}} 
+#' @param object \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}} 
 #' object containing base pair resolution methylation information
 #' @param win.size an integer for the size of the tiling windows
 #' @param step.size an integer for the step size of tiling windows
 #' @param cov.bases minimum number of bases to be covered in a given window
-#' @usage tileMethylCounts(methylObj,win.size=1000,step.size=1000,cov.bases=0)
-#' @return \code{methylRaw} or \code{methylRawList} object
+#' @usage tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0)
+#' @return \code{methylRaw},\code{methylBase} or \code{methylRawList} object
 #' @export
 #' @examples
 #' data(methylKit)
 #' 
-#' tiled.methylRaw=tileMethylCounts(methylObj=methylRawList.obj,win.size=1000,
+#' tiled.methylRaw=tileMethylCounts(object=methylRawList.obj,win.size=1000,
 #'                                  step.size=1000,cov.bases=0)
 #' 
 #' 
 #' @docType methods
 #' @rdname tileMethylCounts-methods
 setGeneric("tileMethylCounts", 
-           function(methylObj,win.size=1000,step.size=1000,cov.bases=0)
+           function(object,win.size=1000,step.size=1000,cov.bases=0)
              standardGeneric("tileMethylCounts") )
 
 #' @aliases tileMethylCounts,methylRaw-method
 #' @rdname tileMethylCounts-methods
-setMethod("tileMethylCounts", signature(methylObj="methylRaw"),
-  function(methylObj,win.size,step.size,cov.bases){
+setMethod("tileMethylCounts", signature(object="methylRaw"),
+  function(object,win.size,step.size,cov.bases){
     
-    g.meth =as(methylObj,"GRanges")
+    g.meth =as(object,"GRanges")
     chrs   =IRanges::levels(seqnames(g.meth))
     widths =seqlengths(g.meth)
     all.wins=GRanges()
@@ -290,19 +344,47 @@ setMethod("tileMethylCounts", signature(methylObj="methylRaw"),
                                        width=rep(win.size,numTiles)) )
       all.wins=suppressWarnings(c(all.wins,temp.wins))
     }
-    regionCounts(methylObj,all.wins,cov.bases,strand.aware=FALSE)
+    regionCounts(object,all.wins,cov.bases,strand.aware=FALSE)
   }
 )
 
 #' @aliases tileMethylCounts,methylRawList-method
 #' @rdname tileMethylCounts-methods
-setMethod("tileMethylCounts", signature(methylObj="methylRawList"),
-  function(methylObj,win.size,step.size,cov.bases){
+setMethod("tileMethylCounts", signature(object="methylRawList"),
+  function(object,win.size,step.size,cov.bases){
     
-    new.list=lapply(methylObj,tileMethylCounts,win.size,step.size,cov.bases) 
-    new("methylRawList", new.list,treatment=methylObj@treatment)
+    new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases) 
+    new("methylRawList", new.list,treatment=object@treatment)
     
 })
+
+
+
+#' @aliases tileMethylCounts,methylBase-method
+#' @rdname tileMethylCounts-methods
+setMethod("tileMethylCounts", signature(object="methylBase"),
+          function(object,win.size,step.size,cov.bases){
+            
+            g.meth =as(object,"GRanges")
+            chrs   =IRanges::levels(seqnames(g.meth))
+            widths =seqlengths(g.meth)
+            all.wins=GRanges()
+            for(i in 1:length(chrs))
+            {
+              # get max length of feature covered chromosome
+              max.length=max(IRanges::end(g.meth[seqnames(g.meth)==chrs[i],])) 
+              
+              #get sliding windows with covered CpGs
+              numTiles=floor(  (max.length-(win.size-step.size) )/step.size )+1
+              temp.wins=GRanges(seqnames=rep(chrs[i],numTiles),
+                                ranges=IRanges(start=1+0:(numTiles-1)*step.size,
+                                               width=rep(win.size,numTiles)) )
+              all.wins=suppressWarnings(c(all.wins,temp.wins))
+            }
+            regionCounts(object,all.wins,cov.bases,strand.aware=FALSE)
+          }
+)
+
 
 # back up code:
 # annotation of methylation states by genes

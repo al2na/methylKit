@@ -1,3 +1,20 @@
+methylKit 1.0.0
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* objects takes less memory and they are reorganized. updateMethObject() updates the objects from previous versions the latest version.
+
+IMPROVEMENTS AND BUG FIXES
+
+* unite() function takes less time due to use of data.table::merge
+
+* tested with R 3.2 and matching bioconductor packages
+
+* data(methylKit) has the new objects
+
+
+
 methylKit 0.5.7
 --------------
 

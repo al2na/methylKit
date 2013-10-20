@@ -40,4 +40,5 @@ Collate:
     'normalizeCoverage.R'
     'pool.R'
     'adjust.methylC.R'
+    'updateMethObject.R'
 
