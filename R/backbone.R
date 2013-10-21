@@ -221,7 +221,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
 #' @param header if the input file has a header or not (default: TRUE)
 #' @param skip number of lines to skip when reading. Can be set to 1 for bed files with track line (default: 0)
-#' @param sep seperator between columns (default: "\t")
+#' @param sep seperator between fields, same as \code{\link{read.table}} argument (default: "")
 #' @param pipeline name of the alignment pipeline, it can be either "amp" or "bismark". The methylation text files generated from other pipelines can be read as generic methylation text files by supplying a named \code{\link[base]{list}} argument as "pipeline" argument.
 #' The named \code{list} should containt column numbers which denotes which column of the text file corresponds to values and genomic location of the methylation events. See Details for more.
 #' @param resolution designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'

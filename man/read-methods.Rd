@@ -5,8 +5,8 @@
 \alias{read,list,list,character-method}
 \title{read file(s) to a methylrawList or methylraw object}
 \usage{
-  read(location,sample.id,assembly,pipeline="amp",header=T,
-  context="CpG",resolution="base",treatment)
+  read(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="",
+    context="CpG",resolution="base",treatment)
 }
 \arguments{
   \item{location}{file location(s), either a list of
@@ -20,6 +20,12 @@
 
   \item{header}{if the input file has a header or not
   (default: TRUE)}
+
+  \item{skip}{number of lines to skip when reading. Can be
+  set to 1 for bed files with track line (default: 0)}
+
+  \item{sep}{seperator between fields, same as
+  \code{\link{read.table}} argument (default: "")}
 
   \item{pipeline}{name of the alignment pipeline, it can be
   either "amp" or "bismark". The methylation text files
@@ -52,17 +58,17 @@
 }
 \section{Details}{
   When \code{pipeline} argument is a list, it is exptected
-  to provide a named list with following names. 'fraction'
+  to provide a named list with following names.  'fraction'
   is a logical value, denoting if the column frequency of
   Cs has a range from [0-1] or [0-100]. If true it assumes
-  range is [0-1]. 'chr.col" is the number of the column
-  that has chrosome string. 'start.col' is the number of
+  range is [0-1].  'chr.col" is the number of the column
+  that has chrosome string.  'start.col' is the number of
   the column that has start coordinate of the base/region
-  of the methylation event. 'end.col' is the number of the
+  of the methylation event.  'end.col' is the number of the
   column that has end coordinate of the base/region of the
-  methylation event. 'coverage.col' is the number of the
-  column that has read coverage values. 'strand.col' is the
-  number of the column that has strand information, the
+  methylation event.  'coverage.col' is the number of the
+  column that has read coverage values.  'strand.col' is
+  the number of the column that has strand information, the
   strand information in the file has to be in the form of
   '+' or '-', 'freqC.col' is the number of the column that
   has the frequency of Cs. See examples to see how to read
@@ -73,17 +79,17 @@
 # for your own analysis you will just need to provide set of paths to files
 #you will not need the "system.file(..."  part
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
 # read the files to a methylRawList object: myobj
 myobj=read( file.list,
-sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+            sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
 
 # read one file as methylRaw object
 myobj=read( file.list[[1]],
-sample.id="test1",assembly="hg18")
+            sample.id="test1",assembly="hg18")
 
 # read a generic text file containing CpG methylation values
 # let's first look at the content of the file
@@ -91,7 +97,7 @@ generic.file=system.file("extdata", "generic1.CpG.txt", package = "methylKit")
 read.table(generic.file,header=TRUE)
 
 # And this is how you can read that generic file as a methylKit object
-myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
-sample.id="test1",assembly="hg18")
+ myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
+            sample.id="test1",assembly="hg18")
 }
 

@@ -17,7 +17,7 @@
 
   \item{save.folder}{The folder which will be used to save
   methylation call files, if set to NULL no methylation
-  call file will be saved as a text file. The files saved
+  call file will be saved as a text file.  The files saved
   can be read into R in less time using \code{read}
   function in \code{methylKit}}
 
@@ -29,7 +29,7 @@
   \item{read.context}{One of the 'CpG','CHG','CHH' or
   'none' strings. Determines what type of methylation
   context will be read-in to the memory which can be
-  immediately used for analysis. If given as 'none',
+  immediately used for analysis.  If given as 'none',
   read.bismark will not return any object, but if a
   save.folder argument given it will save the methylation
   percentage call files.}
@@ -77,12 +77,12 @@ obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,save.context="C
 
 # reading multiple files
 file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
-system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
-system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
-system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
+               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+              system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
+               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
 
-objs=read.bismark(location=file.list2
-,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
-nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
+ objs=read.bismark(location=file.list2
+             ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
+                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 }
 

@@ -1,11 +1,11 @@
 \docType{methods}
 \name{getData}
 \alias{getData}
+\alias{getData-method}
 \alias{getData,-methods}
 \alias{getData,methylBase-method}
 \alias{getData,methylDiff-method}
 \alias{getData,methylRaw-method}
-\alias{getData-method}
 \title{get the data slot from the methylKit objects}
 \usage{
   getData(x)

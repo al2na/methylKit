@@ -33,7 +33,7 @@ ann
 \seealso{
   see \code{\link[methylKit]{annotate.WithFeature.Flank}}
   and \code{\link[methylKit]{annotate.WithFeature}} on how
-  to create this object. see following functions that
+  to create this object.  see following functions that
   operates on this object:
   \code{\link[methylKit]{getMembers}},
   \code{\link[methylKit]{getTargetAnnotationStats}},

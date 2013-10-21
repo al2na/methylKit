@@ -5,7 +5,7 @@
 \title{Plot annotation categories from annotationByGenicParts or annotationByFeature}
 \usage{
   plotTargetAnnotation(x,precedence=TRUE,col=rainbow(length(x@annotation)),
-  ...)
+    ...)
 }
 \arguments{
   \item{x}{an \code{\link[methylKit]{annotationByFeature}}
@@ -14,7 +14,7 @@
 
   \item{precedence}{TRUE|FALSE. If TRUE there will be a
   hierachy of annotation features when calculating numbers
-  (with promoter>exon>intron precedence). This option is
+  (with promoter>exon>intron precedence).  This option is
   only valid when x is a \code{annotationByGenicParts}
   object}
 

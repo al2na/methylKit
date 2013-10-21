@@ -8,6 +8,9 @@
 }
 \arguments{
   \item{methylBase.obj}{a methylBase object}
+
+  \item{rowids}{if TRUE, matrix rownames have identifiers
+  as base/region location (default:FALSE)}
 }
 \value{
   matrix with percent methylation values per base/region

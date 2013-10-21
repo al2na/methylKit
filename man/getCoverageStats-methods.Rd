@@ -5,10 +5,10 @@
 \alias{getCoverageStats,methylRaw-method}
 \title{get coverage stats from methylRaw object}
 \usage{
-  getCoverageStats(.Object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
+  getCoverageStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
 }
 \arguments{
-  \item{.Object}{a \code{methylRaw} object}
+  \item{object}{a \code{methylRaw} object}
 
   \item{plot}{plot a histogram of coverage if TRUE
   (default:FALSE)}

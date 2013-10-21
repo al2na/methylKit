@@ -34,7 +34,7 @@
 }
 \examples{
 # location of the example CpG file
-my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
+ my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
+ cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
 }
 

@@ -28,7 +28,7 @@
 
 \section{Subsetting}{
   In the following code snippets, \code{x} is a
-  \code{methylDiff}. Subsetting by \code{x[i,]} will
+  \code{methylDiff}.  Subsetting by \code{x[i,]} will
   produce a new object if subsetting is done on rows.
   Column subsetting is not directly allowed to prevent
   errors in the downstream analysis. see ?methylKit[ .

@@ -5,9 +5,9 @@
 \title{Principal Components Analysis of Methylation data}
 \usage{
   PCASamples(.Object, screeplot=FALSE,
-  adj.lim=c(0.0004,0.1), scale=TRUE,
-  center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
-  sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
+    adj.lim=c(0.0004,0.1), scale=TRUE,
+    center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
+    sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 }
 \arguments{
   \item{.Object}{a \code{methylBase} object}
@@ -83,7 +83,7 @@ data(methylKit)
 # do PCA with filtering rows with low variation, filter rows with standard
 # deviation lower than the 50th percentile of Standard deviation distribution
 PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),
-scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
-sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
+           scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
+           sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 }
 

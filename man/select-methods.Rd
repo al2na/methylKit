@@ -29,7 +29,7 @@
 }
 \examples{
 data(methylKit)
-# selects first hundred rows, returns a methylRaw object
+ # selects first hundred rows, returns a methylRaw object
 subset1=select(methylRawList.obj[[1]],1:100)
 
 # selects first hundred rows, returns a methylBase object

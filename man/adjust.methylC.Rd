@@ -12,7 +12,7 @@
   containing 5mC levels of a sample or set of samples}
 
   \item{hmc}{a \code{methylRawList} or \code{methylRaw}
-  containing 5hmC levels of a sample or set of samples. If
+  containing 5hmC levels of a sample or set of samples.  If
   a \code{methylRawList} given the sample order should be
   same as "mc" \code{methylRawList} object.}
 }

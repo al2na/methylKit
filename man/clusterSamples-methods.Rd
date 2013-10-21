@@ -5,8 +5,8 @@
 \title{Hierarchical Clustering using methylation data}
 \usage{
   clusterSamples(.Object, dist="correlation",
-  method="ward", sd.filter=TRUE,sd.threshold=0.5,
-  filterByQuantile=TRUE, plot=TRUE)
+    method="ward", sd.filter=TRUE,sd.threshold=0.5,
+    filterByQuantile=TRUE, plot=TRUE)
 }
 \arguments{
   \item{.Object}{a \code{methylBase} object}
@@ -14,7 +14,7 @@
   \item{dist}{the distance measure to be used. This must be
   one of "\code{correlation}", "\code{euclidean}",
   "\code{maximum}", "\code{manhattan}", "\code{canberra}",
-  "\code{binary}" or "\code{minkowski}". Any unambiguous
+  "\code{binary}" or "\code{minkowski}".  Any unambiguous
   abbreviation can be given.
   (default:"\code{correlation}")}
 
@@ -31,7 +31,7 @@
   \item{sd.threshold}{A numeric value. If
   \code{filterByQuantile} is \code{TRUE}, features whose
   standard deviations is less than the quantile denoted by
-  \code{sd.threshold} will be removed. If
+  \code{sd.threshold} will be removed.  If
   \code{filterByQuantile} is \code{FALSE}, then features
   whose standard deviations is less than the value of
   \code{sd.threshold} will be removed.(default:0.5)}

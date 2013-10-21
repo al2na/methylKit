@@ -17,7 +17,7 @@
 
   \item{type}{one of the "hyper","hypo" or "all" strings.
   Specifies what type of differentially menthylated
-  bases/regions should be returned. For retrieving
+  bases/regions should be returned.  For retrieving
   Hyper-methylated regions/bases type="hyper", for
   hypo-methylated type="hypo" (default:"all")}
 }

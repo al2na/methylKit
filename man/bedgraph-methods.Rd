@@ -18,7 +18,7 @@
 
   \item{col.name}{name of the column in \code{methylRaw},
   \code{methylRawList} or \code{methylDiff} objects to be
-  used as a score for the bedgraph. For \code{methylDiff},
+  used as a score for the bedgraph.  For \code{methylDiff},
   \code{col.name} must be one of the following
   'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and
   \code{methylRawList} it must be one of the following
