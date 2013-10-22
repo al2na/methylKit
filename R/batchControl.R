@@ -2,17 +2,20 @@
 
 
 
-#' reconstruct methylBase object based on a new methylation percentage matrix
+#' Reconstruct methylBase object based on a new methylation percentage matrix
 #' 
-#' The function reconstructs a new methylBase object from another methylBase object
-#' and percent methylation matrix. Basically, it uses the coverage columns in the given
+#' The function reconstructs a new methylBase object from an input methylBase object
+#' and percent methylation matrix. Basically, it uses the read coverages in the input
 #' methylBase object and deduces new number of methylated Cs and unmethylated Cs based
-#' on given percent methylation matrix. It is ideally used to reconstruct methylBase objects
-#' after batch correction on percent methylation values. The percent methylation matrix
-#' rows must match methylBase object rows in order and in addition column order (the order of samples)
-#' should match in both in given methylBase and  percent methylation matrix.
+#' on the input percent methylation matrix. It is ideally to be used to 
+#' reconstruct methylBase objects
+#' after batch correction on percent methylation values. The percent methylation 
+#' matrix rows must match methylBase object rows in order ,and in addition column 
+#' order (the order of samples) in input methylBase must match the order in 
+#' percent methylation matrix.
 #' 
-#' @param methMat percent methylation matrix, row order and order of the samples same as the methylBase object
+#' @param methMat percent methylation matrix, row order and order of the samples
+#'  same as the methylBase object
 #' @param mBase \code{\link{methylBase}} object to be reconstructed 
 #' 
 #' @return new \code{\link{methylBase}} object where methylation percentage matches
@@ -20,8 +23,15 @@
 #' 
 #' @author Altuna Akalin
 #' 
+#' @note Batch effect correction (if any batch effect exists) is a tricky issue. 
+#' We provide some simple ways to deal with it 
+#' (see \code{\link{assocComp}} and \code{\link{removeComp}} ), 
+#' But if you can find other ways to correct for batch effects and want to create 
+#' a methylBase object with the corrected percent methylation values, you can use this function.
 #' 
 #' @examples 
+#' data(methylKit)
+#' 
 #' 
 #' @export
 #' @docType methods
@@ -57,38 +67,82 @@ reconstruct<-function(methMat,mBase){
   
 }
 
-#' associates principal components with sample annotations
+#' Associate principal components with sample annotations
 #' 
-#' This function associates principal components
-#' sampleAnnotation=data.frame(batch=c("a","a","b","b"))
+#' This function associates principal components with sample annotations
+#' such as age, gender, batch_id. Can be used to detect which batch effects
+#' are associated with the variation in the methylation values.
+#' 
+#' @param mBase \code{\link{methylBase}} object with no NA values in the data part.
+#' @param sampleAnnotation a data frame where columns are different annotations and 
+#'                        rows are the samples, in the same order as in the methylBase object.
+#' 
+#' @return a named list of principal component matrix (named 'pcs'),% variation explained
+#'         by principal compopents (named 'vars') and a p-value matrix showing association
+#'         p-values between sample annotations and principal components (named 'association').
+#'         
+#' 
+#' @author Altuna Akalin
+#'
+#' @examples
+#' data(methylKit)
+#' sampleAnnotation=data.frame(batch_id=c("a","a","b","b"),age=c(19,34,23,40))
+#' as=assocComp(mBase=methylBase.obj,sampleAnnotation)
+#' as
+#' 
+#' 
+#' @export
+#' @docType methods
+#' @rdname assocComp-methods
 assocComp<-function(mBase,sampleAnnotation){
   scale=TRUE
   center=TRUE
-  mat=percMethylation(mBase)
-  pr=prcomp(mat,scale.=scale,center=center)
-  vars=100*pr$sdev**2/sum(pr$sdev**2)
+  mat=percMethylation(mBase) # get matrix
+  pr=prcomp(mat,scale.=scale,center=center) # get PCA
+  vars=100*pr$sdev**2/sum(pr$sdev**2) # calc variation explained
 
-  for(i in ncol(sampleAnnotation)){
-    if(is.factor(sampleAnnotation[,i]) | is.character(sampleAnnotation[,i]) ){
-      kruskal.test(split(pr$rotation[,1],sampleAnnotation[,i]) )
+  # get association p-values using different tests
+  res=list()
+  for(i in 1:ncol(sampleAnnotation)){
+    
+    # for factors do kruskal.wallis or wilcox test
+    if(is.factor(sampleAnnotation[,i]) | is.character(sampleAnnotation[,i]) | is.logical(sampleAnnotation[,i])){
+      annot=as.factor(sampleAnnotation[,i])
+      res[[names(sampleAnnotation)[i]]]=apply(pr$rotation,2,function(x){ # cat(x)
+                                      if(length(unique(annot))>2 ){
+                                        kruskal.test(split(x,annot)  )$p.value
+                                        }else{
+                                        wilcox.test(split(x,annot)[[1]],split(x,annot)[[2]]  )$p.value 
+                                        }
+            })
       
+    }else{# for factors do cor.test
+      annot=  sampleAnnotation[,i]
+      res[[names(sampleAnnotation)[i]]]=apply(pr$rotation,2,function(x){ # cat(x)
+
+          cor.test(x,annot)$p.value
+  
+      })
     }
   }
   
-  list(pcs=pr$rotation,vars=vars,association=assoc)
+  list(pcs=pr$rotation,vars=vars,association=do.call("rbind",res))
 }
 
-#' remove principal components from a methylBase object
+#' Remove principal components from a methylBase object
 #' 
 #' This function can remove a given principal componet from a given 
 #' methylBase object. First, it calculates principal components from
 #' percent methylation matrix and removes the given component(s), reconstructs
 #' the methylation matrix then reconstructs number of methylated and unmethylated Cs per
-#' position based on the reconstructed percent methylation matrix.
+#' position based on the reconstructed percent methylation matrix, and finally returns
+#' a new \code{\link{methylBase}} object.
 #' 
 #' @param mBase \code{\link{methylBase}} object with no NA values, that means
 #'               all bases should be covered in all samples.
 #' @param comp vector of component numbers to be removed
+#' 
+#' @return new \code{\link{methylBase}} object
 #' 
 #' @examples
 #' 
@@ -102,7 +156,7 @@ assocComp<-function(mBase,sampleAnnotation){
 #' 
 #' @export
 #' @docType methods
-#' @rdname reconstruct-methods 
+#' @rdname removeComp-methods 
 removeComp<-function(mBase,comp=NULL){
   if(is.na(comp) | is.null(comp)){
     stop("no component to remove\n")
