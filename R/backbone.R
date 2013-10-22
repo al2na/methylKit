@@ -314,7 +314,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 #' @rdname read-methods
 #' @aliases read,list,list,character-method
 setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
-          function(location,sample.id,assembly,pipeline,header,context,resolution,treatment){ 
+          function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment){ 
             
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
