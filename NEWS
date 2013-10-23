@@ -16,6 +16,9 @@ IMPROVEMENTS AND BUG FIXES
 
 * unite() function takes less time due to use of data.table::merge
 
+* fixes a bug appeared with R 3.02, where getting exon and intron coordinates
+  from BED12 files produced an error.
+
 * tested with R 3.2 and matching bioconductor packages
 
 * data(methylKit) has the new objects
