@@ -213,14 +213,7 @@ The function gets principal components from the percent methylation matrix deriv
 for categorical attributes and correlation test for numerical attributes for
 samples such as age. If you are convinced that some principal components are 
 accounting for batch effects, you can remove those principal components from your data using 
-\texttt{removeComp}. In addition to these, if you have found other ways to correct for batch effects and obtained a corrected
-percent methylation matrix,
-you can use \texttt{reconstruct} function to reconstruct a corrected \texttt{methylBase} 
-object. Users have to supply a corrected percent methylation matrix
-and \texttt{methylBase} object (where the uncorrected percent methylation matrix obtained from)
-to the \texttt{reconstruct} function. All of these functions work on a \texttt{methylBase}
-object that does not have missing values (that means all bases in methylBase object
-should have coverage).
+\texttt{removeComp}. 
 <<>>=
 # make some batch data frame
 # this is a bogus data frame
@@ -235,7 +228,18 @@ as
 # construct a new object by removing the first pricipal component
 # from percent methylation value matrix
 newObj=removeComp(meth,comp=1)
-
+@
+In addition to the methods described above, if you have used other ways to correct for batch effects and obtained a corrected
+percent methylation matrix,
+you can use \texttt{reconstruct} function to reconstruct a corrected \texttt{methylBase} 
+object. Users have to supply a corrected percent methylation matrix
+and \texttt{methylBase} object (where the uncorrected percent methylation matrix obtained from)
+to the \texttt{reconstruct} function. Corrected percent methylation matrix should have
+the same row and column order as the original percent methylation matrix.
+All of these functions descrived in this section work on a \texttt{methylBase}
+object that does not have missing values (that means all bases in methylBase object
+should have coverage in all samples).
+<<>>=
 mat=percMethylation(meth)
 
 # do some changes in the matrix
