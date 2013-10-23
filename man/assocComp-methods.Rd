@@ -30,7 +30,6 @@
 data(methylKit)
 sampleAnnotation=data.frame(batch_id=c("a","a","b","b"),age=c(19,34,23,40))
 as=assocComp(mBase=methylBase.obj,sampleAnnotation)
-as
 }
 \author{
   Altuna Akalin
