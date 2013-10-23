@@ -203,6 +203,30 @@ PCASamples(meth)
 @
 \end{center}
 
+\subsection{Batch effects}
+We have implemented some rudimentary functionality for batch effect control. 
+You can check which one of the principal components are statistically associated 
+with the potential batch
+effects such as batch processing dates, age of subjects, sex of subjects using \texttt{assocComp}. 
+The function gets principal components from the percent methylation matrix derived from the input
+\texttt{methylBase} object, and checks for association. The tests for association are either via Kruskal-Wallis test or Wilcoxon test 
+for categorical attributes and correlation test for numerical attributes for
+samples such as age. If you are convinced that some principal components are 
+accounting for batch effects, you can remove those principal components from your data using 
+\texttt{removeComp}. In addition to these, if you have found other ways to correct for batch effects and obtained a corrected
+percent methylation matrix,
+you can use \texttt{reconstruct} function to reconstruct a corrected \texttt{methylBase} 
+object. Users have to supply a corrected percent methylation matrix
+and \texttt{methylBase} object (where the uncorrected percent methylation matrix obtained from)
+to the \texttt{reconstruct} function. All of these functions work on a \texttt{methylBase}
+object that does not have missing values (that means all bases in methylBase object)
+should have coverage.
+<<>>=
+# make some batch data frame
+# this is a bougus data frame
+newObj=removeComp(meth,comp=1)
+
+@
 
 \subsection{Tiling windows analysis}
 For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. \texttt{methylKit} provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a \texttt{methylRawList} object which can be fed into \texttt{unite} and \texttt{calculateDiffMeth} functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.

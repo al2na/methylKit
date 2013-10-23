@@ -32,6 +32,17 @@
 #' @examples 
 #' data(methylKit)
 #' 
+#' # get percent methylation
+#' mat=percMethylation(methylBase.obj)
+#' 
+#' # do some changes in the matrix
+#' # this is just a toy example
+#' # ideally you want to correct the matrix
+#' # for batch effects
+#' mat[mat==100]=80
+#' 
+#' # reconstruct the methylBase from the corrected matrix
+#' newobj=reconstruct(mat,methylBase.obj)
 #' 
 #' @export
 #' @docType methods
@@ -59,7 +70,7 @@ reconstruct<-function(methMat,mBase){
   df[,mBase@numCs.index]=numCs
   df[,mBase@numTs.index]=numTs
   
-  new("methylBase",df,sample.ids=sample.ids,
+  new("methylBase",df,sample.ids=mBase@sample.ids,
       assembly=mBase@assembly,context=mBase@context,
       treatment=mBase@treatment,coverage.index=mBase@coverage.index,
       numCs.index=mBase@numCs.index,numTs.index=mBase@numTs.index,
@@ -182,6 +193,6 @@ removeComp<-function(mBase,comp=NULL){
   attr(res,"scaled:scale")<-NULL 
   res[res>100]=100
   res[res<0]=0
-  res
+  reconstruct(res,mBase)
 }
   

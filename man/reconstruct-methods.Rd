@@ -42,6 +42,18 @@
 }
 \examples{
 data(methylKit)
+
+# get percent methylation
+mat=percMethylation(methylBase.obj)
+
+# do some changes in the matrix
+# this is just a toy example
+# ideally you want to correct the matrix
+# for batch effects
+mat[mat==100]=80
+
+# reconstruct the methylBase from the corrected matrix
+newobj=reconstruct(mat,methylBase.obj)
 }
 \author{
   Altuna Akalin
