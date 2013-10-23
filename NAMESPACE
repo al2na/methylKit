@@ -1,7 +1,7 @@
 import(methods)
 
 import(GenomicRanges)
-import(KernSmooth)
+#import(KernSmooth)
 
 #import(RHmm)
 
@@ -21,8 +21,8 @@ importMethodsFrom("IRanges",nearest,as.data.frame)
 
 
 
-#import( data.table)
-importFrom("data.table", data.table)
+import( data.table)
+#importFrom("data.table",data.table)#, tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy)
 
 
 importFrom("parallel", mclapply)

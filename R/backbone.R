@@ -352,7 +352,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
           })
 
 
-#' filter methylRaw and methylRawList object based on read coverage
+#' Filter methylRaw and methylRawList object based on read coverage
 #'
 #' This function filters \code{methylRaw} and \code{methylRawList} objects.
 #' You can filter based on lower read cutoff or high read cutoff. Higher read cutoff is usefull to eliminate PCR effects
@@ -529,7 +529,7 @@ setMethod("unite", "methylRawList",
             #merge raw methylation calls together
             df=getData(object[[1]])
             if(destrand & (object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
-            df=data.table(df)
+            df=data.table(df,key=c("chr","start","end","strand"))
             sample.ids=c(object[[1]]@sample.id)
             assemblies=c(object[[1]]@assembly)
             contexts  =c(object[[1]]@context)
@@ -543,8 +543,9 @@ setMethod("unite", "methylRawList",
                 df2=data.table(df2[,c(1:3,5:7)])
                 df=merge(df,df2,by=c("chr","start","end"),suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
               }else{
-                df2=data.table(df2 )
-                df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
+                df2=data.table(df2,key=c("chr","start","end","strand") )
+                # using hacked data.table merge called merge2: temporary fix
+                df=merge2(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
               }
               sample.ids=c(sample.ids,object[[i]]@sample.id)
               contexts=c(contexts,object[[i]]@context)

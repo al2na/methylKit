@@ -5,7 +5,6 @@
 #' 
 #' @param object a methylKit object: methylRaw, methylRawList, methylBase or methylDiff
 #'
-#' @usage updateMethObject(objects)
 #' @return \code{\link{methylRaw}},\code{\link{methylDiff}},\code{\link{methylBase}}
 #' or \code{\link{methylRawList}} object
 #'

@@ -8,7 +8,7 @@
 #
 
 
-#' GETs regional counts for given GRanges or GRangesList object
+#' Get regional counts for given GRanges or GRangesList object
 #'
 #' Convert \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}}  object into 
 #' regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.

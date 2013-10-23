@@ -3,7 +3,7 @@
 \alias{filterByCoverage}
 \alias{filterByCoverage,methylRaw-method}
 \alias{filterByCoverage,methylRawList-method}
-\title{filter methylRaw and methylRawList object based on read coverage}
+\title{Filter methylRaw and methylRawList object based on read coverage}
 \usage{
   filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
 }

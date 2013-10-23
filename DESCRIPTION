@@ -2,8 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.0
-Date: 2013-04-27
+Version: 0.9.1
 Author: Altuna Akalin, Matthias Kormaksson, Sheng Li
 Maintainer: Altuna Akalin <aakalin@gmail.com>
 Description: methylKit is an R package for DNA methylation analysis and
@@ -43,4 +42,5 @@ Collate:
     'adjust.methylC.R'
     'updateMethObject.R'
     'batchControl.R'
+    'merge2.R'
 

@@ -7,7 +7,7 @@
 \alias{updateMethObject,methylRawList-method}
 \title{update methylKit objects}
 \usage{
-  updateMethObject(objects)
+  updateMethObject(object)
 }
 \arguments{
   \item{object}{a methylKit object: methylRaw,

@@ -4,7 +4,6 @@
 #' @param rowids if TRUE, matrix rownames have identifiers as base/region location (default:FALSE)
 #' @return matrix with percent methylation values per base/region across all 
 #'         samples, row names would be base/region identifiers
-#' @usage percMethylation(methylBase.obj)
 #' @examples
 #' 
 #' data(methylKit)

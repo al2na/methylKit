@@ -162,7 +162,7 @@ removeComp<-function(mBase,comp=NULL){
     stop("no component to remove\n")
   }
   
-  if(any(comp > ncol() )){
+  if(any(comp > length(mBase@sample.ids) )){
     stop("'comp' elements can only take values between 1 and number of samples\n")
   }
   
