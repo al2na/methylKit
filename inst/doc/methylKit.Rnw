@@ -219,12 +219,33 @@ you can use \texttt{reconstruct} function to reconstruct a corrected \texttt{met
 object. Users have to supply a corrected percent methylation matrix
 and \texttt{methylBase} object (where the uncorrected percent methylation matrix obtained from)
 to the \texttt{reconstruct} function. All of these functions work on a \texttt{methylBase}
-object that does not have missing values (that means all bases in methylBase object)
-should have coverage.
+object that does not have missing values (that means all bases in methylBase object
+should have coverage).
 <<>>=
 # make some batch data frame
-# this is a bougus data frame
+# this is a bogus data frame
+# we don't have batch information
+# for the example data
+sampleAnnotation=data.frame(batch_id=c("a","a","b","b"),
+                            age=c(19,34,23,40))
+
+as=assocComp(mBase=meth,sampleAnnotation)
+as
+
+# construct a new object by removing the first pricipal component
+# from percent methylation value matrix
 newObj=removeComp(meth,comp=1)
+
+mat=percMethylation(meth)
+
+# do some changes in the matrix
+# this is just a toy example
+# ideally you want to correct the matrix
+# for batch effects
+mat[mat==100]=80
+ 
+# reconstruct the methylBase from the corrected matrix
+newobj=reconstruct(mat,meth)
 
 @
 
