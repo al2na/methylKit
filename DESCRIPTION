@@ -22,7 +22,7 @@ Depends:
 Imports:
     GenomicRanges (>= 1.8.6),
     IRanges,
-    data.table (>= 1.8.6),
+    data.table (>= 1.8.10),
     parallel
 Suggests:
     testthat

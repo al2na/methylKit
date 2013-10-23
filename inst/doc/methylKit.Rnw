@@ -236,7 +236,7 @@ object. Users have to supply a corrected percent methylation matrix
 and \texttt{methylBase} object (where the uncorrected percent methylation matrix obtained from)
 to the \texttt{reconstruct} function. Corrected percent methylation matrix should have
 the same row and column order as the original percent methylation matrix.
-All of these functions descrived in this section work on a \texttt{methylBase}
+All of these functions described in this section work on a \texttt{methylBase}
 object that does not have missing values (that means all bases in methylBase object
 should have coverage in all samples).
 <<>>=
@@ -391,10 +391,11 @@ as(myDiff,"GRanges")
 @
 \subsection{select}
 
-We can also select rows from \texttt{methylRaw}, \texttt{methylBase} and \texttt{methylDiff} objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. 
+We can also select rows from \texttt{methylRaw}, \texttt{methylBase} and \texttt{methylDiff} objects with "select" function. An appropriate methylKit object will be returned as a result of "select" function. Or you can use the "[" notation to subset the
+methylKit objects.
 <<>>==
-select(meth,1:10) # select first 10 rows of a methylBase object
-select(myDiff,20:30) # select rows 10 of a methylDiff object
+select(meth,1:5) # get first 10 rows of a methylBase object
+myDiff[21:25,] # get 5 rows of a methylDiff object
 @
 
 \subsection{reorganize}
@@ -417,8 +418,11 @@ perc.meth=percMethylation(meth)
 Detailed answers to some of the frequently asked questions and various how-tos 
 can be found at \url{http://zvfak.blogspot.com/search/label/methylKit}. 
 In addition, \url{http://code.google.com/p/methylkit/} has online documentation
-and links to tutorials and other related material. Apart from those here are 
-some of the frequently asked questions.
+and links to tutorials and other related material. You can also check methylKit
+Q\&A forum for answers
+\url{https://groups.google.com/forum/#!forum/methylkit_discussion}.
+
+Apart from those here are some of the frequently asked questions.
 
 \subsection{How can I select certain regions/bases from \texttt{methylRaw} or \texttt{methylBase} objects ?}
 see \texttt{?select} or \texttt{help("[", package = "methylKit")}
