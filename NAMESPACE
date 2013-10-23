@@ -21,8 +21,9 @@ importMethodsFrom("IRanges",nearest,as.data.frame)
 
 
 
-import( data.table)
-#importFrom("data.table",data.table)#, tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy)
+#import( data.table)
+importFrom("data.table",data.table,setnames, setcolorder,
+           tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy)
 
 
 importFrom("parallel", mclapply)
