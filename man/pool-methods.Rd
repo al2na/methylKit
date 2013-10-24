@@ -2,7 +2,7 @@
 \name{pool}
 \alias{pool}
 \alias{pool,methylBase-method}
-\title{Pools replicates within groups to a single sample per group}
+\title{Pool replicates within groups to a single sample per group}
 \usage{
   pool(obj,sample.ids)
 }

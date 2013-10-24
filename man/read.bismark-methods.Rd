@@ -3,13 +3,16 @@
 \alias{read.bismark}
 \alias{read.bismark,character,character,character-method}
 \alias{read.bismark,list,list,character-method}
-\title{Function to read in pecent methylation scores from sorted Bismark SAM files}
+\title{Read from sorted Bismark SAM files}
 \usage{
-  read.bismark(location,sample.id,assembly,save.folder=NULL,save.context=c("CpG"),read.context="CpG",nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment)
+  read.bismark(location, sample.id, assembly,
+    save.folder = NULL, save.context = c("CpG"),
+    read.context = "CpG", nolap = FALSE, mincov = 10,
+    minqual = 20, phred64 = FALSE, treatment)
 }
 \arguments{
   \item{location}{location of sam file(s). If multiple
-  files are given this arugment must be a list.}
+  files are given this argument must be a list.}
 
   \item{sample.id}{the id(s) of samples in the same order
   as file.  If multiple sam files are given this arugment
@@ -22,12 +25,12 @@
   function in \code{methylKit}}
 
   \item{save.context}{A character vector consisting
-  following strings: "CpG","CHG","CHH". The methylation
+  following strings: "CpG","CHG","CHH".  The methylation
   percentages for these methylation contexts will be saved
   to save.folder}
 
   \item{read.context}{One of the 'CpG','CHG','CHH' or
-  'none' strings. Determines what type of methylation
+  'none' strings.  Determines what type of methylation
   context will be read-in to the memory which can be
   immediately used for analysis.  If given as 'none',
   read.bismark will not return any object, but if a
@@ -62,18 +65,27 @@
 }
 \description{
   The function calls methylation percentage per base from
-  sorted Bismark SAM files. Bismark is a popular aligner
-  for high-throughput bisulfite sequencing experiments and
-  it outputs its results in SAM format by default. Bismark
-  SAM format contains aligner specific tags which are
-  absolutely necessary for methylation percentage calling.
-  SAM files from other aligners will not work with this
-  function.
+  sorted Bismark SAM files and reads methylation
+  information as \code{methylRaw} or \code{methylRawList}
+  object. Bismark is a popular aligner for high-throughput
+  bisulfite sequencing experiments and it outputs its
+  results in SAM format by default. Bismark SAM format
+  contains aligner specific tags which are absolutely
+  necessary for methylation percentage calling. SAM files
+  from other aligners will not work with this function.
+}
+\note{
+  SAM files should be sorted with samtools sort or unix
+  sort. Other sorting methods can alter the order of
+  fields(columns) in the SAM file and that will result in
+  an error when using \code{read.bismark()}.
 }
 \examples{
 # reading one bismark file:
-my.file=system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit")
-obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,save.context="CpG",read.context="CpG")
+my.file=system.file("extdata", "test.fastq_bismark.sorted.min.sam",
+                                                       package = "methylKit")
+obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,
+                 save.context="CpG",read.context="CpG")
 
 # reading multiple files
 file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
@@ -82,7 +94,8 @@ file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", pack
                system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
 
  objs=read.bismark(location=file.list2
-             ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
-                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
+             ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",
+             save.folder=NULL,save.context=NULL,read.context="CpG",
+             nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 }
 

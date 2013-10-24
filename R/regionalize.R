@@ -76,6 +76,10 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
     dt=data.table::data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
+    coverage=NULL
+    numCs=NULL
+    numTs=NULL
+    id=NULL
     # use data.table to sum up counts per region
     sum.dt=dt[,list(coverage=sum(coverage),
                     numCs   =sum(numCs),

@@ -2,18 +2,22 @@
 # 
 # 
 
-#' reorganize methylRawList and methylBase objects by creating new objects from subset of samples
+#' Reorganize methylKit objects by creating new objects from subset of samples
 #' 
-#' Function creates a new  \code{methylRawList} or \code{methylBase} object by selecting a subset of samples from the input object, which is 
-#' a \code{methylRawList} or \code{methylBase} object. You can use the function to partition a large methylRawList or methylBase object
-#' to smaller object based on sample ids or when you want to reorder samples and/or give a new treatmet vector.
+#' The function creates a new  \code{methylRawList} or \code{methylBase} 
+#' object by selecting a subset of samples from the input object, which is 
+#' a \code{methylRawList} or \code{methylBase} object. You can use the function
+#'  to partition a large methylRawList or methylBase object
+#' to smaller object based on sample ids or when you want to reorder samples
+#'  and/or give a new treatmet vector.
 #'
 #' @param methylObj a \code{methylRawList} or \code{methylBase} object
-#' @param sample.ids a vector for sample.ids to be subset. Order is important and the order should be similar to treatment. sample.ids should be
+#' @param sample.ids a vector for sample.ids to be subset. Order is 
+#'        important and the order should be similar to treatment. sample.ids should be
 #'        a subset or reordered version of sample ids in the input object.
 #' @param treatment  treatment vector, should be same length as sample.ids vector
 #'
-#' @return RETURNS a \code{methylRawList} or \code{methylBase} object depending on the input object
+#' @return returns a \code{methylRawList} or \code{methylBase} object depending on the input object
 #' @usage reorganize(methylObj,sample.ids,treatment)
 #' @examples
 #' # this is a list of example files, ships with the package

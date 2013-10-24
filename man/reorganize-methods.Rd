@@ -3,7 +3,7 @@
 \alias{reorganize}
 \alias{reorganize,methylBase-method}
 \alias{reorganize,methylRawList-method}
-\title{reorganize methylRawList and methylBase objects by creating new objects from subset of samples}
+\title{Reorganize methylKit objects by creating new objects from subset of samples}
 \usage{
   reorganize(methylObj,sample.ids,treatment)
 }
@@ -20,11 +20,11 @@
   as sample.ids vector}
 }
 \value{
-  RETURNS a \code{methylRawList} or \code{methylBase}
+  returns a \code{methylRawList} or \code{methylBase}
   object depending on the input object
 }
 \description{
-  Function creates a new \code{methylRawList} or
+  The function creates a new \code{methylRawList} or
   \code{methylBase} object by selecting a subset of samples
   from the input object, which is a \code{methylRawList} or
   \code{methylBase} object. You can use the function to

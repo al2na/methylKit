@@ -22,7 +22,7 @@ importMethodsFrom("IRanges",nearest,as.data.frame)
 
 
 #import( data.table)
-importFrom("data.table",data.table,setnames, setcolorder,
+importFrom("data.table",data.table,setnames, setcolorder,as.data.table,
            tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy)
 
 

@@ -1,29 +1,52 @@
 
 
-#' Function to read in pecent methylation scores from sorted Bismark SAM files
+#' Read from sorted Bismark SAM files
 #'
-#' The function calls methylation percentage per base from sorted Bismark SAM files. Bismark is a popular aligner for 
-#' high-throughput bisulfite sequencing experiments and it outputs its results in SAM format by default. Bismark SAM format contains
-#' aligner specific tags which are absolutely necessary for methylation percentage calling. SAM files from other aligners will not work with this function.
+#' The function calls methylation percentage per base from sorted Bismark SAM 
+#' files and reads methylation information as \code{methylRaw} or \code{methylRawList}
+#' object. Bismark is a popular aligner for 
+#' high-throughput bisulfite sequencing experiments and it outputs its results in 
+#' SAM format by default. Bismark SAM format contains
+#' aligner specific tags which are absolutely necessary for methylation 
+#' percentage calling. SAM files from other aligners will not work with this function.
 #'
-#' @param location location of sam file(s). If multiple files are given this arugment must be a list.
-#' @param sample.id the id(s) of samples in the same order as file.  If multiple sam files are given this arugment must be a list.
-#' @param save.folder The folder which will be used to save methylation call files, if set to NULL no methylation call file will be saved as a text file.
-#'                     The files saved can be read into R in less time using \code{read} function in \code{methylKit} 
-#' @param save.context A character vector consisting following strings: "CpG","CHG","CHH". The methylation percentages for these methylation contexts will be saved to save.folder
-#' @param read.context One of the 'CpG','CHG','CHH' or 'none' strings. Determines what type of methylation context will be read-in to the memory which can be immediately used for analysis.
-#'                     If given as 'none', read.bismark will not return any object, but if a save.folder argument given it will save the methylation percentage call files.
+#' @param location location of sam file(s). If multiple files are given this 
+#'                  argument must be a list.
+#' @param sample.id the id(s) of samples in the same order as file.  
+#'                  If multiple sam files are given this arugment must be a list.
+#' @param save.folder The folder which will be used to save methylation call files,
+#'                     if set to NULL no methylation call file will be saved as a text file.
+#'                     The files saved can be read into R in less time using \code{read} 
+#'                     function in \code{methylKit} 
+#' @param save.context A character vector consisting following strings: "CpG","CHG","CHH". 
+#'                    The methylation percentages for these methylation contexts
+#'                     will be saved to save.folder
+#' @param read.context One of the 'CpG','CHG','CHH' or 'none' strings. 
+#'                     Determines what type of methylation context will be read-in 
+#'                     to the memory which can be immediately used for analysis.
+#'                     If given as 'none', read.bismark will not return any object,
+#'                     but if a save.folder argument given it will save the 
+#'                     methylation percentage call files.
 #' @param assembly string that determines the genome assembly. Ex: mm9,hg18 etc.
-#' @param nolap   if set to TRUE and the SAM file has paired-end reads, the one read of the overlapping paired-end read pair will be ignored for methylation calling.
+#' @param nolap   if set to TRUE and the SAM file has paired-end reads, the one 
+#'                read of the overlapping paired-end read pair will be ignored 
+#'                for methylation calling.
 #' @param mincov  minimum read coverage to call a methylation status for a base.
 #' @param minqual minimum phred quality score to call a methylation status for a base.
-#' @param phred64 logical ( default: FALSE) you will not need to set this TRUE, Currently bismark gives only phred33 scale
-#' @param treatment treatment vector only to be used when location and sample.id parameters are \code{list}s and you are trying to read-in multiple samples that are related to eachother in down-stream analysis. 
+#' @param phred64 logical ( default: FALSE) you will not need to set this TRUE, 
+#'                Currently bismark gives only phred33 scale
+#' @param treatment treatment vector only to be used when location and sample.id 
+#'                  parameters are \code{list}s and you are trying to read-in 
+#'                  multiple samples that are related to eachother in down-stream 
+#'                  analysis. 
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'
-#' @usage read.bismark(location,sample.id,assembly,save.folder=NULL,save.context=c("CpG"),read.context="CpG",nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment)
-#'
+#' @note
+#' SAM files should be sorted with samtools sort or unix sort. Other sorting
+#' methods can alter the order of fields(columns) in the SAM file and that will
+#' result in an error when using \code{read.bismark()}.
+#' 
 #' @export
 #' @docType methods
 #' @rdname read.bismark-methods
@@ -31,8 +54,10 @@
 #' @examples
 #' 
 #' # reading one bismark file:
-#' my.file=system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit")
-#' obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,save.context="CpG",read.context="CpG")
+#' my.file=system.file("extdata", "test.fastq_bismark.sorted.min.sam", 
+#'                                                        package = "methylKit")
+#' obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,
+#'                  save.context="CpG",read.context="CpG")
 #'  
 #' # reading multiple files
 #' file.list2=list(system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
@@ -41,20 +66,27 @@
 #'                system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
 #' 
 #'  objs=read.bismark(location=file.list2
-#'              ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",save.folder=NULL,save.context=NULL,read.context="CpG",
-#'                                     nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
+#'              ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",
+#'              save.folder=NULL,save.context=NULL,read.context="CpG",
+#'              nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 #' 
-setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,save.context=c("CpG"),read.context="CpG",
-                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment) standardGeneric("read.bismark"))
+setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
+                                    save.context=c("CpG"),read.context="CpG",
+                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
+                                    ,treatment) standardGeneric("read.bismark"))
 
 #' @aliases read.bismark,character,character,character-method
 #' @rdname read.bismark-methods
-setMethod("read.bismark", signature(location = "character",sample.id= "character",assembly= "character"),
-                    function(location,sample.id,assembly,save.folder,save.context,read.context,
+setMethod("read.bismark", signature(location = "character",sample.id= "character",
+                                    assembly= "character"),
+                    function(location,sample.id,assembly,save.folder,save.context
+                             ,read.context,
                              nolap,mincov,minqual,phred64){
                       
                       # check if file exists
-                      #if(! file.exists(location) ){stop("File given at the 'location' argument doesn't exist")}
+                      if(! file.exists(location) ){
+                        stop("File supplied as the 'location' argument doesn't exist\n",
+                        "can not find file at: ",location,"\n")}
                       
                       # check output types
                       if(! all( save.context %in% c("CpG","CHG","CHH")) ){

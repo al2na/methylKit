@@ -51,7 +51,7 @@ reconstruct<-function(methMat,mBase){
   
   # check if indeed methMat is percent methylation matrix
   if(max(methMat)<=1){
-    warn("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+    warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
   }
 
   # check if indeed methMat is percent methylation matrix  

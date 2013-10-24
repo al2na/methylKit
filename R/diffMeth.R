@@ -566,15 +566,22 @@ setClass("methylDiff",representation(
 ##############################################################################
 
 
-#' Calculates differential methylation statistics
+#' Calculate differential methylation statistics
 #' 
-#' The function calculates differential methylation statistics between two groups of samples. The function uses either logistic regression test
-#' or Fisher's Exact test to calculate differential methylation. See references for detailed explanation on statistics.
+#' The function calculates differential methylation statistics between two groups 
+#' of samples. The function uses either logistic regression test
+#' or Fisher's Exact test to calculate differential methylation. 
+#' See references for detailed explanation on statistics.
 #' 
 #' @param .Object a methylBase object to calculate differential methylation
-#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.If FALSE, \code{\link{p.adjust}} with method="BH" option will be used for P-value correction.
-#' @param weigthed.mean calculate the mean methylation difference between groups using read coverage as weights
-#' @param num.cores  integer for denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores)
+#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.
+#'             If FALSE, \code{\link{p.adjust}} with method="BH" option will be 
+#'             used for P-value correction.
+#' @param weigthed.mean calculate the mean methylation difference between groups 
+#'                      using read coverage as weights
+#' @param num.cores  integer for denoting how many cores should be used for 
+#'                   differential methylation calculations (only can be used in
+#'                    machines with multiple cores)
 #' @usage calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
 #' @examples
 #' 
@@ -589,125 +596,134 @@ setClass("methylDiff",representation(
 #' 
 #' # After applying pool() function, there is one sample in each group.
 #' # Fisher's exact test will be applied for differential methylation
-#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,
+#'                                weigthed.mean=TRUE,num.cores=1)
 #' 
 #' 
 #' 
-#' @return a methylDiff object containing the differential methylation statistics and locations
+#' @return a methylDiff object containing the differential methylation 
+#'                      statistics and locations
 #' @section Details:
-#'  The function either uses a logistic regression (when there are multiple samples per group) or fisher's exact when there is one sample per group.
-#' @references Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, Christopher E. Mason. (2012). "methylKit: A comprehensive R package for the analysis of genome-wide DNA methylation profiles." Genome Biology.(In Press) 
+#'  The function either uses a logistic regression 
+#'  (when there are multiple samples per group) or fisher's exact 
+#'  when there is one sample per group.
+#' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
+#'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
+#'             Christopher E. Mason. (2012). 
+#'             "methylKit: A comprehensive R package for the analysis 
+#'             of genome-wide DNA methylation profiles." Genome Biology. 
 #' @seealso \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
 #' 
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1) standardGeneric("calculateDiffMeth"))
+setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weigthed.mean=TRUE,
+                              num.cores=1) standardGeneric("calculateDiffMeth"))
 
 #' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
                     function(.Object,slim,weigthed.mean,num.cores){
-                      
-                      #get CpGs with the cutoff
-                      #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)
-                      #subst=S3Part(.Object)[inds,]
-                      subst=S3Part(.Object,strictS3 = TRUE)
-                      
-                      if(length(.Object@treatment)<2 ){
-                        stop("can not do differential methylation calculation with less than two samples")
-                      }
-                      if(length(unique(.Object@treatment))<2 ){
-                        stop("can not do differential methylation calculation when there is no control\n
-                             treatment option should have 0 and 1 designating treatment and control samples")
-                      }
-                      
-                      if(length(unique(.Object@treatment))>2 ){
-                        stop("can not do differential methylation calculation when there are more than\n
-                             two groups, treatment vector indicates more than two groups")
-                      }
-                         
-                         
-                      # get the indices for numCs and numTs in each set
-                      set1.Cs=.Object@numCs.index[.Object@treatment==1]
-                      set2.Cs=.Object@numCs.index[.Object@treatment==0]
-                      set1.Ts=.Object@numTs.index[.Object@treatment==1]
-                      set2.Ts=.Object@numTs.index[.Object@treatment==0]
-
-                      # if one control, one treatment case to the fisher's exact test
-                      if(length(.Object@treatment)==2 )
-                      {
-                        if(num.cores>1){
-                          my.f.list=split(as.matrix(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)]),1:nrow(subst))
-                          f.fisher=function(x){ fast.fisher(matrix( x ,ncol=2,byrow=T),conf.int = F)$p.value }
-                          pvals    = unlist( parallel::mclapply( my.f.list ,f.fisher, mc.cores=num.cores) ) # apply fisher test
-                          #pvals    =mc.fish(my.f.list,num.cores)
-
-                        }else{
-                          pvals =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
-                        }
-                        pvals    = fix.q.values.fisher(pvals,slim=slim)   
-                        
-                        # calculate mean methylation change
-                        mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
-                        mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
-                        mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
-                        x=data.frame(subst[,1:4],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                        obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                        obj
-                      }
-                      else # else do the GLM - logistic regression
-                      { 
-                                                
-                          # pvalues
-                          if(num.cores>1){
-                            #pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
-                            pvals  = glm.set.mc.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
-
-                          }else{
-                            #pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
-                            pvals  = glm.set.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
-                          }
-
-                          # get qvalues
-                          pvals  = fix.q.values.glm(pvals,slim=slim)   
-                          
-                          # calculate mean methylation change
-                          if(length(set1.Cs) > 1){
-                            mom.meth1=100*rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
-                            pm.meth1=100*rowSums(subst[,set1.Cs],na.rm=TRUE)/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
-                          }else{
-                            mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
-                            pm.meth1     = mom.meth1
-                          }
-
-                          if(length(set2.Cs)>1){
-                            mom.meth2=100*rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
-                            pm.meth2=100*rowSums(subst[,set2.Cs],na.rm=TRUE)/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
-                          }else{
-                            mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1]) # get % methylation
-                            pm.meth2     = mom.meth2
-                          }
-                          pm.mean.diff=pm.meth1-pm.meth2
-                          mom.mean.diff=mom.meth1-mom.meth2
-                          
-                          if(weigthed.mean){
-                            x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                            obj
+    
+    #get CpGs with the cutoff
+    #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)
+    #subst=S3Part(.Object)[inds,]
+    subst=S3Part(.Object,strictS3 = TRUE)
+    
+    if(length(.Object@treatment)<2 ){
+      stop("can not do differential methylation calculation with less than two samples")
+    }
+    if(length(unique(.Object@treatment))<2 ){
+      stop("can not do differential methylation calculation when there is no control\n
+           treatment option should have 0 and 1 designating treatment and control samples")
+    }
+    
+    if(length(unique(.Object@treatment))>2 ){
+      stop("can not do differential methylation calculation when there are more than\n
+           two groups, treatment vector indicates more than two groups")
+    }
+       
+       
+    # get the indices for numCs and numTs in each set
+    set1.Cs=.Object@numCs.index[.Object@treatment==1]
+    set2.Cs=.Object@numCs.index[.Object@treatment==0]
+    set1.Ts=.Object@numTs.index[.Object@treatment==1]
+    set2.Ts=.Object@numTs.index[.Object@treatment==0]
   
-                          }
-                          else{
-                            x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
-                            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                            obj
-                          }
-                        
-                      }
-                    }    
+    # if one control, one treatment case to the fisher's exact test
+    if(length(.Object@treatment)==2 )
+    {
+      if(num.cores>1){
+        my.f.list=split(as.matrix(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)]),1:nrow(subst))
+        f.fisher=function(x){ fast.fisher(matrix( x ,ncol=2,byrow=T),conf.int = F)$p.value }
+        pvals    = unlist( parallel::mclapply( my.f.list ,f.fisher, mc.cores=num.cores) ) # apply fisher test
+        #pvals    =mc.fish(my.f.list,num.cores)
+  
+      }else{
+        pvals =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
+      }
+      pvals    = fix.q.values.fisher(pvals,slim=slim)   
+      
+      # calculate mean methylation change
+      mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+      mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+      mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
+      x=data.frame(subst[,1:4],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
+      obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+      obj
+    }
+    else # else do the GLM - logistic regression
+    { 
+                              
+        # pvalues
+        if(num.cores>1){
+          #pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+          pvals  = glm.set.mc.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
+  
+        }else{
+          #pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+          pvals  = glm.set.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+        }
+  
+        # get qvalues
+        pvals  = fix.q.values.glm(pvals,slim=slim)   
+        
+        # calculate mean methylation change
+        if(length(set1.Cs) > 1){
+          mom.meth1=100*rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
+          pm.meth1=100*rowSums(subst[,set1.Cs],na.rm=TRUE)/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
+        }else{
+          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+          pm.meth1     = mom.meth1
+        }
+  
+        if(length(set2.Cs)>1){
+          mom.meth2=100*rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
+          pm.meth2=100*rowSums(subst[,set2.Cs],na.rm=TRUE)/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
+        }else{
+          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1]) # get % methylation
+          pm.meth2     = mom.meth2
+        }
+        pm.mean.diff=pm.meth1-pm.meth2
+        mom.mean.diff=mom.meth1-mom.meth2
+        
+        if(weigthed.mean){
+          x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
+          obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+          obj
+  
+        }
+        else{
+          x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
+          obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+          obj
+        }
+      
+    }
+  }    
 )
 
 

@@ -2,7 +2,7 @@
 \name{calculateDiffMeth}
 \alias{calculateDiffMeth}
 \alias{calculateDiffMeth,methylBase-method}
-\title{Calculates differential methylation statistics}
+\title{Calculate differential methylation statistics}
 \usage{
   calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
 }
@@ -11,8 +11,9 @@
   differential methylation}
 
   \item{slim}{If TRUE(default) SLIM method will be used for
-  P-value adjustment.If FALSE, \code{\link{p.adjust}} with
-  method="BH" option will be used for P-value correction.}
+  P-value adjustment.  If FALSE, \code{\link{p.adjust}}
+  with method="BH" option will be used for P-value
+  correction.}
 
   \item{weigthed.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}
@@ -49,14 +50,15 @@ pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 
 # After applying pool() function, there is one sample in each group.
 # Fisher's exact test will be applied for differential methylation
-my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,
+                               weigthed.mean=TRUE,num.cores=1)
 }
 \references{
   Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E.
   Garrett-Bakelman, Maria E. Figueroa, Ari Melnick,
-  Christopher E. Mason. (2012). "methylKit: A comprehensive
-  R package for the analysis of genome-wide DNA methylation
-  profiles." Genome Biology.(In Press)
+  Christopher E. Mason. (2012).  "methylKit: A
+  comprehensive R package for the analysis of genome-wide
+  DNA methylation profiles." Genome Biology.
 }
 \seealso{
   \code{\link[methylKit]{pool}},
