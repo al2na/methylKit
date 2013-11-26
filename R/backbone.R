@@ -98,7 +98,7 @@
   Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
   resid=paste(res$chr,res$start,res$end)  
   res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  res=res[order(resid),]
+  res=res[order(res$chr,res$start),]
   return(res)
 }
 
