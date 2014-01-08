@@ -905,7 +905,7 @@ setMethod("getMethylationStats", "methylRaw",
                           
                           par(mfrow=c(1,2))
                           if(labels){
-                            a=hist((plus.met),plot=F)
+                            a=hist((plus.met),plot=F,...)
                             my.labs=as.character(round(100*a$counts/length(plus.met),1))
                           }else{my.labs=FALSE}
                           hist((plus.met),col="cornflowerblue",
@@ -915,7 +915,7 @@ setMethod("getMethylationStats", "methylRaw",
                           mtext(object@sample.id, side = 3)
 
                           if(labels){                          
-                            a=hist((mnus.met),plot=F)
+                            a=hist((mnus.met),plot=F,...)
                             my.labs=as.character(round(100*a$counts/length(mnus.met),1))
                           }
                           else{my.labs=FALSE}
@@ -929,7 +929,7 @@ setMethod("getMethylationStats", "methylRaw",
                         }else{
                           if(labels){                          
                           
-                            a=hist((all.met),plot=F)
+                            a=hist((all.met),plot=F,...)
                             my.labs=as.character(round(100*a$counts/length(all.met),1))
                           }else{my.labs=FALSE}
                           hist((all.met),col="cornflowerblue",
