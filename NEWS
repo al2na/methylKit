@@ -1,3 +1,10 @@
+methylKit 0.9.2.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Fixes a bug in getMethylationStats() function that generates incorrect label numbers when the user overrides the default number 
+  of breaks for the histogram. Contributed by Bonnie Barrilleaux.
+
 methylKit 0.9.2
 --------------
 IMPROVEMENTS AND BUG FIXES
