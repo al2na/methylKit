@@ -29,6 +29,7 @@ Suggests:
 Collate:
     'backbone.R'
     'diffMeth.R'
+    'diffMethDSS.R'
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
