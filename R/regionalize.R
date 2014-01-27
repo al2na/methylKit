@@ -13,7 +13,9 @@
 #' Convert \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}}  object into 
 #' regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
 #' @param object a \code{methylRaw} or \code{methlRawList} object
-#' @param regions a GRanges or GRangesList object.
+#' @param regions a GRanges or GRangesList object. Make sure that the GRanges objects are
+#'        unique in chr,start,end and strand columns.You can make them unique by 
+#'        using unique() function.
 #' @param cov.bases number minimum bases covered per region (Default:0). 
 #' Only regions with base coverage above this threshold are returned.
 #' @param strand.aware if set to TRUE only CpGs that match the strand of 
@@ -58,7 +60,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
     #require(GenomicRanges)
     # overlap object with regions
     # convert object to GRanges
-    if(strand.aware){
+    if(!strand.aware){
       g.meth=as(object,"GRanges")
       strand(g.meth)="*"
       mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
@@ -128,7 +130,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
             #require(GenomicRanges)
             # overlap object with regions
             # convert object to GRanges
-            if(strand.aware){
+            if(!strand.aware){
               g.meth=as(object,"GRanges")
               strand(g.meth)="*"
               mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
@@ -196,7 +198,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
     # convert object to GRanges
     #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
     
-    if(strand.aware){
+    if(!strand.aware){
       g.meth=as(object,"GRanges")
       strand(g.meth)="*"
       mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
@@ -333,7 +335,8 @@ setMethod("tileMethylCounts", signature(object="methylRaw"),
   function(object,win.size,step.size,cov.bases){
     
     g.meth =as(object,"GRanges")
-    chrs   =IRanges::levels(seqnames(g.meth))
+    #chrs   =IRanges::levels(seqnames(g.meth))
+    chrs   =Ias.character(unique(seqnames(g.meth)))
     widths =seqlengths(g.meth)
     all.wins=GRanges()
     for(i in 1:length(chrs))

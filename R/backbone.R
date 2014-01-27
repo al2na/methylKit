@@ -8,6 +8,7 @@
   tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
                          nrows = 100,stringsAsFactors=FALSE)
   classes  <- sapply(tab5rows, class)
+  classes[classes=="logical"]="character"
   return( read.table(filename, header = header,skip=skip,sep=sep, 
                      colClasses = classes)  )
 }
@@ -72,6 +73,37 @@
 # both are on the same CpG
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
+{
+  
+  cpgR=cpg[cpg$strand=="-",]
+  cpgF=cpg[cpg$strand=="+",]
+  cpgR$start=cpgR$start-1L
+  cpgR$end=cpgR$end-1L
+  cpgR$strand="+"
+  
+  #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
+  
+  cpgFR=merge(data.table(cpgF),data.table(cpgR),by=c("chr","start","end"))
+  #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
+  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
+  res=data.frame(
+    chr     =as.character(cpgFR$chr),
+    start    =as.integer(cpgFR$start),
+    end      =as.integer(cpgFR$start),
+    strand  =rep("+",nrow(cpgFR)),
+    coverage=cpgFR$coverage.x + cpgFR$coverage.y,
+    numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
+    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =F
+  )
+  Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
+  Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
+  resid=paste(res$chr,res$start,res$end)  
+  res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
+  #res=res[order(res$chr,res$start),]
+  return(res)
+}
+
+.CpG.dinuc.unifyOld<-function(cpg)
 {
   
   cpgR=cpg[cpg$strand=="-",]
@@ -1143,7 +1175,7 @@ setMethod("getData", signature="methylRaw", definition=function(x) {
 setAs("methylRaw", "GRanges", function(from)
                       {
                         from2=getData(from)
-                        GRanges(seqnames=from2$chr,ranges=IRanges(start=from2$start, end=from2$end),
+                        GRanges(seqnames=as.character(from2$chr),ranges=IRanges(start=from2$start, end=from2$end),
                                        strand=from2$strand, 
                                        coverage=from2$coverage,
                                        numCs   =from2$numCs,
@@ -1155,7 +1187,7 @@ setAs("methylRaw", "GRanges", function(from)
 setAs("methylBase", "GRanges", function(from)
                       {
                         from=getData(from)
-                        GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
+                        GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
                                        strand=from$strand, 
                                        data.frame(from[,5:ncol(from)])
                                        )

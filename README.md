@@ -2,7 +2,7 @@ methylKit
 ========
 
 This is where methylKit project will be developed from 2014. The [google code homepage](https://code.google.com/p/methylkit/) 
-will be active for the foreseeable future.
+will be active for the foreseeable future. **NOTE:** this branch is for the **development version**
 
 
 Installation
@@ -13,9 +13,9 @@ install.packages( c("data.table","devtools"))
 source("http://bioconductor.org/biocLite.R")
 biocLite(c("GenomicRanges","IRanges"))
 
-# install from github
+# install the development version from github
 library(devtools)
-install_github("methylKit", username = "al2na")
+install_github("methylKit", username = "al2na",ref = "development")
 ```
 
 Citing methylKit

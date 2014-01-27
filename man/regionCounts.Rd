@@ -14,7 +14,10 @@
   \item{object}{a \code{methylRaw} or \code{methlRawList}
   object}
 
-  \item{regions}{a GRanges or GRangesList object.}
+  \item{regions}{a \code{GRanges} or \code{GRangesList} object. Make sure 
+  that the \code{GRanges} objects are  unique in chr,start,end and 
+  strand columns.You can make them unique by using unique() 
+  function.}
 
   \item{cov.bases}{number minimum bases covered per region
   (Default:0). Only regions with base coverage above this

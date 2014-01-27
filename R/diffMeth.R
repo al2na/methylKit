@@ -582,14 +582,14 @@ setClass("methylDiff",representation(
 #' @param num.cores  integer for denoting how many cores should be used for 
 #'                   differential methylation calculations (only can be used in
 #'                    machines with multiple cores)
-#' @usage calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' @usage calculateDiffMeth(.Object,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 #' @examples
 #' 
 #' data(methylKit)
 #' 
 #' # Logistic regression test will be applied since there are multiple samples in each group
 #' # in methylBase.obj object
-#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 #' 
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
@@ -597,7 +597,7 @@ setClass("methylDiff",representation(
 #' # After applying pool() function, there is one sample in each group.
 #' # Fisher's exact test will be applied for differential methylation
 #' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,
-#'                                weigthed.mean=TRUE,num.cores=1)
+#'                                weighted.mean=TRUE,num.cores=1)
 #' 
 #' 
 #' 
@@ -803,7 +803,7 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 setAs("methylDiff", "GRanges", function(from)
 {
   
-  GRanges(seqnames=from$chr,ranges=IRanges(start=from$start, end=from$end),
+  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
           strand=from$strand, 
           qvalue=from$qvalue,
           meth.diff=from$meth.diff

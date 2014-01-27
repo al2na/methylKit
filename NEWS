@@ -2,9 +2,20 @@ methylKit 0.9.2.2
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* unite issues when destrand=FALSE is resolved. The issue appeared due to numeric
-  integer conflict when merging data sets.
+* unite() issues when destrand=FALSE is resolved. The issue appeared due to numeric vs.
+  integer conflict when merging data sets using chr,start and end locations.
 * typo in calculateDiffMeth() argument "weighted.mean" is fixed.
+* unite() is faster when destrand=TRUE, due to improvements in internal function
+  .CpG.dinuc.unify()
+* regionCounts() strand.aware argument now works correctly. This bug had no effect
+  on tileMethylCounts. With the default arguments, strand aware setting was not
+  in effect at all, so every region was treated as strandless.
+* Conversion to GRanges objects now removes seqlevels(chromosome names) 
+  that are not used. Not removing these could cause problems in regionCounts() 
+  function and functions depending on regionCounts().
+* read() function in some cases was treating strand columns of the flat CpG
+  files as logical if strand had F or R letters and most of the first CpGs were
+  having F strand (Forward strand). Now this is fixed.
 
 methylKit 0.9.2.1
 --------------

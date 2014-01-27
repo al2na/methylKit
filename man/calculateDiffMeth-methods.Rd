@@ -15,7 +15,7 @@
   with method="BH" option will be used for P-value
   correction.}
 
-  \item{weigthed.mean}{calculate the mean methylation
+  \item{weighted.mean}{calculate the mean methylation
   difference between groups using read coverage as weights}
 
   \item{num.cores}{integer for denoting how many cores
@@ -43,7 +43,7 @@ data(methylKit)
 
 # Logistic regression test will be applied since there are multiple samples in each group
 # in methylBase.obj object
-my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 
 # pool samples in each group
 pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
@@ -51,7 +51,7 @@ pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 # After applying pool() function, there is one sample in each group.
 # Fisher's exact test will be applied for differential methylation
 my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,
-                               weigthed.mean=TRUE,num.cores=1)
+                               weighted.mean=TRUE,num.cores=1)
 }
 \references{
   Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E.
