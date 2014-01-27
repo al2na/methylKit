@@ -1,3 +1,9 @@
+methylKit 0.9.2.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* unite issues when destrand=FALSE is resolved. The issue was that
+
 methylKit 0.9.2.1
 --------------
 IMPROVEMENTS AND BUG FIXES
