@@ -577,7 +577,7 @@ setClass("methylDiff",representation(
 #' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.
 #'             If FALSE, \code{\link{p.adjust}} with method="BH" option will be 
 #'             used for P-value correction.
-#' @param weigthed.mean calculate the mean methylation difference between groups 
+#' @param weighted.mean calculate the mean methylation difference between groups 
 #'                      using read coverage as weights
 #' @param num.cores  integer for denoting how many cores should be used for 
 #'                   differential methylation calculations (only can be used in
@@ -617,13 +617,13 @@ setClass("methylDiff",representation(
 #' @export
 #' @docType methods
 #' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weigthed.mean=TRUE,
+setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weighted.mean=TRUE,
                               num.cores=1) standardGeneric("calculateDiffMeth"))
 
 #' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBase",
-                    function(.Object,slim,weigthed.mean,num.cores){
+                    function(.Object,slim,weighted.mean,num.cores){
     
     #get CpGs with the cutoff
     #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)

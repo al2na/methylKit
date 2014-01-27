@@ -87,8 +87,8 @@
   #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
   res=data.frame(
     chr     =as.character(cpgFR$chr),
-    start    =(cpgFR$start),
-    end      =(cpgFR$start),
+    start    =as.integer(cpgFR$start),
+    end      =as.integer(cpgFR$start),
     strand  =rep("+",nrow(cpgFR)),
     coverage=cpgFR$coverage.x + cpgFR$coverage.y,
     numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
@@ -542,10 +542,13 @@ setMethod("unite", "methylRawList",
               if( is.null(min.per.group) ){
                 df2=data.table(df2[,c(1:3,5:7)])
                 df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
+                #df=df[df2, nomatch=FALSE]
               }else{
                 df2=data.table(df2,key=c("chr","start","end","strand") )
                 # using hacked data.table merge called merge2: temporary fix
                 df=merge2(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
+                #setkeyv(X,c("chr","start","end","strand"))
+                #df=df[df2, nomatch=FALSE]
               }
               sample.ids=c(sample.ids,object[[i]]@sample.id)
               contexts=c(contexts,object[[i]]@context)
