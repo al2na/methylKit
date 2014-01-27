@@ -540,7 +540,7 @@ setMethod("unite", "methylRawList",
               #
               
               if( is.null(min.per.group) ){
-                df2=data.table(df2[,c(1:3,5:7)])
+                df2=data.table(df2,key=c("chr","start","end","strand"))
                 df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
                 #df=df[df2, nomatch=FALSE]
               }else{
