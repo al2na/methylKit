@@ -1,3 +1,12 @@
+methylKit 0.9.2.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* regionCounts() bug occurring when the first argument is a class of methylBase is fixed.
+  The bug introduced an additional column to the resulting methylBase object.
+  https://groups.google.com/forum/#!topic/methylkit_discussion/p19K-pgavAI
+
+
 methylKit 0.9.2.2
 --------------
 IMPROVEMENTS AND BUG FIXES

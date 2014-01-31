@@ -166,7 +166,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
               start   =temp.df[sum.dt$id,"start"],
               end     =temp.df[sum.dt$id,"end"],
               strand  =temp.df[sum.dt$id,"strand"],
-              as.data.frame(sum.dt[,,c(2:(ncol(sum.dt)-1))]),stringsAsFactors=FALSE)
+              as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
             
             if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
             new("methylBase",new.data,sample.ids=object@sample.ids,
