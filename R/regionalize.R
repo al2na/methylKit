@@ -336,7 +336,7 @@ setMethod("tileMethylCounts", signature(object="methylRaw"),
     
     g.meth =as(object,"GRanges")
     #chrs   =IRanges::levels(seqnames(g.meth))
-    chrs   =Ias.character(unique(seqnames(g.meth)))
+    chrs   =as.character(unique(seqnames(g.meth)))
     widths =seqlengths(g.meth)
     all.wins=GRanges()
     for(i in 1:length(chrs))

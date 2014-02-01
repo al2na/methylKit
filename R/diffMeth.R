@@ -708,7 +708,7 @@ setMethod("calculateDiffMeth", "methylBase",
         pm.mean.diff=pm.meth1-pm.meth2
         mom.mean.diff=mom.meth1-mom.meth2
         
-        if(weigthed.mean){
+        if(weighted.mean){
           x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
           obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
             treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)

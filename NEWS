@@ -2,7 +2,11 @@ methylKit 0.9.2.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* install_github() now works correctly. 
+* install_github() now works correctly. Removed blank lines at the end of 
+  DESCRIPTION file.
+
+* calculateDiffMeth and tileMethylCounts now works correctly,
+ typos introduced in code with 0.9.2.2. Now these are fixed
 
 
 methylKit 0.9.2.3

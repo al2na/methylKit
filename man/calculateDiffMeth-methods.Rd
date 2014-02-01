@@ -4,7 +4,7 @@
 \alias{calculateDiffMeth,methylBase-method}
 \title{Calculate differential methylation statistics}
 \usage{
-  calculateDiffMeth(.Object,slim=TRUE,weigthed.mean=TRUE,num.cores=1)
+  calculateDiffMeth(.Object,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 }
 \arguments{
   \item{.Object}{a methylBase object to calculate
