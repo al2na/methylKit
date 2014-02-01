@@ -1,3 +1,10 @@
+methylKit 0.9.2.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* install_github() now works correctly. 
+
+
 methylKit 0.9.2.3
 --------------
 IMPROVEMENTS AND BUG FIXES

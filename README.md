@@ -15,7 +15,7 @@ biocLite(c("GenomicRanges","IRanges"))
 
 # install the development version from github
 library(devtools)
-install_github("methylKit", username = "al2na",ref = "development")
+install_github("methylKit", username = "al2na",ref = "development",build_vignettes=FALSE)
 ```
 
 Citing methylKit
