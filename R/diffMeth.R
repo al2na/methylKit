@@ -368,7 +368,7 @@ fix.q.values.glm<-function(pvals,slim=FALSE)
 {
    if(slim==FALSE){
     #qvals=qvalue::qvalue(pvals[,3])$qvalues # get qvalues
-    qvals=p.adjust(pvals,"BH")
+    qvals=p.adjust(pvals[,3],"BH")
   }else{
     slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)
   }                
@@ -591,9 +591,12 @@ setClass("methylDiff",representation(
 #' # in methylBase.obj object
 #' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 #' 
+#' # P-value adjustment with Benjamini-Hocberg via p.adjust
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=FALSE,weighted.mean=TRUE)
+#'
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
-#' 
+#'  
 #' # After applying pool() function, there is one sample in each group.
 #' # Fisher's exact test will be applied for differential methylation
 #' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,

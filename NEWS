@@ -1,3 +1,11 @@
+methylKit 0.9.2.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* calculateDiffMeth slim=FALSE argument works correctly when there are multiple 
+  samples per group. 
+
+
 methylKit 0.9.2.4
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -6,7 +14,7 @@ IMPROVEMENTS AND BUG FIXES
   DESCRIPTION file.
 
 * calculateDiffMeth and tileMethylCounts now works correctly,
- typos introduced in code with 0.9.2.2. Now these are fixed
+ typos were introduced in code with 0.9.2.2. Now these are fixed
 
 
 methylKit 0.9.2.3

@@ -45,6 +45,10 @@ data(methylKit)
 # in methylBase.obj object
 my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weighted.mean=TRUE,num.cores=1)
 
+# P-value adjustment with Benjamini-Hocberg via p.adjust
+my.diffMeth=calculateDiffMeth(methylBase.obj,slim=FALSE,weighted.mean=TRUE)
+
+
 # pool samples in each group
 pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 
