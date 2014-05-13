@@ -35,7 +35,7 @@ setMethod("normalizeCoverage", "methylRawList",
                       for(i in 1:length(obj)){
                         all.cov=obj[[i]]$coverage
                         fCs    =obj[[i]]$numCs/all.cov
-                        fTs    =obj[[i]]$numT/all.cov
+                        fTs    =obj[[i]]$numTs/all.cov
                         obj[[i]]$coverage=round(sc.fac[i]*obj[[i]]$coverage)
                         obj[[i]]$numCs   =round(obj[[i]]$coverage*fCs)
                         obj[[i]]$numTs   =round(obj[[i]]$coverage*fTs)
