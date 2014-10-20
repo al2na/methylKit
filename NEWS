@@ -1,3 +1,13 @@
+methylKit 0.9.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* compatibility with BioC 3.0. Multiple BioC functions moved to other packages within BioC, 
+  which broke some code and caused installation issues. Now this is fixed.
+* data.table::merge is now stable when all=TRUE. Removed my(altuna) version of data.table::merge 
+  the code base.
+
+
 methylKit 0.9.2.5
 --------------
 IMPROVEMENTS AND BUG FIXES

@@ -19,6 +19,6 @@ test_that("if read return a methylRawlist", {
 
 test_that("getMethylationStats on myobj[[2]] works", {
     expect_that (getMethylationStats(myobj[[2]],plot=F,both.strands=F),
-            prints_text('methylation statistics per basesummary:'))
+            prints_text('methylation statistics per base'))
 })
 

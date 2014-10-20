@@ -590,16 +590,16 @@ distance2nearestFeature<-function(g.idh,tss)
 # subject is also GenomicRanges object
 .nearest.2bed<-function(g.bed,subject)
 {
-  chrs1=IRanges::levels(seqnames(g.bed))
-  chrs2=IRanges::levels(seqnames(subject))
+  chrs1=S4Vectors::levels(seqnames(g.bed))
+  chrs2=S4Vectors::levels(seqnames(subject))
   chrs=chrs1[chrs1 %in% chrs2]
   res.df=NULL
   for(i in 1:length(chrs))
   {
     # find the nearest for this range
     ind  =nearest(ranges(g.bed[seqnames(g.bed)==chrs[i],]),ranges(subject[seqnames(subject)==chrs[i],]))
-    sbdf1 =IRanges::as.data.frame(g.bed[seqnames(g.bed)==chrs[i],] )
-    sbdf2 =IRanges::as.data.frame(subject[seqnames(subject)==chrs[i],] )
+    sbdf1 =S4Vectors::as.data.frame(g.bed[seqnames(g.bed)==chrs[i],] )
+    sbdf2 =S4Vectors::as.data.frame(subject[seqnames(subject)==chrs[i],] )
     sbdf2 =sbdf2[ind,]
     names(sbdf2)=paste(names(sbdf2),".y",sep="")
     temp  =cbind(sbdf1,sbdf2)

@@ -337,7 +337,8 @@ setMethod("tileMethylCounts", signature(object="methylRaw"),
     g.meth =as(object,"GRanges")
     #chrs   =IRanges::levels(seqnames(g.meth))
     chrs   =as.character(unique(seqnames(g.meth)))
-    widths =seqlengths(g.meth)
+    #widths =seqlengths(g.meth) # this doesn't work with BioC 3.0
+    widths =sapply(chrs,function(x,y) max(end(y[seqnames(y)==x,])),g.meth  )# lengths of max bp in each chr
     all.wins=GRanges()
     for(i in 1:length(chrs))
     {

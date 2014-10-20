@@ -578,7 +578,7 @@ setMethod("unite", "methylRawList",
               }else{
                 df2=data.table(df2,key=c("chr","start","end","strand") )
                 # using hacked data.table merge called merge2: temporary fix
-                df=merge2(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
+                df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
                 #setkeyv(X,c("chr","start","end","strand"))
                 #df=df[df2, nomatch=FALSE]
               }

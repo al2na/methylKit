@@ -9,12 +9,21 @@ import(GenomicRanges)
 
 #importClassesFrom("GenomicRanges",GRanges,GRangesList)
 
-importClassesFrom("IRanges", RangedData, RangedDataList, DataTable,
-                  Annotated, Vector, List, DataTableORNULL, characterORNULL,
-                  RangedSelection, SimpleList, DataFrame)
 
-importFrom("IRanges", DataFrame, IRanges, RangedDataList, RangedData,
-                  RangesList, Rle,findOverlaps, RangedSelection,ranges,countOverlaps,elementMetadata,"elementMetadata<-")
+importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths )
+
+
+importClassesFrom("IRanges", RangedData, RangedDataList,RangedSelection)
+
+importFrom("IRanges",   IRanges, RangedDataList, RangedData,
+                  RangesList,  findOverlaps, RangedSelection,ranges,countOverlaps)
+
+
+importFrom("S4Vectors", DataFrame, Rle,levels, elementMetadata,"elementMetadata<-")
+importClassesFrom("S4Vectors",   DataTable,
+                  Annotated, Vector, List, DataTableORNULL, characterORNULL,
+                  SimpleList, DataFrame)
+
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
 #importFrom("qvalue",qvalue)
