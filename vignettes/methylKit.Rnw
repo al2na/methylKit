@@ -17,10 +17,8 @@
 \begin{document}
 \SweaveOpts{concordance=TRUE}
 
-\author{Altuna Akalin\\ \texttt{altuna.akalin@fmi.ch}\\
-\and
-Matthias Kormaksson \\ \texttt{mk375@cornell.edu} 
-\and Sheng Li  \\ \texttt{shl2018@med.cornell.edu}
+\author{Altuna Akalin\thanks{Author of the vignette. See \nameref{sec:acknowledgements} for a list of contributors.}\\ 
+\texttt{altuna.akalin@mdc-berlin.de}
 }
 
 %%%%%%% YOU may need to introduce result='hide' to compile this again
@@ -483,8 +481,10 @@ for how to read methylation ratio files from BSMAP\cite{Xi2009} aligner.
 
 
 \section{Acknowledgements}
+\label{sec:acknowledgements}
 This package is developed at Weill Cornell Medical College by Altuna Akalin 
-with important code contributions from Sheng Li and Matthias Kormaksson. 
+with important code contributions from  
+Matthias Kormaksson \texttt{mk375@cornell.edu} and Sheng Li   \texttt{shl2018@med.cornell.edu}. 
 We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
 Christopher Mason and Ari Melnick for their contribution of ideas, data and 
 support. Their support and discussions lead to development of methylKit.
