@@ -374,8 +374,12 @@ setMethod("tileMethylCounts", signature(object="methylBase"),
           function(object,win.size,step.size,cov.bases){
             
             g.meth =as(object,"GRanges")
-            chrs   =IRanges::levels(seqnames(g.meth))
-            widths =seqlengths(g.meth)
+            #chrs   =IRanges::levels(seqnames(g.meth))
+            chrs   =as.character(unique(seqnames(g.meth)))
+            
+            #widths =seqlengths(g.meth)
+            widths =sapply(chrs,function(x,y) max(end(y[seqnames(y)==x,])),g.meth  )# lengths of max bp in each chr
+            
             all.wins=GRanges()
             for(i in 1:length(chrs))
             {
