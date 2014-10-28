@@ -2,8 +2,7 @@ methylKit
 ========
 
 This is where methylKit project will be developed from 2014. The [google code homepage](https://code.google.com/p/methylkit/) 
-will be active for the foreseeable future. **NOTE:** this branch is for the **development version**
-
+will be active for the foreseeable future.  
 
 Installation
 ---------
@@ -11,11 +10,25 @@ Installation
 # dependencies
 install.packages( c("data.table","devtools"))
 source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges","IRanges"))
+biocLite(c("GenomicRanges"))
+
+# install the package from github
+library(devtools)
+install_github("al2na/methylKit",build_vignettes=FALSE)
+```
+
+#### Installing the development version
+This is the development version, sometimes have newer features or bugfixes but
+not as stable as the master version.
+```R 
+# dependencies
+install.packages( c("data.table","devtools"))
+source("http://bioconductor.org/biocLite.R")
+biocLite(c("GenomicRanges"))
 
 # install the development version from github
 library(devtools)
-install_github("methylKit", username = "al2na",ref = "development",build_vignettes=FALSE)
+install_github("al2na/methylKit",ref="development",build_vignettes=FALSE)
 ```
 
 Citing methylKit
@@ -40,6 +53,12 @@ if you are going to submit bug reports or ask questions, please send sessionInfo
 
 Questions are very welcome, although we suggest you read the paper, documentation(function help pages and [vignette](https://github.com/al2na/methylKit/blob/master/inst/doc/methylKit.pdf?raw=true)) and [blog entries](http://zvfak.blogspot.com/search/label/methylKit) first. The answer to your question might be there already.
 
+Contribute to the development
+-------
+You can contribute to the methylKit development via github (http://github.com/al2na/methylKit/) by checking out "development" branch, making your changes and doing a pull request (all of these should be done on the "development" branch NOT on the "master" branch). In addition, you should:
+
+* Bump up the version in the DESCRIPTION file on the 4th number. For example, the master branch has the version numbering as in "X.Y.Z". If you make a change to the development branch you should bump up the version in the DESCRIPTION file to "X.Y.Z.1". If there are already changes done in the development just bump up the fourth number.
+* Add your changes to the NEWS file as well under the correct version and appropriate section. Attribute the changes to yourself, such as "Contributed by X"
 
 License
 ---------

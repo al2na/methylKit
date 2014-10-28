@@ -1,3 +1,9 @@
+methylKit 0.9.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade. A test is added to check this in R CMD check.
+
 methylKit 0.9.3
 --------------
 IMPROVEMENTS AND BUG FIXES

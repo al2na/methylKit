@@ -16,4 +16,8 @@ test_that("check that regionCounts on methylRaw works", {
         is_a('methylRaw'))
 })
 
-
+data(methylKit)
+test_that("check that tileMethylCounts on methylBase works", {
+  expect_that( tileMethylCounts(object=methylBase.obj,win.size=1000,step.size=1000,cov.bases=0) ,
+  is_a('methylBase'))
+})
