@@ -255,6 +255,8 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
                     
 })
 
+
+#---------------------------------------------------------------------------------------------------------------
 #' Read  transcript features from a BED file
 #' 
 #' The function returns a \code{\link[GenomicRanges]{GRangesList}} containing exon, intron, TSS(transcription start site) and promoter locations
@@ -264,71 +266,89 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
 #' @param up.flank  up-stream from TSS to detect promoter boundaries
 #' @param down.flank down-stream from TSS to detect promoter boundaries
 #' @param unique.prom     get only the unique promoters, promoter boundaries will not have a gene name if you set this option to be TRUE
-#' @usage read.transcript.features(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
+#' @usage readTranscriptFeatures(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE)
 #' @return a \code{\link[GenomicRanges]{GRangesList}} containing locations of exon/intron/promoter/TSS
 #' @examples
-#' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+#' gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
 #' 
 #' @note  one bed track per file is only accepted, the bed files with multiple tracks will cause en error
-#'
+
 #' @export
 #' @docType methods
-#' @rdname read.transcript.features-methods
+#' @rdname readTranscriptFeatures-methods
+setGeneric("readTranscriptFeatures", function(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE) standardGeneric("readTranscriptFeatures"))
+
+#' @aliases readTranscriptFeatures,character-method
+#' @rdname readTranscriptFeatures-methods
+setMethod("readTranscriptFeatures", signature(location = "character"),#,remove.unsual="logical",up.flank="numeric",down.flank="numeric",unique.prom="logical" ),
+          function(location,remove.unsual,up.flank ,down.flank ,unique.prom){
+            
+            # find out if there is a header, skip 1st line if there is a header
+            f.line=readLines(con = location, n = 1)
+            skip=0
+            if(grepl("^track",f.line))(skip=1)
+            
+            # read bed6
+            bed=.readTableFast(location,header=F,skip=skip)                    
+            if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
+            
+            introns=convert.bed2introns(bed)
+            exons  =convert.bed2exons(bed)
+            
+            # get the locations of TSSes
+            tss=bed
+            #  + strand
+            tss[tss$V6=="+",3]=tss[tss$V6=="+",2]
+            
+            #  - strand
+            tss[tss$V6=="-",2]=tss[tss$V6=="-",3]
+            tssg=GRanges(seqnames=as.character(tss$V1),
+                         ranges=IRanges(start=tss$V2, end=tss$V3),
+                         strand=as.character(tss$V6),score=rep(0,nrow(tss)),name=tss$V4)
+            
+            # get the locations of promoters
+            #  + strand
+            bed[bed$V6=="+",3]=bed[bed$V6=="+",2]+down.flank
+            bed[bed$V6=="+",2]=bed[bed$V6=="+",2]-up.flank
+            
+            #  - strand
+            bed[bed$V6=="-",2]=bed[bed$V6=="-",3]-down.flank
+            bed[bed$V6=="-",3]=bed[bed$V6=="-",3]+up.flank
+            
+            if(! unique.prom)
+            {
+              prom.df=(bed[,c(1,2,3,4,6)])
+              prom=GRanges(seqnames=as.character(prom.df$V1),
+                           ranges=IRanges(start=prom.df$V2, end=prom.df$V3),
+                           strand=as.character(prom.df$V6),score=rep(0,nrow(prom.df)),name=prom.df$V4)
+            }else{
+              prom.df=unique(bed[,c(1,2,3,6)])
+              prom=GRanges(seqnames=as.character(prom.df$V1),
+                           ranges=IRanges(start=prom.df$V2, end=prom.df$V3),
+                           strand=as.character(prom.df$V6),score=rep(0,nrow(prom.df)),name=rep(".",nrow(prom.df)) )
+              
+            }
+            
+            GRangesList(exons=exons,introns=introns,promoters=prom,TSSes=tssg)
+          })
+
+
+#' @export
+#' @docType methods
+#' @rdname readTranscriptFeatures-methods
 setGeneric("read.transcript.features", function(location,remove.unsual=TRUE,up.flank=1000,down.flank=1000,unique.prom=TRUE) standardGeneric("read.transcript.features"))
 
-#' @aliases read.transcript.features,character-method
-#' @rdname read.transcript.features-methods
+#' @aliases readTranscriptFeatures,character-method
+#' @rdname readTranscriptFeatures-methods
 setMethod("read.transcript.features", signature(location = "character"),#,remove.unsual="logical",up.flank="numeric",down.flank="numeric",unique.prom="logical" ),
-                    function(location,remove.unsual,up.flank ,down.flank ,unique.prom){
-                      
-                    # find out if there is a header, skip 1st line if there is a header
-                    f.line=readLines(con = location, n = 1)
-                    skip=0
-                    if(grepl("^track",f.line))(skip=1)
-                    
-                    # read bed6
-                    bed=.readTableFast(location,header=F,skip=skip)                    
-                    if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
-                    
-                    introns=convert.bed2introns(bed)
-                    exons  =convert.bed2exons(bed)
-                    
-                    # get the locations of TSSes
-                    tss=bed
-                    #  + strand
-                    tss[tss$V6=="+",3]=tss[tss$V6=="+",2]
-                  
-                    #  - strand
-                    tss[tss$V6=="-",2]=tss[tss$V6=="-",3]
-                    tssg=GRanges(seqnames=as.character(tss$V1),
-                            ranges=IRanges(start=tss$V2, end=tss$V3),
-                            strand=as.character(tss$V6),score=rep(0,nrow(tss)),name=tss$V4)
-                    
-                    # get the locations of promoters
-                    #  + strand
-                    bed[bed$V6=="+",3]=bed[bed$V6=="+",2]+down.flank
-                    bed[bed$V6=="+",2]=bed[bed$V6=="+",2]-up.flank
-                  
-                    #  - strand
-                    bed[bed$V6=="-",2]=bed[bed$V6=="-",3]-down.flank
-                    bed[bed$V6=="-",3]=bed[bed$V6=="-",3]+up.flank
-                    
-                    if(! unique.prom)
-                    {
-                      prom.df=(bed[,c(1,2,3,4,6)])
-                      prom=GRanges(seqnames=as.character(prom.df$V1),
-                            ranges=IRanges(start=prom.df$V2, end=prom.df$V3),
-                            strand=as.character(prom.df$V6),score=rep(0,nrow(prom.df)),name=prom.df$V4)
-                    }else{
-                      prom.df=unique(bed[,c(1,2,3,6)])
-                      prom=GRanges(seqnames=as.character(prom.df$V1),
-                            ranges=IRanges(start=prom.df$V2, end=prom.df$V3),
-                            strand=as.character(prom.df$V6),score=rep(0,nrow(prom.df)),name=rep(".",nrow(prom.df)) )
-                      
-                    }
-                  
-                    GRangesList(exons=exons,introns=introns,promoters=prom,TSSes=tssg)
-})
+          function(location,remove.unsual,up.flank ,down.flank ,unique.prom){
+            
+            .Deprecated("readTranscriptFeatures", msg = "'read.transcript.features' is deprecated. Use 'readTranscriptFeatures' instead")
+            readTranscriptFeatures(location,remove.unsual,up.flank ,down.flank ,unique.prom)
+            
+          })
+
+#--------------------------------------------------------------------------------------------------------------
 
 #' Get upstream and downstream adjacent regions to a genomic feature
 #' 
@@ -367,6 +387,9 @@ setMethod("getFlanks", signature(grange= "GRanges"),
                     shores
 })
 
+
+#--------------------------------------------------------------------------------------------------------------
+
 #' a function to read-in genomic features and their upstream and downstream adjecent regions such as CpG islands and their shores
 #'
 #' @param location for the bed file of the feature 
@@ -374,32 +397,53 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 #' @param clean    If set to TRUE, flanks overlapping with other main features will be trimmed
 #' @param remove.unsual  remove chromsomes with unsual names random, Un and antyhing with "_" character
 #' @param feature.flank.name the names for feature and flank ranges, it should be a character vector of length 2. example: c("CpGi","shores")
-#' @usage  read.feature.flank(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL)
+#' @usage  readFeatureFlank(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL)
 #' @return a \code{\link[GenomicRanges]{GenomicRangesList}} contatining one GRanges object for flanks and one for GRanges object for the main feature.
 #'   
 #' @examples
 #'  # location of the example CpG file
 #'  my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-#'  cpg.obj=read.feature.flank(location=my.loc,feature.flank.name=c("CpGi","shores"))
-#'
+#'  cpg.obj=readFeatureFlank(location=my.loc,feature.flank.name=c("CpGi","shores"))
+
 #' @export
 #' @docType methods
-#' @rdname read.feature.flank-methods
+#' @rdname readFeatureFlank-methods
+setGeneric("readFeatureFlank", function(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL) standardGeneric("readFeatureFlank") )
+
+#' @aliases readFeatureFlank,character-method
+#' @rdname readFeatureFlank-methods
+setMethod("readFeatureFlank", signature(location = "character"),
+          function(location,remove.unsual,flank ,clean,feature.flank.name){
+            feat=read.bed(location,remove.unsual)
+            flanks=getFlanks(feat,flank=flank,clean=clean)
+            x=GenomicRangesList(features=feat,flanks=flanks)
+            if(!is.null(feature.flank.name) & length(feature.flank.name)==2)
+            {
+              names(x)=feature.flank.name
+            }
+            x
+          })
+
+
+#' @export
+#' @docType methods
+#' @rdname readFeatureFlank-methods
 setGeneric("read.feature.flank", function(location,remove.unsual=TRUE,flank=2000,clean=TRUE,feature.flank.name=NULL) standardGeneric("read.feature.flank") )
 
-#' @aliases read.feature.flank,character-method
-#' @rdname read.feature.flank-methods
+#' @aliases readFeatureFlank,character-method
+#' @rdname readFeatureFlank-methods
 setMethod("read.feature.flank", signature(location = "character"),
                     function(location,remove.unsual,flank ,clean,feature.flank.name){
-                    feat=read.bed(location,remove.unsual)
-                    flanks=getFlanks(feat,flank=flank,clean=clean)
-                    x=GenomicRangesList(features=feat,flanks=flanks)
-                    if(!is.null(feature.flank.name) & length(feature.flank.name)==2)
-                    {
-                      names(x)=feature.flank.name
-                    }
-                    x
+                      .Deprecated("readFeatureFlank", msg = "'read.feature.flank' is deprecated. Use 'readFeatureFlank' instead")
+                      readFeatureFlank(location,remove.unsual,flank ,clean,feature.flank.name)
 })
+
+
+#-----------------------------------------------------------------------------------------------------------
+
+
+
+
 
 ##############################################################################
 # SECTION 2:
@@ -633,47 +677,79 @@ distance2nearestFeature<-function(g.idh,tss)
 #' @param target  a \code{\link[methylKit]{methylDiff}} or a \code{\link[GenomicRanges]{GRanges}} object storing chromosome locations to be annotated
 #' @param GRangesList.obj   A \code{\link[GenomicRanges]{GRangesList}} object containing GRanges object for promoter,exons,introns and TSSes, or simply output of \code{\link[methylKit]{read.transcript.features}} function
 #' @param strand If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
-#' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
+#' @usage annotateWithGenicParts(target,GRangesList.obj,strand=FALSE)
 #' @return \code{\link[methylKit]{annotationByGenicParts}} object
 #' @examples
 #' data(methylKit)
 #' gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-#' annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' annotateWithGenicParts(methylDiff.obj, gene.obj)
 #' @seealso 
 #' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
 #' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{getAssociationWithTSS}},
 #' \code{\link[methylKit]{plotTargetAnnotation}}
+
+
 #' @export
 #' @docType methods
-#' @rdname annotate.WithGenicParts-methods
+#' @rdname annotateWithGenicParts-methods
+setGeneric("annotateWithGenicParts", function(target,GRangesList.obj,strand=FALSE) standardGeneric("annotateWithGenicParts") )
+
+#' @aliases annotateWithGenicParts,GRanges,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
+setMethod("annotateWithGenicParts", signature(target= "GRanges",GRangesList.obj="GRangesList"),
+          function(target,GRangesList.obj,strand){
+            
+            a.list    =annotate.gr.WithGenicParts(target,GRangesList.obj$promoters,GRangesList.obj$exons,GRangesList.obj$introns,strand=strand)
+            dist2TSS  =distance2nearestFeature(target,GRangesList.obj$TSSes)
+            
+            new("annotationByGenicParts",
+                members         =as.matrix(a.list$members),
+                annotation      =a.list$annotation,
+                precedence    =a.list$precedence,
+                num.annotation  =a.list$num.annotation,
+                num.precedence=a.list$num.precedence,
+                no.of.OlapFeat  =a.list$numberOfOlapFeat,
+                perc.of.OlapFeat=a.list$percOfOlapFeat,
+                dist.to.TSS     = dist2TSS )
+          })
+
+#' @aliases annotateWithGenicParts,methylDiff,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
+setMethod("annotateWithGenicParts", signature(target = "methylDiff",GRangesList.obj="GRangesList"),
+          function(target,GRangesList.obj,strand){
+            
+            gr=as(target,"GRanges")
+            annotateWithGenicParts(gr,GRangesList.obj,strand)
+          })
+
+
+
+#' @export
+#' @docType methods
+#' @rdname annotateWithGenicParts-methods
 setGeneric("annotate.WithGenicParts", function(target,GRangesList.obj,strand=FALSE) standardGeneric("annotate.WithGenicParts") )
 
-#' @aliases annotate.WithGenicParts,GRanges,GRangesList-method
-#' @rdname annotate.WithGenicParts-methods
+#' @aliases annotateWithGenicParts,GRanges,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
 setMethod("annotate.WithGenicParts", signature(target= "GRanges",GRangesList.obj="GRangesList"),
                     function(target,GRangesList.obj,strand){
                       
-                      a.list    =annotate.gr.WithGenicParts(target,GRangesList.obj$promoters,GRangesList.obj$exons,GRangesList.obj$introns,strand=strand)
-                      dist2TSS  =distance2nearestFeature(target,GRangesList.obj$TSSes)
-
-                      new("annotationByGenicParts",
-                                  members         =as.matrix(a.list$members),
-                                  annotation      =a.list$annotation,
-                                  precedence    =a.list$precedence,
-                                  num.annotation  =a.list$num.annotation,
-                                  num.precedence=a.list$num.precedence,
-                                  no.of.OlapFeat  =a.list$numberOfOlapFeat,
-                                  perc.of.OlapFeat=a.list$percOfOlapFeat,
-                                  dist.to.TSS     = dist2TSS )
+                      .Deprecated("annotateWithGenicParts", msg = "'annotate.WithGenicParts' is deprecated. Use 'annotateWithGenicParts' instead")
+                      annotateWithGenicParts(target,GRangesList.obj,strand)
 })
 
-#' @aliases annotate.WithGenicParts,methylDiff,GRangesList-method
-#' @rdname annotate.WithGenicParts-methods
+#' @aliases annotateWithGenicParts,methylDiff,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
 setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList.obj="GRangesList"),
                     function(target,GRangesList.obj,strand){
-                      gr=as(target,"GRanges")
-                      annotate.WithGenicParts(gr,GRangesList.obj,strand)
+                      
+                      .Deprecated("annotateWithGenicParts", msg = "'annotate.WithGenicParts' is deprecated. Use 'annotateWithGenicParts' instead")
+                      annotateWithGenicParts(target,GRangesList.obj,strand)
 })
+
+
+#---------------------------------------------------------------------------------------------------------------
+
 
 
 #' Annotate an object with two sets of genomic features
@@ -688,76 +764,104 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",GRangesList
 #' @param feature.name     string for the name of the feature
 #' @param flank.name     string for the name o f the flanks
 #' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
-#' @usage annotate.WithFeature.Flank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
+#' @usage annotateWithFeatureFlank(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE)
 #' @return returns an \code{\link[methylKit]{annotationByFeature}} object
 #' @examples
 #' data(methylKit)
 #' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
-#' annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+#' annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
 #'
 #' @seealso
 #' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
 #' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{plotTargetAnnotation}}
-#' 
+
 #' @export
 #' 
 #' @docType methods
-#' @rdname annotate.WithFeature.Flank-methods
+#' @rdname annotateWithFeatureFlank-methods
+setGeneric("annotateWithFeatureFlank", function(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE) standardGeneric("annotateWithFeatureFlank") )
+
+#' @aliases annotateWithFeatureFlank,GRanges,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
+setMethod( "annotateWithFeatureFlank", signature(target = "GRanges",feature="GRanges",flank="GRanges"),
+           function(target, feature, flank,feature.name,flank.name,strand){
+             
+             if( ! strand){strand(target)="*"}
+             memb=data.frame(matrix(rep(0,length(target)*2),ncol=2) )  ;colnames(memb)=c(feature.name,flank.name)
+             memb[countOverlaps(target,feature)>0,1]=1
+             memb[countOverlaps(target,flank)>0,2]=1
+             
+             annotation=c(100*sum(memb[,1]>0)/nrow(memb) ,
+                          100*sum(memb[,2]>0)/nrow(memb) ,
+                          100*sum(rowSums(memb)==0)/nrow(memb) )
+             names(annotation)=c(feature.name,flank.name,"other")
+             
+             num.annotation=c( sum(memb[,1]>0) , sum(memb[,2]>0) , sum(rowSums(memb)==0) )
+             names(num.annotation)=c(feature.name,flank.name,"other")                      
+             
+             
+             precedence=c(100*sum(memb[,1]>0)/nrow(memb) ,
+                          100*sum(memb[,2]>0 & memb[,1]==0)/nrow(memb) ,
+                          100*sum(rowSums(memb)==0)/nrow(memb) )
+             names(precedence)=c(feature.name,flank.name,"other")
+             
+             num.precedence=c( sum(memb[,1]>0)  , sum(memb[,2]>0 & memb[,1]==0) , sum(rowSums(memb)==0)  )
+             names(num.precedence)=c(feature.name,flank.name,"other")                      
+             
+             numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0),
+                                sum(countOverlaps(flank,target)>0) )
+             names(numberOfOlapFeat)=c(feature.name,flank.name)
+             percOfOlapFeat =100*numberOfOlapFeat/c(length(feature),length(flank) )
+             
+             #return(list(members=memb,annotation=annotation,precedence=precedence,
+             #            numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )                      
+             new("annotationByFeature",
+                 members         =as.matrix(memb),
+                 annotation      =annotation,
+                 precedence    =precedence,
+                 num.annotation  =num.annotation,
+                 num.precedence=num.precedence,
+                 no.of.OlapFeat  =numberOfOlapFeat,
+                 perc.of.OlapFeat=percOfOlapFeat)
+             
+           })
+
+#' @aliases annotateWithFeatureFlank,methylDiff,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
+setMethod("annotateWithFeatureFlank", signature(target= "methylDiff",feature="GRanges",flank="GRanges"),
+          function(target, feature, flank,feature.name,flank.name,strand){
+            gr=as(target,"GRanges")
+            annotateWithFeatureFlank(gr,feature, flank,feature.name,flank.name,strand)
+          })
+
+
+
+#' @export
+#' 
+#' @docType methods
+#' @rdname annotateWithFeatureFlank-methods
 setGeneric("annotate.WithFeature.Flank", function(target,feature,flank,feature.name="feat",flank.name="flank",strand=FALSE) standardGeneric("annotate.WithFeature.Flank") )
 
-#' @aliases annotate.WithFeature.Flank,GRanges,GRanges,GRanges-method
-#' @rdname annotate.WithFeature.Flank-methods
+#' @aliases annotateWithFeatureFlank,GRanges,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
 setMethod( "annotate.WithFeature.Flank", signature(target = "GRanges",feature="GRanges",flank="GRanges"),
                     function(target, feature, flank,feature.name,flank.name,strand){
-                      
-                      if( ! strand){strand(target)="*"}
-                      memb=data.frame(matrix(rep(0,length(target)*2),ncol=2) )  ;colnames(memb)=c(feature.name,flank.name)
-                      memb[countOverlaps(target,feature)>0,1]=1
-                      memb[countOverlaps(target,flank)>0,2]=1
-                    
-                      annotation=c(100*sum(memb[,1]>0)/nrow(memb) ,
-                                   100*sum(memb[,2]>0)/nrow(memb) ,
-                                   100*sum(rowSums(memb)==0)/nrow(memb) )
-                      names(annotation)=c(feature.name,flank.name,"other")
-
-                      num.annotation=c( sum(memb[,1]>0) , sum(memb[,2]>0) , sum(rowSums(memb)==0) )
-                      names(num.annotation)=c(feature.name,flank.name,"other")                      
-                      
-                      
-                      precedence=c(100*sum(memb[,1]>0)/nrow(memb) ,
-                                     100*sum(memb[,2]>0 & memb[,1]==0)/nrow(memb) ,
-                                     100*sum(rowSums(memb)==0)/nrow(memb) )
-                      names(precedence)=c(feature.name,flank.name,"other")
-                      
-                      num.precedence=c( sum(memb[,1]>0)  , sum(memb[,2]>0 & memb[,1]==0) , sum(rowSums(memb)==0)  )
-                      names(num.precedence)=c(feature.name,flank.name,"other")                      
-                      
-                      numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0),
-                                         sum(countOverlaps(flank,target)>0) )
-                      names(numberOfOlapFeat)=c(feature.name,flank.name)
-                      percOfOlapFeat =100*numberOfOlapFeat/c(length(feature),length(flank) )
-                    
-                      #return(list(members=memb,annotation=annotation,precedence=precedence,
-                      #            numberOfOlapFeat=numberOfOlapFeat,percOfOlapFeat=percOfOlapFeat) )                      
-                      new("annotationByFeature",
-                          members         =as.matrix(memb),
-                          annotation      =annotation,
-                          precedence    =precedence,
-                          num.annotation  =num.annotation,
-                          num.precedence=num.precedence,
-                          no.of.OlapFeat  =numberOfOlapFeat,
-                          perc.of.OlapFeat=percOfOlapFeat)
+                      .Deprecated("annotateWithFeatureFlank", msg = "'annotate.WithFeature.Flank' is deprecated. Use 'annotateWithFeatureFlank' instead")
+                      annotateWithFeatureFlank(target, feature, flank,feature.name,flank.name,strand)                      
                       
 })
 
-#' @aliases annotate.WithFeature.Flank,methylDiff,GRanges,GRanges-method
-#' @rdname annotate.WithFeature.Flank-methods
+#' @aliases annotateWithFeatureFlank,methylDiff,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
 setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="GRanges",flank="GRanges"),
                     function(target, feature, flank,feature.name,flank.name,strand){
-                      gr=as(target,"GRanges")
-                      annotate.WithFeature.Flank(gr,feature, flank,feature.name,flank.name,strand)
+                      .Deprecated("annotateWithFeatureFlank", msg = "'annotate.WithFeature.Flank' is deprecated. Use 'annotateWithFeatureFlank' instead")
+                      annotateWithFeatureFlank(target, feature, flank,feature.name,flank.name,strand)
 })
+
+
+#----------------------------------------------------------------------------------------------------------
 
  
 #' Annotate object with a set of genomic features
@@ -770,69 +874,98 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",feature="
 #' @param strand   If set to TRUE, annotation features and target features will be overlapped based on strand  (def:FALSE)
 #' @param extend   specifiying a positive value will extend the feature on both sides as much as \code{extend}
 #' @param feature.name name of the annotation feature. For example: H3K4me1,CpGisland etc.
-#' @usage annotate.WithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")
+#' @usage annotateWithFeature(target,feature,strand=FALSE,extend=0,feature.name="feat1")
 #' @examples
 #' data(methylKit)
 #' cpg.gr=read.bed(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),remove.unsual=TRUE)
 #' 
-#' annotate.WithFeature(methylDiff.obj,cpg.gr,strand=FALSE,extend=0,feature.name="CpGi")
+#' annotateWithFeature(methylDiff.obj,cpg.gr,strand=FALSE,extend=0,feature.name="CpGi")
 #' 
 #' @return returns an \code{\link[methylKit]{annotationByFeature}} object
 #' 
 #' @seealso
 #' \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getTargetAnnotationStats}},
 #' \code{\link[methylKit]{getFeatsWithTargetsStats}}, \code{\link[methylKit]{plotTargetAnnotation}}
-#' 
+
 #' @export
 #' @docType methods
-#' @rdname annotate.WithFeature-methods
+#' @rdname annotateWithFeature-methods
+setGeneric("annotateWithFeature", function(target,feature,strand=FALSE,extend=0,feature.name="feat1") standardGeneric("annotateWithFeature") )
+
+#' @aliases annotateWithFeature,GRanges,GRanges-method
+#' @rdname annotateWithFeature-methods
+setMethod("annotateWithFeature", signature(target = "GRanges",feature="GRanges"),
+          function(target, feature, strand,extend,feature.name){
+            
+            
+            if( ! strand){strand(target)="*"}
+            memb=rep(0,length(target))
+            
+            
+            if(extend>0)
+            {
+              start(feature)=start(feature)-extend
+              end(feature)  =end(feature)+extend
+            }
+            memb[countOverlaps(target,feature)>0]=1
+            
+            annotation=c(100*sum(memb>0)/length(memb) ,
+                         100*sum((memb)==0)/length(memb) )
+            num.annotation=c(sum(memb>0) ,sum((memb)==0)  )
+            names(annotation)=c(feature.name,"other")
+            
+            numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0))
+            percOfOlapFeat =100*numberOfOlapFeat/c(length(feature))
+            
+            new("annotationByFeature",
+                members         =as.matrix(memb),
+                annotation      =annotation,
+                precedence    =annotation,
+                num.annotation  =num.annotation,
+                num.precedence=num.annotation,
+                no.of.OlapFeat  =numberOfOlapFeat,
+                perc.of.OlapFeat=percOfOlapFeat)
+            
+          })
+
+
+#' @aliases annotateWithFeature,methylDiff,GRanges-method
+#' @rdname annotateWithFeature-methods
+setMethod("annotateWithFeature", signature(target = "methylDiff",feature="GRanges"),
+          function(target, feature, strand,extend,feature.name){                      
+            gr=as(target,"GRanges")
+            annotateWithFeature(gr, feature, strand,extend,feature.name)
+          })
+
+
+#' @export
+#' @docType methods
+#' @rdname annotateWithFeature-methods
 setGeneric("annotate.WithFeature", function(target,feature,strand=FALSE,extend=0,feature.name="feat1") standardGeneric("annotate.WithFeature") )
 
-#' @aliases annotate.WithFeature,GRanges,GRanges-method
-#' @rdname annotate.WithFeature-methods
+#' @aliases annotateWithFeature,GRanges,GRanges-method
+#' @rdname annotateWithFeature-methods
 setMethod("annotate.WithFeature", signature(target = "GRanges",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){
- 
-
-                      if( ! strand){strand(target)="*"}
-                      memb=rep(0,length(target))
-                    
-                    
-                      if(extend>0)
-                      {
-                        start(feature)=start(feature)-extend
-                        end(feature)  =end(feature)+extend
-                      }
-                      memb[countOverlaps(target,feature)>0]=1
+                      .Deprecated("annotateWithFeature", msg = "'annotate.WithFeature' is deprecated. Use 'annotateWithFeature' instead")
+                      annotateWithFeature(target, feature, strand,extend,feature.name)  
                       
-                      annotation=c(100*sum(memb>0)/length(memb) ,
-                                   100*sum((memb)==0)/length(memb) )
-                      num.annotation=c(sum(memb>0) ,sum((memb)==0)  )
-                      names(annotation)=c(feature.name,"other")
-                      
-                      numberOfOlapFeat=c(sum(countOverlaps(feature,target)>0))
-                      percOfOlapFeat =100*numberOfOlapFeat/c(length(feature))
-                    
-                      new("annotationByFeature",
-                          members         =as.matrix(memb),
-                          annotation      =annotation,
-                          precedence    =annotation,
-                          num.annotation  =num.annotation,
-                          num.precedence=num.annotation,
-                          no.of.OlapFeat  =numberOfOlapFeat,
-                          perc.of.OlapFeat=percOfOlapFeat)
-
-
-
 })
 
-#' @aliases annotate.WithFeature,methylDiff,GRanges-method
-#' @rdname annotate.WithFeature-methods
+#' @aliases annotateWithFeature,methylDiff,GRanges-method
+#' @rdname annotateWithFeature-methods
 setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){                      
-                      gr=as(target,"GRanges")
-                      annotate.WithFeature(gr, feature, strand,extend,feature.name)
+                      .Deprecated("annotateWithFeature", msg = "'annotate.WithFeature' is deprecated. Use 'annotateWithFeature' instead")
+                      annotateWithFeature(target, feature, strand,extend,feature.name)                  
 })
+
+
+#-------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 # ACCESSOR FUNCTIONS
 #annotationByFeature

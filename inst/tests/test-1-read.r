@@ -1,11 +1,11 @@
-context("test file list and read and getMethylationStats check")
+context("test file list and modRead and getMethylationStats check")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
-myobj=read( file.list,
+myobj=modRead( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
 test_that("check if there are 4 test files in the file.list",{

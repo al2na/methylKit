@@ -1,0 +1,84 @@
+%\VignetteIndexEntry{methylKit: User Guide}
+%\VignetteKeywords{methylBase, methylRaw, calculateDiffMeth}
+%\VignettePackage{methylKit}
+
+
+\documentclass{article}
+\title{ methylKit: User Guide}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{url}               % used in bibliography
+\bibliographystyle{unsrt}
+
+\usepackage{Sweave}
+
+
+
+\begin{document}
+\input{methylKit-concordance}
+
+\author{Altuna Akalin\thanks{Author of the vignette. See \nameref{sec:acknowledgements} for a list of contributors.}\\ 
+\texttt{altuna.akalin@mdc-berlin.de}
+}
+
+%%%%%%% YOU may need to introduce result='hide' to compile this again
+
+
+%%%<<set-options,echo=FALSE,results='hide',cache=FALSE>>=
+%%%options(replace.assign=TRUE,width=60)
+%%%knit_hooks$set(fig=function(before, options, envir){if (before) par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)})
+%%%@
+
+
+\maketitle
+
+\tableofcontents
+
+
+
+\section{Introduction}
+In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
+
+\subsection{DNA methylation}
+DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
+
+\subsection{High-throughput bisulfite sequencing}
+Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. The reasons why we will not get a binary response are 1) the probable sequencing errors in high-throughput sequencing experiments 2) incomplete bisulfite conversion 3) (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 
+
+
+
+
+\section{Basics}
+\subsection{Reading the methylation call files}
+We start by reading in the methylation call data from bisulfite
+sequencing with \texttt{read} function. Reading in the data this way
+will return a methylRawList object which stores methylation
+information per sample for each covered base. The methylation call files are basically text
+files that contain percent methylation score per base. A typical methylation call file looks like this:
+\begin{Schunk}
+\begin{Soutput}
+        chrBase   chr    base strand coverage freqC  freqT
+1 chr21.9764539 chr21 9764539      R       12 25.00  75.00
+2 chr21.9764513 chr21 9764513      R       12  0.00 100.00
+3 chr21.9820622 chr21 9820622      F       13  0.00 100.00
+4 chr21.9837545 chr21 9837545      F       11  0.00 100.00
+5 chr21.9849022 chr21 9849022      F      124 72.58  27.42
+\end{Soutput}
+\end{Schunk}
+
+Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving \texttt{treatment} vector option. For sake of subsequent analysis, file.list, sample.id and treatment option should have the same order. In the following example, first two files are have the sample ids "test1" and "test2" and as determined by treatment vector they belong to the same group. The third and fourth files have sample ids "ctrl1" and "ctrl2" and they belong to the same group as indicated by the treatment vector.
+
+\begin{Schunk}
+\begin{Sinput}
+> library(methylKit)
+> file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
++                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
++                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
++                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+> # read the files to a methylRawList object: myobj
+> myobj=read(file.list,
++            sample.id=list("test1","test2","ctrl1","ctrl2"),
++            assembly="hg18",
++            treatment=c(1,1,0,0),
++            context="CpG"
++            )

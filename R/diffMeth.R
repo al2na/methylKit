@@ -851,10 +851,6 @@ setMethod("[","methylDiff",
           }
 )
 
-
-
-
-
                       
 #' get differentially methylated regions/bases based on cutoffs 
 #' 
@@ -870,50 +866,71 @@ setMethod("[","methylDiff",
 #' 
 #' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
 #' 
-#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
+#' @usage getMethylDiff(.Object,difference=25,qvalue=0.01,type="all")
 #' @examples
 #' 
 #' data(methylKit)
 #' 
 #' # get differentially methylated bases/regions with specific cutoffs
-#' all.diff=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
+#' all.diff=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
 #' 
 #' # get hyper-methylated
-#' hyper=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
+#' hyper=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
 #' 
 #' # get hypo-methylated
-#' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
+#' hypo=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 #' 
-#'
+
 #' @export
 #' @docType methods
-#' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("get.methylDiff"))
+#' @rdname getMethylDiff-methods
+setGeneric(name="getMethylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("getMethylDiff"))
 
 #' @aliases get.methylDiff,methylDiff-method
-#' @rdname get.methylDiff-methods
+#' @rdname getMethylDiff-methods
+setMethod(f="getMethylDiff", signature="methylDiff", 
+          definition=function(.Object,difference,qvalue,type) {
+            
+            if(type=="all"){
+              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+              return(new.obj)
+            }else if(type=="hyper"){
+              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+              return(new.obj)
+            }else if(type=="hypo"){
+              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
+              return(new.obj)
+            }else{
+              stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
+            }
+          }) 
+
+
+#' @export
+#' @docType methods
+#' @rdname getMethylDiff-methods
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("get.methylDiff"))
+
+#' @aliases getMethylDiff,methylDiff-method
+#' @rdname getMethylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue,type) {
             
-                    if(type=="all"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                      return(new.obj)
-                    }else if(type=="hyper"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                      return(new.obj)
-                    }else if(type=="hypo"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
-                      return(new.obj)
-                    }else{
-                      stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
-                    }
+                    .Deprecated("getMethylDiff", msg = "'get.methylDiff' is deprecated. Use 'getMethylDiff' instead")
+                    getMethylDiff(.Object,difference,qvalue,type)
           }) 
+
+#--------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 ##############################################################################
 ## PLOTTING FUNCTIONS FOR methylDiff OBJECT

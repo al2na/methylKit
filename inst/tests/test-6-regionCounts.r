@@ -2,7 +2,7 @@ context("regionCounts checks")
 
 
 
-myobj=read( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+myobj=modRead( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 sample.id="test1",assembly="hg18",pipeline="amp")
 
 

@@ -1,4 +1,3 @@
-
 #' Adjust measured 5mC levels using 5hmC levels
 #' 
 #' Measured 5mC levels via bisulfite sequencing might be a combination of 5hmC and 5mC levels since bisulfite sequencing can not distinguish
@@ -10,31 +9,32 @@
 #'            If a \code{methylRawList} given the sample order should be same as "mc" \code{methylRawList} object.
 #'
 #' @return returns adjusted 5-methyl cytosine levels in the form of \code{methylRawList} or \code{methylRaw} object depending on the input object
-#' @usage adjust.methylC(mc,hmc)
+#' @usage adjustMethylC(mc,hmc)
 #' @examples
 #' 
 #' # read 5hmC and 5mC files
 #' hmc.file=system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 #' mc.file =system.file("extdata", "test2.myCpG.txt", package = "methylKit")
 #' 
-#' my5hmC=read( hmc.file,sample.id="hmc",assembly="hg18")
-#' my5mC =read( mc.file,sample.id="mc",assembly="hg18")
+#' my5hmC=modRead( hmc.file,sample.id="hmc",assembly="hg18")
+#' my5mC =modRead( mc.file,sample.id="mc",assembly="hg18")
 #' 
 #' # adjusting the 5mC levels using 5hmC levels
-#' adjusted.5mC=adjust.methylC(my5mC,my5hmC)
+#' adjusted.5mC=adjustMethylC(my5mC,my5hmC)
 #' 
 #' @references
 #' 1. Booth, Branco, et al. (2012). Quantitative Sequencing of 5-Methylcytosine and 5-Hydroxymethylcytosine at Single-Base Resolution. Science, 934
 #' 
 #' 2. Yu, Hon, et al. (2012). Base-resolution analysis of 5-hydroxymethylcytosine in the Mammalian genome. Cell, 149(6), 1368-80.
+
 #' @export
 #' @docType methods
-#' @rdname adjust.methylC
-setGeneric("adjust.methylC", function(mc,hmc) standardGeneric("adjust.methylC") )
+#' @rdname adjustMethylC
+setGeneric("adjustMethylC", function(mc,hmc) standardGeneric("adjustMethylC") )
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRaw,methylRaw-method
-setMethod("adjust.methylC", c("methylRaw","methylRaw"),function(mc,hmc){
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRaw,methylRaw-method
+setMethod("adjustMethylC", c("methylRaw","methylRaw"),function(mc,hmc){
   
   lst=new("methylRawList",list(mc,hmc),treatment=c(1,0))
   data=getData(unite(lst))
@@ -45,14 +45,14 @@ setMethod("adjust.methylC", c("methylRaw","methylRaw"),function(mc,hmc){
   data$numTs1=data$coverage1-data$numCs1
   colnames(data)[5:7]=c("coverage","numCs","numTs")
   new("methylRaw",data[,1:7],sample.id=mc@sample.id,  assembly=mc@assembly, 
-                             context =mc@context,     resolution=mc@resolution)
+      context =mc@context,     resolution=mc@resolution)
   
 })
 
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawList,methylRawList-method
-setMethod("adjust.methylC", c("methylRawList","methylRawList"),function(mc,hmc){
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRawList,methylRawList-method
+setMethod("adjustMethylC", c("methylRawList","methylRawList"),function(mc,hmc){
   
   # check lengths equal if not give error
   if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
@@ -65,3 +65,26 @@ setMethod("adjust.methylC", c("methylRawList","methylRawList"),function(mc,hmc){
   
 })
 
+#' @export
+#' @docType methods
+#' @rdname adjustMethylC
+setGeneric("adjust.methylC", function(mc,hmc) standardGeneric("adjust.methylC") )
+
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRaw,methylRaw-method
+setMethod("adjust.methylC", c("methylRaw","methylRaw"),function(mc,hmc){
+  
+  .Deprecated("adjustMethylC", msg = "'adjust.methylC' is deprecated. Use 'adjustMethylC' instead")
+  adjustMethylC(mc,hmc)
+  
+})
+
+
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRawList,methylRawList-method
+setMethod("adjust.methylC", c("methylRawList","methylRawList"),function(mc,hmc){
+  
+  .Deprecated("adjustMethylC", msg = "'adjust.methylC' is deprecated. Use 'adjustMethylC' instead")
+  adjustMethylC(mc,hmc)
+  
+})
