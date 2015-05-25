@@ -18,6 +18,10 @@ logRegDF<-function(df,treatment,covariates,overdispersion=c("none","MN","shrinkM
   # get C and T cols from methylBase data.frame-part
   Tcols=seq(7,ncol(df),by=3)
   Ccols=Tcols-1
+
+  #### check if covariates+intercept+treatment more than replicates ####
+  if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){stop("Too many covariates/too few replicates.")}}
+  
   # get count matrix and make list
   cntlist=split(as.matrix(df[,c(Ccols,Tcols)]),1:nrow(df))
   
@@ -54,7 +58,7 @@ logReg<-function(counts, formula, vars, overdispersion=c("none","MN","shrinkMN")
   
   mu=fitted(obj)
   nprm=length(obj$coef) # number of parameters fitted
-  
+    
   #get dispersion
   overdispersion <- match.arg(overdispersion)
   phi=switch(overdispersion,

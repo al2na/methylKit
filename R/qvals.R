@@ -155,7 +155,3 @@ QValuesfun<-function(rawp,pi0)
   qvalues=temp[seq(length(temp),1,-1)];
   qvalues=qvalues[order(order(rawp))]
 }
-
-#x=p.adjusted(methylDiff.obj$pvalue)
-#head(methylDiff.obj$qvalue)
-#head(x)
