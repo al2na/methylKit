@@ -11,11 +11,6 @@ adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","
 effect=c("wmean","mean","predicted"),parShrinkNM=list(),
 test=c("F","Chisq"),mc.cores=1)
 
-
-
-#covariates=NULL,overdispersion=c("none"),adjust=c("SLIM"),
-#                          effect=c("wmean"),parShrinkNM=list(),test=c("F"),mc.cores=1)
-
 \S4method{calculateDiffMeth}{methylBase}(.Object, covariates = NULL,
   overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM", "holm",
   "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none", "qvalue"),

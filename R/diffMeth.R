@@ -367,8 +367,6 @@ setClass("methylDiff",representation(
 #' 
 #' 
 #' 
-#' #covariates=NULL,overdispersion=c("none"),adjust=c("SLIM"),
-#' #                          effect=c("wmean"),parShrinkNM=list(),test=c("F"),mc.cores=1)
 #' @examples
 #' 
 #' data(methylKit)
