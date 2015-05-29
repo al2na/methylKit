@@ -27,7 +27,8 @@ Imports:
     data.table (>= 1.9.2),
     parallel,
     S4Vectors,
-    GenomeInfoDb
+    GenomeInfoDb,
+    qvalue
 Suggests:
     testthat
 Collate:

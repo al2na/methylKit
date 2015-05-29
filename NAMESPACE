@@ -2,7 +2,7 @@ import(methods)
 
 import(GenomicRanges)
 #import(KernSmooth)
-
+import(qvalue)
 #import(RHmm)
 
 #importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")

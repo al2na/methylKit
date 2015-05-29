@@ -11,7 +11,7 @@
 #'                   For \code{methylDiff}, \code{col.name} must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and \code{methylRawList}
 #'                   it must be one of the following 'coverage', 'numCs','numTs', 'perc.meth'
 #' @param unmeth     when working with \code{methylRaw} or \code{methylRawList} objects should you output unmethylated C percentage
-#'                   this makes it easier to see the unmethylated bases because their % methylation values will be zero. Only invoked when file.name is not NULL.
+#'                   this makes it easier to see the unmethylated bases because their methylation percentage values will be zero. Only invoked when file.name is not NULL.
 #' @param log.transform Default FALSE, If TRUE the score column of the bedgraph wil be in log10 scale. Ignored when col.name='perc.meth'
 #' @param negative Default FALSE, If TRUE, the score column of the bedgraph will be multiplied by -1. Ignored when col.name='perc.meth'
 #' @param add.on additional string to be add on the track line of bedgraph. can be viewlimits,priority etc. Check bedgraph track line options at UCSC browser
