@@ -87,6 +87,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   # do the segmentation
   #seg.res=fastseg(obj)
   seg.res <- do.call("fastseg", args.fastseg)
+  #seg.res <- do.call("fastseg2", args.fastseg)
   
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
@@ -199,7 +200,7 @@ methSeg2bed<-function(segments,
 
 # this could be used to avoid total dependece on GenomicRanges
 # currently it has to be listed on depends section of DESCRIPTION
-
+# but doing the depend thing is cleaner
 fastseg2<-function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
 eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10){
   
@@ -212,7 +213,7 @@ eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10){
     for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
       z01 <- elementMetadata(x)[[sampleIdx]]
       sample <- names(elementMetadata(x))[sampleIdx]
-      resTmp <- segmentGeneral(z01, type, alpha, segMedianT, 
+      resTmp <- fastseg:::segmentGeneral(z01, type, alpha, segMedianT, 
                                minSeg, eps, delta, maxInt, squashing, cyberWeight)$finalSegments
       resTmp$sample <- sample
       res[[sampleIdx]] <- resTmp
