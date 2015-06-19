@@ -18,9 +18,6 @@
 #'        shows diagnostics from mixture modeling: the density function estimated 
 #'        and BIC criterion used to decide the optimum number of components
 #'        in mixture modeling.
-#' @param obj \code{\link[GenomicRanges]{GRanges}}, 
-#'       \code{\link[methylKit]{methylRaw}} or \code{\link[methylKit]{methylDiff}} 
-#'        object to be segmented
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 #' package, or to \code{\link[mclust]{densityMclust}}
 #'        in Mclust package, could be used to fine tune the segmentation algorithm.

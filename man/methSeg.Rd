@@ -28,10 +28,6 @@ package, or to \code{\link[mclust]{densityMclust}}
        segment length. "G" argument
        denotes number of components used in BIC selection in mixture modeling.
        For more details see fastseg and Mclust documentation.}
-
-\item{obj}{\code{\link[GenomicRanges]{GRanges}},
-\code{\link[methylKit]{methylRaw}} or \code{\link[methylKit]{methylDiff}}
- object to be segmented}
 }
 \value{
 A \code{\link[GenomicRanges]{GRanges}} object with segment
