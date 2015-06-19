@@ -43,7 +43,8 @@
 #' @examples 
 #' 
 #' \donttest{
-#'  download.file("https://dl.dropboxusercontent.com/content_link/eOYpRiv48Dg97bOtLiO7Qf9fsLxVN2IufbLJzD8Gy2tpXLqH0rMNsCAu0TZeuorV?dl=1",destfile="H1.chr21.chr22.rds",method="curl")
+#'  download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
+#'                destfile="H1.chr21.chr22.rds",method="curl")
 #' 
 #'  mbw=readRDS("H1.chr21.chr22.rds")
 #' 
