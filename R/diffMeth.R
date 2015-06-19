@@ -181,20 +181,27 @@ QValuesfun<-function(rawp,pi0)
 }
 
 
-
-
-
-
-###### NEW calulateDiffMeth -part
+# New calulateDiffMeth-part
 
 logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN","shrinkMN"),
                  effect=c("wmean","mean","predicted"), parShrinkNM=list(), test=c("F","Chisq")){
+  
+  # correct counts and treatment factor for NAs in counts
+  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  treatment<-treatment[!is.na(treatment)]
+  counts<-counts[!is.na(counts)]
   
   w=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
   y=counts[1:(length(counts)/2)]
   prop=y/w
   
-  # if there are more variables than treatment
+  # get the model matrix from treatment and (optional) covariates
+  vars <- as.data.frame(cbind(treatment,vars))
+  
+  # get formula from model matrix
+  formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
+  
+  # if there are covariates other than treatment
   if(ncol(vars)>1){
     fmlaCov<-as.formula(paste("~ ", paste(colnames(vars)[-1], collapse= "+")))
     modelCov<-model.matrix(as.formula(fmlaCov),as.data.frame(vars[,-1,drop=FALSE]) )
@@ -417,11 +424,13 @@ setMethod("calculateDiffMeth", "methylBase",
                    effect=c("wmean","mean","predicted"),parShrinkNM=list(),
                    test=c("F","Chisq"),mc.cores=1){
             
+            # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
             
             if(length(.Object@treatment)<2 ){
               stop("can not do differential methylation calculation with less than two samples")
             }
+            
             if(length(unique(.Object@treatment))<2 ){
               stop("can not do differential methylation calculation when there is no control\n
                    treatment option should have 0 and 1 designating treatment and control samples")
@@ -431,12 +440,8 @@ setMethod("calculateDiffMeth", "methylBase",
               stop("can not do differential methylation calculation when there are more than\n
                    two groups, treatment vector indicates more than two groups")
             }
-                    
-            # get the model matrix from treatment and (optional) covariates
-            vars <- as.data.frame(cbind(.Object@treatment,covariates))
             
-            # get formula from model matrix
-            formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
+            vars <- covariates
             
             # get C and T cols from methylBase data.frame-part
             Tcols=seq(7,ncol(subst),by=3)
@@ -455,18 +460,13 @@ setMethod("calculateDiffMeth", "methylBase",
             
             # return the data frame part of methylDiff
             tmp <- as.data.frame(t(tmp))
-            x=data.frame(subst[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),tmp$meth.diff.1,stringsAsFactors=FALSE)
+            x=data.frame(subst[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
             colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                    treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+                    destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
             obj
   }
 )
-
-
-
-
-
 
 
 
