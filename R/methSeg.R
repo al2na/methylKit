@@ -88,7 +88,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   # do the segmentation
   #seg.res=fastseg(obj)
-  seg.res <- do.call("fastseg", args.fastseg,envir = parent.frame())
+  seg.res <- do.call("fastseg", args.fastseg)
   
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
@@ -197,4 +197,11 @@ methSeg2bed<-function(segments,
     export.bed(segments,filename,
                trackLine=as(trackLine, "BasicTrackLine"))
   }
+}
+
+
+fastseg2<-function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
+eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10){
+  
+  
 }
