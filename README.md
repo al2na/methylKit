@@ -17,19 +17,7 @@ library(devtools)
 install_github("al2na/methylKit",ref="methSeg",build_vignettes=FALSE)
 ```
 
-#### Installing the development version
-This is the development version, sometimes have newer features or bugfixes but
-not as stable as the master version.
-```R 
-# dependencies
-install.packages( c("data.table","devtools"))
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges"))
 
-# install the development version from github
-library(devtools)
-install_github("al2na/methylKit",ref="development",build_vignettes=FALSE)
-```
 
 Citing methylKit
 ---------
