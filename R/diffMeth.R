@@ -863,7 +863,7 @@ setMethod("[","methylDiff",
 #' satisfying thresholds.
 #' 
 #' @param .Object  a \code{\link{methylDiff}} object
-#' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
+#' @param difference  cutoff for absolute value of percent methylation change between test and control (default:25)
 #' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
 #' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
 #'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
