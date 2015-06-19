@@ -10,11 +10,11 @@ Installation
 # dependencies
 install.packages( c("data.table","devtools"))
 source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges"))
+biocLite(c("fastseg","rtracklayer"))
 
 # install the package from github
 library(devtools)
-install_github("al2na/methylKit",build_vignettes=FALSE)
+install_github("al2na/methylKit",ref="methSeg",build_vignettes=FALSE)
 ```
 
 #### Installing the development version
