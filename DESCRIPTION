@@ -28,7 +28,8 @@ Imports:
     parallel,
     S4Vectors,
     GenomeInfoDb,
-    qvalue
+    qvalue,
+    emdbook
 Suggests:
     testthat
 Collate:
@@ -47,3 +48,4 @@ Collate:
     'adjust.methylC.R'
     'updateMethObject.R'
     'batchControl.R'
+    'dataSim.R'
