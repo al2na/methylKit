@@ -2,7 +2,8 @@ import(methods)
 
 import(GenomicRanges)
 #import(KernSmooth)
-
+import(qvalue)
+import(emdbook)
 #import(RHmm)
 
 #importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
@@ -82,6 +83,7 @@ exportMethods(select)
 exportMethods(tileMethylCounts)
 exportMethods(unite)
 exportMethods(updateMethObject)
+export(dataSim)
 export(updateMethObject)
 export(reconstruct)
 export(removeComp)
