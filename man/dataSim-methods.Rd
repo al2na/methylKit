@@ -3,20 +3,23 @@
 \docType{methods}
 \name{dataSim}
 \alias{dataSim}
-\title{get simulated data}
+\title{Simulate DNA methylation data}
 \usage{
-dataSim(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,beta=0.5,theta=5,
-               covariates=NULL,experiment=NULL,sample.ids,assembly,context,treatment,
-               destranded,resolution)
+dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
+        theta=50,covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
+        assembly="hg18",context="CpG",destranded=FALSE, resolution="base")
 }
 \arguments{
-\item{replicates}{number of replicates}
+\item{replicates}{the number of samples that should be simulated.}
 
-\item{sites}{number of CpG sites per replicate}
+\item{sites}{the number of CpG sites per sample.}
 
-\item{percentage}{percentage of sites which are affected by treatment}
+\item{treatment}{a vector containing treatment information.}
 
-\item{effect}{effect size of treatment}
+\item{percentage}{the proportion of sites which should be affected by the treatment.}
+
+\item{effect}{a number or vector specifying the effect size of the treatment.
+See `Details' for further explanation.}
 
 \item{alpha}{shape1 parameter for beta distribution (used for substitution probabilites)}
 
@@ -24,32 +27,47 @@ dataSim(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,beta=0.5,theta=
 
 \item{theta}{dispersion parameter for beta distribution (used for substitution probabilites)}
 
-\item{covariates}{data.frame containing covariates}
+\item{covariates}{a data.frame containing covariates (optional)}
 
-\item{experiment}{... not implemented}
+\item{sample.ids}{a character vector containing sample names}
 
-\item{sample.ids}{character vector containing sample names}
+\item{assembly}{the assembly description (e.g. "hg18")}
 
-\item{assembly}{assembly template (e.g. "hg18")}
+\item{context}{the experimanteal context of the data (e.g. "CpG")}
 
-\item{context}{experimanteal context of the data (e.g. "CpG")}
+\item{destranded}{a boolean parameter}
 
-\item{treatment}{vector containing treatment information}
-
-\item{destranded}{boolean parameter}
-
-\item{resolution}{resolution of the data (e.g. "base")}
+\item{resolution}{the resolution of the data (e.g. "base")}
 }
 \value{
-a methylBase object
+a methylBase object containing simulated methylation data.
 }
 \description{
-get simulated data
+The function simulates DNA methylation data from multiple samples.
+See references for detailed explanation on statistics.
+}
+\section{Details}{
+
+While the coverage is modeled with a binomial distribution, the function uses
+a Beta distribution to simulate the methylation background across all samples.\cr
+The parameters \code{alpha}, \code{beta} and \code{theta} determine this beta distribution and
+thereby the methylation values.\cr
+The parameters \code{percentage} and \code{effect} determine the proportion of sites that are
+affected by the treatment and the strength of this influence, respectively.\cr
+The additional information needed for a valid methylBase.obj is generated as "dummy
+values", but can be overwritten as needed.
 }
 \examples{
 data(methylKit)
-## Following
-my.methylBase=dataSim(replicates=4,sample.ids=c("test1","test2","ctrl1","ctrl2"),assembly="hg18",
-                       context="CpG",treatment=c(1,1,0,0),destranded=FALSE,resolution="base")
+
+# Simualte data for 4 samples with 20000 sites each.
+# The methylation in 10\% of the sites are elevated by 50\%.
+my.methylBase=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+percentage=10,effect=50)
+
+# Simulate data with variable effect sizes of the treatment
+# The methylation in 30\% of the sites are elevated by 40\%, 50\% or 60\%.
+my.methylBase2=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+percentage=30,effect=c(40,50,60))
 }
 

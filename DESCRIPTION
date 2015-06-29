@@ -2,11 +2,12 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.4
+Version: 0.9.4.1
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "altuna.akalin@mdc-berlin.de"),
 	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
-	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"))
+	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"),
+	      person("Adrian", "Bierling", role= "aut", comment="providing basic overdispersion correction and data simulation"))
 Description: methylKit is an R package for DNA methylation analysis and
   annotation from high-throughput bisulfite sequencing. The package is designed 
   to deal with sequencing data from RRBS and its variants, but also target-capture 

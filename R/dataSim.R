@@ -1,44 +1,63 @@
 # functions used to simulate methylation data
 
-# function that simulates the data.frame part of the methylBase object
+#' Simulate DNA methylation data
+#' 
+#' The function simulates DNA methylation data from multiple samples.
+#' See references for detailed explanation on statistics.
 
-#' get simulated data
-#'
-#' @param replicates  number of replicates
-#' @param sites       number of CpG sites per replicate
-#' @param percentage  percentage of sites which are affected by treatment
-#' @param effect      effect size of treatment
+#' @param replicates  the number of samples that should be simulated.
+#' @param sites       the number of CpG sites per sample.
+#' @param treatment   a vector containing treatment information.
+#' @param percentage  the proportion of sites which should be affected by the treatment.
+#' @param effect      a number or vector specifying the effect size of the treatment.
+#'                    See `Details' for further explanation.
 #' @param alpha       shape1 parameter for beta distribution (used for substitution probabilites)
 #' @param beta        shape2 parameter for beta distribution (used for substitution probabilites)
 #' @param theta       dispersion parameter for beta distribution (used for substitution probabilites)
-#' @param covariates  data.frame containing covariates
-#' @param experiment  ... not implemented
-#' @param sample.ids  character vector containing sample names
-#' @param assembly    assembly template (e.g. "hg18") 
-#' @param context     experimanteal context of the data (e.g. "CpG")
-#' @param treatment   vector containing treatment information
-#' @param destranded  boolean parameter
-#' @param resolution  resolution of the data (e.g. "base")
+#' @param covariates  a data.frame containing covariates (optional)
+#' @param sample.ids  a character vector containing sample names
+#' @param assembly    the assembly description (e.g. "hg18") 
+#' @param context     the experimanteal context of the data (e.g. "CpG")
+#' @param destranded  a boolean parameter
+#' @param resolution  the resolution of the data (e.g. "base")
 #'
-#' @usage dataSim(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,beta=0.5,theta=5,
-#'                covariates=NULL,experiment=NULL,sample.ids,assembly,context,treatment,
-#'                destranded,resolution)
-#' @return a methylBase object
-#' @aliases dataSim
-#' @export
+#' @usage dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
+#'         theta=50,covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
+#'         assembly="hg18",context="CpG",destranded=FALSE, resolution="base")
+#'                
 #' @examples
 #' 
 #' data(methylKit)
-#' ## Following 
-#' my.methylBase=dataSim(replicates=4,sample.ids=c("test1","test2","ctrl1","ctrl2"),assembly="hg18",
-#'                        context="CpG",treatment=c(1,1,0,0),destranded=FALSE,resolution="base") 
-#'  
+#' 
+#' # Simualte data for 4 samples with 20000 sites each.
+#' # The methylation in 10% of the sites are elevated by 50%.
+#' my.methylBase=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+#' percentage=10,effect=50)
+#' 
+#' # Simulate data with variable effect sizes of the treatment
+#' # The methylation in 30% of the sites are elevated by 40%, 50% or 60%.
+#' my.methylBase2=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+#' percentage=30,effect=c(40,50,60))
+#'
+#' @return a methylBase object containing simulated methylation data.
+#' @section Details:
+#' While the coverage is modeled with a binomial distribution, the function uses 
+#' a Beta distribution to simulate the methylation background across all samples.\cr
+#' The parameters \code{alpha}, \code{beta} and \code{theta} determine this beta distribution and 
+#' thereby the methylation values.\cr
+#' The parameters \code{percentage} and \code{effect} determine the proportion of sites that are 
+#' affected by the treatment and the strength of this influence, respectively.\cr
+#' The additional information needed for a valid methylBase.obj is generated as "dummy
+#' values", but can be overwritten as needed.
+#' 
+#' @export
 #' @docType methods
+#' @aliases dataSim
 #' @rdname dataSim-methods
 
-dataSim <- function(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,beta=0.5,theta=5,
-                    covariates=NULL,experiment=NULL,sample.ids,assembly,context,treatment,
-                    destranded,resolution){
+dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,theta=50,
+                    covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
+                    assembly="hg18",context="CpG",destranded=FALSE,resolution="base"){
   
   # check if length(treatment) == # replicates
   if(length(treatment) != replicates){stop("treatment and replicates must be of same length")} 
@@ -54,6 +73,13 @@ dataSim <- function(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,bet
   # draw substitution probabilities from beta distribution (same for all samples)
   x <- rbeta(sites,alpha,beta)
   
+  # get treatment and covariate indices for all samples
+  treatment_indices<-sample(sites,size=sites*(percentage/100))
+  covariate_indices<-sample(sites,size=sites*0.05)
+  
+  # if more than one effect size is supplied, randomize effect sizes
+  effects <- if(length(effect)==1) rep(effect,length(treatment_indices)) else sample(effect,length(treatment_indices),replace=T)
+  
   # fill data.frame with raw counts for each sample
   for(i in 1:replicates){
     
@@ -67,23 +93,21 @@ dataSim <- function(replicates,sites=20000,percentage=20,effect=20,alpha=0.4,bet
     
     # fill in TCols: coverage * percentage of Ts
     raw[,index[i]+2] <- ceiling(coverage * rbetabinom(n=sites,prob=x,size=50,theta=theta)/50)
+    
     # add treatment information
     if(treatment[i]==1){
-      # randomly choose sites
-      treatment_indices<-sample(sites,size=sites*(percentage/100))
       # increase base probabilities
-      y<-x+(effect/100);y<-ifelse(y>1,1,y)
+      y<-x+(effects/100);y<-ifelse(y>1,1,y)
       # TCols: coverage * percentage of Ts with modified probability y
       raw[treatment_indices,index[i]+2] <- 
-        ceiling(coverage[treatment_indices] * rbetabinom(n=1,prob=y[treatment_indices],size=50,theta=theta)/50)
-    } 
+        ceiling(coverage[treatment_indices] * rbetabinom(n=length(treatment_indices),prob=y[treatment_indices],size=50,theta=theta)/50)
+    }
+    
     # add covariate information
     if(!is.null(covariates[i,,drop=FALSE])){
-      # randomly choose 5% of all sites
-      covariate_indices<-sample(sites,size=sites*0.05)
       # TCols: coverage * percentage of Ts with modified probability
       raw[covariate_indices,index[i]+2] <- 
-        ceiling(coverage[covariate_indices] * rbetabinom(n=1,prob=influence(p=x[covariate_indices],x=rep(covariates[i,],times=length(covariate_indices))),size=50,theta=theta)/50)
+        ceiling(coverage[covariate_indices] * rbetabinom(n=length(covariate_indices),prob=influence(p=x[covariate_indices],x=rep(covariates[i,],times=length(covariate_indices))),size=50,theta=theta)/50)
     }
     
     # fill in CCols: coverage - Cs

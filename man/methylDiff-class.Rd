@@ -6,8 +6,10 @@
 \alias{methylDiff-class}
 \title{An S4 class that holds differential methylation information}
 \description{
-This class is designed to hold statistics and locations for differentially methylated regions/bases. It extends \code{\link{data.frame}} class.
- \code{\link[methylKit]{calculateDiffMeth}} function returns an object with \code{methylDiff} class.
+This class is designed to hold statistics and locations for differentially
+methylated regions/bases. It extends \code{\link{data.frame}} class.
+\code{\link[methylKit]{calculateDiffMeth}} function returns an object
+with \code{methylDiff} class.
 }
 \section{Slots}{
 \describe{
@@ -36,8 +38,8 @@ This class is designed to hold statistics and locations for differentially methy
 \section{Subsetting}{
 
  In the following code snippets, \code{x} is a \code{methylDiff}.
- Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
- rows. Column subsetting is not directly allowed to prevent errors in the
+ Subsetting by \code{x[i,]} will produce a new object if subsetting is done
+ on rows. Column subsetting is not directly allowed to prevent errors in the
  downstream analysis. see ?methylKit[ .
 }
 

@@ -288,8 +288,10 @@ logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN",
 
 #' An S4 class that holds differential methylation information
 #'
-#' This class is designed to hold statistics and locations for differentially methylated regions/bases. It extends \code{\link{data.frame}} class.
-#'  \code{\link[methylKit]{calculateDiffMeth}} function returns an object with \code{methylDiff} class.
+#' This class is designed to hold statistics and locations for differentially 
+#' methylated regions/bases. It extends \code{\link{data.frame}} class.
+#' \code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+#' with \code{methylDiff} class.
 #'          
 #' @section Slots:\describe{
 #'    \item{\code{sample.ids}}{ids/names of samples in a vector}
@@ -313,8 +315,8 @@ logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN",
 #' 
 #' @section Subsetting:
 #'  In the following code snippets, \code{x} is a \code{methylDiff}.
-#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
-#'  rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done 
+#'  on rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
@@ -353,70 +355,83 @@ setClass("methylDiff",representation(
 #' @param .Object a methylBase object to calculate differential methylation                    
 #' @param covariates a data.frame containing covariates, which should be included in the test.                   
 #' @param overdispersion If set to "none"(default), no overdispersion correction will be attempted.
-#'                       If set to "MN", basic overdispersion correction will be applied and
-#'                       if set to "shrinkMN", overdisperison correction with squeezeVar() 
-#'                       from the limma-package will be applied.                 
-#' @param adjust different methods to correct the p-values for multiple testing. Default is SLIM.
-#' @param effect methdod to calculate the mean methylation different between groups 
-#'               using read coverage as weights (default). When set to "mean", the generic mean is applied
-#'               and when set to "predicted", a GLM is used instead.
-#' @param parShrinkNM a list for squeezeVar().
+#'              If set to "MN", basic overdispersion correction will be applied. 
+#'              (NOT IMPLEMENTED: If set to "shrinkMN", overdisperison correction with squeezeVar() 
+#'              from the limma-package will be applied (not implemented as of yet).                 
+#' @param adjust different methods to correct the p-values for multiple testing. 
+#'              Default is SLIM from methylKit.
+#' @param effect method to calculate the mean methylation different between groups 
+#'              using read coverage as weights (default). When set to "mean", the generic mean is applied
+#'              and when set to "predicted", a linear model is used instead.
+#' @param parShrinkNM a list for squeezeVar(). (NOT IMPLEMENTED)
 #' @param test the statistical test used to determine the methylation differences. 
-#'             The F-test is used by default, the Chisq-test is also supported.
-#' @param mc.cores integer for denoting how many cores should be used for 
-#'                  differential methylation calculations (only can be used in
-#'                  machines with multiple cores)                          
+#'              The Chisq-test is used by default, while the F-test can be chosen 
+#'              if overdispersion control ist applied.
+#' @param mc.cores integer denoting how many cores should be used for parallel
+#'              differential methylation calculations (can only be used in
+#'              machines with multiple cores).                          
 #'                    
 #' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-#' adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-#' effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-#' test=c("F","Chisq"),mc.cores=1)
-#' 
-#' 
+#'         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
+#'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+#'         test=c("F","Chisq"),mc.cores=1)
 #' 
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' # Logistic regression test will be applied since there are multiple samples in each group
-#' # in methylBase.obj object
-#' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),adjust=c("SLIM"),
-#'                               effect=c("wmean"),parShrinkNM=list(),test=c("F"),mc.cores=1)
+#' # The Chisq-test will be applied when no overdispersion control is applied.
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
+#'                               adjust=c("SLIM"),effect=c("wmean"),parShrinkNM=list(),
+#'                               test=c("Chisq"),mc.cores=1)
 #' 
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 #'  
 #' # After applying pool() function, there is one sample in each group.
-#' # Fisher's exact test will be applied for differential methylation
-#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,overdispersion=c("none"),adjust=c("SLIM"),
-#'                               effect=c("wmean"),parShrinkNM=list(),test=c("F"),mc.cores=1)
+#' # The F-test will be applied for differential methylation.
+#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,overdispersion=c("none"),
+#'                                adjust=c("SLIM"),effect=c("wmean"),test=c("F"))
+#'                                
+#' # Covariates and overdispersion control:
+#' # generate a methylBase object with age as a covariate
+#' covariates=data.frame(age=c(30,80,30,80))
+#' sim.methylBase<-dataSim(replicates=4,sites=1000,treatment=c(1,1,0,0),
+#'                         covariates=covariates,
+#'                         sample.ids=c("test1","test2","ctrl1","ctrl2"))
 #' 
-#' 
-#' 
+#' # Apply overdispersion correction and include covariates 
+#' # in differential methylation calculations.
+#' my.diffMeth3<-calculateDiffMeth(sim.methylBase,
+#'                                 covariates=covariates,
+#'                                 overdispersion="MN",test="Chisq",mc.cores=1)
+#'                                
 #' @return a methylDiff object containing the differential methylation 
 #'                      statistics and locations
 #' @section Details:
-#'  The function either uses a logistic regression 
-#'  (when there are multiple samples per group) or fisher's exact 
-#'  when there is one sample per group.
+#' Covariates can be included in the analysis. The function will then try to separate the 
+#' influence of the covariates from the treatment effect via a linear model.
+#' The function uses the Chisq-test per default and can only use the F-test 
+#' in conjunction with the MN-overdispersion correction.
+#' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
 #'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
 #'             Christopher E. Mason. (2012). 
 #'             "methylKit: A comprehensive R package for the analysis 
 #'             of genome-wide DNA methylation profiles." Genome Biology. 
 #' @seealso \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
+#'          \code{\link[methylKit]{dataSim}}
 #' 
 #' @export
 #' @docType methods
+#' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
+
 setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
                                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                                          effect=c("wmean","mean","predicted"),parShrinkNM=list(),
                                          test=c("F","Chisq"),mc.cores=1) standardGeneric("calculateDiffMeth"))
-
-#' @aliases calculateDiffMeth,methylBase-method
-#' @rdname calculateDiffMeth-methods
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
@@ -465,33 +480,8 @@ setMethod("calculateDiffMeth", "methylBase",
             obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
                     destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
             obj
-  }
+            }
 )
-
-
-
-# differential methylation summary
-# outputs a summary.methylDiff object
-# that shows:
-# total number of DMCs
-# total number of CpGs covered in given assays
-# total number of DMCs per Chromosome
-# total number CpGs covered per Chr
-#setGeneric(name="synopsis", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("synopsis"))
-#setMethod(f="synopsis", signature="methylDiff", 
-#          definition=function(.Object,difference,qvalue) {
-#                    cat("hi")                         
-#})
-
-# a class that holds differential methylation information
-# 
-#setClass("synopsis.methylDiff",representation(
-#qvalue="numeric",
-#  difference="numeric",
-#  sample.ids = "character", 
-#  assembly = "character",
-#  treatment="numeric",
-#  destranded="logical"),contains="data.frame")
 
 
 
