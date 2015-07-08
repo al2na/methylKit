@@ -6,8 +6,7 @@
 \title{Simulate DNA methylation data}
 \usage{
 dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
-        theta=50,covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
-        assembly="hg18",context="CpG",destranded=FALSE, resolution="base")
+        theta=50,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG")
 }
 \arguments{
 \item{replicates}{the number of samples that should be simulated.}
@@ -19,7 +18,7 @@ dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
 \item{percentage}{the proportion of sites which should be affected by the treatment.}
 
 \item{effect}{a number or vector specifying the effect size of the treatment.
-See `Details' for further explanation.}
+See `Examples'.}
 
 \item{alpha}{shape1 parameter for beta distribution (used for substitution probabilites)}
 
@@ -29,15 +28,12 @@ See `Details' for further explanation.}
 
 \item{covariates}{a data.frame containing covariates (optional)}
 
-\item{sample.ids}{a character vector containing sample names}
+\item{sample.ids}{will be generated automatically from \code{treatment}, but can be
+overwritten by a character vector containing sample names.}
 
 \item{assembly}{the assembly description (e.g. "hg18")}
 
 \item{context}{the experimanteal context of the data (e.g. "CpG")}
-
-\item{destranded}{a boolean parameter}
-
-\item{resolution}{the resolution of the data (e.g. "base")}
 }
 \value{
 a methylBase object containing simulated methylation data.
@@ -62,12 +58,13 @@ data(methylKit)
 
 # Simualte data for 4 samples with 20000 sites each.
 # The methylation in 10\% of the sites are elevated by 50\%.
-my.methylBase=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+my.methylBase=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
 percentage=10,effect=50)
 
 # Simulate data with variable effect sizes of the treatment
 # The methylation in 30\% of the sites are elevated by 40\%, 50\% or 60\%.
-my.methylBase2=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
-percentage=30,effect=c(40,50,60))
+my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
+percentage=30,effect=c(40,50,60),
+sample.ids=c("treated1","treated2","untreated1","untreated2"))
 }
 

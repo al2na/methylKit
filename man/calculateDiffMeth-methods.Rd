@@ -9,7 +9,7 @@
 calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-        test=c("F","Chisq"),mc.cores=1)
+        test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
 }
 \arguments{
 \item{.Object}{a methylBase object to calculate differential methylation}
@@ -22,11 +22,12 @@ If set to "MN", basic overdispersion correction will be applied.
 from the limma-package will be applied (not implemented as of yet).}
 
 \item{adjust}{different methods to correct the p-values for multiple testing.
-Default is SLIM from methylKit.}
+Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}}
+and for all other methods see \code{\link[stats]{p.adjust}}.}
 
 \item{effect}{method to calculate the mean methylation different between groups
 using read coverage as weights (default). When set to "mean", the generic mean is applied
-and when set to "predicted", a linear model is used instead.}
+and when set to "predicted", a logistic model is used instead.}
 
 \item{parShrinkNM}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 
@@ -35,8 +36,12 @@ The Chisq-test is used by default, while the F-test can be chosen
 if overdispersion control ist applied.}
 
 \item{mc.cores}{integer denoting how many cores should be used for parallel
-             differential methylation calculations (can only be used in
-             machines with multiple cores).}
+differential methylation calculations (can only be used in
+machines with multiple cores).}
+
+\item{slim}{If set to FALSE, \code{adjust} will be set to "BH" (default behaviour of earlier versions)}
+
+\item{weighted.mean}{If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)}
 }
 \value{
 a methylDiff object containing the differential methylation
@@ -51,14 +56,16 @@ See references for detailed explanation on statistics.
 \section{Details}{
 
 Covariates can be included in the analysis. The function will then try to separate the
-influence of the covariates from the treatment effect via a linear model.
-The function uses the Chisq-test per default and can only use the F-test
-in conjunction with the MN-overdispersion correction.
+influence of the covariates from the treatment effect via a linear model.\cr
+The Chisq-test is used per default only when no overdispersion correction is applied.
+If overdispersion correction is applied, the function automatically switches to the
+F-test. The Chisq-test can be manually chosen in this case as well, but the F-test only
+works with overdispersion correction switched on.
 }
 \examples{
 data(methylKit)
 
-# The Chisq-test will be applied when no overdispersion control is applied.
+# The Chisq-test will be applied when no overdispersion control is chosen.
 my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
                               adjust=c("SLIM"),effect=c("wmean"),parShrinkNM=list(),
                               test=c("Chisq"),mc.cores=1)

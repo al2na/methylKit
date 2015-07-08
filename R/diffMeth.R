@@ -357,30 +357,33 @@ setClass("methylDiff",representation(
 #' @param overdispersion If set to "none"(default), no overdispersion correction will be attempted.
 #'              If set to "MN", basic overdispersion correction will be applied. 
 #'              (NOT IMPLEMENTED: If set to "shrinkMN", overdisperison correction with squeezeVar() 
-#'              from the limma-package will be applied (not implemented as of yet).                 
+#'              from the limma-package will be applied (not implemented as of yet).
 #' @param adjust different methods to correct the p-values for multiple testing. 
-#'              Default is SLIM from methylKit.
+#'              Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}} 
+#'              and for all other methods see \code{\link[stats]{p.adjust}}.
 #' @param effect method to calculate the mean methylation different between groups 
 #'              using read coverage as weights (default). When set to "mean", the generic mean is applied
-#'              and when set to "predicted", a linear model is used instead.
+#'              and when set to "predicted", a logistic model is used instead.
 #' @param parShrinkNM a list for squeezeVar(). (NOT IMPLEMENTED)
 #' @param test the statistical test used to determine the methylation differences. 
 #'              The Chisq-test is used by default, while the F-test can be chosen 
 #'              if overdispersion control ist applied.
 #' @param mc.cores integer denoting how many cores should be used for parallel
 #'              differential methylation calculations (can only be used in
-#'              machines with multiple cores).                          
+#'              machines with multiple cores).
+#' @param slim If set to FALSE, \code{adjust} will be set to "BH" (default behaviour of earlier versions)
+#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)               
 #'                    
 #' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
 #'         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
 #'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-#'         test=c("F","Chisq"),mc.cores=1)
+#'         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
 #' 
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' # The Chisq-test will be applied when no overdispersion control is applied.
+#' # The Chisq-test will be applied when no overdispersion control is chosen.
 #' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
 #'                               adjust=c("SLIM"),effect=c("wmean"),parShrinkNM=list(),
 #'                               test=c("Chisq"),mc.cores=1)
@@ -410,9 +413,11 @@ setClass("methylDiff",representation(
 #'                      statistics and locations
 #' @section Details:
 #' Covariates can be included in the analysis. The function will then try to separate the 
-#' influence of the covariates from the treatment effect via a linear model.
-#' The function uses the Chisq-test per default and can only use the F-test 
-#' in conjunction with the MN-overdispersion correction.
+#' influence of the covariates from the treatment effect via a linear model.\cr
+#' The Chisq-test is used per default only when no overdispersion correction is applied.
+#' If overdispersion correction is applied, the function automatically switches to the 
+#' F-test. The Chisq-test can be manually chosen in this case as well, but the F-test only 
+#' works with overdispersion correction switched on.
 #' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
 #'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
@@ -431,13 +436,13 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
                                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                                          effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                                         test=c("F","Chisq"),mc.cores=1) standardGeneric("calculateDiffMeth"))
+                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE) standardGeneric("calculateDiffMeth"))
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                    effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                   test=c("F","Chisq"),mc.cores=1){
+                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
             
             # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
@@ -455,6 +460,10 @@ setMethod("calculateDiffMeth", "methylBase",
               stop("can not do differential methylation calculation when there are more than\n
                    two groups, treatment vector indicates more than two groups")
             }
+            
+            # add backwards compatibility with old parameters
+            if(slim==FALSE) adjust="BH" else adjust=adjust
+            if(weighted.mean==FALSE) effect="mean" else effect=effect
             
             vars <- covariates
             

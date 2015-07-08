@@ -10,20 +10,18 @@
 #' @param treatment   a vector containing treatment information.
 #' @param percentage  the proportion of sites which should be affected by the treatment.
 #' @param effect      a number or vector specifying the effect size of the treatment.
-#'                    See `Details' for further explanation.
+#'                    See `Examples'.
 #' @param alpha       shape1 parameter for beta distribution (used for substitution probabilites)
 #' @param beta        shape2 parameter for beta distribution (used for substitution probabilites)
 #' @param theta       dispersion parameter for beta distribution (used for substitution probabilites)
 #' @param covariates  a data.frame containing covariates (optional)
-#' @param sample.ids  a character vector containing sample names
+#' @param sample.ids  will be generated automatically from \code{treatment}, but can be 
+#'                    overwritten by a character vector containing sample names.
 #' @param assembly    the assembly description (e.g. "hg18") 
 #' @param context     the experimanteal context of the data (e.g. "CpG")
-#' @param destranded  a boolean parameter
-#' @param resolution  the resolution of the data (e.g. "base")
 #'
 #' @usage dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
-#'         theta=50,covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
-#'         assembly="hg18",context="CpG",destranded=FALSE, resolution="base")
+#'         theta=50,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG")
 #'                
 #' @examples
 #' 
@@ -31,13 +29,14 @@
 #' 
 #' # Simualte data for 4 samples with 20000 sites each.
 #' # The methylation in 10% of the sites are elevated by 50%.
-#' my.methylBase=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
+#' my.methylBase=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
 #' percentage=10,effect=50)
 #' 
 #' # Simulate data with variable effect sizes of the treatment
 #' # The methylation in 30% of the sites are elevated by 40%, 50% or 60%.
-#' my.methylBase2=dataSim(replicates=4,sites=20000,treatment=c(1,1,0,0),
-#' percentage=30,effect=c(40,50,60))
+#' my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
+#' percentage=30,effect=c(40,50,60),
+#' sample.ids=c("treated1","treated2","untreated1","untreated2"))
 #'
 #' @return a methylBase object containing simulated methylation data.
 #' @section Details:
@@ -56,14 +55,18 @@
 #' @rdname dataSim-methods
 
 dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,theta=50,
-                    covariates=NULL,sample.ids=c("test1","test2","ctrl1","ctrl2"),
-                    assembly="hg18",context="CpG",destranded=FALSE,resolution="base"){
+                    covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG"){
   
   # check if length(treatment) == # replicates
   if(length(treatment) != replicates){stop("treatment and replicates must be of same length")} 
   # check if # covariates == # replicates
   if(!is.null(covariates)){
     if(nrow(covariates)!=replicates){stop("nrow(covariates) must be equal to replicates")}
+  }
+  
+  # create sample.ids (if not given by user)
+  if(is.null(sample.ids)){
+    sample.ids<-ifelse(treatment==1,paste0("test",cumsum(treatment)),paste0("ctrl",cumsum(!treatment)))
   }
   
   # create data.frame
@@ -78,7 +81,7 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
   covariate_indices<-sample(sites,size=sites*0.05)
   
   # if more than one effect size is supplied, randomize effect sizes
-  effects <- if(length(effect)==1) rep(effect,length(treatment_indices)) else sample(effect,length(treatment_indices),replace=T)
+  effects <- if(length(effect)==1) rep(effect,length(x)) else sample(effect,length(x),replace=T)
   
   # fill data.frame with raw counts for each sample
   for(i in 1:replicates){
@@ -136,7 +139,7 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
   obj=new("methylBase",(df),sample.ids=sample.ids,
           assembly=assembly,context=context,treatment=treatment,
           coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
-          destranded=destranded,resolution=resolution)
+          destranded=FALSE,resolution="base")
   obj
 }
 
