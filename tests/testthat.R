@@ -3,4 +3,4 @@ library(methylKit)
 
 
 
-test_package("methylKit")
+test_check("methylKit")

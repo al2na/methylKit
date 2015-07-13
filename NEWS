@@ -1,8 +1,19 @@
+methylKit 0.9.4.1
+--------------
+NEW FUNCTIONS AND FEATURES
+
+* calculateMethDiff now supports basic overdispersion correction and multiple methods for pvalue-correction.
+A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+
+* dataSim creates a methylBase object with simulated methylation data. A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+
+
 methylKit 0.9.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 
 * tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade. A test is added to check this in R CMD check.
+
 
 methylKit 0.9.3
 --------------
