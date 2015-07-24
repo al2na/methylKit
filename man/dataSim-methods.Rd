@@ -5,8 +5,8 @@
 \alias{dataSim}
 \title{Simulate DNA methylation data}
 \usage{
-dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
-        theta=50,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG")
+dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
+        theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F)
 }
 \arguments{
 \item{replicates}{the number of samples that should be simulated.}
@@ -34,9 +34,13 @@ overwritten by a character vector containing sample names.}
 \item{assembly}{the assembly description (e.g. "hg18")}
 
 \item{context}{the experimanteal context of the data (e.g. "CpG")}
+
+\item{treatment.indices}{if set to TRUE, the output will be a list with the first element being
+                   the methylbase object and the indices of all treated sites as the second element.}
 }
 \value{
-a methylBase object containing simulated methylation data.
+a methylBase object containing simulated methylation data,
+or a list containing the methylbase object and the indices of all treated sites as the second element.
 }
 \description{
 The function simulates DNA methylation data from multiple samples.

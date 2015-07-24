@@ -19,9 +19,11 @@
 #'                    overwritten by a character vector containing sample names.
 #' @param assembly    the assembly description (e.g. "hg18") 
 #' @param context     the experimanteal context of the data (e.g. "CpG")
+#' @param treatment.indices if set to TRUE, the output will be a list with the first element being 
+#'                    the methylbase object and the indices of all treated sites as the second element.
 #'
-#' @usage dataSim(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,
-#'         theta=50,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG")
+#' @usage dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
+#'         theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F)
 #'                
 #' @examples
 #' 
@@ -38,7 +40,8 @@
 #' percentage=30,effect=c(40,50,60),
 #' sample.ids=c("treated1","treated2","untreated1","untreated2"))
 #'
-#' @return a methylBase object containing simulated methylation data.
+#' @return a methylBase object containing simulated methylation data, 
+#' or a list containing the methylbase object and the indices of all treated sites as the second element.
 #' @section Details:
 #' While the coverage is modeled with a binomial distribution, the function uses 
 #' a Beta distribution to simulate the methylation background across all samples.\cr
@@ -54,8 +57,8 @@
 #' @aliases dataSim
 #' @rdname dataSim-methods
 
-dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4,beta=0.5,theta=50,
-                    covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG"){
+dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,theta=10,
+                    covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F){
   
   # check if length(treatment) == # replicates
   if(length(treatment) != replicates){stop("treatment and replicates must be of same length")} 
@@ -74,7 +77,8 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
   index<-seq(1,replicates*3,by=3) # for easier access of TCols, CCols, coverage
   
   # draw substitution probabilities from beta distribution (same for all samples)
-  x <- rbeta(sites,alpha,beta)
+  #x <- rbeta(sites,alpha,beta)
+  x<- rbeta(sites,alpha/4,beta/4)
   
   # get treatment and covariate indices for all samples
   treatment_indices<-sample(sites,size=sites*(percentage/100))
@@ -100,7 +104,10 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
     # add treatment information
     if(treatment[i]==1){
       # increase base probabilities
-      y<-x+(effects/100);y<-ifelse(y>1,1,y)
+      #y<-x+(effects/100);y<-ifelse(y>1,1,y)
+      y<-x+(effects);y<-ifelse(y>1,1,y)
+      
+      
       # TCols: coverage * percentage of Ts with modified probability y
       raw[treatment_indices,index[i]+2] <- 
         ceiling(coverage[treatment_indices] * rbetabinom(n=length(treatment_indices),prob=y[treatment_indices],size=50,theta=theta)/50)
@@ -122,7 +129,7 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
   df=as.data.frame(df) 
   
   #add dummy chromosome, start, end and strand info 
-  info<-data.frame(chr=rep("chr1",times=sites),start=rep(10000,times=sites),end=rep(10001,times=sites),strand=rep("+",times=sites))
+  info<-data.frame(chr=rep("chr1",times=sites),start=1:sites,end=2:(sites+1),strand=rep("+",times=sites))
   df<-cbind(info,df)
   
   # get indices of coverage,numCs and numTs in the data frame 
@@ -140,7 +147,12 @@ dataSim <- function(replicates,sites,treatment,percentage=20,effect=50,alpha=0.4
           assembly=assembly,context=context,treatment=treatment,
           coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
           destranded=FALSE,resolution="base")
-  obj
+  if(treatment.indices==F){
+    obj
+  }
+  else{
+    list(obj,treatment_indices)
+  }
 }
 
 

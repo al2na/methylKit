@@ -391,8 +391,8 @@ setClass("methylDiff",representation(
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 #'  
-#' # After applying pool() function, there is one sample in each group.
-#' # The F-test will be applied for differential methylation.
+#' # After applying the pool() function, there is one sample in each group.
+#' # The Fisher's exact test will be applied for differential methylation.
 #' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,overdispersion=c("none"),
 #'                                adjust=c("SLIM"),effect=c("wmean"),test=c("F"))
 #'                                
