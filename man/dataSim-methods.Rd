@@ -6,7 +6,7 @@
 \title{Simulate DNA methylation data}
 \usage{
 dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
-        theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F)
+        theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",add.info=FALSE)
 }
 \arguments{
 \item{replicates}{the number of samples that should be simulated.}
@@ -35,8 +35,9 @@ overwritten by a character vector containing sample names.}
 
 \item{context}{the experimanteal context of the data (e.g. "CpG")}
 
-\item{treatment.indices}{if set to TRUE, the output will be a list with the first element being
-                   the methylbase object and the indices of all treated sites as the second element.}
+\item{add.info}{if set to TRUE, the output will be a list with the first element being
+                   the methylbase object and a vector containing the treatment effect sizes
+                   of all sites as the second element.}
 }
 \value{
 a methylBase object containing simulated methylation data,
@@ -63,12 +64,11 @@ data(methylKit)
 # Simualte data for 4 samples with 20000 sites each.
 # The methylation in 10\% of the sites are elevated by 50\%.
 my.methylBase=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
-percentage=10,effect=50)
+percentage=10,effect=25)
 
 # Simulate data with variable effect sizes of the treatment
 # The methylation in 30\% of the sites are elevated by 40\%, 50\% or 60\%.
 my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
-percentage=30,effect=c(40,50,60),
-sample.ids=c("treated1","treated2","untreated1","untreated2"))
+percentage=30,effect=10:40)
 }
 

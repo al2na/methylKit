@@ -19,11 +19,12 @@
 #'                    overwritten by a character vector containing sample names.
 #' @param assembly    the assembly description (e.g. "hg18") 
 #' @param context     the experimanteal context of the data (e.g. "CpG")
-#' @param treatment.indices if set to TRUE, the output will be a list with the first element being 
-#'                    the methylbase object and the indices of all treated sites as the second element.
+#' @param add.info if set to TRUE, the output will be a list with the first element being 
+#'                    the methylbase object and a vector containing the treatment effect sizes 
+#'                    of all sites as the second element.
 #'
 #' @usage dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
-#'         theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F)
+#'         theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",add.info=FALSE)
 #'                
 #' @examples
 #' 
@@ -32,13 +33,12 @@
 #' # Simualte data for 4 samples with 20000 sites each.
 #' # The methylation in 10% of the sites are elevated by 50%.
 #' my.methylBase=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
-#' percentage=10,effect=50)
+#' percentage=10,effect=25)
 #' 
 #' # Simulate data with variable effect sizes of the treatment
 #' # The methylation in 30% of the sites are elevated by 40%, 50% or 60%.
 #' my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
-#' percentage=30,effect=c(40,50,60),
-#' sample.ids=c("treated1","treated2","untreated1","untreated2"))
+#' percentage=30,effect=10:40)
 #'
 #' @return a methylBase object containing simulated methylation data, 
 #' or a list containing the methylbase object and the indices of all treated sites as the second element.
@@ -58,7 +58,7 @@
 #' @rdname dataSim-methods
 
 dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,theta=10,
-                    covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",treatment.indices=F){
+                    covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",add.info=FALSE){
   
   # check if length(treatment) == # replicates
   if(length(treatment) != replicates){stop("treatment and replicates must be of same length")} 
@@ -76,13 +76,16 @@ dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4
   raw <- matrix(ncol=replicates*3,nrow=sites)
   index<-seq(1,replicates*3,by=3) # for easier access of TCols, CCols, coverage
   
-  # draw substitution probabilities from beta distribution (same for all samples)
+  # draw substitution probabilities from beta distribution (same for all samples)getData(a[[1]])[,6]
   #x <- rbeta(sites,alpha,beta)
   x<- rbeta(sites,alpha/4,beta/4)
   
   # get treatment and covariate indices for all samples
   treatment_indices<-sample(sites,size=sites*(percentage/100))
   covariate_indices<-sample(sites,size=sites*0.05)
+  
+  # get treatment effect indices
+  addinfo<-rep(0,sites)
   
   # if more than one effect size is supplied, randomize effect sizes
   effects <- if(length(effect)==1) rep(effect,length(x)) else sample(effect,length(x),replace=T)
@@ -104,9 +107,15 @@ dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4
     # add treatment information
     if(treatment[i]==1){
       # increase base probabilities
-      #y<-x+(effects/100);y<-ifelse(y>1,1,y)
-      y<-x+(effects);y<-ifelse(y>1,1,y)
+      y<-x+(effects/100)
       
+      # update treatment indices (if effect result is > 1, take 1-x as real effect size)
+      addinfo<-ifelse(y>1,1-x,effect)
+      # effect size for all non-treated indices are set to 0
+      addinfo[-treatment_indices]<-0
+      
+      # correct base probabilities > 1
+      y<-ifelse(y>1,1,y)
       
       # TCols: coverage * percentage of Ts with modified probability y
       raw[treatment_indices,index[i]+2] <- 
@@ -147,11 +156,11 @@ dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4
           assembly=assembly,context=context,treatment=treatment,
           coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
           destranded=FALSE,resolution="base")
-  if(treatment.indices==F){
+  if(add.info==FALSE){
     obj
   }
   else{
-    list(obj,treatment_indices)
+    list(obj,addinfo)
   }
 }
 

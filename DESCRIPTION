@@ -50,3 +50,4 @@ Collate:
     'updateMethObject.R'
     'batchControl.R'
     'dataSim.R'
+    'diffMethDSS.R'
