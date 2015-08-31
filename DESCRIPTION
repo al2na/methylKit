@@ -19,8 +19,8 @@ LazyLoad: yes
 SystemRequirements:  Perl
 biocViews: DNAMethylation
 Depends:
-    R (>= 2.15.0),
-    methods
+    methods,
+    R (>= 2.15.0)
 Imports:
     GenomicRanges (>= 1.18.1),
     IRanges,
