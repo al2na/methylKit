@@ -1,6 +1,8 @@
 methylKit
 ========
 
+Status [![Build Status](https://travis-ci.org/alexg9010/methylKit.svg?branch=master)](https://travis-ci.org/alexg9010/methylKit)
+
 This is where methylKit project will be developed from 2014. The [google code homepage](https://code.google.com/p/methylkit/) 
 will be active for the foreseeable future.  
 

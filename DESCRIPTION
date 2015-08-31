@@ -2,7 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.4
+Version: 0.9.5
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "altuna.akalin@mdc-berlin.de"),
 	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
@@ -19,8 +19,8 @@ LazyLoad: yes
 SystemRequirements:  Perl
 biocViews: DNAMethylation
 Depends:
-    R (>= 2.15.0),
-    methods
+    methods,
+    R (>= 2.15.0)
 Imports:
     GenomicRanges (>= 1.18.1),
     IRanges,
