@@ -30,7 +30,8 @@ Imports:
     S4Vectors,
     GenomeInfoDb,
     qvalue,
-    emdbook
+    emdbook,
+    Rsamtools
 Suggests:
     testthat
 Collate:
