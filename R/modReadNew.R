@@ -161,6 +161,24 @@ valid.methylRawObj <- function(object) {
 #'  myobj=modRead( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
 #'             sample.id="test1",assembly="hg18")
 #'             
+#' # creates tabix files that saves methylation data
+#' # creates a folder named the following in working directory:
+#' # paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+#' #
+#' # Then, saves tabix files from methylKit objects there
+#'  myobj=modRead( file.list,
+#'                sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'                assembly="hg18",treatment=c(1,1,0,0),
+#'                db="tabix") 
+#' 
+#' # creates tabix files that saves methylation data
+#' # creates a "methylDB_objects" directory
+#' # saves tabix files from methylKit objects there
+#'  myobj=modRead( file.list,
+#'                sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'                assembly="hg18",treatment=c(1,1,0,0),
+#'                db="tabix",dbdir="methylDB_objects")
+#'                
 #' @section Details:
 #'  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
 #'  'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
@@ -176,16 +194,17 @@ valid.methylRawObj <- function(object) {
 #' @export
 #' @docType methods
 #' @rdname modRead-methods
-setGeneric("modRead", function(location,sample.id,assembly,pipeline="amp",
+setGeneric("modRead", function(location,sample.id,assembly,dbtype=NULL,pipeline="amp",
                                header=T,skip=0,sep="\t",
                                context="CpG",resolution="base",
-                               treatment,dbdir=getwd()) standardGeneric("modRead"))
+                               treatment,dbdir=getwd()
+                               ) standardGeneric("modRead"))
 
 
 
 #' @rdname modRead-methods
 #' @aliases modRead,character,character,character-method
-setMethod("modRead", signature(location = "character",sample.id="character",assembly="character"),
+setMethod("modRead", signature(location = "character",sample.id="character",assembly="character",dbtype="missing"),
           
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
@@ -222,7 +241,7 @@ setMethod("modRead", signature(location = "character",sample.id="character",asse
 # @return returns a methylRawList object
 #' @rdname modRead-methods
 #' @aliases modRead,list,list,character-method
-setMethod("modRead", signature(location = "list",sample.id="list",assembly="character"),
+setMethod("modRead", signature(location = "list",sample.id="list",assembly="character",dbtype="missing"),
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment){ 
             
             #check if the given arugments makes sense
@@ -262,7 +281,7 @@ setMethod("modRead", signature(location = "list",sample.id="list",assembly="char
             myobj
           })
 
-# reads a list of CpG methylation files and makes methylRawList object
+# reads a file and saves methylation data as methylRawDB object
 #
 # @param a list containing locations(full paths) to CpG methylation files from alignment pipeline
 # @param name a list of strings that defines the experiment
@@ -270,12 +289,14 @@ setMethod("modRead", signature(location = "list",sample.id="list",assembly="char
 # @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP), or for generic read, a list object contain \code{fraction}=TRUE/FALSE, \code{chr.col}, \code{strand.col}, \code{start.col}, \code{end.col}, \code{coverage.col},\code{freqC.col}, for example: \code{list(fraction=T, chr.col=1, strand.col=2, coverage.col=3, freqC.col=4, start.col=5, end.col=5)}  
 # @param header if the input files has a header or not (default: TRUE)
 # @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
+# @param dbdir directory where flat file database(s) should be stored, defaults to getwd(), working directory.
+# @param dbtype type of the flat file database, currently only option is "tabix" defaults to NULL, in which case the objects are stored in memory.
 # @return returns a methylRawList object
 #' @rdname modRead-methods
-#' @aliases modRead,character,character,character-method
-setMethod("modRead", signature(location = "character",sample.id="character",assembly="character"),
+#' @aliases modRead,character,character,character,..., character-method
+setMethod("modRead", signature(location = "character",sample.id="character",assembly="character",dbtype="character"),
           
-          function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
+          function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
             data<- as.data.frame( data.table::fread(location,header=header,skip=skip,sep=sep)  )  
             if(length(pipeline)==1 ){
@@ -292,8 +313,8 @@ setMethod("modRead", signature(location = "character",sample.id="character",asse
               .check.pipeline.list(pipeline)
               data<- .structureGeneric(data, pipeline)
             }
-            
-            obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context,resolution="base")
+            obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
             obj         
           }
 )
+
