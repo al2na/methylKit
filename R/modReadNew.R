@@ -313,6 +313,18 @@ setMethod("modRead", signature(location = "character",sample.id="character",asse
               .check.pipeline.list(pipeline)
               data<- .structureGeneric(data, pipeline)
             }
+            
+            if(dbdir==getwd() ){
+              tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+              dir.create(tabixDir)
+              dbdir <- paste(dbdir,"/",tabixDir,collapse = "",sep = "")
+              message(paste("creating directory: ","/",tabixDir,sep = ""))
+            }
+            else{
+              message(paste("creating directory: ","/",dbdir,sep = ""))
+              dir.create(dbdir,recursive = T)
+              dbdir <- paste(getwd(),"/",dbdir,sep = "")
+            }
             obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
             obj         
           }
