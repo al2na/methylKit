@@ -220,19 +220,19 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 #'  getTabixByChunk( tbxFile,chunk.size=10)
 getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type="data.table"){
   
-  if( class(tbxFile) != "TabixFile" | !isOpen(tbxFile, rw="read") ){
+  if( class(tbxFile) != "TabixFile" | !Rsamtools::isOpen(tbxFile, rw="read") ){
     stop("tbxFile has to be a class of TabixFile and should be open for reading ")
   }
   
-  if(is.na(yieldSize(tbxFile)) | is.numeric(chunk.size)  ){
-    yieldSize(tbxFile)<-chunk.size
+  if(is.na(Rsamtools::yieldSize(tbxFile)) | is.numeric(chunk.size)  ){
+    Rsamtools::yieldSize(tbxFile)<-chunk.size
   }
   
   if(return.type=="data.table")
   {
-    tabix2dt(scanTabix(tbxFile) )
+    tabix2dt(Rsamtools::scanTabix(tbxFile) )
   }else{
-    tabix2df(scanTabix(tbxFile) )
+    tabix2df(Rsamtools::scanTabix(tbxFile) )
   }
 }
 
@@ -240,13 +240,17 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type="data.table"){
 # convert methylKit tabix to data.table
 # assuming you get a list length 1
 tabix2dt<-function(tabixRes){
-  data.table::fread( paste(tabixRes[[1]],collapse="\n" ) )
+  dt <- data.table::fread( paste(tabixRes[[1]],collapse="\n" ) )
+  setnames(x = dt,old = names(dt), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+  dt
 }
 
 # convert methylKit tabix to data.frame
 # assuming you get a list length 1
 tabix2df<-function(tabixRes){
-  data.table::fread( paste(tabixRes[[1]],collapse="\n" ),data.table=FALSE )
+  df <- data.table::fread( paste(tabixRes[[1]],collapse="\n" ),data.table=FALSE )
+  setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+  df
 }
 
 # convert methylKit tabix to data.frame
