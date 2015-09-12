@@ -40,6 +40,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
                           sample.id, assembly ,context,
                           resolution){
   filepath=paste0(dbpath,"/",sample.id,".txt")
+  df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
   
@@ -50,16 +51,16 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 
 setMethod("show", "methylRawDB", function(object) {
   
-  cat("methylRawDB object with",object@dbtype,"rows\n--------------\n")
-  #print(head(object))
-  print(object@dbpath)
+  cat("methylRawDB object with",object@num.records,"rows\n--------------\n")
+  print(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"))
   cat("--------------\n")
-  cat("sample.ids:",object@sample.ids,"\n")
-  cat("destranded",object@destranded,"\n")
+  cat("sample.id:",object@sample.id,"\n")
   cat("assembly:",object@assembly,"\n")
   cat("context:", object@context,"\n")
-  cat("treament:", object@treatment,"\n")
   cat("resolution:", object@resolution,"\n")
+  cat("dbtype:", object@dbtype,"\n")
+  cat("dbpath:",object@dbpath,"\n")
+  
 })
 
 
