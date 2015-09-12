@@ -323,11 +323,10 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @export
 #' @docType methods
 #' @rdname read-methods
-setGeneric("read", function(location,sample.id,assembly,dbtype=NULL,pipeline="amp",
-                               header=T,skip=0,sep="\t",
-                               context="CpG",resolution="base",
-                               treatment,dbdir=getwd()
-) standardGeneric("read"))
+setGeneric("read", function(location,sample.id,assembly,dbtype=NULL,
+                            pipeline="amp",header=T,skip=0,sep="\t",
+                            context="CpG",resolution="base",
+                            treatment,dbdir=getwd()) standardGeneric("read"))
 
 
 
