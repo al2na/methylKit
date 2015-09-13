@@ -386,7 +386,6 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             outList=list()
             for(i in 1:length(location))
             {
-              #data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
               data<- as.data.frame( data.table::fread(location[[i]],header=header,skip=skip,sep=sep)  )  
               
               if(length(pipeline)==1 )
