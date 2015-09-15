@@ -408,7 +408,8 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             myobj=new("methylRawList",outList,treatment=treatment)
             
             myobj
-          })
+          }
+)
 
 
 # reads a file and saves methylation data as methylRawDB object
@@ -459,6 +460,78 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
             obj         
           }
 )
+
+# reads a list of CpG methylation files and makes methylRawListDB object
+#
+# @param a list containing locations(full paths) to CpG methylation files from alignment pipeline
+# @param name a list of strings that defines the experiment
+# @param assembly a string that defines the genome assembly such as hg18, mm9
+# @param dbtype type of the flat file database, currently only option is "tabix"
+#        defaults to NULL, in which case the objects are stored in memory.
+# @param pipeline name of the alignment pipeline, currently only supports AMP (default: AMP), or for generic read, a list object contain \code{fraction}=TRUE/FALSE, \code{chr.col}, \code{strand.col}, \code{start.col}, \code{end.col}, \code{coverage.col},\code{freqC.col}, for example: \code{list(fraction=T, chr.col=1, strand.col=2, coverage.col=3, freqC.col=4, start.col=5, end.col=5)}  
+# @param header if the input files has a header or not (default: TRUE)
+# @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
+# @param dbdir directory where flat file database(s) should be stored, defaults
+# @return returns a methylRawListDB object
+#' @rdname read-methods
+#' @aliases read,list,list,character,character-method
+setMethod("read", signature(location = "list",sample.id="list",assembly="character",dbtype="character"),
+          function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,treatment,dbdir){ 
+            
+            #check if the given arugments makes sense
+            if(length(location) != length(sample.id)){
+              stop("length of 'location'  and 'name' should be same\n")
+            }
+            if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
+              stop("length of 'treatment', 'name' and 'location' should be same\n")
+            }
+            
+            if(dbdir==getwd() ){
+              tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+              dir.create(tabixDir)
+              dbdir <- paste(dbdir,"/",tabixDir,collapse = "",sep = "")
+              message(paste("creating directory: ","/",tabixDir,sep = ""))
+            }
+            else{
+              tempdir <- paste(getwd(),"/",dbdir,sep = "")
+              if(! file.exists(tempdir)){
+                message(paste("creating directory ","/",dbdir,sep = "","..."))
+                dir.create(tempdir,recursive = T)
+              }
+              dbdir <- tempdir
+              rm(tempdir)
+            }
+            
+            # read each given location and record it as methylraw object
+            outList=list()
+            for(i in 1:length(location))
+            {
+              #data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
+              data<- as.data.frame( data.table::fread(location[[i]],header=header,skip=skip,sep=sep)  )  
+              
+              if(length(pipeline)==1 )
+              {
+                if(pipeline %in% c("amp","bismark")){
+                  data<- .structureAMPoutput(data)
+                } else {
+                  stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
+                }
+              }
+              else{
+                #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
+                .check.pipeline.list(pipeline)
+                data<- .structureGeneric(data, pipeline)
+              }
+              
+              obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
+              outList[[i]]=obj       
+            }
+            myobj=new("methylRawListDB",outList,treatment=treatment)
+            
+            myobj
+          }
+)
+
 
 
 #' Filter methylRaw and methylRawList object based on read coverage
