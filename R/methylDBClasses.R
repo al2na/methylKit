@@ -98,14 +98,108 @@ setMethod("show", "methylRawListDB", function(object) {
   
 })
 
+
+
+
+
+
 # methylBaseDB
 
+#' @name methylBaseDB-class
+#' @aliases methylBaseDB
+#' @docType class
+#' @rdname methylBaseDB-class
+#' @export
+setClass("methylBaseDB",contains="data.frame",representation(
+  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",coverage.index="numeric",
+  numCs.index="numeric",numTs.index="numeric",destranded="logical",resolution = "character"))
 
-# accesors
+
+# accessors ---------------------------------------------------------------
+
+
+#' @rdname getAssembly-methods
+#' @aliases getAssembly,methylRawDB-method
+setMethod("getAssembly", signature="methylRawDB", definition=function(x) {
+  return(x@assembly)
+})
+
+#' @rdname getAssembly-methods
+#' @aliases getAssembly,methylRawListDB-method
+setMethod("getAssembly", signature="methylRawListDB", definition=function(x) {
+  return(lapply(x,getAssembly))
+})
+
+#' @rdname getContext-methods
+#' @aliases getContext,methylRawDB-method
+setMethod("getContext", signature="methylRawDB", definition=function(x) {
+  return(x@context)
+})
+
+#' @rdname getContext-methods
+#' @aliases getContext,methylRawListDB-method
+setMethod("getContext", signature="methylRawListDB", definition=function(x) {
+  return(lapply(x,getContext))
+})
+
+#' @rdname getData-methods
+#' @aliases getData,methylRawDB-method
+setMethod("getData", signature="methylRawDB", definition=function(x) {
+  return(headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame"))
+})
+
+#' @rdname getData-methods
+#' @aliases getData,methylRawListDB-method
+setMethod("getData", signature="methylRawListDB", definition=function(x) {
+  return(lapply(x,getData))
+})
 
 
 
-# subset each class
+
+# subset classes ----------------------------------------------------------
+
+#' @aliases select,methylRawDB-method
+#' @rdname select-methods
+setMethod("select", "methylRawDB",
+          function(x, i)
+          {
+            
+            new("methylRaw",getData(x)[i,],sample.id=x@sample.id,
+                assembly=x@assembly,
+                context=x@context,
+                resolution=x@resolution)
+          }
+          
+          
+)
+
+#' @examples
+#' 
+#' # This will get chromomsomes, will return a factor
+#' # That means the resulting object will ceases to be a methylKit object
+#' chrs=methylRawDB.obj[][[2]]
+#' 
+#' @aliases [,methylRawDB-method
+#' @rdname extract-methods
+setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),  
+          function(x,i,j){
+            #cat(missing(i),"\n",missing(j),"\n",missing(drop))
+            if(!missing(j)){
+              stop(paste("subsetting on columns is not allowed for",class(x),
+                         "object\nif you want to do extraction on the data part", 
+                         "of the object use getData() first"),
+                   call. = FALSE)
+            }
+            select(x,i)
+          }
+)
+
+
+
+
+# get/set values ----------------------------------------------------------
+
 
 
 # get/set treatment vector
