@@ -245,9 +245,10 @@ setClass("methylRaw", contains= "data.frame",representation(
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
 
-#' read file(s) to a methylrawList or methylraw object
+#' read file(s) to various methylRaw objects
 #'
-#' The function reads a list of files or files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object
+#' The function reads a list of files or single files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object. 
+#' The information can be stored as flat file database by creating a methylrawlistDB or methylrawDB object. 
 #' @param location file location(s), either a list of locations (each a character string) or one location string
 #' @param sample.id sample.id(s)
 #' @param assembly a string that defines the genome assembly such as hg18, mm9
@@ -275,7 +276,8 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'
 #' # read the files to a methylRawList object: myobj
 #' myobj=read( file.list,
-#'             sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+#'             sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'             assembly="hg18",treatment=c(1,1,0,0))
 #'             
 #' # read one file as methylRaw object
 #' myobj=read( file.list[[1]],
@@ -287,11 +289,13 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' read.table(generic.file,header=TRUE)
 #' 
 #' # And this is how you can read that generic file as a methylKit object            
-#'  myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
-#'             sample.id="test1",assembly="hg18")
+#'  myobj=read( generic.file,
+#'              pipeline=list(fraction=FALSE,chr.col=1,start.col=2,end.col=2,
+#'                            coverage.col=4,strand.col=3,freqC.col=5),
+#'              sample.id="test1",assembly="hg18")
 #'             
 #' # This creates tabix files that save methylation data
-#' # first creates a folder named the following in working directory:
+#' # Without specified dbdir first creates a folder named the following in working directory:
 #' # paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
 #' #
 #' # Then, saves tabix files from methylKit objects there
@@ -318,7 +322,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'  'strand.col' is the number of the column that has strand information, the strand information in the file has to be in the form of '+' or '-', 
 #'  'freqC.col' is the number of the column that has the frequency of Cs. See examples to see how to read a generic methylation text file.
 #'  
-#' @return returns methylRaw, methylRawList or methylRawDB
+#' @return returns methylRaw, methylRawList, methylRawDB, methylRawListDB objects
 #' 
 #' @export
 #' @docType methods
@@ -422,9 +426,9 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 # @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 # @param dbdir directory where flat file database(s) should be stored, defaults to getwd(), working directory.
 # @param dbtype type of the flat file database, currently only option is "tabix" defaults to NULL, in which case the objects are stored in memory.
-# @return returns a methylRawList object
+# @return returns a methylRawDB object
 #' @rdname read-methods
-#' @aliases read,character,character,character,..., character-method
+#' @aliases read,character,character,character,character-method
 setMethod("read", signature(location = "character",sample.id="character",assembly="character",dbtype="character"),
           
           function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
@@ -461,7 +465,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           }
 )
 
-# reads a list of CpG methylation files and makes methylRawListDB object
+# reads a list of CpG methylation files and saves them as methylRawListDB object
 #
 # @param a list containing locations(full paths) to CpG methylation files from alignment pipeline
 # @param name a list of strings that defines the experiment
