@@ -340,7 +340,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- as.data.frame( data.table::fread(location,header=header,skip=skip,sep=sep)  )  
+            data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
             if(length(pipeline)==1 ){
               
               if(pipeline %in% c("amp","bismark") )
@@ -390,7 +390,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             outList=list()
             for(i in 1:length(location))
             {
-              data<- as.data.frame( data.table::fread(location[[i]],header=header,skip=skip,sep=sep)  )  
+              data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data  
               
               if(length(pipeline)==1 )
               {
@@ -433,7 +433,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           
           function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- as.data.frame( data.table::fread(location,header=header,skip=skip,sep=sep)  )  
+            data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data  
             if(length(pipeline)==1 ){
               
               if(pipeline %in% c("amp","bismark") )
@@ -456,9 +456,13 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
               message(paste("creating directory: ","/",tabixDir,sep = ""))
             }
             else{
-              message(paste("creating directory: ","/",dbdir,sep = ""))
-              dir.create(dbdir,recursive = T)
-              dbdir <- paste(getwd(),"/",dbdir,sep = "")
+              tempdir <- paste(getwd(),"/",dbdir,sep = "")
+              if(! file.exists(tempdir)){
+                message(paste("creating directory ","/",dbdir,sep = "","..."))
+                dir.create(tempdir,recursive = T)
+              }
+              dbdir <- tempdir
+              rm(tempdir)
             }
             obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
             obj         
@@ -510,8 +514,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             outList=list()
             for(i in 1:length(location))
             {
-              #data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
-              data<- as.data.frame( data.table::fread(location[[i]],header=header,skip=skip,sep=sep)  )  
+              data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
               
               if(length(pipeline)==1 )
               {
