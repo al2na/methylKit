@@ -69,6 +69,26 @@
     }
 }
 
+.check.dbdir <- function(dir){
+  
+  if(dir==getwd() ){
+    tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+    dir.create(tabixDir)
+    dir <- paste(dir,"/",tabixDir,collapse = "",sep = "")
+    message(paste("creating directory: ","/",tabixDir,sep = ""))
+  }
+  else{
+    tempdir <- paste(getwd(),"/",dir,sep = "")
+    if(! file.exists(tempdir)){
+      message(paste("creating directory ","/",dir,sep = "","..."))
+      dir.create(tempdir,recursive = T)
+    }
+    dir <- tempdir
+    rm(tempdir)
+  }
+  return(dir)
+}
+
 # unfies forward and reverse strand CpGs on the forward strand if the if
 # both are on the same CpG
 # if that's the case their values are generally correlated
@@ -245,7 +265,7 @@ setClass("methylRaw", contains= "data.frame",representation(
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
 
-#' read file(s) to various methylRaw objects
+#' read file(s) to different methylRaw objects
 #'
 #' The function reads a list of files or single files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object. 
 #' The information can be stored as flat file database by creating a methylrawlistDB or methylrawDB object. 
@@ -335,12 +355,12 @@ setGeneric("read", function(location,sample.id,assembly,dbtype=NULL,
 
 
 #' @rdname read-methods
-#' @aliases read,character,character,character-method
+#' @aliases read,character,character,character,missing-method
 setMethod("read", signature(location = "character",sample.id="character",assembly="character",dbtype="missing"),
           
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
+            data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data
             if(length(pipeline)==1 ){
               
               if(pipeline %in% c("amp","bismark") )
@@ -373,7 +393,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 # @return returns a methylRawList object
 
 #' @rdname read-methods
-#' @aliases read,list,list,character-method
+#' @aliases read,list,list,character,missing-method
 setMethod("read", signature(location = "list",sample.id="list",assembly="character",dbtype="missing"),
           
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment){ 
@@ -433,7 +453,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           
           function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data  
+            data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
             if(length(pipeline)==1 ){
               
               if(pipeline %in% c("amp","bismark") )
@@ -449,21 +469,9 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
               data<- .structureGeneric(data, pipeline)
             }
             
-            if(dbdir==getwd() ){
-              tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
-              dir.create(tabixDir)
-              dbdir <- paste(dbdir,"/",tabixDir,collapse = "",sep = "")
-              message(paste("creating directory: ","/",tabixDir,sep = ""))
-            }
-            else{
-              tempdir <- paste(getwd(),"/",dbdir,sep = "")
-              if(! file.exists(tempdir)){
-                message(paste("creating directory ","/",dbdir,sep = "","..."))
-                dir.create(tempdir,recursive = T)
-              }
-              dbdir <- tempdir
-              rm(tempdir)
-            }
+            .check.dbdir(dir = dbdir)
+            
+
             obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
             obj         
           }
@@ -494,21 +502,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
               stop("length of 'treatment', 'name' and 'location' should be same\n")
             }
             
-            if(dbdir==getwd() ){
-              tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
-              dir.create(tabixDir)
-              dbdir <- paste(dbdir,"/",tabixDir,collapse = "",sep = "")
-              message(paste("creating directory: ","/",tabixDir,sep = ""))
-            }
-            else{
-              tempdir <- paste(getwd(),"/",dbdir,sep = "")
-              if(! file.exists(tempdir)){
-                message(paste("creating directory ","/",dbdir,sep = "","..."))
-                dir.create(tempdir,recursive = T)
-              }
-              dbdir <- tempdir
-              rm(tempdir)
-            }
+            .check.dbdir(dbdir)
             
             # read each given location and record it as methylraw object
             outList=list()
@@ -1412,10 +1406,11 @@ setMethod("select", "methylRaw",
           function(x, i)
           {
 
-          new("methylRaw",getData(x)[i,],sample.id=x@sample.id,
-                                           assembly=x@assembly,
-                                           context=x@context,
-                                           resolution=x@resolution)
+            new("methylRaw",getData(x)[i,],
+                sample.id=x@sample.id,
+                assembly=x@assembly,
+                context=x@context,
+                resolution=x@resolution)
            }
           
 
