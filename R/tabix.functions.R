@@ -21,7 +21,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ){
   
   
   # get chrs
-  chrNum=table(unlist(lapply(tabixList,seqnamesTabix)))
+  chrNum=table(unlist(lapply(tabixList,Rsamtools::seqnamesTabix)))
   chrs=names(chrNum)[chrNum==length(tabixList)]
   
   if(mc.cores > 1){
@@ -120,19 +120,19 @@ makeMethTabix<-function(filepath,skip=0){
 mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE){
   
   #get first file on the list
-  res=getTabixByChr(chr,tabixList[[1]])
+  res=getTabixByChr(tbxFile = tabixList[[1]],chr = chr)
   for(i in 2:length(tabixList)){
     
     # get tabix per Chr
-    tmp=getTabixByChr(chr,tabixList[[i]])
+    tmp=getTabixByChr(tbxFile = tabixList[[i]],chr = chr)
     
     # merge tabix in memory
-    res=merge(res,tmp,by=c("V1","V2","V3"))
+    res=merge(res,tmp,by=c("chr","start","end"))
     
   }
   
   # order rows
-  setorder(res, V1,V2,V3)
+  data.table::setorder(res, chr,start,end)
   
   if(!parallel){
   # write out append TRUE
