@@ -59,7 +59,7 @@ setMethod("show", "methylRawDB", function(object) {
   cat("context:", object@context,"\n")
   cat("resolution:", object@resolution,"\n")
   cat("dbtype:", object@dbtype,"\n")
-  cat("dbpath:",object@dbpath,"\n")
+  cat("dbpath:",object@dbpath,"\n\n")
   
 })
 
@@ -89,6 +89,14 @@ valid.methylRawListDB <- function(object) {
 setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
          validity=valid.methylRawListDB)
 
+setMethod("show", "methylRawListDB", function(object) {
+  
+  cat("methylRawListDB object with",length(object),"methylRawDB objects\n\n")
+  
+  lapply(object,show)
+  cat("treament:", object@treatment,"\n")
+  
+})
 
 # methylBaseDB
 
