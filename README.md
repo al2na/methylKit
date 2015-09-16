@@ -1,7 +1,7 @@
 methylKit
 ========
 
-Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=master)](https://travis-ci.org/al2na/methylKit)
+Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=master)](https://travis-ci.org/al2na/methylKit) [![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
 
 This is where methylKit project will be developed from 2014. The [google code homepage](https://code.google.com/p/methylkit/) 
 will be active for the foreseeable future.  
