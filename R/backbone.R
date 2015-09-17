@@ -69,6 +69,7 @@
     }
 }
 
+# checks if dbdir in read-call for methylRawDB and methylRawListDB objects exists
 .check.dbdir <- function(dir){
   
   if(dir==getwd() ){
@@ -469,7 +470,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
               data<- .structureGeneric(data, pipeline)
             }
             
-            .check.dbdir(dir = dbdir)
+            dbdir <- .check.dbdir(dir = dbdir)
             
 
             obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
@@ -502,7 +503,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
               stop("length of 'treatment', 'name' and 'location' should be same\n")
             }
             
-            .check.dbdir(dbdir)
+            dbdir <- .check.dbdir(dbdir)
             
             # read each given location and record it as methylraw object
             outList=list()
