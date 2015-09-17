@@ -684,7 +684,7 @@ setClass("methylBase",contains="data.frame",representation(
 #'  
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL) standardGeneric("unite"))
+setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,save.db=FALSE) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method

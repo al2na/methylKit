@@ -389,11 +389,11 @@ setMethod("modRead", signature(location = "list",sample.id="list",assembly="char
               #data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
               data<- as.data.frame( data.table::fread(location[[i]],header=header,skip=skip,sep=sep)  )  
               
-              if(length(pipeline)==1 )
-              {
+              if(length(pipeline)==1 ){
                 if(pipeline %in% c("amp","bismark")){
                   data<- .structureAMPoutput(data)
-                } else {
+                } 
+                else{
                   stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
                 }
               }
