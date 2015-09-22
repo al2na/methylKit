@@ -563,7 +563,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @export
 #' @docType methods
 #' @rdname filterByCoverage-methods
-setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL) standardGeneric("filterByCoverage") )
+setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL, save.db=FALSE) standardGeneric("filterByCoverage") )
 
 #' @aliases filterByCoverage,methylRaw-method
 #' @rdname filterByCoverage-methods
