@@ -580,6 +580,29 @@ setMethod("getMethylationStats", "methylRawDB",
             
           })
 
+
+setAs("methylRawDB", "GRanges", function(from)
+{
+  from2=getData(from)
+  GRanges(seqnames=as.character(from2$chr),ranges=IRanges(start=from2$start, end=from2$end),
+          strand=from2$strand, 
+          coverage=from2$coverage,
+          numCs   =from2$numCs,
+          numTs  =from2$numTs                                
+  )
+  
+})
+
+setAs("methylBaseDB", "GRanges", function(from)
+{
+  from=getData(from)
+  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
+          strand=from$strand, 
+          data.frame(from[,5:ncol(from)])
+  )
+  
+})
+
 # accessors ---------------------------------------------------------------
 
 
