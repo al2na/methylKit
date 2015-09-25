@@ -1,7 +1,7 @@
 
 <a name="logo"/>
 <div align="center">
-<img src="https://dl.dropboxusercontent.com/u/1373164/methylKit_logo.png" alt="methylKit Logo" ></img>
+<img src="https://dl.dropboxusercontent.com/u/1373164/methylKit_logo.png" alt="methylKit Logo"  width="60%" height="60%" ></img>
 </a>
 </div>
 Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=master)](https://travis-ci.org/al2na/methylKit) [![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
