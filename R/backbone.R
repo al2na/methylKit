@@ -200,13 +200,13 @@ valid.methylRawObj <- function(object) {
 #' known and ubiquitous in many R packages.
 #' 
 #' @section Subsetting:
-#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  In the following code snippets, \code{x} is a \code{methylRaw}.
 #'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Accessors:
-#' The following functions provides access to data slots of methylDiff:
+#' The following functions provides access to data slots of methylRaw:
 #' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 #' \code{\link[methylKit]{getContext}}
 #' 
@@ -266,7 +266,7 @@ setClass("methylRaw", contains= "data.frame",representation(
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
 
-#' read file(s) to different methylRaw objects
+#' read file(s) to methylRaw or methylRawList objects
 #'
 #' The function reads a list of files or single files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object. 
 #' The information can be stored as flat file database by creating a methylrawlistDB or methylrawDB object. 
@@ -277,7 +277,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'        defaults to NULL, in which case the objects are stored in memory.
 #' @param header if the input file has a header or not (default: TRUE)
 #' @param skip number of lines to skip when reading. Can be set to 1 for bed files with track line (default: 0)
-#' @param sep seperator between fields, same as \code{\link{read.table}} argument (default: "\t")
+#' @param sep seperator between fields, same as \code{\link{read.table}} argument (default: "\\t")
 #' @param pipeline name of the alignment pipeline, it can be either "amp" or "bismark". The methylation text files generated from other pipelines can be read as generic methylation text files by supplying a named \code{\link[base]{list}} argument as "pipeline" argument.
 #' The named \code{list} should containt column numbers which denotes which column of the text file corresponds to values and genomic location of the methylation events. See Details for more.
 #' @param resolution designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'
@@ -289,7 +289,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' 
 #' # this is a list of example files, ships with the package
 #' # for your own analysis you will just need to provide set of paths to files
-#' #you will not need the "system.file(..."  part
+#' # you will not need the "system.file(..."  part
 #' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
 #'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
 #'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
@@ -536,18 +536,20 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 
 
 
-#' Filter methylRaw and methylRawList object based on read coverage
+#' Filter methylRaw, methylRawDB, methylRawList and methylRawListDB object based on read coverage
 #'
-#' This function filters \code{methylRaw} and \code{methylRawList} objects.
+#' This function filters \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} objects.
 #' You can filter based on lower read cutoff or high read cutoff. Higher read cutoff is usefull to eliminate PCR effects
 #' Lower read cutoff is usefull for doing better statistical tests.
 #'
-#' @param methylObj a \code{methylRaw} or \code{methylRawList} object
+#' @param methylObj a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object
 #' @param lo.count An integer for read counts.Bases/regions having lower coverage than this count is discarded
 #' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded
 #' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
 #' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
-#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
+#' @param save.db if TRUE the resulting object is stored as flat file database, 
+#'        defaults to FALSE, in which case object is stored in memory
+#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,save.db=FALSE)
 #' @examples
 #' data(methylKit)
 #' 
@@ -559,7 +561,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' 
 #' 
 #' 
-#' @return \code{methylRaw} or \code{methylRawList} object depending on input object
+#' @return \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object depending on input object
 #' @export
 #' @docType methods
 #' @rdname filterByCoverage-methods
@@ -628,13 +630,13 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 #' 
 #' 
 #' @section Subsetting:
-#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  In the following code snippets, \code{x} is a \code{methylBase}.
 #'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Accessors:
-#' The following functions provides access to data slots of methylDiff:
+#' The following functions provides access to data slots of methylBase:
 #' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 #' \code{\link[methylKit]{getContext}}
 #' 
@@ -660,20 +662,24 @@ setClass("methylBase",contains="data.frame",representation(
 
 #' unite methylRawList to a single table 
 #' 
-#' This functions unites \code{methylRawList} object that only bases with coverage from all samples are retained.
-#' The resulting object is a class of \code{methylBase}
+#' This functions unites \code{methylRawList} and \code{methylRawListDB} objects that only bases with coverage from all samples are retained.
+#' The resulting object is either a class of \code{methylBase} or stored as \code{methylBaseDB}.
 #'
-#' @param object a methylRawList object to be merged by common locations covered by reads
+#' @param object a methylRawList or methylRawListDB object to be merged by common locations covered by reads
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
 #'   do not set to TRUE if not only interested in CpGs (default: FALSE). If the methylRawList object
 #'   contains regions rather than bases setting destrand to TRUE will have no effect.
 #' @param min.per.group an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
 #'        are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
 #'       For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
-#'
-#' @usage unite(object,destrand=FALSE,min.per.group=NULL)
-#' @return a methylBase object
-#' @aliases unite,-methods unite,methylRawList-method
+#' @param save.db if TRUE the resulting object is stored as flat file database
+#'        defaults to FALSE, in which case object is stored in memory
+#' @param dbdir directory where flat file database should be stored, defaults
+#'        to getwd() working directory for \code{\link{methylRawListDB}} objects.
+#' 
+#' @usage unite(object,destrand=FALSE,min.per.group=NULL,,save.db=FALSE,dbdir=NULL)
+#' @return a methylBase or methylBaseDB object
+#' @aliases unite,-methods unite,methylRawList-method, unite,methylRawListDB-method
 #' @export
 #' @examples
 #' 
@@ -684,7 +690,7 @@ setClass("methylBase",contains="data.frame",representation(
 #'  
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,save.db=FALSE) standardGeneric("unite"))
+setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,save.db=FALSE,dbdir=NULL) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
@@ -792,11 +798,11 @@ setMethod("unite", "methylRawList",
           }
 )           
 
-#' get correlation between samples in methylBase object
+#' get correlation between samples in methylBase or methylBaseDB object
 #' 
 #' The functions returns a matrix of correlation coefficients and/or a set of scatterplots showing the relationship between samples
 #' 
-#' @param object a methylBase object 
+#' @param object a methylBase or methylBaseDB object 
 #' @param method a character string indicating which correlation coefficient (or covariance) is to be computed (default:"pearson", other options are "kendall" and "spearman") 
 #' @param plot scatterPlot if TRUE (default:FALSE) 
 #' @return a correlation matrix object and plot scatterPlot
