@@ -723,6 +723,44 @@ setMethod("getMethylationStats", "methylRawDB",
           })
 
 
+#' @rdname adjust.methylC
+#' @aliases adjust.methylC,methylRawDB,methylRawDB-method
+setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
+  
+  lst=new("methylRawList",list(mc,hmc),treatment=c(1,0))
+  data=getData(unite(lst))
+  
+  diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
+  diff[diff<0]=0
+  data$numCs1=diff
+  data$numTs1=data$coverage1-data$numCs1
+  colnames(data)[5:7]=c("coverage","numCs","numTs")
+  makeMethylRawDB(df = data[,1:7],dbpath = getwd() ,sample.id=paste0(mc@sample.id,".adjust"),  assembly=mc@assembly, 
+      context =mc@context,resolution=mc@resolution,dbtype = mc@dbtype)
+  
+})
+
+
+#' @rdname adjust.methylC
+#' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
+setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc){
+  
+  # check lengths equal if not give error
+  if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
+  
+  my.list=list()
+  for(i in 1:length(mc)){
+    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]])
+  }
+  new("methylRawListDB",my.list,treatment=mc@treatment )
+  
+})
+
+
+
+
+
+
 setAs("methylRawDB", "GRanges", function(from)
 {
   from2=getData(from)
