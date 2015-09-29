@@ -87,7 +87,7 @@ setClass("methylRawDB", slots=list(dbpath="character",num.records="numeric",
 
 # PRIVATE function:
 # makes a methylRawDB object from a df
-# it is called from modRead function or whenever this functionality is needed
+# it is called from read function or whenever this functionality is needed
 makeMethylRawDB<-function(df,dbpath,dbtype,
                           sample.id, assembly ,context,
                           resolution){
@@ -312,7 +312,7 @@ setClass("methylBaseDB",slots=list(dbpath = "character", num.records = "numeric"
 
 # PRIVATE function:
 # makes a methylBaseDB object from a df
-# it is called from modRead function or whenever this functionality is needed
+# it is called from read function or whenever this functionality is needed
 makeMethylBaseDB<-function(df,dbpath,dbtype,
                            sample.ids, assembly ,context,
                            resolution,treatment,coverage.index,
@@ -444,9 +444,14 @@ setMethod("unite", "methylRawListDB",
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation,methylBaseDB-method
 setMethod("getCorrelation", "methylBaseDB",
-          function(object,method,plot){
+          function(object,method,plot,nrow=2e6){
             
-            data = getData(object)
+            if(is.null(nrow)){ 
+              data = getData(object)
+            }else{
+              data = headTabix(object@dbpath,nrow=nrow,return.type = "data.frame")
+            }
+            
             meth.mat = data[, object@numCs.index]/
               ( data[,object@numCs.index] + data[,object@numTs.index] )                                      
             names(meth.mat)=object@sample.ids

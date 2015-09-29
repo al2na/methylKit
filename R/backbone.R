@@ -805,18 +805,26 @@ setMethod("unite", "methylRawList",
 #' @param object a methylBase or methylBaseDB object 
 #' @param method a character string indicating which correlation coefficient (or covariance) is to be computed (default:"pearson", other options are "kendall" and "spearman") 
 #' @param plot scatterPlot if TRUE (default:FALSE) 
+#' @param nrow a numeric giving the number of lines to read in of methylBaseDB object, defaults to 2e6 
 #' @return a correlation matrix object and plot scatterPlot
 #' @usage getCorrelation(object,method="pearson",plot=FALSE)
 #' @examples
 #' 
 #' data(methylKit)
 #' getCorrelation(methylBase.obj,method="pearson",plot=FALSE)
+#' getCorrelation(methylBaseDB.obj,method="pearson",plot=FALSE,nrow=10000)
+#'
+#' @section Details: The argument 'nrow' is only evaluated if the input is a \code{methylBaseDB} object.
+#' When 'nrow' is not specified \code{getCorrelation} will read the first 2M records of the given object,
+#' but if you want to read all records 'nrow' has to be NULL. 
+#' You should change 'nrow' if using \code{getCorrelation} with all records of the methylBaseDB object would take to long. 
+#' 
 #' 
 #' @aliases getCorrelation,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getCorrelation-methods
-setGeneric("getCorrelation", function(object,method="pearson",plot=FALSE) standardGeneric("getCorrelation"))
+setGeneric("getCorrelation", function(object,method="pearson",plot=FALSE,nrow="numeric") standardGeneric("getCorrelation"))
 
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation-method
