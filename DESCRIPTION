@@ -51,3 +51,5 @@ Collate:
     'updateMethObject.R'
     'batchControl.R'
     'dataSim.R'
+    'methylDBClasses.R'
+    'tabix.functions.R'
