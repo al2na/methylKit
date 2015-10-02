@@ -3,18 +3,30 @@
 \docType{methods}
 \name{read}
 \alias{read}
+\alias{read,character,character,character,character-method}
+\alias{read,character,character,character,missing-method}
 \alias{read,character,character,character-method}
+\alias{read,list,list,character,character-method}
+\alias{read,list,list,character,missing-method}
 \alias{read,list,list,character-method}
-\title{read file(s) to a methylrawList or methylraw object}
+\title{read file(s) to a methylRaw object}
 \usage{
-read(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="", context="CpG",resolution="base",treatment)
+read(location, sample.id, assembly, dbtype = NULL, pipeline = "amp",
+  header = T, skip = 0, sep = "\\t", context = "CpG",
+  resolution = "base", treatment, dbdir = getwd())
 
-\S4method{read}{character,character,character}(location, sample.id, assembly,
-  pipeline, header, skip, sep, context, resolution)
+\S4method{read}{character,character,character,missing}(location, sample.id,
+  assembly, pipeline, header, skip, sep, context, resolution)
 
-\S4method{read}{list,list,character}(location, sample.id, assembly,
-  pipeline = "amp", header = T, skip = 0, sep = "", context = "CpG",
-  resolution = "base", treatment)
+\S4method{read}{list,list,character,missing}(location, sample.id, assembly,
+  pipeline, header, skip, sep, context, resolution, treatment)
+
+\S4method{read}{character,character,character,character}(location, sample.id,
+  assembly, dbtype, pipeline, header, skip, sep, context, resolution, dbdir)
+
+\S4method{read}{list,list,character,character}(location, sample.id, assembly,
+  dbtype = NULL, pipeline = "amp", header = T, skip = 0, sep = "\\t",
+  context = "CpG", resolution = "base", treatment, dbdir = getwd())
 }
 \arguments{
 \item{location}{file location(s), either a list of locations (each a character string) or one location string}
@@ -23,6 +35,9 @@ read(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="", context=
 
 \item{assembly}{a string that defines the genome assembly such as hg18, mm9}
 
+\item{dbtype}{type of the flat file database, currently only option is "tabix"
+defaults to NULL, in which case the objects are stored in memory.}
+
 \item{pipeline}{name of the alignment pipeline, it can be either "amp" or "bismark". The methylation text files generated from other pipelines can be read as generic methylation text files by supplying a named \code{\link[base]{list}} argument as "pipeline" argument.
 The named \code{list} should containt column numbers which denotes which column of the text file corresponds to values and genomic location of the methylation events. See Details for more.}
 
@@ -30,19 +45,24 @@ The named \code{list} should containt column numbers which denotes which column 
 
 \item{skip}{number of lines to skip when reading. Can be set to 1 for bed files with track line (default: 0)}
 
-\item{sep}{seperator between fields, same as \code{\link{read.table}} argument (default: "")}
+\item{sep}{seperator between fields, same as \code{\link{read.table}} argument (default: "\t")}
 
 \item{context}{methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)}
 
 \item{resolution}{designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'}
 
 \item{treatment}{a vector contatining 0 and 1 denoting which samples are control which samples are test}
+
+\item{dbdir}{directory where flat file database(s) should be stored, defaults
+to getwd(), working directory.}
 }
 \value{
-returns methylRaw or methylRawList
+returns methylRaw, methylRawList, methylRawDB, methylRawListDB objects
 }
 \description{
-The function reads a list of files or files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object
+The function reads a list of files or single files with methylation information for bases/region in the genome
+and either creates a methylrawList or methylraw object stored memory
+or creates a methylrawlistDB or methylrawDB object stored as flat file database.
 }
 \section{Details}{
 
@@ -80,5 +100,23 @@ read.table(generic.file,header=TRUE)
 # And this is how you can read that generic file as a methylKit object
  myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
             sample.id="test1",assembly="hg18")
+
+# This creates tabix files that save methylation data
+# With empty \\code{dbdir} first creates a folder named the following in working directory:
+# paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+#
+# Then, saves tabix files from methylKit objects there
+ myobj=read( file.list,
+               sample.id=list("test1","test2","ctrl1","ctrl2"),
+               assembly="hg18",treatment=c(1,1,0,0),
+               dbtype="tabix")
+
+# This creates a single tabix files that saves methylation data
+# first creates a "methylDB_objects" directory
+# Then, saves tabix file from methylKit objects there
+ myobj=read( file.list[[1]],
+               sample.id="test1",
+               assembly="hg18",
+               dbtype="tabix",dbdir="methylDB_objects")
 }
 
