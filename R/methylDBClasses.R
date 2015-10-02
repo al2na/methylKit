@@ -1,4 +1,39 @@
 
+#---------------------------------------------------------------------------------------
+# regular R functions to be used in S4 functions
+
+
+#' set column names for methylRawDB and methylBaseDB data aquired from flat file database
+#' 
+.setMethylDBNames <- function(df,methylDBclass){
+  
+  if( methylDBclass == "methylRawDB" ){
+    
+    data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+    
+  } else if ( methylDBclass == "methylBaseDB"){
+    
+    data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
+    # get indices of coverage,numCs and numTs in the data frame 
+    numsamples = (length(df)-4)/3
+    coverage.ind=seq(5,by=3,length.out=numsamples)
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
+    # change column names
+    names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
+    names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
+    names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+    
+  }
+  
+  return(df)
+}
+
+
+# end of regular functions to be used in S4 functions
+#---------------------------------------------------------------------------------------
+
 valid.methylRawDB <- function(object) {
   
   
@@ -822,11 +857,13 @@ setMethod("getContext", signature="methylBaseDB", definition=function(x) {
   return(x@context)
 })
 
+
 #' @rdname getData-methods
 #' @aliases getData,methylRawDB-method
 setMethod("getData", signature="methylRawDB", definition=function(x) {
   df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
-  data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+  .setMethylDBNames(df,"methylRawDB")
+  
   return(df)
 })
 
@@ -840,17 +877,7 @@ setMethod("getData", signature="methylRawListDB", definition=function(x) {
 #' @aliases getData,methylBaseDB-method
 setMethod("getData", signature="methylBaseDB", definition=function(x) {
   df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
-  data.table::setnames(x = df,old = c("V1","V2","V3","V4"), new = c("chr","start","end","strand"))
-  # get indices of coverage,numCs and numTs in the data frame 
-  numsamples = (length(df)-4)/3
-  coverage.ind=seq(5,by=3,length.out=numsamples)
-  numCs.ind   =coverage.ind+1
-  numTs.ind   =coverage.ind+2
-  
-  # change column names
-  names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
-  names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
-  names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+ .setMethylDBNames(df,"methylBaseDB")
   
   return(df)
 })
@@ -861,7 +888,7 @@ setMethod("getData", signature="methylBaseDB", definition=function(x) {
 setMethod("show", "methylRawDB", function(object) {
   
   cat("methylRawDB object with",object@num.records,"rows\n--------------\n")
-  print(head(getData(object),n = 6))
+  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylRawDB"))
   cat("--------------\n")
   cat("sample.id:",object@sample.id,"\n")
   cat("assembly:",object@assembly,"\n")
@@ -886,7 +913,7 @@ setMethod("show", "methylRawListDB", function(object) {
 setMethod("show", "methylBaseDB", function(object) {
   
   cat("methylBaseDB object with",object@num.records,"rows\n--------------\n")
-  print(head(getData(object),n = 6))
+  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylBaseDB"))
   cat("--------------\n")
   cat("sample.ids:",object@sample.ids,"\n")
   cat("destranded",object@destranded,"\n")
