@@ -45,7 +45,7 @@ The named \code{list} should containt column numbers which denotes which column 
 
 \item{skip}{number of lines to skip when reading. Can be set to 1 for bed files with track line (default: 0)}
 
-\item{sep}{seperator between fields, same as \code{\link{read.table}} argument (default: "\t")}
+\item{sep}{seperator between fields, same as \code{\link{read.table}} argument (default: "\\t")}
 
 \item{context}{methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)}
 
