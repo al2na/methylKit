@@ -13,5 +13,13 @@ methylBase.obj=unite(methylRawList.obj)
 
 methylDiff.obj=calculateDiffMeth(methylBase.obj)
 
+db.list=list( system.file("extdata", "test1.txt.bgz", package = "methylKit"),
+                system.file("extdata", "test2.txt.bgz", package = "methylKit"),
+                system.file("extdata", "ctrl1.txt.bgz", package = "methylKit"),
+                system.file("extdata", "ctrl2.txt.bgz", package = "methylKit") )
 
-save(methylRawList.obj,methylBase.obj,methylDiff.obj,file="methylKit.RData")
+methylRawListDB.obj=read( db.list,
+                          sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0),
+                          dbtype = "tabix")
+
+save(methylRawList.obj,methylBase.obj,methylDiff.obj,methylRawListDB.obj,file="methylKit.RData")
