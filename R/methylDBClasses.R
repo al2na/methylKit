@@ -141,7 +141,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 # it is called from read function or whenever this functionality is needed
 readMethylRawDB<-function(dbpath,dbtype,
                           sample.id, assembly ,context,
-                          resolution){
+                          resolution,skip=0){
 
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
@@ -392,7 +392,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
 readMethylBaseDB<-function(dbpath,dbtype,
                            sample.ids, assembly ,context,
                            resolution,treatment,coverage.index,
-                           numCs.index,numTs.index,destranded){
+                           numCs.index,numTs.index,destranded,skip=0){
   
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  

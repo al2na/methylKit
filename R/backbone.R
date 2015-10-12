@@ -457,7 +457,7 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
             if(dbtype=="tabix" & tools::file_ext(location)=="bgz"){
               
               obj = readMethylRawDB(dbpath = location,dbtype = dbtype, sample.id = sample.id, 
-                                    assembly = assembly, context = context, resolution = resolution)
+                                    assembly = assembly, context = context, resolution = resolution,skip)
             
             } else {
           
@@ -518,7 +518,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
               {
              
                 obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, sample.id = sample.id[[i]], 
-                                      assembly = assembly, context = context, resolution = resolution)
+                                      assembly = assembly, context = context, resolution = resolution,skip)
                 outList[[i]]=obj
               }
               myobj=new("methylRawListDB",outList,treatment=treatment)
