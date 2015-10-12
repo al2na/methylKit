@@ -137,6 +137,26 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 }
 
 # PRIVATE function:
+# makes a methylRawDB object from a df
+# it is called from read function or whenever this functionality is needed
+readMethylRawDB<-function(dbpath,dbtype,
+                          sample.id, assembly ,context,
+                          resolution){
+
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+  
+  new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
+      sample.id = sample.id, assembly = assembly,context=context,
+      resolution=resolution,dbtype=dbtype)
+}
+
+
+# PRIVATE function:
 # selects records in \code{object} of class \code{methylRawDB} 
 # that lie inside the regions given by \code{ranges} of class \code{GRanges}. 
 selectByOverlap<-function(object, ranges){
@@ -360,6 +380,28 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
   
   new("methylBaseDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
+      sample.ids = sample.ids, assembly = assembly,context=context,
+      resolution=resolution,dbtype=dbtype,treatment=treatment,
+      coverage.index=coverage.index,numCs.index=numCs.index,numTs.index=numTs.index,
+      destranded=destranded)
+}
+
+# PRIVATE function:
+# reads a methylBaseDB object from flat file database
+# it is called from read function or whenever this functionality is needed
+readMethylBaseDB<-function(dbpath,dbtype,
+                           sample.ids, assembly ,context,
+                           resolution,treatment,coverage.index,
+                           numCs.index,numTs.index,destranded){
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+  
+  new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,
       coverage.index=coverage.index,numCs.index=numCs.index,numTs.index=numTs.index,
