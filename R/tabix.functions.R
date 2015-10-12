@@ -240,13 +240,23 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type="data.table"){
 # convert methylKit tabix to data.table
 # assuming you get a list length 1
 tabix2dt<-function(tabixRes){
-  data.table::fread( paste(tabixRes[[1]],collapse="\n" ) )
+  if(Sys.info()['sysname']=="Windows") {
+  
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ))
+  
+  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ) }
+  
 }
 
 # convert methylKit tabix to data.frame
 # assuming you get a list length 1
 tabix2df<-function(tabixRes){
-  data.table::fread( paste(tabixRes[[1]],collapse="\n" ),data.table=FALSE )
+  if(Sys.info()['sysname']=="Windows") {
+    
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),data.table = FALSE)
+    
+  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,data.table = FALSE) }
+  
 }
 
 # convert methylKit tabix to data.frame
