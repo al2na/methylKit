@@ -454,27 +454,35 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
           
           function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
-            if(length(pipeline)==1 ){
+            if(dbtype=="tabix" & tools::file_ext(location)=="bgz"){
               
-              if(pipeline %in% c("amp","bismark") )
-              {
-                data<- .structureAMPoutput(data)
+              obj = readMethylRawDB(dbpath = location,dbtype = dbtype, sample.id = sample.id, 
+                                    assembly = assembly, context = context, resolution = resolution)
+            
+            } else {
+          
+              data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
+              if(length(pipeline)==1 ){
+                
+                if(pipeline %in% c("amp","bismark") )
+                {
+                  data<- .structureAMPoutput(data)
+                }
+                else{stop("unknown 'pipeline' argument, supported alignment pipelines: 'amp' or 'bismark' " )
+                }
+                
               }
-              else{stop("unknown 'pipeline' argument, supported alignment pipelines: 'amp' or 'bismark' " )
+              else{
+                .check.pipeline.list(pipeline)
+                data<- .structureGeneric(data, pipeline)
               }
               
+              dbdir <- .check.dbdir(dir = dbdir)
+              
+  
+              obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
+              obj         
             }
-            else{
-              .check.pipeline.list(pipeline)
-              data<- .structureGeneric(data, pipeline)
-            }
-            
-            dbdir <- .check.dbdir(dir = dbdir)
-            
-
-            obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
-            obj         
           }
 )
 
@@ -503,34 +511,51 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
               stop("length of 'treatment', 'name' and 'location' should be same\n")
             }
             
-            dbdir <- .check.dbdir(dbdir)
-            
-            # read each given location and record it as methylraw object
-            outList=list()
-            for(i in 1:length(location))
-            {
-              data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
+            if(dbtype=="tabix" & unique(tools::file_ext(location))=="bgz"){
               
-              if(length(pipeline)==1 )
+              outList=list()
+              for(i in 1:length(location))
               {
-                if(pipeline %in% c("amp","bismark")){
-                  data<- .structureAMPoutput(data)
-                } else {
-                  stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
-                }
+             
+                obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, sample.id = sample.id[[i]], 
+                                      assembly = assembly, context = context, resolution = resolution)
+                outList[[i]]=obj
               }
-              else{
-                #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
-                .check.pipeline.list(pipeline)
-                data<- .structureGeneric(data, pipeline)
-              }
+              myobj=new("methylRawListDB",outList,treatment=treatment)
               
-              obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
-              outList[[i]]=obj       
-            }
-            myobj=new("methylRawListDB",outList,treatment=treatment)
+              myobj
+              
+            } else {
             
-            myobj
+              dbdir <- .check.dbdir(dbdir)
+              
+              # read each given location and record it as methylraw object
+              outList=list()
+              for(i in 1:length(location))
+              {
+                data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data
+                
+                if(length(pipeline)==1 )
+                {
+                  if(pipeline %in% c("amp","bismark")){
+                    data<- .structureAMPoutput(data)
+                  } else {
+                    stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
+                  }
+                }
+                else{
+                  #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
+                  .check.pipeline.list(pipeline)
+                  data<- .structureGeneric(data, pipeline)
+                }
+                
+                obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
+                outList[[i]]=obj       
+              }
+              myobj=new("methylRawListDB",outList,treatment=treatment)
+              
+              myobj
+            }
           }
 )
 
