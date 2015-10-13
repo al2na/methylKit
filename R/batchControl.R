@@ -47,7 +47,11 @@
 #' @export
 #' @docType methods
 #' @rdname reconstruct-methods
-reconstruct<-function(methMat,mBase){
+setGeneric("reconstruct", function(methMat,mBase) standardGeneric("reconstruct"))
+
+#' @rdname reconstruct-methods
+#' @aliases reconstruct,methylBase-method
+setMethod("reconstruct","methylBase", function(methMat,mBase){
   
   # check if indeed methMat is percent methylation matrix
   if(max(methMat)<=1){
@@ -77,6 +81,7 @@ reconstruct<-function(methMat,mBase){
       destranded=mBase@destranded,resolution=mBase@resolution )
   
 }
+)
 
 #' Associate principal components with sample annotations
 #' 
