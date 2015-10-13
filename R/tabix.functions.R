@@ -197,6 +197,7 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   }
 }
 
+
 #' get data from meth tabix for a given set of regions
 #'
 #' @example
@@ -388,7 +389,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     # create a custom function that contains the function
     # to be applied
     myFunc<-function(chr,tbxFile,dir,filename,FUN,...){
-      data=getTabixByChr(chr,tbxFile,return.type="data.frame")
+      data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
       
       # for tabix
@@ -410,25 +411,25 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chr,tbxFile,dir,filename,...){
-      data=getTabixByChr(chr,tbxFile,return.type="data.frame")
+    myFunc<-function(chr,tbxFile,...){
+      data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,dir,filename2,...)
+    res=mclapply(chrs,myFunc,tbxFile,...)
     
-    # collect & cat temp files,then make tabix
+    # collect and return
     do.call("rbind",res)
   }else{
     
-    myFunc<-function(chr,tbxFile,dir,filename,...){
-      data=getTabixByChr(chr,tbxFile,return.type="data.frame")
+    myFunc<-function(chr,tbxFile,...){
+      data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,dir,filename2,...)
+    res=mclapply(chrs,myFunc,tbxFile,...)
     
-    # collect & cat temp files,then make tabix
+    # collect and return
     data.table(do.call("rbind",res))
   }
   
