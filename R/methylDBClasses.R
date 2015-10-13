@@ -4,30 +4,58 @@
 
 
 #' set column names for methylRawDB and methylBaseDB data aquired from flat file database
-#' 
-.setMethylDBNames <- function(df,methylDBclass){
+#' @param df data.frame containing methylRaw or methylBase data
+#' @param methylDBclass 
+.setMethylDBNames <- function(df,methylDBclass=c("methylDB","methylBaseDB")){
   
-  if( methylDBclass == "methylRawDB" ){
+  if(missing(methylDBclass)){
+
+    if( length(df) == 7 ){
+      
+      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+      
+    } else if ( length(df) > 7){
+      
+      data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
+      # get indices of coverage,numCs and numTs in the data frame 
+      numsamples = (length(df)-4)/3
+      coverage.ind=seq(5,by=3,length.out=numsamples)
+      numCs.ind   =coverage.ind+1
+      numTs.ind   =coverage.ind+2
+      
+      # change column names
+      names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
+      names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
+      names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+      
+    } 
     
-    data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+    return(df)
     
-  } else if ( methylDBclass == "methylBaseDB"){
+  } else {
     
-    data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
-    # get indices of coverage,numCs and numTs in the data frame 
-    numsamples = (length(df)-4)/3
-    coverage.ind=seq(5,by=3,length.out=numsamples)
-    numCs.ind   =coverage.ind+1
-    numTs.ind   =coverage.ind+2
+    if( methylDBclass == "methylRawDB" ){
     
-    # change column names
-    names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
-    names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
-    names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
     
-  }
-  
-  return(df)
+    } else if ( methylDBclass == "methylBaseDB"){
+    
+      data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
+      # get indices of coverage,numCs and numTs in the data frame 
+      numsamples = (length(df)-4)/3
+      coverage.ind=seq(5,by=3,length.out=numsamples)
+      numCs.ind   =coverage.ind+1
+      numTs.ind   =coverage.ind+2
+      
+      # change column names
+      names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
+      names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
+      names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+      
+    } 
+    
+    return(df)
+    }
 }
 
 
@@ -137,7 +165,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 }
 
 # PRIVATE function:
-# makes a methylRawDB object from a df
+# reads a methylRawDB object from a flat file database
 # it is called from read function or whenever this functionality is needed
 readMethylRawDB<-function(dbpath,dbtype,
                           sample.id, assembly ,context,
@@ -352,7 +380,7 @@ valid.methylBaseDB <- function(object) {
 #' @examples
 #' data(methylKit)
 #' library(GenomicRanges)
-#' my.gr=as(methylBase.obj,"GRanges")
+#' my.gr=as(methylBaseDB.obj,"GRanges")
 #' 
 #' @name methylBaseDB-class
 #' @aliases methylBaseDB
