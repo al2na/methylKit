@@ -157,9 +157,9 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE){
 #' get data from meth tabix for a given chr
 #'
 #' @example
-#' tbxFile="data/GSM1180321_methylC-Seq.mESC_TET2_KO.biorep1.techrep1.mkit.txt.bgz"
-#'  getTabixByChr(chr="chr10",tbxFile)
-getTabixByChr<-function(tbxFile,chr="chr10",return.type="data.table"){
+#' tbxFile=methylRawListDB[[1]]\@dbpath
+#'  getTabixByChr(chr="chr21",tbxFile)
+getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.frame","GRanges")){
   
   if( class(tbxFile) != "TabixFile" ){
     tbxFile <- Rsamtools::TabixFile(tbxFile)
@@ -170,8 +170,10 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type="data.table"){
   if(return.type=="data.table")
   {
     tabix2dt(res)
-  }else{
+  }else if (return.type=="data.frame"){
     tabix2df(res)
+  }else {
+    tabix2gr(res)
   }
 }
 
@@ -179,8 +181,9 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type="data.table"){
 #' get data from meth tabix for a given set of regions
 #'
 #' @example
-#' tbxFile="data/GSM1180321_methylC-Seq.mESC_TET2_KO.biorep1.techrep1.mkit.txt.bgz"
-#'  getTabixByChr(chr="chr10",tbxFile)
+#' granges <- as(methylRawListDB[[1]],"GRanges")
+#' tbxFile=methylRawListDB[[1]]\@dbpath
+#'  getTabixByOverlap(granges=granges[1:50],tbxFile)
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -200,11 +203,11 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 }
 
 
-#' get data from meth tabix for a given set of regions
+#' get data from meth tabix for a given number of rows
 #'
 #' @example
-#' tbxFile="data/GSM1180321_methylC-Seq.mESC_TET2_KO.biorep1.techrep1.mkit.txt.bgz"
-#'  getTabixByChr(chr="chr10",tbxFile)
+#' tbxFile=methylRawListDB[[1]]\@dbpath
+#'  headTabix(tbxFile)
 headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -219,9 +222,9 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 #' get data from meth tabix for a given chunkSize
 #'
 #' @example
-#' tbxFile="data/GSM1180321_methylC-Seq.mESC_TET2_KO.biorep1.techrep1.mkit.txt.bgz"
+#' tbxFile=methylRawListDB[[1]]\@dbpath
 #'  getTabixByChunk( tbxFile,chunk.size=10)
-getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type="data.table"){
+getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","data.frame","GRanges")){
   
   if( class(tbxFile) != "TabixFile" | !Rsamtools::isOpen(tbxFile, rw="read") ){
     stop("tbxFile has to be a class of TabixFile and should be open for reading ")
@@ -234,13 +237,15 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type="data.table"){
   if(return.type=="data.table")
   {
     tabix2dt(Rsamtools::scanTabix(tbxFile) )
-  }else{
+  }else if (return.type=="data.frame"){
     tabix2df(Rsamtools::scanTabix(tbxFile) )
+  }else {
+    tabix2gr(Rsamtools::scanTabix(tbxFile))
   }
 }
 
 
-# convert methylKit tabix to data.table
+#' convert methylKit tabix to data.table
 # assuming you get a list length 1
 tabix2dt<-function(tabixRes){
   if(Sys.info()['sysname']=="Windows") {
@@ -251,7 +256,7 @@ tabix2dt<-function(tabixRes){
   
 }
 
-# convert methylKit tabix to data.frame
+#' convert methylKit tabix to data.frame
 # assuming you get a list length 1
 tabix2df<-function(tabixRes){
   if(Sys.info()['sysname']=="Windows") {
@@ -262,13 +267,24 @@ tabix2df<-function(tabixRes){
   
 }
 
-# convert methylKit tabix to data.frame
+#' convert methylKit tabix to GRanges without Metacolumns
 # assuming you get a list length 1
 tabix2gr<-function(tabixRes){
+  
+  if(Sys.info()['sysname']=="Windows") {
+    
+    numCols = length(strsplit(tabixRes[[1]][1],split = "\t")[[1]])
+    
+    from <- data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                       select=c(1:4), data.table = FALSE)
+    
+  }else{ from <-  data.table::fread( paste(tabixRes[[1]],collapse="\n"),
+                            select=c(1:4), data.table = FALSE) }
+  
+  GRanges(seqnames=as.character(from$V1),ranges=IRanges(start=from$V2, end=from$V3),
+          strand=from$V4)
+
 }
-
-
-
 
 # applyTbxByChunk
 #' serially apply a function on chunks of tabix files
