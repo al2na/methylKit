@@ -189,6 +189,8 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   res=Rsamtools::scanTabix(tbxFile,param=granges) 
   
+  res <- list(unlist(res))
+  
   if(return.type=="data.table")
   {
     tabix2dt(res)
