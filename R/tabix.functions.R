@@ -89,7 +89,7 @@ catsub2tabix<-function(dir,pattern,filename){
   }
   
   con=file(outfile, open = "a", blocking = TRUE) # open connection  
-  for(file in list.files(path = dir, pattern = pattern,full.names=TRUE)){
+  for(file in gtools::mixedsort(list.files(path = dir, pattern = pattern,full.names=TRUE))){
     file.append(outfile,file) # append files
   }
   close(con)
@@ -313,10 +313,21 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
   
+  # open tabix file with given chunk size
+  if( class(tbxFile) != "TabixFile" ){
+    tbxFile <- Rsamtools::TabixFile(tbxFile, yieldSize = chunk.size)
+
+  } else {
+    if(Rsamtools::isOpen(tbxFile)){close(tbxFile)}# close if already open
+    Rsamtools::yieldSize(tbxFile) <-  chunk.size 
+  }
+  
+  
   # calculate number of chunks
-  recs=countTabix(tbxFile$path)[[1]]
+  recs=Rsamtools::countTabix(tbxFile)[[1]]
   chunk.num=ceiling(recs/chunk.size)
   
+  open(tbxFile)
   
   if(return.type =="tabix"){
     
@@ -331,18 +342,13 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
     }
-    
-    
-    # open tabix file with given chunk size
-    if(isOpen(tbxFile)){close(tbxFile)}# close if already open
-    open(tbxFile,yieldSize=chunk.size)
-    
+
     # attach a random string to the file name 
     rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
     filename2=paste(rndFile,filename,sep="_")
     
     # apply function to chunks
-    res=lapply(1:chunk.num,myFunc,dir,filename2,FUN,...)
+    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
     catsub2tabix(dir,pattern=filename2,filename)
@@ -358,28 +364,23 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       FUN(data,...)    
     }
     
-    res=lapply(chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
     
     # collect and return
     do.call("rbind",res)
   }else{
     
     myFunc<-function(chunk.num,tbxFile,FUN,...){
-      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.table")
       FUN(data,...)    
     }
     
-    res=lapply(chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
   
     
     # collect and return
     data.table(do.call("rbind",res))
   }
-  
-  
-  
-  
-  
   
 }
 
