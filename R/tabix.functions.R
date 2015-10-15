@@ -431,9 +431,11 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     res=mclapply(chrs,myFunc,tbxFile,dir,filename2,FUN,...,mc.cores = mc.cores)
     
     # collect & cat temp files,then make tabix
+
     path <- catsub2tabix(dir,filename2,filename)
     
     return(tools::file_path_sans_ext(path))
+
     
   }else if(return.type=="data.frame"){
     
