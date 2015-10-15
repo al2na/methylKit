@@ -164,6 +164,8 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE){
 #'  getTabixByChr(chr="chr21",tbxFile)
 getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.frame","GRanges")){
   
+  return.type <- match.arg(return.type)
+  
   if( class(tbxFile) != "TabixFile" ){
     tbxFile <- Rsamtools::TabixFile(tbxFile)
   }
@@ -222,12 +224,14 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 }
 
 
-#' get data from meth tabix for a given chunkSize
+#' get data from already opened tabixfile for a given chunkSize
 #'
 #' @example
 #' tbxFile=methylRawListDB[[1]]\@dbpath
 #'  getTabixByChunk( tbxFile,chunk.size=10)
 getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","data.frame","GRanges")){
+  
+  return.type <- match.arg(return.type)
   
   if( class(tbxFile) != "TabixFile" | !Rsamtools::isOpen(tbxFile, rw="read") ){
     stop("tbxFile has to be a class of TabixFile and should be open for reading ")
