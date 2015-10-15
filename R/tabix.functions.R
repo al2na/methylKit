@@ -272,6 +272,7 @@ tabix2df<-function(tabixRes){
 
 #' convert methylKit tabix to GRanges without Metacolumns
 # assuming you get a list length 1
+# for GRanges object with metacolumns coerce from methylDB object
 tabix2gr<-function(tabixRes){
   
   if(Sys.info()['sysname']=="Windows") {
@@ -354,9 +355,9 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    catsub2tabix(dir,pattern=filename2,filename,sort = T)
-    
-    return(file.path(path.expand( dir),filename) )
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
+
+    return(tools::file_path_sans_ext(path))
     
   }else if(return.type=="data.frame"){
     
@@ -390,22 +391,25 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 
 #' apply a function on tabix files chromosome by chromosome 
 #' 
-#' @param tbxFile
+#' @param tbxFile tabix file to read. a TabixFile object
 #' @param chrs chromosome names. Based on chromosome names the chunks of tabix file
-#'        will be read into the memory.
+#'        will be read into the memory. If missing use all chromosome names in tabix file.
 #' @param return.type indicates the return type for the function
-#' @param FUN function to apply to chunks, it takes a data.frame and returns a 
+#' @param FUN function to apply to chrs, it takes a data.frame and returns a 
 #'            data.frame. First argument of the function should be a data frame
 #' @param ... parameters to be passed to FUN. 
 #' @param dir directory to create temporary files and the resulting tabix file
 #' @param filename the filename for the resulting tabix file, this should not be 
 #' a path, just a file name.
+#' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
 
 #' 
 applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
+  if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
+  if(missing(chrs)) { chrs = Rsamtools::seqnamesTabix(tbxFile)}
   if(return.type =="tabix"){
    
     # create a custom function that contains the function
@@ -424,32 +428,34 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
     filename2=paste(rndFile,filename,sep="_")
     
-    res=mclapply(chrs,myFunc,dir,filename2,...)
+    res=mclapply(chrs,myFunc,tbxFile,dir,filename2,FUN,...,mc.cores = mc.cores)
     
     # collect & cat temp files,then make tabix
-    catsub2tabix(dir,pattern,filename2)
+    path <- catsub2tabix(dir,filename2,filename)
+    
+    return(tools::file_path_sans_ext(path))
     
   }else if(return.type=="data.frame"){
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chr,tbxFile,...){
+    myFunc<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,...)
+    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     do.call("rbind",res)
   }else{
     
-    myFunc<-function(chr,tbxFile,...){
-      data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
+    myFunc<-function(chr,tbxFile,FUN,...){
+      data=getTabixByChr(chr = chr,tbxFile,return.type="data.table")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,...)
+    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     data.table(do.call("rbind",res))
