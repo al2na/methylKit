@@ -80,16 +80,19 @@ df2tabix<-function(df,outfile){
 #' @param dir directory of subfiles to be merged
 #' @param pattern a pattern in the file names
 #' @param filename output file name
-catsub2tabix<-function(dir,pattern,filename){
+#' @param sort sort list of subfiles in alpha, numerical way
+catsub2tabix<-function(dir,pattern,filename,sort=F){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
   if(file.exists(outfile)){
     message("overwriting ",outfile)
     unlink(outfile)
   }
+  subfiles <- list.files(path = dir, pattern = pattern,full.names=TRUE)
+  if(sort) {subfiles <- gtools::mixedsort(subfiles)}
   
   con=file(outfile, open = "a", blocking = TRUE) # open connection  
-  for(file in gtools::mixedsort(list.files(path = dir, pattern = pattern,full.names=TRUE))){
+  for(file in subfiles){
     file.append(outfile,file) # append files
   }
   close(con)
@@ -291,7 +294,7 @@ tabix2gr<-function(tabixRes){
 #' 
 #' The function reads chunks and applies a function. 
 #' The function (FUN argument) should apply on data.frames and return a data frame
-#' as a result. The function is serially applied to chunks (means no paralleization)
+#' as a result. The function is serially applied to chunks (means no parallelization)
 #' However, the function FUN itseld can be parallelized function
 #' and related arguments could be passed on to the function via ... argument.
 #' 
@@ -351,7 +354,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    catsub2tabix(dir,pattern=filename2,filename)
+    catsub2tabix(dir,pattern=filename2,filename,sort = T)
     
     return(file.path(path.expand( dir),filename) )
     
