@@ -251,53 +251,49 @@ setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
 #' @aliases filterByCoverage,methylRawDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc, save.db){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
             if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
             
-            data=getData(methylObj) # get the data part
-            
-            #figure out which cut-offs to use, maybe there is more elagent ways, quick&dirty works for now
-            if(is.numeric(lo.count) ){lo.count=lo.count}
-            if(is.numeric(lo.perc)){lo.count=quantile(data$coverage,lo.perc/100)}
-            if(is.numeric(hi.count)){hi.count=hi.count}
-            if(is.numeric(hi.perc)){hi.count=quantile(data$coverage,hi.perc/100)}
-            
-            if(is.numeric(lo.count)){data=data[data$coverage>=lo.count,]}
-            if(is.numeric(hi.count)){data=data[data$coverage<hi.count,]}
-            
-            if(!save.db){
+            filter <- function(data,lo.count,lo.perc,hi.count,hi.perc) {
               
-              new("methylRaw",data,sample.id=methylObj@sample.id,
-                  assembly=methylObj@assembly,
-                  context=methylObj@context,resolution=methylObj@resolution)
+              .setMethylDBNames(data)
+            
+              # data=getData(methylObj) # get the data part
+            
+              #figure out which cut-offs to use, maybe there is more elagent ways, quick&dirty works for now
+              if(is.numeric(lo.count) ){lo.count=lo.count}
+              if(is.numeric(lo.perc)){lo.count=quantile(data$coverage,lo.perc/100)}
+              if(is.numeric(hi.count)){hi.count=hi.count}
+              if(is.numeric(hi.perc)){hi.count=quantile(data$coverage,hi.perc/100)}
               
-            }else{
-              #sample name to not overwrite the original tabix file
-              sample.id = paste(methylObj@sample.id,
-                                paste(sample(c(0:9, letters, LETTERS),3,replace = T),collapse = ""),sep = "_")
-              #save dataframe as methylbaseDB object and return object
-              makeMethylRawDB(df = data,dbpath = getwd(),
-                              dbtype = "tabix",sample.id = sample.id,
-                              assembly = methylObj@assembly,context = methylObj@context,
-                              resolution = methylObj@resolution)
+              if(is.numeric(lo.count)){data=data[data$coverage>=lo.count,]}
+              if(is.numeric(hi.count)){data=data[data$coverage<hi.count,]}
+              
+              return(data)
               
             }
             
+            dir <- dirname(methylObj@dbpath)
+            filename <- paste(basename(tools::file_path_sans_ext(methylObj@dbpath)),"filtered",sep="_")
             
+            newdbpath <- applyTbxByChunk(methylObj@dbpath, dir=dir, chunk.size = 1e6, filename = filename, 
+                                         return.type = "tabix", FUN = filter, lo.count=lo.count, lo.perc=lo.perc, 
+                                         hi.count=hi.count, hi.perc=hi.perc)
+            
+            readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                            sample.id = paste(methylObj@sample.id,"filtered",sep = "_"),
+                            assembly = methylObj@assembly, context = methylObj@context,
+                            resolution = methylObj@resolution)
             
           })
 
 #' @aliases filterByCoverage,methylRawListDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,save.db){
-            if(!save.db){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+
               new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
-              new("methylRawList", new.list,treatment=methylObj@treatment)
-            }else{
-              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,save.db)
               new("methylRawListDB", new.list,treatment=methylObj@treatment)
-            }
             
           })
 
