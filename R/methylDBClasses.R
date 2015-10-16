@@ -436,7 +436,7 @@ readMethylBaseDB<-function(dbpath,dbtype,
 #' @rdname unite-methods
 #' @aliases unite,methylRawListDB-method
 setMethod("unite", "methylRawListDB",
-          function(object,destrand,min.per.group,save.db=FALSE,dbdir=getwd()){
+          function(object,destrand,min.per.group){
             
             
             
