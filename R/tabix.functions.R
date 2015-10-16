@@ -5,20 +5,23 @@
 
 #' merge tabix files by chr, start,end, strand
 #' 
-#' @param tabixList list of tabix files created by Rsamtools::TabixFileList
+#' @param tabixList list of tabix files 
 #' @param dir working directory
 #' @param filename the output file name
 #' @param mc.cores number of multiple cores. If mc.cores>1 temporary files for each chromsome
 #'        will be created prior to cat, zipping and indexing the single output file
+#' @param all logical parameter passed to \code{\link{merge}} function 
 #'        
 #'        mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1) 
-mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ){
+mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
   
   # get outfile
   
   #filename="dump.meth.txt"
   #dir="~" 
-  
+  if( class(tabixList) != "TabixFileList" ){
+    tabixList <- Rsamtools::TabixFileList(tabixList)
+  }
   
   # get chrs
   chrNum=table(unlist(lapply(tabixList,Rsamtools::seqnamesTabix)))
@@ -28,7 +31,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ){
     # random file string
     rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
     filename2=paste(rndFile,filename,sep="_")
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,mc.cores=mc.cores)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,mc.cores=mc.cores,all=all)
     
     #concat subfiles
 
@@ -47,7 +50,13 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ){
     unlink(list.files(path = dir, pattern = rndFile,full.names=T))
   }else{
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,mc.cores=1)
+    outfile= file.path(path.expand(dir),filename) # get file name 
+    if(file.exists(outfile)){
+      message("overwriting ",outfile)
+      unlink(outfile)
+    }
+    
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,mc.cores=1,all=all)
     outfile= file.path(path.expand(dir),filename) 
   }
   
@@ -97,7 +106,7 @@ catsub2tabix<-function(dir,pattern,filename,sort=F){
   }
   close(con)
   #remove temp files
-  unlink(list.files(path = dir, pattern = pattern,full.names=T))
+  unlink(subfiles)
   
   #make tabix
   makeMethTabix( outfile ,skip=0)
@@ -120,7 +129,7 @@ makeMethTabix<-function(filepath,skip=0){
 
 #' merge the data tables for a given chr
 #' 
-mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE){
+mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   #get first file on the list
   res=getTabixByChr(tbxFile = tabixList[[1]],chr = chr)
@@ -130,12 +139,12 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE){
     tmp=getTabixByChr(tbxFile = tabixList[[i]],chr = chr)
     
     # merge tabix in memory
-    res=merge(res,tmp,by=c("chr","start","end"))
+    res=merge(res,tmp,by=c("V1","V2","V3","V4"),all=all)
     
   }
   
   # order rows
-  data.table::setorder(res, chr,start,end)
+  data.table::setorder(res, V1,V2,V3)
   
   if(!parallel){
   # write out append TRUE
