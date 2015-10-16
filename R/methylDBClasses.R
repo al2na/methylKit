@@ -1155,30 +1155,30 @@ setReplaceMethod("setTreatment", signature = "methylBaseDB", function(x, value) 
 #' The function returns the sample ids stored in any of the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects 
 #' 
 #' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage getSampleNames(x)
+#' @usage getSampleID(x)
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' getSampleNames(methylBaseDB.obj)
-#' getSampleNames(methylRawListDB.obj)
+#' getSampleID(methylBaseDB.obj)
+#' getSampleID(methylRawListDB.obj)
 #' 
 #' 
 #' @return the sample ids stored in the object
 #' @export
 #' @docType methods
-#' @rdname getSampleNames-methods
-setGeneric("getSampleNames", def=function(x) standardGeneric("getSampleNames"))
-#' @rdname getSampleNames-methods
-#' @aliases getSampleNames,methylRawListDB-method
-setMethod("getSampleNames", signature = "methylRawListDB", function(x) {
+#' @rdname getSampleID-methods
+setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylRawListDB-method
+setMethod("getSampleID", signature = "methylRawListDB", function(x) {
   names <- vapply(x,function(z) z@sample.id,FUN.VALUE = "character")
   return(names)
 })
 
-#' @rdname getSampleNames-methods
-#' @aliases getSampleNames,methylBaseDB-method
-setMethod("getSampleNames", signature = "methylBaseDB", function(x) {
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylBaseDB-method
+setMethod("getSampleID", signature = "methylBaseDB", function(x) {
   return(x@sample.ids)
 })
 
@@ -1188,23 +1188,23 @@ setMethod("getSampleNames", signature = "methylBaseDB", function(x) {
 #' The function returns the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects with the new sample ids stored in it.
 #' 
 #' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage setSampleNames(x) <- c("id.1","id.2","id.3",...,"id.n")
+#' @usage setSampleID(x) <- c("id.1","id.2","id.3",...,"id.n")
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' setSampleNames(methylBaseDB.obj) <- c("t1","t2","c1","c2")
-#' setSampleNames(methylRawListDB.obj) <- c("test-one","test-two","control-one","control-two")
+#' setSampleID(methylBaseDB.obj) <- c("t1","t2","c1","c2")
+#' setSampleID(methylRawListDB.obj) <- c("test-one","test-two","control-one","control-two")
 #' 
 #' 
 #' @return the object with new sample ids
 #' @export
 #' @docType methods
-#' @rdname setSampleNames-methods
-setGeneric("setSampleNames<-", def=function(x, value="numeric") {standardGeneric("setSampleNames<-")})
-#' @rdname setSampleNames-methods
-#' @aliases setSampleNames,methylRawDB-method
-setReplaceMethod("setSampleNames", signature = "methylRawDB", function(x, value) {
+#' @rdname setSampleID-methods
+setGeneric("setSampleID<-", def=function(x, value="numeric") {standardGeneric("setSampleID<-")})
+#' @rdname setSampleID-methods
+#' @aliases setSampleID,methylRawDB-method
+setReplaceMethod("setSampleID", signature = "methylRawDB", function(x, value) {
   
   if(! ( length(value) == 1 ) ){
     message("The vector of new sample ids is not valid, check the length of input")
@@ -1216,25 +1216,25 @@ setReplaceMethod("setSampleNames", signature = "methylRawDB", function(x, value)
   
 })
 
-#' @rdname setSampleNames-methods
-#' @aliases setSampleNames,methylRawListDB-method
-setReplaceMethod("setSampleNames", signature = "methylRawListDB", function(x, value) {
+#' @rdname setSampleID-methods
+#' @aliases setSampleID,methylRawListDB-method
+setReplaceMethod("setSampleID", signature = "methylRawListDB", function(x, value) {
   
-  if(! ( length(getSampleNames(x)) == length(value) ) ){
+  if(! ( length(getSampleID(x)) == length(value) ) ){
     message("The vector of new sample ids is not valid, check the length of input")
     return(x)
   } else {
     treatment <- x@treatment
-    x <- mapply(`setSampleNames<-`, x, value)
+    x <- mapply(`setSampleID<-`, x, value)
     x <- new("methylRawListDB",x,treatment=treatment)
     return(x)
   }
   
 })
 
-#' @rdname setSampleNames-methods
-#' @aliases setSampleNames,methylBaseDB-method
-setReplaceMethod("setSampleNames", signature = "methylBaseDB", function(x, value) {
+#' @rdname setSampleID-methods
+#' @aliases setSampleID,methylBaseDB-method
+setReplaceMethod("setSampleID", signature = "methylBaseDB", function(x, value) {
   
   if(! ( length(x@sample.ids) == length(value) ) ){
     message("The vector of new sample ids is not valid, check the length of input")
