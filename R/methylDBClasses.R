@@ -457,86 +457,86 @@ setMethod("unite", "methylRawListDB",
             
             if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")}
             
-            #merge raw methylation calls together
-            df=getData(object[[1]])
-            if(destrand & (object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
-            df=data.table(df,key=c("chr","start","end","strand"))
-            sample.ids=c(object[[1]]@sample.id)
-            assemblies=c(object[[1]]@assembly)
-            contexts  =c(object[[1]]@context)
-            for(i in 2:length(object))
-            {
-              df2=getData(object[[i]])
-              if(destrand & (object[[1]]@resolution == "base") ){df2=.CpG.dinuc.unify(df2)}
-              #
+            # destrand single objects contained in methylRawListDB
+            if(destrand) { 
               
-              if( is.null(min.per.group) ){
-                df2=data.table(df2,key=c("chr","start","end","strand"))
-                df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ) # merge the dat to a data.frame
-                #df=df[df2, nomatch=FALSE]
-              }else{
-                df2=data.table(df2,key=c("chr","start","end","strand") )
-                # using hacked data.table merge called merge2: temporary fix
-                df=merge(df,df2,by=c("chr","start","end","strand"),suffixes=c(as.character(i-1),as.character(i) ) ,all=TRUE)
-                #setkeyv(X,c("chr","start","end","strand"))
-                #df=df[df2, nomatch=FALSE]
+              destrandFun <- function(obj){
+              
+                if(obj@resolution == "base") {
+                  dir <- dirname(obj@dbpath)
+                  filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
+                  # need to use .CpG.dinuc.unifyOld because output is ordered
+                  newdbpath <- applyTbxByChunk(obj@dbpath, dir=dir,filename = filename,return.type = "tabix", 
+                                               FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x) )})
+                  
+                  readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                                  sample.id = obj@sample.id,
+                                  assembly = obj@assembly, context = obj@context,
+                                  resolution = obj@resolution)
+                }else {obj}
+                
               }
-              sample.ids=c(sample.ids,object[[i]]@sample.id)
-              contexts=c(contexts,object[[i]]@context)
+              new.list=lapply(object,destrandFun)
+              object <- new("methylRawListDB", new.list,treatment=object@treatment)
+              
+              on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",full.names = TRUE)))    
             }
             
-            # stop if the assembly of object don't match
-            if( length( unique(assemblies) ) != 1 ){stop("assemblies of methylrawList elements should be same\n")}
+
+            #merge raw methylation calls together
             
+            objList <- sapply(object,FUN = function(x) x@dbpath)
+            dir <- dirname(object[[1]]@dbpath)
+            filename <- paste(getSampleID(object),collapse = "_")
             
-            if(  ! is.null(min.per.group) ){
+            if(is.null(min.per.group)) {
+              
+               dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = 1) 
+               
+               dbpath <- tools::file_path_sans_ext(dbpath)
+               
+            } else {
               # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
               
-              # get indices of coverage,numCs and numTs in the data frame 
-              coverage.ind=seq(5,by=3,length.out=length(object))
-              numCs.ind   =coverage.ind+1
-              numTs.ind   =coverage.ind+2
-              start.ind   =2 # will be needed to weed out NA values on chr/start/end/strand
+              # keep rows with no matching in all samples  
+              tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = 1,all=TRUE) 
+              tmpPath <- tools::file_path_sans_ext(tmpPath)
               
-              for(i in unique(object@treatment) ){
-                my.ind=coverage.ind[object@treatment==i]
-                ldat = !is.na(df[,my.ind,with=FALSE])
-                if(  is.null(dim(ldat))  ){  # if there is only one dimension
-                  df=df[ldat>=min.per.group,]
-                }else{
-                  df=df[rowSums(ldat)>=min.per.group,]
+              # get indices of coverage in the data frame 
+              coverage.ind=seq(5,by=3,length.out=length(object))
+
+              filter <- function(df, coverage.ind, treatment,min.per.group){
+                
+                df <- as.data.table(df)
+                for(i in unique(treatment) ){
+                  my.ind=coverage.ind[treatment==i]
+                  ldat = !is.na(df[,my.ind,with=FALSE])
+                  if(  is.null(dim(ldat))  ){  # if there is only one dimension
+                    df=df[ldat>=min.per.group,]
+                  }else{
+                    df=df[rowSums(ldat)>=min.per.group,]
+                  }
                 }
+                return(as.data.frame(df))
               }
 
+              dbpath <- applyTbxByChunk(tbxFile = tmpPath, dir = dir, filename = filename, return.type = "tabix", 
+                                        FUN = filter,treatment=object@treatment,coverage.ind=coverage.ind,min.per.group=min.per.group)
+              
             }
-            df=as.data.frame(df)
-            # get indices of coverage,numCs and numTs in the data frame 
+            
+            
             coverage.ind=seq(5,by=3,length.out=length(object))
             numCs.ind   =coverage.ind+1
             numTs.ind   =coverage.ind+2
             
-            # change column names
-            names(df)[coverage.ind]=paste(c("coverage"),1:length(object),sep="" )
-            names(df)[numCs.ind]   =paste(c("numCs"),1:length(object),sep="" )
-            names(df)[numTs.ind]   =paste(c("numTs"),1:length(object),sep="" )
+            readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+                             sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                             context = object[[1]]@context,resolution = object[[1]]@resolution,
+                             treatment = object@treatment,coverage.index = coverage.ind,
+                             numCs.index = numCs.ind,numTs.index = numTs.ind,
+                             destranded = destrand)
             
-            if(!save.db){
-              #make methylbase object and return the object
-              obj=new("methylBase",(df),sample.ids=sample.ids,
-                      assembly=unique(assemblies),context=unique(contexts),
-                      treatment=object@treatment,coverage.index=coverage.ind,
-                      numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=object[[1]]@resolution )
-            }else{
-              dbdir <- .check.dbdir(dbdir)
-              #save dataframe as methylbaseDB object and return object
-              obj=makeMethylBaseDB(df = df,dbpath = dbdir,dbtype = "tabix",sample.ids=sample.ids,
-                                   assembly=unique(assemblies),context=unique(contexts),
-                                   treatment=object@treatment,coverage.index=coverage.ind,
-                                   numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,
-                                   resolution=object[[1]]@resolution)
-            }
-
-            obj
           }
 )           
 
