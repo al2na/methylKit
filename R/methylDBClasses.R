@@ -517,10 +517,12 @@ setMethod("unite", "methylRawListDB",
                 return(as.data.frame(df))
               }
 
-              dbpath <- applyTbxByChunk(tbxFile = tmpPath, dir = dir, filename = filename, return.type = "tabix", 
-                                        FUN = filter,treatment=object@treatment,coverage.ind=coverage.ind,min.per.group=min.per.group)
+              dbpath <- applyTbxByChunk(tbxFile = tmpPath, dir = dir, filename = filename, 
+                                        return.type = "tabix", FUN = filter,treatment=object@treatment,
+                                        coverage.ind=coverage.ind,min.per.group=min.per.group)
               
-            }
+              unlink(list.files(dirname(tmpPath),pattern = basename(tools::file_path_sans_ext(tmpPath)),full.names = TRUE))
+              }
             
             
             coverage.ind=seq(5,by=3,length.out=length(object))
