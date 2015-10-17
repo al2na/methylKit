@@ -547,13 +547,23 @@ setMethod("getCorrelation", "methylBaseDB",
           function(object,method,plot,nrow=2e6){
             
             if(is.null(nrow)){ 
-              data = getData(object)
+              
+              meth.fun <- function(data, numCs.index, numTs.index){
+                
+                data[, numCs.index]/( data[,numCs.index] + data[,numTs.index] )
+                
+              }
+              meth.mat = applyTbxByChunk(object@dbpath,return.type = "data.frame",
+                                         FUN = meth.fun, numCs.index = object@numCs.index,
+                                         numTs.index = object@numTs.index)
+              
             }else{
               data = headTabix(object@dbpath,nrow=nrow,return.type = "data.frame")
-            }
             
-            meth.mat = data[, object@numCs.index]/
-              ( data[,object@numCs.index] + data[,object@numTs.index] )                                      
+              meth.mat = data[, object@numCs.index]/( data[,object@numCs.index] + data[,object@numTs.index] )
+              
+              }
+            
             names(meth.mat)=object@sample.ids
 
 
