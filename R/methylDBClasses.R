@@ -24,13 +24,13 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
-      names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
-      names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+      data.table::setnames(df,names(df)[coverage.ind], paste(c("coverage"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numCs.ind], paste(c("numCs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
       
     } 
     
-    return(df)
+    #return(df)
     
   } else {
     
@@ -48,13 +48,13 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      names(df)[coverage.ind]=paste(c("coverage"),1:numsamples,sep="" )
-      names(df)[numCs.ind]   =paste(c("numCs"),1:numsamples,sep="" )
-      names(df)[numTs.ind]   =paste(c("numTs"),1:numsamples,sep="" )
+      data.table::setnames(df,names(df)[coverage.ind], paste(c("coverage"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numCs.ind], paste(c("numCs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
       
     } 
     
-    return(df)
+    #return(df)
     }
 }
 
@@ -165,7 +165,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 }
 
 # PRIVATE function:
-# reads a methylRawDB object from a flat file database
+# creates a methylRawDB object from a flat file database
 # it is called from read function or whenever this functionality is needed
 readMethylRawDB<-function(dbpath,dbtype,
                           sample.id, assembly ,context,
@@ -257,8 +257,6 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
             filter <- function(data,lo.count,lo.perc,hi.count,hi.perc) {
               
               .setMethylDBNames(data)
-            
-              # data=getData(methylObj) # get the data part
             
               #figure out which cut-offs to use, maybe there is more elagent ways, quick&dirty works for now
               if(is.numeric(lo.count) ){lo.count=lo.count}
@@ -438,9 +436,6 @@ readMethylBaseDB<-function(dbpath,dbtype,
 setMethod("unite", "methylRawListDB",
           function(object,destrand,min.per.group){
             
-            
-            
-            
             #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
             if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
             {
@@ -465,7 +460,7 @@ setMethod("unite", "methylRawListDB",
                 if(obj@resolution == "base") {
                   dir <- dirname(obj@dbpath)
                   filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
-                  # need to use .CpG.dinuc.unifyOld because output is ordered
+                  # need to use .CpG.dinuc.unifyOld because output needs to be ordered
                   newdbpath <- applyTbxByChunk(obj@dbpath, dir=dir,filename = filename,return.type = "tabix", 
                                                FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x) )})
                   
@@ -481,8 +476,6 @@ setMethod("unite", "methylRawListDB",
               
               on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",full.names = TRUE)))    
             }
-            
-
             #merge raw methylation calls together
             
             objList <- sapply(object,FUN = function(x) x@dbpath)
@@ -508,14 +501,18 @@ setMethod("unite", "methylRawListDB",
               filter <- function(df, coverage.ind, treatment,min.per.group){
                 
                 df <- as.data.table(df)
+                
                 for(i in unique(treatment) ){
+                  
                   my.ind=coverage.ind[treatment==i]
                   ldat = !is.na(df[,my.ind,with=FALSE])
+                  
                   if(  is.null(dim(ldat))  ){  # if there is only one dimension
                     df=df[ldat>=min.per.group,]
                   }else{
                     df=df[rowSums(ldat)>=min.per.group,]
                   }
+                  
                 }
                 return(as.data.frame(df))
               }

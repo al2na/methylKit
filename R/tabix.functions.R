@@ -168,9 +168,9 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
 
 #' get data from meth tabix for a given chr
 #'
-#' @example
-#' tbxFile=methylRawListDB[[1]]\@dbpath
-#'  getTabixByChr(chr="chr21",tbxFile)
+# @example
+# tbxFile=system.file("extdata", "ctrl1.txt", package = "methylKit")
+#  getTabixByChr(chr="chr21",tbxFile)
 getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
@@ -194,10 +194,10 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.fra
 
 #' get data from meth tabix for a given set of regions
 #'
-#' @example
-#' granges <- as(methylRawListDB[[1]],"GRanges")
-#' tbxFile=methylRawListDB[[1]]\@dbpath
-#'  getTabixByOverlap(granges=granges[1:50],tbxFile)
+# @example
+# granges <- as(methylRawListDB[[1]],"GRanges")
+# tbxFile=methylRawListDB[[1]]@dbpath
+#  getTabixByOverlap(granges=granges[1:50],tbxFile)
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -219,9 +219,9 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 
 #' get data from meth tabix for a given number of rows
 #'
-#' @example
-#' tbxFile=methylRawListDB[[1]]\@dbpath
-#'  headTabix(tbxFile)
+# @example
+# tbxFile=methylRawListDB[[1]]@dbpath
+#  headTabix(tbxFile)
 headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -235,9 +235,9 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 
 #' get data from already opened tabixfile for a given chunkSize
 #'
-#' @example
-#' tbxFile=methylRawListDB[[1]]\@dbpath
-#'  getTabixByChunk( tbxFile,chunk.size=10)
+# @example
+# tbxFile=methylRawListDB[[1]]@dbpath
+#  getTabixByChunk( tbxFile,chunk.size=10)
 getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
@@ -289,8 +289,6 @@ tabix2df<-function(tabixRes){
 tabix2gr<-function(tabixRes){
   
   if(Sys.info()['sysname']=="Windows") {
-    
-    numCols = length(strsplit(tabixRes[[1]][1],split = "\t")[[1]])
     
     from <- data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                        select=c(1:4), data.table = FALSE)
