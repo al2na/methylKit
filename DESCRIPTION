@@ -31,7 +31,8 @@ Imports:
     GenomeInfoDb,
     qvalue,
     emdbook,
-    Rsamtools
+    Rsamtools,
+    gtools
 Suggests:
     testthat
 Collate:
