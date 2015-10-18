@@ -665,13 +665,18 @@ setMethod("getCorrelation", "methylBaseDB",
 setMethod("getCoverageStats", "methylRawDB",
           function(object,plot,both.strands,labels,...){
             
+            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage)])} )
+            
             if(!plot){
               qts=seq(0,0.9,0.1) # get quantiles
               qts=c(qts,0.95,0.99,0.995,0.999,1)                          
               
               if(both.strands){
-                plus.cov=object[object[][["strand"]]=="+",][["coverage"]]
-                mnus.cov=object[object[][["strand"]]=="-",][["coverage"]]
+                
+                
+                plus.cov=tmp[strand=="+",coverage]
+                mnus.cov=tmp[strand=="-",coverage]
                 
                 cat("read coverage statistics per base\n\n")
                 cat("FORWARD STRAND:\n")
@@ -688,7 +693,7 @@ setMethod("getCoverageStats", "methylRawDB",
                 cat("\n")                          
               }else{
                 
-                all.cov=object[][["coverage"]]
+                all.cov=tmp[,coverage]
                 
                 cat("read coverage statistics per base\n")
                 cat("summary:\n")
@@ -700,8 +705,8 @@ setMethod("getCoverageStats", "methylRawDB",
               
             }else{
               if(both.strands){   
-                plus.cov=object[object[][["strand"]]=="+",][["coverage"]]
-                mnus.cov=object[object[][["strand"]]=="-",][["coverage"]]
+                plus.cov=tmp[strand=="+",coverage]
+                mnus.cov=tmp[strand=="-",coverage]
                 
                 par(mfrow=c(1,2))
                 if(labels){
@@ -727,7 +732,7 @@ setMethod("getCoverageStats", "methylRawDB",
                 mtext(object@sample.id, side = 3)
                 
               }else{
-                all.cov= object[][["coverage"]]
+                all.cov=tmp[,coverage]
                 if(labels){
                   a=hist(log10(all.cov),plot=F)
                   my.labs=as.character(round(100*a$counts/length(all.cov),1))
