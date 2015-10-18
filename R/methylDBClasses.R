@@ -848,16 +848,32 @@ setMethod("getMethylationStats", "methylRawDB",
 #' @aliases adjust.methylC,methylRawDB,methylRawDB-method
 setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
   
-  lst=new("methylRawList",list(mc,hmc),treatment=c(1,0))
-  data=getData(unite(lst))
+  lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
+  base=unite(lst)
   
-  diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
-  diff[diff<0]=0
-  data$numCs1=diff
-  data$numTs1=data$coverage1-data$numCs1
-  colnames(data)[5:7]=c("coverage","numCs","numTs")
-  makeMethylRawDB(df = data[,1:7],dbpath = getwd() ,sample.id=paste0(mc@sample.id,".adjust"),  assembly=mc@assembly, 
-      context =mc@context,resolution=mc@resolution,dbtype = mc@dbtype)
+  adjust <- function(data) {
+    
+    .setMethylDBNames(data)
+    diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
+    diff[diff<0]=0
+    data$numCs1=diff
+    data$numTs1=data$coverage1-data$numCs1
+    return(data[1:7])
+  
+  }
+  
+  dir <- dirname(mc@dbpath) 
+  filename <- paste(basename(tools::file_path_sans_ext(mc@dbpath)),"adjust",sep="_")
+  
+  newdbpath <- applyTbxByChunk(base@dbpath, dir=dir,filename = filename, 
+                               return.type = "tabix", FUN = adjust)
+  
+  unlink(list.files(dirname(base@dbpath),pattern = basename(tools::file_path_sans_ext(base@dbpath)),full.names = TRUE))
+  
+  readMethylRawDB(dbpath = newdbpath,sample.id=mc@sample.id,
+                  assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
+                  dbtype = mc@dbtype)
+
   
 })
 
