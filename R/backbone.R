@@ -334,6 +334,10 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'                dbtype="tabix",dbdir="methylDB_objects")
 #'                
 #' @section Details:
+#'  The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
+#'  The first three are obligatory, while if the last argument is given database features are enabled. If \code{location} refers to an uncompressed file the function will create a flat file database and the associated methylRawDB object will link to this database. 
+#'  If \code{location} refers to an earlier created database file then the object will directly link to this database skipping the preprocessing steps. 
+#'  
 #'  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
 #'  'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
 #'  'chr.col" is the number of the column that has chrosome string.   
@@ -343,7 +347,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'  'strand.col' is the number of the column that has strand information, the strand information in the file has to be in the form of '+' or '-', 
 #'  'freqC.col' is the number of the column that has the frequency of Cs. See examples to see how to read a generic methylation text file.
 #'  
-#' @return returns methylRaw, methylRawList, methylRawDB, methylRawListDB objects
+#' @return returns methylRaw, methylRawList, methylRawDB, methylRawListDB object
 #' 
 #' @export
 #' @docType methods
@@ -572,9 +576,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded
 #' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
 #' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
-#' @param save.db if TRUE the resulting object is stored as flat file database, 
-#'        defaults to FALSE, in which case object is stored in memory
-#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,save.db=FALSE)
+#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
 #' @examples
 #' data(methylKit)
 #' 
@@ -688,7 +690,7 @@ setClass("methylBase",contains="data.frame",representation(
 #' unite methylRawList to a single table 
 #' 
 #' This functions unites \code{methylRawList} and \code{methylRawListDB} objects that only bases with coverage from all samples are retained.
-#' The resulting object is either a class of \code{methylBase} or stored as \code{methylBaseDB}.
+#' The resulting object is either of class \code{methylBase} or \code{methylBaseDB} depending on input.
 #'
 #' @param object a methylRawList or methylRawListDB object to be merged by common locations covered by reads
 #' @param destrand if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
@@ -697,8 +699,6 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param min.per.group an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
 #'        are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
 #'       For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
-#' @param save.db if TRUE the resulting object is stored as flat file database
-#'        defaults to FALSE, in which case object is stored in memory
 #' @param dbdir directory where flat file database should be stored, defaults
 #'        to getwd() working directory for \code{\link{methylRawListDB}} objects.
 #' 
@@ -715,7 +715,7 @@ setClass("methylBase",contains="data.frame",representation(
 #'  
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,save.db=FALSE,dbdir=NULL) standardGeneric("unite"))
+setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
