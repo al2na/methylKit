@@ -51,7 +51,7 @@ setGeneric("reconstruct", function(methMat,mBase) standardGeneric("reconstruct")
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBase-method
-setMethod("reconstruct","methylBase", function(methMat,mBase){
+setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase){
   
   # check if indeed methMat is percent methylation matrix
   if(max(methMat)<=1){
@@ -110,7 +110,11 @@ setMethod("reconstruct","methylBase", function(methMat,mBase){
 #' @export
 #' @docType methods
 #' @rdname assocComp-methods
-assocComp<-function(mBase,sampleAnnotation){
+setGeneric("assocComp", function(mBase,sampleAnnotation) standardGeneric("assocComp"))
+
+#' @rdname assocComp-methods
+#' @aliases assocComp,methylBase-method
+setMethod("assocComp","methylBase", function(mBase,sampleAnnotation){
   scale=TRUE
   center=TRUE
   mat=percMethylation(mBase) # get matrix
@@ -144,6 +148,7 @@ assocComp<-function(mBase,sampleAnnotation){
   
   list(pcs=pr$rotation,vars=vars,association=do.call("rbind",res))
 }
+)
 
 #' Remove principal components from a methylBase object
 #' 
@@ -172,8 +177,12 @@ assocComp<-function(mBase,sampleAnnotation){
 #' 
 #' @export
 #' @docType methods
-#' @rdname removeComp-methods 
-removeComp<-function(mBase,comp=NULL){
+#' @rdname removeComp-methods
+setGeneric("removeComp", function(mBase,comp=NULL) standardGeneric("removeComp"))
+
+#' @rdname removeComp-methods
+#' @aliases removeComp,methylBase-method
+setMethod("removeComp","methylBase", function(mBase,comp){ 
   if(is.na(comp) | is.null(comp)){
     stop("no component to remove\n")
   }
@@ -200,4 +209,4 @@ removeComp<-function(mBase,comp=NULL){
   res[res<0]=0
   reconstruct(res,mBase)
 }
-  
+)

@@ -932,7 +932,7 @@ setMethod("getAssembly", signature="methylRawDB", definition=function(x) {
 #' @rdname getAssembly-methods
 #' @aliases getAssembly,methylRawListDB-method
 setMethod("getAssembly", signature="methylRawListDB", definition=function(x) {
-  return(lapply(x,getAssembly))
+  return(vapply(x,getAssembly,FUN.VALUE = "character"))
 })
 
 #' @rdname getAssembly-methods
@@ -950,7 +950,7 @@ setMethod("getContext", signature="methylRawDB", definition=function(x) {
 #' @rdname getContext-methods
 #' @aliases getContext,methylRawListDB-method
 setMethod("getContext", signature="methylRawListDB", definition=function(x) {
-  return(lapply(x,getContext))
+  return(vapply(x,getContext,FUN.VALUE = "character"))
 })
 
 #' @rdname getContext-methods
