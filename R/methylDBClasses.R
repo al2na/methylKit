@@ -747,7 +747,9 @@ setMethod("getCoverageStats", "methylRawDB",
               }
               
               
+              
             }
+            
             
             
           })
@@ -757,9 +759,13 @@ setMethod("getCoverageStats", "methylRawDB",
 setMethod("getMethylationStats", "methylRawDB",
           function(object,plot,both.strands,labels,...){
             
-            plus.met=100* object[object[][["strand"]]=="+",][["numCs"]]/object[object[][["strand"]]=="+",][["coverage"]]
-            mnus.met=100* object[object[][["strand"]]=="-",][["numCs"]]/object[object[][["strand"]]=="-",][["coverage"]]
-            all.met =100* object[][["numCs"]]/object[][["coverage"]]
+            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage,numCs)])} )
+            
+            
+            plus.met=100* tmp[strand=="+",numCs/coverage]
+            mnus.met=100* tmp[strand=="-",numCs/coverage]
+            all.met =100* tmp[,numCs/coverage]
             
             if(!plot){
               qts=seq(0,0.9,0.1) # get quantiles
