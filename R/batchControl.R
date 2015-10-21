@@ -2,7 +2,7 @@
 
 
 
-#' Reconstruct methylBase object based on a new methylation percentage matrix
+#' Reconstruct methylBase or methylBaseDB object based on a new methylation percentage matrix
 #' 
 #' The function reconstructs a new methylBase object from an input methylBase object
 #' and percent methylation matrix. Basically, it uses the read coverages in the input
@@ -16,9 +16,9 @@
 #' 
 #' @param methMat percent methylation matrix, row order and order of the samples
 #'  same as the methylBase object
-#' @param mBase \code{\link{methylBase}} object to be reconstructed 
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to be reconstructed 
 #' 
-#' @return new \code{\link{methylBase}} object where methylation percentage matches
+#' @return new \code{\link{methylBase}} or \code{\link{methylBase}} object where methylation percentage matches
 #'         input \code{methMat} and coverages matches input \code{mBase}
 #' 
 #' @author Altuna Akalin
@@ -89,7 +89,7 @@ setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase){
 #' such as age, gender, batch_id. Can be used to detect which batch effects
 #' are associated with the variation in the methylation values.
 #' 
-#' @param mBase \code{\link{methylBase}} object with no NA values in the data part.
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values in the data part.
 #' @param sampleAnnotation a data frame where columns are different annotations and 
 #'                        rows are the samples, in the same order as in the methylBase object.
 #' 
@@ -110,11 +110,7 @@ setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase){
 #' @export
 #' @docType methods
 #' @rdname assocComp-methods
-setGeneric("assocComp", function(mBase,sampleAnnotation) standardGeneric("assocComp"))
-
-#' @rdname assocComp-methods
-#' @aliases assocComp,methylBase-method
-setMethod("assocComp","methylBase", function(mBase,sampleAnnotation){
+assocComp <- function(mBase,sampleAnnotation){
   scale=TRUE
   center=TRUE
   mat=percMethylation(mBase) # get matrix
@@ -148,7 +144,7 @@ setMethod("assocComp","methylBase", function(mBase,sampleAnnotation){
   
   list(pcs=pr$rotation,vars=vars,association=do.call("rbind",res))
 }
-)
+
 
 #' Remove principal components from a methylBase object
 #' 
@@ -178,12 +174,8 @@ setMethod("assocComp","methylBase", function(mBase,sampleAnnotation){
 #' @export
 #' @docType methods
 #' @rdname removeComp-methods
-setGeneric("removeComp", function(mBase,comp=NULL) standardGeneric("removeComp"))
-
-#' @rdname removeComp-methods
-#' @aliases removeComp,methylBase-method
-setMethod("removeComp","methylBase", function(mBase,comp){ 
-  if(is.na(comp) | is.null(comp)){
+removeComp <- function(mBase,comp){ 
+  if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
   
@@ -209,4 +201,3 @@ setMethod("removeComp","methylBase", function(mBase,comp){
   res[res<0]=0
   reconstruct(res,mBase)
 }
-)

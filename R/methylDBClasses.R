@@ -895,8 +895,126 @@ setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,h
 
 
 
+#' @rdname percMethylation-methods
+#' @aliases percMethylation,methylBaseDB-method
+setMethod("percMethylation", "methylBaseDB",
+          function(methylBase.obj,rowids=FALSE,save.txt){
+            
+            meth.fun <- function(data, numCs.index, numTs.index){
+              
+              100 * data[, numCs.index]/( data[,numCs.index] + data[,numTs.index] )
+              
+            }
+            if (save.txt) {
+              
+              filename <- paste(basename(tools::file_path_sans_ext(methylBase.obj@dbpath)),"methMath.txt",sep = "_")
+              
+              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "text",
+                                         dir = dirname(methylBase.obj@dbpath), filename = filename,
+                                         FUN = meth.fun, numCs.index = methylBase.obj@numCs.index,
+                                         numTs.index = methylBase.obj@numTs.index)
+              
+              return(meth.mat)
+              
+            } else {
+              
+              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "data.frame",
+                                         FUN = meth.fun, numCs.index = methylBase.obj@numCs.index,
+                                         numTs.index = methylBase.obj@numTs.index)
+              
+              names(meth.mat)=methylBase.obj@sample.ids
+              if(rowids){
+                rownames(meth.mat)=as.character(paste(x[,1],x[,2],x[,3],sep=".") )
+              }
+              return(as.matrix(meth.mat))
+              
+            }
+            })
 
 
+
+#' @rdname reconstruct-methods
+#' @aliases reconstruct,methylBaseDB-method
+setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase){
+  
+  if(is.matrix(methMat) ) {
+      
+    # check if indeed methMat is percent methylation matrix
+    if(max(methMat)<=1){
+      warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+    }
+    
+    # check if methMat is percent methylation matrix fitting to mBase  
+    if(nrow(methMat) != mBase@num.records | ncol(methMat) != length(mBase@numCs.index) ){
+      stop("\nmethMat dimensions do not match number of samples\n",
+           "and number of bases in methylBase object\n")
+    }
+    
+    rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+    matFile=paste(rndFile,"methMat.txt",sep="_")
+    write.table(methMat,matFile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+                sep="\t")
+    methMat = matFile
+    
+  } else {
+    
+    mat <- read.table(methMat,header = F)
+    
+    # check if indeed methMat is percent methylation matrix
+    if(max(mat)<=1){
+      warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+    }
+    
+    # check if methMat is percent methylation matrix fitting to mBase  
+    if(nrow(mat) != mBase@num.records | ncol(mat) != length(mBase@numCs.index) ){
+      stop("\nmethMat dimensions do not match number of samples\n",
+           "and number of bases in methylBase object\n")
+    }
+    
+  }
+  
+  
+  reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
+    
+    mat=data[,numCs.index]+data[,numTs.index]
+    
+    methMat = read.table(methMat,header = F, nrows = chunk)
+    
+    # get new unmethylated and methylated counts
+    numCs=round(methMat*mat/100)
+    numTs=round((100-methMat)*mat/100)
+    
+    data[,numCs.index]=numCs
+    data[,numTs.index]=numTs
+    
+    return(data)
+  }
+  
+  dir <- dirname(mBase@dbpath)
+  filename <- paste(basename(tools::file_path_sans_ext(mBase@dbpath)),"reconstruct",sep="_")
+  chunk.size <- 1e6
+  con <- file(methMat,open = "r") 
+  
+  newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                               return.type = "tabix", FUN = reconstr, con,chunk.size,mBase@numCs.index,mBase@numTs.index)
+  
+  close(con)
+  if(file.exists(matFile)) {unlink(matFile)}
+  
+  readMethylBaseDB(dbpath = newdbpath,dbtype = mBase@dbtype,
+                   sample.ids = mBase@sample.ids,assembly = mBase@assembly,
+                   context = mBase@context,resolution = mBase@resolution,
+                   treatment = mBase@treatment,coverage.index = mBase@coverage.index,
+                   numCs.index = mBase@numCs.index,numTs.index = mBase@numTs.index,
+                   destranded = mBase@destranded)
+  
+  
+  
+}
+)
+
+
+# coercion functions ------------------------------------------------------
 
 setAs("methylRawDB", "GRanges", function(from)
 {
