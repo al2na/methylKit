@@ -22,4 +22,6 @@ methylRawListDB.obj=read( db.list,
                           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0),
                           dbtype = "tabix")
 
-save(methylRawList.obj,methylBase.obj,methylDiff.obj,methylRawListDB.obj,file="methylKit.RData")
+methylBaseDB.obj=unite(methylRawListDB.obj)
+
+save(methylRawList.obj,methylBase.obj,methylDiff.obj,methylRawListDB.obj,methylBaseDB.obj,file="methylKit.RData")
