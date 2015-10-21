@@ -90,6 +90,8 @@ df2tabix<-function(df,outfile){
 #' @param pattern a pattern in the file names
 #' @param filename output file name
 #' @param sort sort list of subfiles in alpha, numerical way
+#' 
+#' 
 catsub2tabix<-function(dir,pattern,filename,sort=F){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
@@ -370,6 +372,43 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 
     return(tools::file_path_sans_ext(path))
     
+  } else if(return.type =="text"){
+    
+    # create a custom function that contains the function
+    # to be applied
+    myFunc<-function(chunk.num,tbxFile,dir,filename,FUN,...){
+      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+      res=FUN(data,...)  
+      
+      # for text
+      outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
+      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+                  sep="\t")
+    }
+    
+    # attach a random string to the file name 
+    rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+    filename2=paste(rndFile,filename,sep="_")
+    
+    # apply function to chunks
+    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
+    
+    
+    outfile= file.path(path.expand(dir),filename) # get file name 
+    if(file.exists(outfile)){
+      message("overwriting ",outfile)
+      unlink(outfile)
+    }
+    con=file(outfile, open = "a", blocking = TRUE) # open connection  
+    for(file in gtools::mixedsort(list.files(path = dir, pattern = filename2,full.names=TRUE))){
+      file.append(outfile,file) # append files
+    }
+    close(con)
+    #remove temp files
+    unlink(list.files(path = dir, pattern = filename2,full.names=TRUE))
+    
+    return(outfile)
+  
   }else if(return.type=="data.frame"){
     
     # create a custom function that contains the function
