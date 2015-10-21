@@ -324,7 +324,7 @@ valid.methylBaseDB <- function(object) {
 
 
 
-#' An S4 class for methylation events sampled in multiple experiments
+#' An S4 class for storing methylation events sampled in multiple experiments as flat file database
 #'
 #' This class is designed to contain methylation information such as coverage, number of methylated bases, etc...
 #' The class creates an object that holds methylation information and genomic location as flat file database.
@@ -1048,12 +1048,6 @@ setMethod("getAssembly", signature="methylRawDB", definition=function(x) {
 })
 
 #' @rdname getAssembly-methods
-#' @aliases getAssembly,methylRawListDB-method
-setMethod("getAssembly", signature="methylRawListDB", definition=function(x) {
-  return(vapply(x,getAssembly,FUN.VALUE = "character"))
-})
-
-#' @rdname getAssembly-methods
 #' @aliases getAssembly,methylBaseDB-method
 setMethod("getAssembly", signature="methylBaseDB", definition=function(x) {
   return(x@assembly)
@@ -1066,17 +1060,10 @@ setMethod("getContext", signature="methylRawDB", definition=function(x) {
 })
 
 #' @rdname getContext-methods
-#' @aliases getContext,methylRawListDB-method
-setMethod("getContext", signature="methylRawListDB", definition=function(x) {
-  return(vapply(x,getContext,FUN.VALUE = "character"))
-})
-
-#' @rdname getContext-methods
 #' @aliases getContext,methylBaseDB-method
 setMethod("getContext", signature="methylBaseDB", definition=function(x) {
   return(x@context)
 })
-
 
 #' @rdname getData-methods
 #' @aliases getData,methylRawDB-method
@@ -1085,12 +1072,6 @@ setMethod("getData", signature="methylRawDB", definition=function(x) {
   .setMethylDBNames(df,"methylRawDB")
   
   return(df)
-})
-
-#' @rdname getData-methods
-#' @aliases getData,methylRawListDB-method
-setMethod("getData", signature="methylRawListDB", definition=function(x) {
-  return(lapply(x,getData))
 })
 
 #' @rdname getData-methods
@@ -1105,6 +1086,8 @@ setMethod("getData", signature="methylBaseDB", definition=function(x) {
 
 # show functions ----------------------------------------------------------
 
+#' @rdname show-methods
+#' @aliases show,methylRawDB
 setMethod("show", "methylRawDB", function(object) {
   
   cat("methylRawDB object with",object@num.records,"rows\n--------------\n")
@@ -1119,6 +1102,8 @@ setMethod("show", "methylRawDB", function(object) {
   cat("\n")
 })
 
+#' @rdname show-methods
+#' @aliases show,methylRawListDB
 setMethod("show", "methylRawListDB", function(object) {
   
   cat("methylRawListDB object with",length(object),"methylRawDB objects\n\n")
@@ -1160,9 +1145,8 @@ setMethod("select", "methylRawDB",
                 context=x@context,
                 resolution=x@resolution)
           }
-          
-          
 )
+
 
 #' @aliases select,methylBaseDB-method
 #' @rdname select-methods
@@ -1183,12 +1167,7 @@ setMethod("select", "methylBaseDB",
           }
 )
 
-#' @examples
-#' 
-#' # This will get chromomsomes, will return a factor
-#' # That means the resulting object will ceases to be a methylKit object
-#' chrs=methylRawDB.obj[][[2]]
-#' 
+
 #' @aliases [,methylRawDB-method
 #' @rdname extract-methods
 setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),  
@@ -1257,7 +1236,8 @@ setMethod("getTreatment", signature = "methylBaseDB", function(x) {
 
 #' set treatment vector of the methylRawListDB or methylBaseDB object
 #' 
-#' The function returns the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects with the new treatment vector stored in it.
+#' The function directly modifies the treatment vector of the given \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} object.
+#' If you rather want to create a new object use 
 #' 
 #' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
 #' @usage setTreatment(x) <- c(1,1,0,0)
@@ -1269,7 +1249,7 @@ setMethod("getTreatment", signature = "methylBaseDB", function(x) {
 #' setTreatment(methylRawListDB.obj) <- c(2,2,1,1)
 #' 
 #' 
-#' @return the object with new treatment vector
+#' @return \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
 #' @export
 #' @docType methods
 #' @rdname setTreatment-methods
