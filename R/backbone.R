@@ -702,9 +702,8 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param dbdir directory where flat file database should be stored, defaults
 #'        to getwd() working directory for \code{\link{methylRawListDB}} objects.
 #' 
-#' @usage unite(object,destrand=FALSE,min.per.group=NULL,,save.db=FALSE,dbdir=NULL)
-#' @return a methylBase or methylBaseDB object
-#' @aliases unite,-methods unite,methylRawList-method, unite,methylRawListDB-method
+#' @usage unite(object,destrand=FALSE,min.per.group=NULL)
+#' @return a methylBase or methylBaseDB object depending on input
 #' @export
 #' @examples
 #' 
@@ -845,14 +844,13 @@ setMethod("unite", "methylRawList",
 #' You should change 'nrow' if using \code{getCorrelation} with all records of the methylBaseDB object would take to long. 
 #' 
 #' 
-#' @aliases getCorrelation,-methods getCorrelation,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getCorrelation-methods
 setGeneric("getCorrelation", function(object,method="pearson",plot=FALSE,nrow="numeric") standardGeneric("getCorrelation"))
 
 #' @rdname getCorrelation-methods
-#' @aliases getCorrelation-method
+#' @aliases getCorrelation,methylBase-method
 setMethod("getCorrelation", "methylBase",
                     function(object,method,plot){
                         meth.mat = getData(object)[, object@numCs.index]/
@@ -958,7 +956,7 @@ setMethod("getCorrelation", "methylBase",
 #' 
 #' The function returns basic statistics about read coverage per base. It can also plot a histogram of read coverage values.
 #' 
-#' @param object a \code{methylRaw} object 
+#' @param object a \code{methylRaw} or \code{methylRawDB} object 
 #' @param plot plot a histogram of coverage if TRUE (default:FALSE) 
 #' @param both.strands do stats and plot for both strands if TRUE (default:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
@@ -972,7 +970,6 @@ setMethod("getCorrelation", "methylBase",
 #' 
 #' 
 #' @return a summary of coverage statistics or plot a histogram of coverage
-#' @aliases getCoverageStats,methylRaw
 #' @export
 #' @docType methods
 #' @rdname getCoverageStats-methods
@@ -1065,11 +1062,11 @@ setMethod("getCoverageStats", "methylRaw",
                       
 })
 
-#' get Methylation stats from methylRaw object
+#' get Methylation stats from methylRaw or methylRawDB object
 #' 
 #' The function returns basic statistics about % methylation per base/region. It can also plot a histogram of % methylation values.
 #' 
-#' @param object a \code{methylRaw} object 
+#' @param object a \code{methylRaw} or \code{methylRawDB} object 
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
@@ -1078,7 +1075,7 @@ setMethod("getCoverageStats", "methylRaw",
 #' @examples
 #' data(methylKit)
 #' 
-#' # gets coverage stats for the first sample in methylRawList.obj object
+#' # gets Methylation stats for the first sample in methylRawList.obj object
 #' getMethylationStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
 #'
 #' @return a summary of Methylation statistics or plot a histogram of coverage
@@ -1203,8 +1200,8 @@ setMethod("getMethylationStats", "methylRaw",
 
 #' show method for methylKit classes
 #' 
-#' The show method works for \code{methylRaw},\code{methylRawList},
-#' \code{methylBase} and \code{methylDiff} objects
+#' The show method works for \code{methylRaw},\code{methylRawDB},\code{methylRawList},\code{methylRawListDB},
+#' \code{methylBase},\code{methylBaseDB} and \code{methylDiff} objects
 #' 
 #' @examples
 #' data(methylKit)
@@ -1255,9 +1252,9 @@ setMethod("show", "methylRawList", function(object) {
 
 #' get assembly of the genome
 #' 
-#' The function returns the genome assembly stored in any of the \code{\link{methylBase}},\code{\link{methylRaw}},\code{\link{methylDiff}} objects
+#' The function returns the genome assembly stored in any of the \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}},\code{\link{methylDiff}} objects
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object
 #' @usage getAssembly(x)
 #' @examples
 #' 
@@ -1290,7 +1287,7 @@ setMethod("getAssembly", signature="methylRaw", definition=function(x) {
 #' 
 #' The function returns the context of methylation. For example: "CpG","CHH" or "CHG"
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or an \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or an \code{\link{methylDiff}} object
 #' @usage getContext(x)
 #' @examples 
 #' 
@@ -1325,7 +1322,7 @@ setMethod("getContext", signature="methylRaw", definition=function(x) {
 #' The functions retrieves the table containing methylation information from \code{methylKit} Objects.
 #' The data retrived from this function is of a \code{\link{data.frame}}. This is basically containing all relevant methylation information per genomic region or base.
 #'
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object
 #' @usage getData(x)
 #' @examples
 #' data(methylKit)
@@ -1341,14 +1338,13 @@ setMethod("getContext", signature="methylRaw", definition=function(x) {
 #' 
 #' 
 #' @return data frame for methylation events
-#' @aliases getData,-methods getData,methylBase-method
 #' @export
 #' @docType methods
 #' @rdname getData-methods
 setGeneric("getData", def=function(x) standardGeneric("getData"))
 
 #' @rdname getData-methods
-#' @aliases getData-method
+#' @aliases getData,methylBase-method
 setMethod("getData", signature="methylBase", definition=function(x) {
                 #return(as(x,"data.frame"))
                 return(S3Part(x, strictS3 = TRUE))
@@ -1361,7 +1357,7 @@ setMethod("getData", signature="methylRaw", definition=function(x) {
                 return(S3Part(x, strictS3 = TRUE))
 })
 
-## CONVERTOR FUNCTIONS FOR methylRaw and methylBase OBJECT
+## CONVERTOR FUNCTIONS FOR methylRaw/methylRawDB and methylBase/methylBaseDB OBJECT
 #convert methylRaw to GRanges
 setAs("methylRaw", "GRanges", function(from)
                       {
@@ -1392,7 +1388,7 @@ setAs("methylBase", "GRanges", function(from)
 #' The function returns a subset of data contained in the \code{methylKit} 
 #' objects.
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or
 #'  \code{\link{methylDiff}} object
 #' @param i a numeric or logical vector. This vector corresponds to bases or 
 #'          regions contained in \code{methylKit} objects.The vector is used to 
@@ -1402,9 +1398,11 @@ setAs("methylBase", "GRanges", function(from)
 #' data(methylKit)
 #'  # selects first hundred rows, returns a methylRaw object
 #' subset1=select(methylRawList.obj[[1]],1:100)
+#' subset1=select(methylRawListDB.obj[[1]],1:100)
 #' 
 #' # selects first hundred rows, returns a methylBase object
 #' subset2=select(methylBase.obj,1:100) 
+#' subset2=select(methylBaseDB.obj,1:100)
 #' 
 #' # selects first hundred rows, returns a methylDiff object
 #' subset3=select(methylDiff.obj,1:100)
@@ -1415,8 +1413,6 @@ setAs("methylBase", "GRanges", function(from)
 #' @docType methods
 #' @rdname select-methods
 setGeneric("select", def=function(x,i) standardGeneric("select"))
-
-
 
 
 #' @aliases select,methylBase-method
@@ -1439,7 +1435,6 @@ setMethod("select", "methylBase",
 )
 
 
-
 #' @aliases select,methylRaw-method
 #' @rdname select-methods
 setMethod("select", "methylRaw",
@@ -1456,11 +1451,11 @@ setMethod("select", "methylRaw",
 
 )
 
-#' extract parts of methylRaw,methylBase and methylDiff data
+#' extract parts of methylRaw,methylRawDB,methylBase,methylBaseDB and methylDiff data
 #' 
 #' The function extracts part of the data and returns a new object.
 #' @name extract
-#' @param x an \code{\link{methylBase}},\code{\link{methylRaw}} or 
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or 
 #'          \code{\link{methylDiff}} object
 #' @param i a numeric or logical vector. This vector corresponds to bases or 
 #'          regions contained in \code{methylKit} objects.The vector is used to 
