@@ -245,6 +245,9 @@ setClass("methylRaw", contains= "data.frame",representation(
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
 
+#--------------------------------------------------------------------------------------------------------
+
+
 #' read file(s) to a methylrawList or methylraw object
 #'
 #' The function reads a list of files or files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object
@@ -259,7 +262,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param resolution designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'
 #' @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
-#' @usage read(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="", context="CpG",resolution="base",treatment)
+#' @usage modRead(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="", context="CpG",resolution="base",treatment)
 #' @examples
 #' 
 #' # this is a list of example files, ships with the package
@@ -271,11 +274,11 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 #'
 #' # read the files to a methylRawList object: myobj
-#' myobj=read( file.list,
+#' myobj=modRead( file.list,
 #'             sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
 #'             
 #' # read one file as methylRaw object
-#' myobj=read( file.list[[1]],
+#' myobj=modRead( file.list[[1]],
 #'             sample.id="test1",assembly="hg18")
 #'             
 #' # read a generic text file containing CpG methylation values
@@ -284,7 +287,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' read.table(generic.file,header=TRUE)
 #' 
 #' # And this is how you can read that generic file as a methylKit object            
-#'  myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
+#'  myobj=modRead( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
 #'             sample.id="test1",assembly="hg18")
 #'             
 #' @section Details:
@@ -301,41 +304,39 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' 
 #' @export
 #' @docType methods
-#' @rdname read-methods
-setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="",context="CpG",resolution="base",treatment) standardGeneric("read"))
+#' @rdname modRead-methods
+setGeneric("modRead", function(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="",context="CpG",resolution="base",treatment) standardGeneric("modRead"))
 
 
-
-#' @rdname read-methods
-#' @aliases read,character,character,character-method
-setMethod("read", signature(location = "character",sample.id="character",assembly="character"),
+#' @rdname modRead-methods
+#' @aliases modRead,character,character,character-method
+setMethod("modRead", signature(location = "character",sample.id="character",assembly="character"),
           
-        function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
+          function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
             if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
             data<- .readTableFast(location,header=header,skip=skip,sep=sep)    
             if(length(pipeline)==1 ){
               
               if(pipeline %in% c("amp","bismark") )
               {
-              data<- .structureAMPoutput(data)
+                data<- .structureAMPoutput(data)
               }
               else{stop("unknown 'pipeline' argument, supported alignment pipelines: 'amp' or 'bismark' " )
-                   }
+              }
               
             }
             else{
-                .check.pipeline.list(pipeline)
-                data<- .structureGeneric(data, pipeline)
+              .check.pipeline.list(pipeline)
+              data<- .structureGeneric(data, pipeline)
             }
-
+            
             obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,context=context,resolution="base")
             obj         
           }
 )
 
-
 # reads a list of CpG methylation files and makes methylRawList object
-#
+
 # @param a list containing locations(full paths) to CpG methylation files from alignment pipeline
 # @param name a list of strings that defines the experiment
 # @param assembly a string that defines the genome assembly such as hg18, mm9
@@ -343,9 +344,9 @@ setMethod("read", signature(location = "character",sample.id="character",assembl
 # @param header if the input files has a header or not (default: TRUE)
 # @param treatment a vector contatining 0 and 1 denoting which samples are control which samples are test
 # @return returns a methylRawList object
-#' @rdname read-methods
-#' @aliases read,list,list,character-method
-setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
+#' @rdname modRead-methods
+#' @aliases modRead,list,list,character-method
+setMethod("modRead", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment){ 
             
             #check if the given arugments makes sense
@@ -374,7 +375,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
                 .check.pipeline.list(pipeline)
                 data<- .structureGeneric(data, pipeline)
               }
-                  
+              
               obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
               outList[[i]]=obj       
             }
@@ -382,6 +383,35 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
             
             myobj
           })
+
+
+
+#' @export
+#' @docType methods
+#' @rdname modRead-methods
+setGeneric("read", function(location,sample.id,assembly,pipeline="amp",header=T,skip=0,sep="",context="CpG",resolution="base",treatment) standardGeneric("read"))
+
+#' @rdname modRead-methods
+#' @aliases modRead,character,character,character-method
+
+setMethod("read", signature(location = "character",sample.id="character",assembly="character"),
+          
+          function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution){ 
+            .Deprecated("modRead", msg="'read' is deprecated. Use 'modRead' instead")
+            modRead(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution)
+          }
+)
+
+#' @rdname modRead-methods
+#' @aliases modRead,list,list,character-method
+setMethod("read", signature(location = "list",sample.id="list",assembly="character"),
+          function(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment){ 
+            .Deprecated("modRead", msg="'read' is deprecated. Use 'modRead' instead")
+            modRead(location,sample.id,assembly,pipeline,header,skip,sep,context,resolution,treatment)
+          }
+)
+
+#---------------------------------------------------------------------------------------------------------------
 
 
 #' Filter methylRaw and methylRawList object based on read coverage

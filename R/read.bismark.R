@@ -1,5 +1,3 @@
-
-
 #' Read from sorted Bismark SAM files
 #'
 #' The function calls methylation percentage per base from sorted Bismark SAM 
@@ -24,7 +22,7 @@
 #' @param read.context One of the 'CpG','CHG','CHH' or 'none' strings. 
 #'                     Determines what type of methylation context will be read-in 
 #'                     to the memory which can be immediately used for analysis.
-#'                     If given as 'none', read.bismark will not return any object,
+#'                     If given as 'none', processBismark will not return any object,
 #'                     but if a save.folder argument given it will save the 
 #'                     methylation percentage call files.
 #' @param assembly string that determines the genome assembly. Ex: mm9,hg18 etc.
@@ -45,18 +43,14 @@
 #' @note
 #' SAM files should be sorted with samtools sort or unix sort. Other sorting
 #' methods can alter the order of fields(columns) in the SAM file and that will
-#' result in an error when using \code{read.bismark()}.
-#' 
-#' @export
-#' @docType methods
-#' @rdname read.bismark-methods
+#' result in an error when using \code{processBismark()}.
 #'
 #' @examples
 #' 
 #' # reading one bismark file:
 #' my.file=system.file("extdata", "test.fastq_bismark.sorted.min.sam", 
 #'                                                        package = "methylKit")
-#' obj=read.bismark(my.file,"test",assembly="hg18",save.folder=NULL,
+#' obj=processBismark(my.file,"test",assembly="hg18",save.folder=NULL,
 #'                  save.context="CpG",read.context="CpG")
 #'  
 #' # reading multiple files
@@ -65,105 +59,109 @@
 #'               system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"),
 #'                system.file("extdata", "test.fastq_bismark.sorted.min.sam", package = "methylKit"))
 #' 
-#'  objs=read.bismark(location=file.list2
+#'  objs=processBismark(location=file.list2
 #'              ,sample.id=list("test1","test2","ctrl1","ctrl1"),assembly="hg18",
 #'              save.folder=NULL,save.context=NULL,read.context="CpG",
 #'              nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,treatment=c(1,1,0,0))
 #' 
-setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
-                                    save.context=c("CpG"),read.context="CpG",
-                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
-                                    ,treatment) standardGeneric("read.bismark"))
-
-#' @aliases read.bismark,character,character,character-method
-#' @rdname read.bismark-methods
-setMethod("read.bismark", signature(location = "character",sample.id= "character",
-                                    assembly= "character"),
-                    function(location,sample.id,assembly,save.folder,save.context
-                             ,read.context,
-                             nolap,mincov,minqual,phred64){
-                      
-                      # check if file exists
-                      if(! file.exists(location) ){
-                        stop("File supplied as the 'location' argument doesn't exist\n",
-                        "can not find file at: ",location,"\n")}
-                      
-                      # check output types
-                      if(! all( save.context %in% c("CpG","CHG","CHH")) ){
-                        stop("wrong 'save.context' argument supplied, only 'CpG', 'CHG' or 'CHH' accepted")
-                      }
-                      
-                      # read.type
-                       if( !( read.context %in% c("CpG","CHG","CHH","none") ) ){
-                        stop("wrong 'read.context' argument supplied, only 'CpG', 'CHG', 'CHH' or 'none' accepted")
-                      }
-                          
-                      # if output.folder NULL create temp
-                      # check output folder if not create
-                      out.files=list() # list of output files            
-                      temp.files=FALSE
-                      if(is.null(save.folder)){
-                    
-                        for(mytype in read.context){
-                          out.files[[mytype]]=tempfile(pattern = paste("methylKit_temp",mytype,sep=".") )
-                        }
-                        temp.files=TRUE # set there are temp files to be deleted
-                        
-                      }else{
-                        try(
-                          dir.create(save.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
-                          )
-
-                        out.files=list()                        
-                        for(mytype in unique(c(save.context,read.context)) ){
-                          out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
-                        }
-                        
-                      }
-                      
-                      # create the system command accordingly
-                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
-                      if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
-                      
-                      if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}
-                      if("CHG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHG",out.files[["CHG"]] )}
-                      if("CHH" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHH",out.files[["CHH"]] )}                     
-                      if(nolap){my.opt.str=paste(my.opt.str,"--nolap" )}
-                    
-                      # get location of the perl script
-                      ex.loc=(system.file("exec","methCall.pl", package="methylKit"))
-                      if(ex.loc == ""){
-                        cmd=paste("perl","/Users/ala2027/Dropbox/PAPERS/R-devel/methylkit/exec/methCall.pl",my.opt.str)
-                      }else{
-                        cmd=paste("perl",ex.loc,my.opt.str)
-                      }
-                      #cmd=paste("perl","~/Dropbox\\ Encore/Dropbox/temp/data/methCall.pl",my.opt.str)
-                      
-                      # then call perl to process the file
-                      cat("calling for metylation percentage per base for sample:",sample.id," \n")
-                      #cat(cmd)
-                      status=try( system(cmd) )
-                      
-                      if(status != 0){stop("\nError in methylation calling...\nMake sure the file is sorted correctly and it is a legitimate Bismark SAM file\n")}
-                      
-                      # read the result
-                      if(read.context != "none"){
-                        cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
-                        obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
-                        if(temp.files ){dummy=lapply(out.files,unlink)}
-                        
-                        return(obj)
-                      }else{return("no object returned")}
-
-})
 
 
+#' @export
+#' @docType methods
+#' @rdname processBismark-methods
+setGeneric("processBismark", function(location,sample.id,assembly,save.folder=NULL,
+                                      save.context=c("CpG"),read.context="CpG",
+                                      nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
+                                      ,treatment) standardGeneric("processBismark"))
 
-#' @rdname read.bismark-methods
-#' @aliases read.bismark,list,list,character-method
-setMethod("read.bismark", signature(location = "list",sample.id="list",assembly="character"),
+#' @aliases processBismark,character,character,character-method
+#' @rdname processBismark-methods
+setMethod("processBismark", signature(location = "character",sample.id= "character",
+                                      assembly= "character"),
+          function(location,sample.id,assembly,save.folder,save.context
+                   ,read.context,
+                   nolap,mincov,minqual,phred64){
+            
+            # check if file exists
+            if(! file.exists(location) ){
+              stop("File supplied as the 'location' argument doesn't exist\n",
+                   "can not find file at: ",location,"\n")}
+            
+            # check output types
+            if(! all( save.context %in% c("CpG","CHG","CHH")) ){
+              stop("wrong 'save.context' argument supplied, only 'CpG', 'CHG' or 'CHH' accepted")
+            }
+            
+            # read.type
+            if( !( read.context %in% c("CpG","CHG","CHH","none") ) ){
+              stop("wrong 'read.context' argument supplied, only 'CpG', 'CHG', 'CHH' or 'none' accepted")
+            }
+            
+            # if output.folder NULL create temp
+            # check output folder if not create
+            out.files=list() # list of output files            
+            temp.files=FALSE
+            if(is.null(save.folder)){
+              
+              for(mytype in read.context){
+                out.files[[mytype]]=tempfile(pattern = paste("methylKit_temp",mytype,sep=".") )
+              }
+              temp.files=TRUE # set there are temp files to be deleted
+              
+            }else{
+              try(
+                dir.create(save.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
+              )
+              
+              out.files=list()                        
+              for(mytype in unique(c(save.context,read.context)) ){
+                out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
+              }
+              
+            }
+            
+            # create the system command accordingly
+            my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
+            if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
+            
+            if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}
+            if("CHG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHG",out.files[["CHG"]] )}
+            if("CHH" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHH",out.files[["CHH"]] )}                     
+            if(nolap){my.opt.str=paste(my.opt.str,"--nolap" )}
+            
+            # get location of the perl script
+            ex.loc=(system.file("exec","methCall.pl", package="methylKit"))
+            if(ex.loc == ""){
+              cmd=paste("perl","/Users/ala2027/Dropbox/PAPERS/R-devel/methylkit/exec/methCall.pl",my.opt.str)
+            }else{
+              cmd=paste("perl",ex.loc,my.opt.str)
+            }
+            #cmd=paste("perl","~/Dropbox\\ Encore/Dropbox/temp/data/methCall.pl",my.opt.str)
+            
+            # then call perl to process the file
+            cat("calling for metylation percentage per base for sample:",sample.id," \n")
+            #cat(cmd)
+            status=try( system(cmd) )
+            
+            if(status != 0){stop("\nError in methylation calling...\nMake sure the file is sorted correctly and it is a legitimate Bismark SAM file\n")}
+            
+            # read the result
+            if(read.context != "none"){
+              cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
+              obj=modRead(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
+              if(temp.files ){dummy=lapply(out.files,unlink)}
+              
+              return(obj)
+            }else{return("no object returned")}
+            
+          })
+
+#' @rdname processBismark-methods
+#' @aliases processBismark,list,list,character-method
+setMethod("processBismark", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,save.folder,save.context,read.context,
-                             nolap,mincov,minqual,phred64,treatment){
+                   nolap,mincov,minqual,phred64,treatment){
+            
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
@@ -176,12 +174,48 @@ setMethod("read.bismark", signature(location = "list",sample.id="list",assembly=
             outList=list()
             for(i in 1:length(location))
             {
-              data=read.bismark(location[[i]],sample.id[[i]],assembly,
-                                save.folder,save.context,read.context,
-                                nolap,mincov,minqual,phred64)# read data
+              data=processBismark(location[[i]],sample.id[[i]],assembly,
+                                  save.folder,save.context,read.context,
+                                  nolap,mincov,minqual,phred64)# read data
               outList[[i]]=data  
             }
             myobj=new("methylRawList",outList,treatment=treatment)
             
             myobj
+          })
+
+
+#' @export
+#' @docType methods
+#' @rdname processBismark-methods
+setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
+                                    save.context=c("CpG"),read.context="CpG",
+                                    nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
+                                    ,treatment) standardGeneric("read.bismark"))
+
+#' @aliases processBismark,character,character,character-method
+#' @rdname processBismark-methods
+setMethod("read.bismark", signature(location = "character",sample.id= "character",
+                                    assembly= "character"),
+          function(location,sample.id,assembly,save.folder,save.context
+                   ,read.context,
+                   nolap,mincov,minqual,phred64){
+            
+            .Deprecated("processBismark", msg = "'read.bismark' is deprecated. Use 'processBismark' instead")
+            processBismark(location,sample.id,assembly,save.folder,save.context
+                           ,read.context,
+                           nolap,mincov,minqual,phred64)
+          })
+
+
+
+#' @rdname processBismark-methods
+#' @aliases processBismark,list,list,character-method
+setMethod("read.bismark", signature(location = "list",sample.id="list",assembly="character"),
+          function(location,sample.id,assembly,save.folder,save.context,read.context,
+                   nolap,mincov,minqual,phred64,treatment){
+            
+            .Deprecated("processBismark", msg = "'read.bismark' is deprecated. Use 'processBismark' instead")
+            processBismark(location,sample.id,assembly,save.folder,save.context,read.context,
+                           nolap,mincov,minqual,phred64,treatment)
           })

@@ -51,7 +51,7 @@ Bisulfite sequencing is a technique that can determine DNA methylation patterns.
 \section{Basics}
 \subsection{Reading the methylation call files}
 We start by reading in the methylation call data from bisulfite
-sequencing with \texttt{read} function. Reading in the data this way
+sequencing with \texttt{modRead} function. Reading in the data this way
 will return a methylRawList object which stores methylation
 information per sample for each covered base. The methylation call files are basically text
 files that contain percent methylation score per base. A typical methylation call file looks like this:
@@ -70,7 +70,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 
 
 # read the files to a methylRawList object: myobj
-myobj=read(file.list,
+myobj=modRead(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
            treatment=c(1,1,0,0),
