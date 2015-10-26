@@ -6,15 +6,19 @@
 #' set column names for methylRawDB and methylBaseDB data aquired from flat file database
 #' @param df data.frame containing methylRaw or methylBase data
 #' @param methylDBclass 
-.setMethylDBNames <- function(df,methylDBclass=c("methylDB","methylBaseDB")){
+.setMethylDBNames <- function(df,methylDBclass=c("methylDB","methylBaseDB","methylDiffDB")){
   
   if(missing(methylDBclass)){
 
-    if( length(df) == 7 ){
+    if( length(df) == 7 & unique(sapply(df[,5:7],class))=="integer"){
       
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
       
-    } else if ( length(df) > 7){
+    } else if( length(df) == 7 & unique(sapply(df[,5:7],class))=="numeric"){
+      
+      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff")) 
+    
+    } else if( length(df) > 7){
       
       data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
@@ -52,15 +56,23 @@
       data.table::setnames(df,names(df)[numCs.ind], paste(c("numCs"),1:numsamples,sep="" ))
       data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
       
-    } 
+    } else if( methylDBclass == "methylDiffDB" ){
+      
+      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff"))
     
     #return(df)
     }
+  }
 }
 
 
 # end of regular functions to be used in S4 functions
 #---------------------------------------------------------------------------------------
+
+
+# methylRawDB -------------------------------------------------------------
+
+
 
 valid.methylRawDB <- function(object) {
   
@@ -295,6 +307,238 @@ setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
             
           })
 
+#' @rdname getCoverageStats-methods
+#' @aliases getCoverageStats,methylRawDB-method
+setMethod("getCoverageStats", "methylRawDB",
+          function(object,plot,both.strands,labels,...){
+            
+            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage)])} )
+            
+            if(!plot){
+              qts=seq(0,0.9,0.1) # get quantiles
+              qts=c(qts,0.95,0.99,0.995,0.999,1)                          
+              
+              if(both.strands){
+                
+                
+                plus.cov=tmp[strand=="+",coverage]
+                mnus.cov=tmp[strand=="-",coverage]
+                
+                cat("read coverage statistics per base\n\n")
+                cat("FORWARD STRAND:\n")
+                cat("summary:\n")
+                print( summary( plus.cov ) )
+                cat("percentiles:\n")
+                print(quantile( plus.cov,p=qts ))
+                cat("\n\n")
+                cat("REVERSE STRAND:\n")
+                cat("summary:\n")
+                print( summary( mnus.cov ) )
+                cat("percentiles:\n")
+                print(quantile( mnus.cov,p=qts ))
+                cat("\n")                          
+              }else{
+                
+                all.cov=tmp[,coverage]
+                
+                cat("read coverage statistics per base\n")
+                cat("summary:\n")
+                print( summary( all.cov ) )
+                cat("percentiles:\n")
+                print(quantile( all.cov,p=qts ))
+                cat("\n")
+              }
+              
+            }else{
+              if(both.strands){   
+                plus.cov=tmp[strand=="+",coverage]
+                mnus.cov=tmp[strand=="-",coverage]
+                
+                par(mfrow=c(1,2))
+                if(labels){
+                  a=hist(log10(plus.cov),plot=F)
+                  my.labs=as.character(round(100*a$counts/length(plus.cov),1))
+                }else{my.labs=F}
+                
+                hist(log10(plus.cov),col="chartreuse4",
+                     xlab=paste("log10 of read coverage per",object@resolution),
+                     main=paste("Histogram of", object@context, "coverage: Forward strand"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+                if(labels){
+                  a=hist(log10(mnus.cov),plot=F)
+                  my.labs=as.character(round(100*a$counts/length(mnus.cov),1))
+                }else{my.labs=F}
+                a=hist(log10(mnus.cov),plot=F)
+                hist(log10(mnus.cov),col="chartreuse4",
+                     xlab=paste("log10 of read coverage per",object@resolution),
+                     main=paste("Histogram of", object@context, "coverage: Reverse strand"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+              }else{
+                all.cov=tmp[,coverage]
+                if(labels){
+                  a=hist(log10(all.cov),plot=F)
+                  my.labs=as.character(round(100*a$counts/length(all.cov),1))
+                }else{my.labs=F}                          
+                
+                hist(log10(all.cov),col="chartreuse4",
+                     xlab=paste("log10 of read coverage per",object@resolution),
+                     main=paste("Histogram of", object@context, "coverage"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+              }
+              
+              
+              
+            }
+            
+            
+            
+          })
+
+#' @rdname getMethylationStats-methods
+#' @aliases getMethylationStats,methylRawDB-method
+setMethod("getMethylationStats", "methylRawDB",
+          function(object,plot,both.strands,labels,...){
+            
+            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage,numCs)])} )
+            
+            
+            plus.met=100* tmp[strand=="+",numCs/coverage]
+            mnus.met=100* tmp[strand=="-",numCs/coverage]
+            all.met =100* tmp[,numCs/coverage]
+            
+            if(!plot){
+              qts=seq(0,0.9,0.1) # get quantiles
+              qts=c(qts,0.95,0.99,0.995,0.999,1)                          
+              
+              if(both.strands){       
+                
+                cat("methylation statistics per base\n\n")
+                cat("FORWARD STRAND:\n")
+                cat("summary:\n")
+                print( summary( plus.met ) )
+                cat("percentiles:\n")
+                print(quantile( plus.met,p=qts ))
+                cat("\n\n")
+                cat("REVERSE STRAND:\n")
+                cat("summary:\n")
+                print( summary( mnus.met ) )
+                cat("percentiles:\n")
+                print(quantile( mnus.met,p=qts ))
+                cat("\n")                          
+              }else{
+                
+                
+                cat("methylation statistics per base\n")
+                cat("summary:\n")
+                print( summary( all.met ) )
+                cat("percentiles:\n")
+                print(quantile( all.met,p=qts ))
+                cat("\n")
+              }
+              
+            }else{
+              if(both.strands){   
+                
+                par(mfrow=c(1,2))
+                if(labels){
+                  a=hist((plus.met),plot=F,...)
+                  my.labs=as.character(round(100*a$counts/length(plus.met),1))
+                }else{my.labs=FALSE}
+                hist((plus.met),col="cornflowerblue",
+                     xlab=paste("% methylation per",object@resolution),
+                     main=paste("Histogram of %", object@context,"methylation: Forward strand"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+                if(labels){                          
+                  a=hist((mnus.met),plot=F,...)
+                  my.labs=as.character(round(100*a$counts/length(mnus.met),1))
+                }
+                else{my.labs=FALSE}
+                
+                hist((mnus.met),col="cornflowerblue",
+                     xlab=paste("% methylation per",object@resolution),
+                     main=paste("Histogram of %", object@context,"methylation: Reverse strand"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+              }else{
+                if(labels){                          
+                  
+                  a=hist((all.met),plot=F,...)
+                  my.labs=as.character(round(100*a$counts/length(all.met),1))
+                }else{my.labs=FALSE}
+                hist((all.met),col="cornflowerblue",
+                     xlab=paste("% methylation per",object@resolution),
+                     main=paste("Histogram of %", object@context,"methylation"),
+                     labels=my.labs,...)
+                mtext(object@sample.id, side = 3)
+                
+              }
+              
+              
+            }
+            
+            
+          })
+
+
+#' @rdname adjust.methylC
+#' @aliases adjust.methylC,methylRawDB,methylRawDB-method
+setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
+  
+  lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
+  base=unite(lst)
+  
+  adjust <- function(data) {
+    
+    .setMethylDBNames(data)
+    diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
+    diff[diff<0]=0
+    data$numCs1=diff
+    data$numTs1=data$coverage1-data$numCs1
+    return(data[1:7])
+    
+  }
+  
+  dir <- dirname(mc@dbpath) 
+  filename <- paste(basename(tools::file_path_sans_ext(mc@dbpath)),"adjust",sep="_")
+  
+  newdbpath <- applyTbxByChunk(base@dbpath, dir=dir,filename = filename, 
+                               return.type = "tabix", FUN = adjust)
+  
+  unlink(list.files(dirname(base@dbpath),pattern = basename(tools::file_path_sans_ext(base@dbpath)),full.names = TRUE))
+  
+  readMethylRawDB(dbpath = newdbpath,sample.id=mc@sample.id,
+                  assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
+                  dbtype = mc@dbtype)
+  
+  
+})
+
+
+#' @rdname adjust.methylC
+#' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
+setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc){
+  
+  # check lengths equal if not give error
+  if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
+  
+  my.list=list()
+  for(i in 1:length(mc)){
+    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]])
+  }
+  new("methylRawListDB",my.list,treatment=mc@treatment )
+  
+})
 
 
 # methylBaseDB ------------------------------------------------------------
@@ -303,9 +547,10 @@ setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
 valid.methylBaseDB <- function(object) {
   
   
-  #data=getData(object,nrow=5)
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
+  check3=( length(object@sample.ids) != length(object@treatment) )
+  
   if(check1 & check2 ){
     return(TRUE)
   }
@@ -316,6 +561,10 @@ valid.methylBaseDB <- function(object) {
   }
   else if(! check2){
     message("The DB file can not be found, check the value of 'dbpath'")
+    FALSE
+  }
+  else if(! check3){
+    message("The number of samples is different from the number of treatments, check the length of 'treatment'")
     FALSE
   }
   
@@ -396,7 +645,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
                            numCs.index,numTs.index,destranded){
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),".txt")
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),"_base.txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
@@ -660,238 +909,6 @@ setMethod("getCorrelation", "methylBaseDB",
           }  
 )
 
-#' @rdname getCoverageStats-methods
-#' @aliases getCoverageStats,methylRawDB-method
-setMethod("getCoverageStats", "methylRawDB",
-          function(object,plot,both.strands,labels,...){
-            
-            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
-                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage)])} )
-            
-            if(!plot){
-              qts=seq(0,0.9,0.1) # get quantiles
-              qts=c(qts,0.95,0.99,0.995,0.999,1)                          
-              
-              if(both.strands){
-                
-                
-                plus.cov=tmp[strand=="+",coverage]
-                mnus.cov=tmp[strand=="-",coverage]
-                
-                cat("read coverage statistics per base\n\n")
-                cat("FORWARD STRAND:\n")
-                cat("summary:\n")
-                print( summary( plus.cov ) )
-                cat("percentiles:\n")
-                print(quantile( plus.cov,p=qts ))
-                cat("\n\n")
-                cat("REVERSE STRAND:\n")
-                cat("summary:\n")
-                print( summary( mnus.cov ) )
-                cat("percentiles:\n")
-                print(quantile( mnus.cov,p=qts ))
-                cat("\n")                          
-              }else{
-                
-                all.cov=tmp[,coverage]
-                
-                cat("read coverage statistics per base\n")
-                cat("summary:\n")
-                print( summary( all.cov ) )
-                cat("percentiles:\n")
-                print(quantile( all.cov,p=qts ))
-                cat("\n")
-              }
-              
-            }else{
-              if(both.strands){   
-                plus.cov=tmp[strand=="+",coverage]
-                mnus.cov=tmp[strand=="-",coverage]
-                
-                par(mfrow=c(1,2))
-                if(labels){
-                  a=hist(log10(plus.cov),plot=F)
-                  my.labs=as.character(round(100*a$counts/length(plus.cov),1))
-                }else{my.labs=F}
-                
-                hist(log10(plus.cov),col="chartreuse4",
-                     xlab=paste("log10 of read coverage per",object@resolution),
-                     main=paste("Histogram of", object@context, "coverage: Forward strand"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-                if(labels){
-                  a=hist(log10(mnus.cov),plot=F)
-                  my.labs=as.character(round(100*a$counts/length(mnus.cov),1))
-                }else{my.labs=F}
-                a=hist(log10(mnus.cov),plot=F)
-                hist(log10(mnus.cov),col="chartreuse4",
-                     xlab=paste("log10 of read coverage per",object@resolution),
-                     main=paste("Histogram of", object@context, "coverage: Reverse strand"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-              }else{
-                all.cov=tmp[,coverage]
-                if(labels){
-                  a=hist(log10(all.cov),plot=F)
-                  my.labs=as.character(round(100*a$counts/length(all.cov),1))
-                }else{my.labs=F}                          
-                
-                hist(log10(all.cov),col="chartreuse4",
-                     xlab=paste("log10 of read coverage per",object@resolution),
-                     main=paste("Histogram of", object@context, "coverage"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-              }
-              
-              
-              
-            }
-            
-            
-            
-          })
-
-#' @rdname getMethylationStats-methods
-#' @aliases getMethylationStats,methylRawDB-method
-setMethod("getMethylationStats", "methylRawDB",
-          function(object,plot,both.strands,labels,...){
-            
-            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
-                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage,numCs)])} )
-            
-            
-            plus.met=100* tmp[strand=="+",numCs/coverage]
-            mnus.met=100* tmp[strand=="-",numCs/coverage]
-            all.met =100* tmp[,numCs/coverage]
-            
-            if(!plot){
-              qts=seq(0,0.9,0.1) # get quantiles
-              qts=c(qts,0.95,0.99,0.995,0.999,1)                          
-              
-              if(both.strands){       
-                
-                cat("methylation statistics per base\n\n")
-                cat("FORWARD STRAND:\n")
-                cat("summary:\n")
-                print( summary( plus.met ) )
-                cat("percentiles:\n")
-                print(quantile( plus.met,p=qts ))
-                cat("\n\n")
-                cat("REVERSE STRAND:\n")
-                cat("summary:\n")
-                print( summary( mnus.met ) )
-                cat("percentiles:\n")
-                print(quantile( mnus.met,p=qts ))
-                cat("\n")                          
-              }else{
-                
-                
-                cat("methylation statistics per base\n")
-                cat("summary:\n")
-                print( summary( all.met ) )
-                cat("percentiles:\n")
-                print(quantile( all.met,p=qts ))
-                cat("\n")
-              }
-              
-            }else{
-              if(both.strands){   
-                
-                par(mfrow=c(1,2))
-                if(labels){
-                  a=hist((plus.met),plot=F,...)
-                  my.labs=as.character(round(100*a$counts/length(plus.met),1))
-                }else{my.labs=FALSE}
-                hist((plus.met),col="cornflowerblue",
-                     xlab=paste("% methylation per",object@resolution),
-                     main=paste("Histogram of %", object@context,"methylation: Forward strand"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-                if(labels){                          
-                  a=hist((mnus.met),plot=F,...)
-                  my.labs=as.character(round(100*a$counts/length(mnus.met),1))
-                }
-                else{my.labs=FALSE}
-                
-                hist((mnus.met),col="cornflowerblue",
-                     xlab=paste("% methylation per",object@resolution),
-                     main=paste("Histogram of %", object@context,"methylation: Reverse strand"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-              }else{
-                if(labels){                          
-                  
-                  a=hist((all.met),plot=F,...)
-                  my.labs=as.character(round(100*a$counts/length(all.met),1))
-                }else{my.labs=FALSE}
-                hist((all.met),col="cornflowerblue",
-                     xlab=paste("% methylation per",object@resolution),
-                     main=paste("Histogram of %", object@context,"methylation"),
-                     labels=my.labs,...)
-                mtext(object@sample.id, side = 3)
-                
-              }
-              
-              
-            }
-            
-            
-          })
-
-
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawDB,methylRawDB-method
-setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
-  
-  lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
-  base=unite(lst)
-  
-  adjust <- function(data) {
-    
-    .setMethylDBNames(data)
-    diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
-    diff[diff<0]=0
-    data$numCs1=diff
-    data$numTs1=data$coverage1-data$numCs1
-    return(data[1:7])
-  
-  }
-  
-  dir <- dirname(mc@dbpath) 
-  filename <- paste(basename(tools::file_path_sans_ext(mc@dbpath)),"adjust",sep="_")
-  
-  newdbpath <- applyTbxByChunk(base@dbpath, dir=dir,filename = filename, 
-                               return.type = "tabix", FUN = adjust)
-  
-  unlink(list.files(dirname(base@dbpath),pattern = basename(tools::file_path_sans_ext(base@dbpath)),full.names = TRUE))
-  
-  readMethylRawDB(dbpath = newdbpath,sample.id=mc@sample.id,
-                  assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
-                  dbtype = mc@dbtype)
-
-  
-})
-
-
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
-setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc){
-  
-  # check lengths equal if not give error
-  if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
-  
-  my.list=list()
-  for(i in 1:length(mc)){
-    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]])
-  }
-  new("methylRawListDB",my.list,treatment=mc@treatment )
-  
-})
 
 
 
@@ -1014,6 +1031,230 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase)
 )
 
 
+
+# methylDiffDB -------------------------------------------------------
+
+
+valid.methylDiffDB <- function(object) {
+  
+  
+  check1=( (object@resolution == "base") | (object@resolution == "region") )
+  check2=file.exists(object@dbpath)
+  check3=( length(object@sample.ids) != length(object@treatment) )
+  
+  if(check1 & check2 ){
+    return(TRUE)
+  }
+  else if (! check1 ){
+    message("resolution slot has to be either 'base' or 'region':",
+            "other values not allowed")
+    FALSE
+  }
+  else if(! check2){
+    message("The DB file can not be found, check the value of 'dbpath'")
+    FALSE
+  }
+  else if(! check3){
+    message("The number of samples is different from the number of treatments, check the length of 'treatment'")
+    FALSE
+  }
+  
+}
+
+#' An S4 class that holds differential methylation information as flat file database
+#'
+#' This class is designed to hold statistics and locations for differentially 
+#' methylated regions/bases as flat file database.
+#' \code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+#' with \code{methylDiffDB} class.
+#'          
+#' @section Slots:\describe{
+#'    \item{\code{sample.ids}}{ids/names of samples in a vector}
+#'    \item{\code{assembly}}{a name of genome assembly, such as :hg18,mm9, etc}
+#'    \item{\code{context}}{numeric vector identifying which samples are which
+#'    group }
+#'    \item{\code{treatment}}{numeric vector identifying which samples are which
+#'     group }
+#'    \item{\code{destranded}}{logical denoting if methylation inormation is
+#'     destranded or not}
+#'    \item{\code{resolution}}{string either 'base' or 'region' defining the 
+#'    resolution of methylation information}
+#'
+#' }
+#' 
+#' @section Details:
+#' \code{methylDiffDB} class has the same functionality as \code{\link{methylDiff}} class, 
+#' but the data is saved in a flat database file and therefore allocates less space in memory.
+#' 
+#' 
+#' @section Subsetting:
+#'  In the following code snippets, \code{x} is a \code{methylDiffDB}.
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done 
+#'  on rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  downstream analysis. see ?methylKit[ .
+#' 
+#' @section Coercion:
+#'   \code{methylDiffDB} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#' 
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiffDB:
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' 
+#' @examples
+#' data(methylKit)
+#' library(GenomicRanges)
+#' my.gr=as(methylDiffDB.obj,"GRanges")
+#' 
+#' @name methylDiffDB-class
+#' @aliases methylDiffDB
+#' @rdname methylDiffDB-class
+#' @export
+#' @docType class
+setClass("methylDiffDB",slots = list(dbpath= "character",num.records= "numeric",sample.ids = "character", 
+                                     assembly = "character",context = "character",dbtype = "character", 
+                                     treatment="numeric",destranded="logical",resolution="character"),validity = valid.methylDiffDB)
+
+# PRIVATE function:
+# makes a methylDiffDB object from a df
+# it is called from read function or whenever this functionality is needed
+makeMethylDiffDB<-function(df,dbpath,dbtype,
+                           sample.ids, assembly ,context,
+                           resolution,treatment,destranded){
+  
+  # new tabix file is named by concatenation of sample.ids, works for now
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),"_diff.txt")
+  df <- df[with(df,order(chr,start,end)),]
+  df2tabix(df,filepath)
+  num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  
+  new("methylDiffDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
+      sample.ids = sample.ids, assembly = assembly,context=context,
+      resolution=resolution,dbtype=dbtype,treatment=treatment,
+      destranded=destranded)
+}
+
+# PRIVATE function:
+# reads a methylDiffDB object from flat file database
+# it is called from read function or whenever this functionality is needed
+readMethylDiffDB<-function(dbpath,dbtype,
+                           sample.ids, assembly ,context,
+                           resolution,treatment,destranded,skip=0){
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+  
+  new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
+      sample.ids = sample.ids, assembly = assembly,context=context,
+      resolution=resolution,dbtype=dbtype,treatment=treatment,
+      destranded=destranded)
+}
+
+
+setMethod("calculateDiffMeth", "methylBaseDB",
+          function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
+                   adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
+                   effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
+            
+            if(length(.Object@treatment)<2 ){
+              stop("can not do differential methylation calculation with less than two samples")
+            }
+            
+            if(length(unique(.Object@treatment))<2 ){
+              stop("can not do differential methylation calculation when there is no control\n
+                   treatment option should have 0 and 1 designating treatment and control samples")
+            }
+            
+            if(length(unique(.Object@treatment))>2 ){
+              stop("can not do differential methylation calculation when there are more than\n
+                   two groups, treatment vector indicates more than two groups")
+            }
+            
+            #### check if covariates+intercept+treatment more than replicates ####
+            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index)){stop("Too many covariates/too few replicates.")}}
+            
+            # add backwards compatibility with old parameters
+            if(slim==FALSE) adjust="BH" else adjust=adjust
+            if(weighted.mean==FALSE) effect="mean" else effect=effect
+
+                        
+            # function to apply the test to data
+            diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
+                                 parShrinkNM,test,mc.cores){
+              
+              cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+              
+              tmp=simplify2array(
+                mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+                         parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
+              tmp <- as.data.frame(t(tmp))
+              #print(head(tmp))
+              x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+              
+              return(x)
+              
+              
+            }
+              
+            dir <- dirname(.Object@dbpath)
+            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),"diffMeth",sep="_")
+            chunk.size <- 1e4
+            
+            dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
+                                   Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=covariates,
+                                   treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+                                   parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores)
+            
+            
+            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                    destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+            obj
+            }
+)
+
+#' @aliases get.methylDiff,methylDiffDB-method
+#' @rdname get.methylDiff-methods
+setMethod(f="get.methylDiff", signature="methylDiffDB", 
+          definition=function(.Object,difference,qvalue,type) {
+            
+            if(!( type %in% c("all","hyper","hypo") )){
+              stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
+            }
+              
+            #function applied to data
+            f <- function(data,difference,qv,type){
+              
+              data <- data.table(data)
+              .setMethylDBNames(data,methylDBclass = "methylDiffDB")
+              
+              if(type=="all"){
+                data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
+              }else if(type=="hyper"){
+                data <- data[(qvalue < qv) & (meth.diff > difference)]
+              }else if(type=="hypo"){
+                data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+              }
+              return(data)
+            }
+            
+            dir <- dirname(.Object@dbpath)
+            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),type,sep="_")
+            
+            dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir, filename = filename, return.type = "tabix", FUN = f,
+                                      difference = difference, qv = qvalue, type = type)
+            
+            
+            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                                 destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+            return(obj)
+
+            }) 
+
+
 # coercion functions ------------------------------------------------------
 
 setAs("methylRawDB", "GRanges", function(from)
@@ -1038,6 +1279,18 @@ setAs("methylBaseDB", "GRanges", function(from)
   
 })
 
+setAs("methylDiffDB", "GRanges", function(from)
+{
+  
+  from = getData(from)
+  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
+          strand=from$strand, 
+          qvalue=from$qvalue,
+          meth.diff=from$meth.diff
+  )
+  
+})
+
 # accessors ---------------------------------------------------------------
 
 
@@ -1053,6 +1306,12 @@ setMethod("getAssembly", signature="methylBaseDB", definition=function(x) {
   return(x@assembly)
 }) 
 
+#' @rdname getAssembly-methods
+#' @aliases getAssembly,methylDiffDB-method
+setMethod("getAssembly", signature="methylDiffDB", definition=function(x) {
+  return(x@assembly)
+})
+
 #' @rdname getContext-methods
 #' @aliases getContext,methylRawDB-method
 setMethod("getContext", signature="methylRawDB", definition=function(x) {
@@ -1062,6 +1321,12 @@ setMethod("getContext", signature="methylRawDB", definition=function(x) {
 #' @rdname getContext-methods
 #' @aliases getContext,methylBaseDB-method
 setMethod("getContext", signature="methylBaseDB", definition=function(x) {
+  return(x@context)
+})
+
+#' @rdname getContext-methods
+#' @aliases getContext,methylDiffDB-method
+setMethod("getContext", signature="methylDiffDB", definition=function(x) {
   return(x@context)
 })
 
@@ -1079,6 +1344,15 @@ setMethod("getData", signature="methylRawDB", definition=function(x) {
 setMethod("getData", signature="methylBaseDB", definition=function(x) {
   df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
  .setMethylDBNames(df,"methylBaseDB")
+  
+  return(df)
+})
+
+#' @rdname getData-methods
+#' @aliases getData,methylDiffDB-method
+setMethod(f="getData", signature="methylDiffDB", definition=function(x) {
+  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
+  .setMethylDBNames(df,"methylDiffDB")
   
   return(df)
 })
@@ -1132,6 +1406,21 @@ setMethod("show", "methylBaseDB", function(object) {
   
 })
 
+#' @rdname show-methods
+#' @aliases show,methylDiffDB
+setMethod("show", "methylDiffDB", function(object) {
+  
+  cat("methylDiffDB object with",nrow(object@num.records),"rows\n--------------\n")
+  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylDiffDB"))
+  cat("--------------\n")
+  cat("sample.ids:",object@sample.ids,"\n")
+  cat("destranded",object@destranded,"\n")
+  cat("assembly:",object@assembly,"\n")
+  cat("context:", object@context,"\n")
+  cat("treament:", object@treatment,"\n")
+  cat("resolution:", object@resolution,"\n")
+})
+
 # subset classes ----------------------------------------------------------
 
 #' @aliases select,methylRawDB-method
@@ -1167,6 +1456,22 @@ setMethod("select", "methylBaseDB",
           }
 )
 
+#' @aliases select,methylDiffDB-method
+#' @rdname select-methods
+setMethod("select", "methylDiffDB",
+          function(x, i)
+          {
+            
+            new("methylDiff",getData(x)[i,],
+                sample.ids = x@sample.ids,
+                assembly = x@assembly,
+                context = x@context,
+                treatment=x@treatment,
+                destranded=x@destranded,
+                resolution=x@resolution)
+          }
+)
+
 
 #' @aliases [,methylRawDB-method
 #' @rdname extract-methods
@@ -1187,6 +1492,21 @@ setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"), 
           function(x,i,j,drop){
+            #cat(missing(i),"\n",missing(j),"\n",missing(drop))
+            if(!missing(j)){
+              stop(paste("subsetting on columns is not allowed for",class(x),
+                         "object\nif you want to do extraction on the data part", 
+                         "of the object use getData() first"),
+                   call. = FALSE)
+            }
+            select(x,i)
+          }
+)
+
+#' @rdname extract-methods
+#' @aliases [,methylDiffDB-method
+setMethod("[","methylDiffDB", 
+          function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
             if(!missing(j)){
               stop(paste("subsetting on columns is not allowed for",class(x),
@@ -1230,6 +1550,12 @@ setMethod("getTreatment", signature = "methylRawListDB", function(x) {
 #' @rdname getTreatment-methods
 #' @aliases getTreatment,methylBaseDB-method
 setMethod("getTreatment", signature = "methylBaseDB", function(x) {
+  return(x@treatment)
+})
+
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylDiffDB-method
+setMethod("getTreatment", signature = "methylDiffDB", function(x) {
   return(x@treatment)
 })
 
