@@ -17,7 +17,7 @@
     } else if( length(df) == 7 & unique(sapply(df[,5:7],class))=="numeric"){
       
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff")) 
-    
+
     } else if( length(df) > 7){
       
       data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
