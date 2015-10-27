@@ -1,7 +1,8 @@
-#' get percent methylation scores from methylBase object
+#' get percent methylation scores from methylBase or methylBaseDB object
 #' 
-#' @param methylBase.obj a methylBase object 
+#' @param methylBase.obj a methylBase or methylBaseDB object 
 #' @param rowids if TRUE, matrix rownames have identifiers as base/region location (default:FALSE)
+#' @param save.txt if TRUE, the matrix will be written to a text file, but only for methylBaseDB objects (default: FALSE) 
 #' @return matrix with percent methylation values per base/region across all 
 #'         samples, row names would be base/region identifiers
 #' @examples
@@ -14,7 +15,7 @@
 #' @export
 #' @docType methods
 #' @rdname percMethylation-methods
-setGeneric("percMethylation", function(methylBase.obj,rowids=FALSE) standardGeneric("percMethylation"))
+setGeneric("percMethylation", function(methylBase.obj,rowids=FALSE,save.txt=FALSE) standardGeneric("percMethylation"))
 
 #' @rdname percMethylation-methods
 #' @aliases percMethylation,methylBase-method
