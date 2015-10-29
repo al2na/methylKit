@@ -10,7 +10,8 @@
 #'              differential methylation calculations (can only be used in
 #'              machines with multiple cores).
 
-#' @usage calculateDiffMethDSS(meth, adjust="SLIM", mc.cores=1)
+#' @usage calculateDiffMethDSS(meth, adjust=c("SLIM","holm","hochberg","hommel",
+#'                             "bonferroni","BH","BY","fdr","none","qvalue"), mc.cores=1)
 #'                
 #' @examples
 #' 
