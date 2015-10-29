@@ -184,7 +184,7 @@ QValuesfun<-function(rawp,pi0)
 # New calulateDiffMeth-part
 
 logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN","shrinkMN"),
-                 effect=c("wmean","mean","predicted"), parShrinkNM=list(), test=c("F","Chisq")){
+                 effect=c("wmean","mean","predicted"), parShrinkMN=list(), test=c("F","Chisq")){
   
   # correct counts and treatment factor for NAs in counts
   treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
@@ -201,7 +201,7 @@ logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN",
   # get formula from model matrix
   formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
   
-  # if there are covariates other than treatment
+  # if there are covariates other than treatment, include them in model
   if(ncol(vars)>1){
     fmlaCov<-as.formula(paste("~ ", paste(colnames(vars)[-1], collapse= "+")))
     modelCov<-model.matrix(as.formula(fmlaCov),as.data.frame(vars[,-1,drop=FALSE]) )
@@ -226,7 +226,18 @@ logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN",
                phi=sum( uresids^2 )/(length(w)-nprm) # correction factor  
                ifelse(phi>1,phi,1)
              },
-             shrinkMN=1)
+             shrinkMN={
+               mu=fitted(obj)
+               uresids <- (y-w*mu)/sqrt(mu*(w-w*mu)) # pearson residuals
+               phi=sum( uresids^2 )/(length(w)-nprm) # correction factor
+               
+               # change phi with parameters from parShrinkMN
+               df.prior=parShrinkMN$df.prior
+               var.prior=parShrinkMN$var.prior
+               df.total=(length(w)-nprm)+df.prior
+               phi=((length(w)-nprm)*phi + df.prior*var.prior)/df.total
+               ifelse(phi>1,phi,1)
+             })
   
   if(ncol(vars)>1){
     deviance <- objCov$deviance - obj$deviance
@@ -277,6 +288,60 @@ logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN",
   
   names(meths)=paste0("meth_",names(meths))
   c(meth.diff=100*meth.diff,p.value=p.value,q.value=p.value,100*meths)
+}
+
+# estimation of shrinkage parameters
+estimateShrinkageMN<-function(cntlist,treatment,covariates,
+                              sample.size=100000,mc.cores=1){
+  
+  message("Estimating shrinkage for scaling factor phi...")
+  
+  # get formula and construct model matrix
+  vars <- as.data.frame(cbind(treatment,covariates))
+  formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
+  modelMat<-model.matrix( formula ,as.data.frame(vars) )
+  
+  # check number of samples
+  sample.size <- ifelse(length(cntlist)<=100000,length(cntlist),sample.size)
+  
+  # calculate phis up to the first 100000 sites (stabilizing point)
+  estimation=simplify2array(
+    mclapply(cntlist[1:sample.size],estimatePhi,modelMat=modelMat,treatment=treatment,
+             mc.cores=mc.cores))
+  
+  # for each phi, take the correct df (depending on number of model parameters)
+  phis<-estimation[1,]
+  df<-estimation[2,]
+  
+  # squeeze sample variances 
+  shr=squeezeVar(phis,df)
+  
+  # output prior df and variances (to be used later as input for parShrinkMN)
+  list(df.prior=shr$df.prior,var.prior=shr$var.prior)
+}
+
+estimatePhi<-function(counts,modelMat,treatment){
+  
+  # correct counts and treatment factor for NAs in counts
+  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  treatment<-treatment[!is.na(treatment)]
+  counts<-counts[!is.na(counts)]
+  
+  n=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
+  y=counts[1:(length(counts)/2)]
+  prop=y/n
+  
+  glmfit=glm.fit(modelMat,prop,weights=n,family=binomial(link=logit))
+  
+  # fit glm
+  mu <- fitted(glmfit)
+  
+  # calculate and record results
+  resids <- (y-n*mu)/sqrt(mu*(n-n*mu))
+
+  # get phi correction coefficients 
+  phi <- sum( resids^2 )/(length(n)-2)
+  c(phi,(length(n)-2))
 }
 
 # end of S3 functions
@@ -355,16 +420,16 @@ setClass("methylDiff",representation(
 #' @param .Object a methylBase object to calculate differential methylation                    
 #' @param covariates a data.frame containing covariates, which should be included in the test.                   
 #' @param overdispersion If set to "none"(default), no overdispersion correction will be attempted.
-#'              If set to "MN", basic overdispersion correction will be applied. 
-#'              (NOT IMPLEMENTED: If set to "shrinkMN", overdisperison correction with squeezeVar() 
-#'              from the limma-package will be applied (not implemented as of yet).
+#'              If set to "MN", basic overdispersion correction will be applied.
+#'              (EXPERIMENTAL: If set to "shrinkMN", overdisperison correction with squeezeVar() 
+#'              from the limma-package will be applied (not thoroughly tested as of yet).
 #' @param adjust different methods to correct the p-values for multiple testing. 
 #'              Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}} 
 #'              and for all other methods see \code{\link[stats]{p.adjust}}.
 #' @param effect method to calculate the mean methylation different between groups 
 #'              using read coverage as weights (default). When set to "mean", the generic mean is applied
 #'              and when set to "predicted", a logistic model is used instead.
-#' @param parShrinkNM a list for squeezeVar(). (NOT IMPLEMENTED)
+#' @param parShrinkMN a list for squeezeVar(). (NOT IMPLEMENTED)
 #' @param test the statistical test used to determine the methylation differences. 
 #'              The Chisq-test is used by default, while the F-test can be chosen 
 #'              if overdispersion control ist applied.
@@ -376,7 +441,7 @@ setClass("methylDiff",representation(
 #'                    
 #' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
 #'         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
-#'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+#'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkMN=list(),
 #'         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
 #' 
 #' @examples
@@ -385,7 +450,7 @@ setClass("methylDiff",representation(
 #' 
 #' # The Chisq-test will be applied when no overdispersion control is chosen.
 #' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
-#'                               adjust=c("SLIM"),effect=c("wmean"),parShrinkNM=list(),
+#'                               adjust=c("SLIM"),effect=c("wmean"),parShrinkMN=list(),
 #'                               test=c("Chisq"),mc.cores=1)
 #' 
 #' # pool samples in each group
@@ -435,13 +500,13 @@ setClass("methylDiff",representation(
 setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
                                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                                         effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+                                         effect=c("wmean","mean","predicted"),parShrinkMN=list(),
                                          test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE) standardGeneric("calculateDiffMeth"))
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                   effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+                   effect=c("wmean","mean","predicted"),parShrinkMN=list(),
                    test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
             
             # extract data.frame from methylBase
@@ -477,10 +542,16 @@ setMethod("calculateDiffMeth", "methylBase",
             # get count matrix and make list
             cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
             
+            # call estimate shrinkage before logReg
+            if(overdispersion=="shrinkMN"){
+              parShrinkMN<-estimateShrinkageMN(cntlist,treatment=.Object@treatment,covariates=vars,
+                                               sample.size=100000,mc.cores=mc.cores)
+            }
+            
             # get the result of tests
             tmp=simplify2array(
               mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
-                       parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
+                       parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
             
             # return the data frame part of methylDiff
             tmp <- as.data.frame(t(tmp))
@@ -574,7 +645,6 @@ setMethod("select", "methylDiff",
           }
 )
 
-
 #' @rdname extract-methods
 #' @aliases [,methylDiff-method
 setMethod("[","methylDiff", 
@@ -589,9 +659,6 @@ setMethod("[","methylDiff",
             select(x,i)
           }
 )
-
-
-
 
 
 
@@ -728,5 +795,3 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
             }
             
           })
-
-

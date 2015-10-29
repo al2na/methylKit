@@ -2,17 +2,21 @@
 #' 
 #' This function provides an interface to the DSS package by Hao Wo at Emory University.
 #' 
-#' @param meth        a methylBase object
-#' @param slim        default: FALSE. If set to TRUE, pvalues will be corrected with the methylKit-SLIM-function.
-#' @param num.cores   the number processors to be used
+#' @param meth  a methylBase object
+#' @param adjust different methods to correct the p-values for multiple testing. 
+#'              Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}} 
+#'              and for all other methods see \code{\link[stats]{p.adjust}}.
+#' @param mc.cores integer denoting how many cores should be used for parallel
+#'              differential methylation calculations (can only be used in
+#'              machines with multiple cores).
 
-#' @usage calculateDiffMethDSS(meth, slim=FALSE, num.cores=1)
+#' @usage calculateDiffMethDSS(meth, adjust="SLIM", mc.cores=1)
 #'                
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' dssDiffay <- calculateDiffMethDSS(methylBase.obj, slim=FALSE, num.cores=1)
+#' dssDiffay <- calculateDiffMethDSS(methylBase.obj, adjust="SLIM", mc.cores=1)
 #' 
 #' @return a methylDiff object
 #' @section Details:
@@ -24,10 +28,12 @@
 
 
 
-setGeneric("calculateDiffMethDSS", function(meth, slim=FALSE, num.cores=1) standardGeneric("calculateDiffMethDSS"))
+setGeneric("calculateDiffMethDSS", function(meth, adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
+                                            mc.cores=1) standardGeneric("calculateDiffMethDSS"))
 
 setMethod("calculateDiffMethDSS", "methylBase", 
-          function(meth, slim=FALSE, num.cores=1){
+          function(meth, adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
+                   mc.cores=1){
             
             #require(DSS)
             #library(DSS)
@@ -52,7 +58,6 @@ setMethod("calculateDiffMethDSS", "methylBase",
             
             raw_output=callDML2(meth)
             
-            
             #ids=paste(raw_output[ , 'chr'] , raw_output[, 'pos'], sep='.')
             #raw_output$id=ids
             #raw_output=raw_output[ with(raw_output, order(chr, pos) ), ]
@@ -62,21 +67,45 @@ setMethod("calculateDiffMethDSS", "methylBase",
             output$diff=100*(output$diff)
             colnames(output)=c('chr', 'start', 'end', 'strand', 'pvalue', 'qvalue', 'meth.diff')
             
+            # adjust pvalues
+            output$qvalue=p.adjusted(output$pvalue,method=adjust)
             
-            if(slim) {
-              cat('Trying SLIM...', '\n')
-              slimObj=SLIMfunc(raw_output[ , 'pvalue'])
-              output$qvalue=QValuesfun(raw_output[ , 'pvalue'], slimObj$pi0_Est)
-              
-            }
-            
-            
+            #if(slim) {
+            #  cat('Trying SLIM...', '\n')
+            #  slimObj=SLIMfunc(output[ , 'pvalue'])
+            #  output$qvalue=QValuesfun(output[ , 'pvalue'], slimObj$pi0_Est)
+            #}
             
             obj=new("methylDiff",output,sample.ids=meth@sample.ids,assembly=meth@assembly,context=meth@context,
                     treatment=meth@treatment,destranded=meth@destranded,resolution=meth@resolution)
             obj
         }
 )
+
+# wrapper function for SLIM, p.adjust, qvalue-package
+p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
+                       n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE){
+  
+  method <- match.arg(method)
+  
+  qvals=switch(method,
+               # SLIM function
+               SLIM={QValuesfun(pvals,
+                                SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,B=B,Bplot=Bplot)$pi0_Est)
+               },
+               # r-base/p-adjust functions
+               holm={p.adjust(pvals,method=method,n)},
+               hochberg={p.adjust(pvals,method=method,n)},
+               hommel={p.adjust(pvals,method=method,n)},
+               bonferroni={p.adjust(pvals,method=method,n)},
+               BH={p.adjust(pvals,method=method,n)},
+               BY={p.adjust(pvals,method=method,n)},
+               fdr={p.adjust(pvals,method=method,n)},
+               none={p.adjust(pvals,method=method,n)},
+               # r-bioconductor/qvalue-package function
+               qvalue={qvalue(pvals,fdr.level,pfdr)$qvalues}
+  )
+}
 
 #methylBaseToBSeq<-function(meth, use_samples=NULL, use_sites=NULL, remove.na=TRUE ) {
 #  

@@ -5,14 +5,18 @@
 \alias{calculateDiffMethDSS}
 \title{calculate Differential Methylation with DSS}
 \usage{
-calculateDiffMethDSS(meth, slim=FALSE, num.cores=1)
+calculateDiffMethDSS(meth, adjust="SLIM", mc.cores=1)
 }
 \arguments{
 \item{meth}{a methylBase object}
 
-\item{slim}{default: FALSE. If set to TRUE, pvalues will be corrected with the methylKit-SLIM-function.}
+\item{adjust}{different methods to correct the p-values for multiple testing.
+Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}}
+and for all other methods see \code{\link[stats]{p.adjust}}.}
 
-\item{num.cores}{the number processors to be used}
+\item{mc.cores}{integer denoting how many cores should be used for parallel
+differential methylation calculations (can only be used in
+machines with multiple cores).}
 }
 \value{
 a methylDiff object
@@ -27,6 +31,6 @@ test
 \examples{
 data(methylKit)
 
-dssDiffay <- calculateDiffMethDSS(methylBase.obj, slim=FALSE, num.cores=1)
+dssDiffay <- calculateDiffMethDSS(methylBase.obj, adjust="SLIM", mc.cores=1)
 }
 

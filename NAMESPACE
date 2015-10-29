@@ -5,6 +5,7 @@ import(GenomicRanges)
 import(qvalue)
 import(emdbook)
 #import(RHmm)
+import(limma)
 
 #importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
 

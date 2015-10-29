@@ -8,7 +8,7 @@
 \usage{
 calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
-        "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
+        "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkMN=list(),
         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
 }
 \arguments{
@@ -18,8 +18,8 @@ calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
 
 \item{overdispersion}{If set to "none"(default), no overdispersion correction will be attempted.
 If set to "MN", basic overdispersion correction will be applied.
-(NOT IMPLEMENTED: If set to "shrinkMN", overdisperison correction with squeezeVar()
-from the limma-package will be applied (not implemented as of yet).}
+(EXPERIMENTAL: If set to "shrinkMN", overdisperison correction with squeezeVar()
+from the limma-package will be applied (not thoroughly tested as of yet).}
 
 \item{adjust}{different methods to correct the p-values for multiple testing.
 Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}}
@@ -29,7 +29,7 @@ and for all other methods see \code{\link[stats]{p.adjust}}.}
 using read coverage as weights (default). When set to "mean", the generic mean is applied
 and when set to "predicted", a logistic model is used instead.}
 
-\item{parShrinkNM}{a list for squeezeVar(). (NOT IMPLEMENTED)}
+\item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 
 \item{test}{the statistical test used to determine the methylation differences.
 The Chisq-test is used by default, while the F-test can be chosen
@@ -67,7 +67,7 @@ data(methylKit)
 
 # The Chisq-test will be applied when no overdispersion control is chosen.
 my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
-                              adjust=c("SLIM"),effect=c("wmean"),parShrinkNM=list(),
+                              adjust=c("SLIM"),effect=c("wmean"),parShrinkMN=list(),
                               test=c("Chisq"),mc.cores=1)
 
 # pool samples in each group
