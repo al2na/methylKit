@@ -1255,6 +1255,200 @@ setMethod(f="get.methylDiff", signature="methylDiffDB",
             }) 
 
 
+
+# bedgraph methods --------------------------------------------------------
+
+#' @rdname bedgraph-methods
+#' @aliases bedgraph,methylRawDB-method
+setMethod("bedgraph", signature(methylObj="methylRawDB"),
+          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on){
+            if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
+              stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth'")
+            }
+           
+            bedgr <- function(data,col.name,file.name,unmeth,log.transform,negative,add.on,sample.id){
+              
+              data <- as.data.table(data)
+              .setMethylDBNames(df = data,methylDBclass = "methylRawDB")
+
+              if(col.name=="perc.meth"){
+                df= data[,.(chr,start=start-1,end,score=100*numCs/coverage )]
+              }else{
+                df=data[,.(chr,start=start-1,end,score=get(col.name) )]
+                if(log.transform){
+                  df=df[,.(chr,start,end,score=log10(score))]
+                }
+                if(negative){
+                  df=df[,.(chr,start,end,score=-1*score )]
+                }
+              }
+              
+              if(is.null(file.name)){
+                return(as.data.frame(df))
+              }else{
+              
+                if(unmeth & col.name=="perc.meth")
+                {
+                  # write meth data to single file
+                  write.table(df,file=paste0(file.name,"_meth"),quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
+                  
+                  # write unmeth data to single file
+                  dfu=df[,.(chr,start,end,score=100-score)]
+                  write.table(dfu,file=paste0(file.name,"_unmeth"),quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
+                  
+                }else{
+                  write.table(df,file=file.name,quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
+                }
+              }
+            }
+            
+            
+            if(is.null(file.name)){
+              
+              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+                              col.name = col.name, file.name = file.name, unmeth = unmeth, log.transform=log.transform, negative= negative,
+                              add.on = add.on, sample.id = methylObj@sample.id)
+              
+            } else {
+              
+              rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+              filename2=paste(file.name,rndFile,sep="_")
+              
+              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+                                    col.name = col.name, file.name= filename2, unmeth = unmeth, log.transform=log.transform, negative= negative,
+                                    add.on = add.on, sample.id = methylObj@sample.id)
+              
+              
+              if(unmeth & col.name=="perc.meth")
+              {
+                # combine single files produced by bedgr function
+                track.line=paste(
+                  "track type=bedGraph name='",methylObj@sample.id," METH Cs","' description='",methylObj@sample.id," METH Cs",
+                  "' visibility=full color=255,0,0 maxHeightPixels=80:80:11 ",add.on,sep="")                        
+                cat(track.line,"\n",file=file.name)
+                file.append(file.name,paste0(filename2,"_meth"))
+                track.line2=paste(
+                  "track type=bedGraph name='",methylObj@sample.id," UNMETH Cs","' description='",methylObj@sample.id," UNMETH Cs",
+                  "' visibility=full color=0,0,255 maxHeightPixels=80:80:11 ",add.on,sep="")
+                cat(track.line2,"\n",file=file.name,append=TRUE)
+                file.append(file.name,paste0(filename2,"_unmeth"))
+              
+              }else{
+                
+                track.line=paste(
+                  "track type=bedGraph name='",methylObj@sample.id," ",col.name,"' description='",methylObj@sample.id," ",col.name,
+                  "' visibility=full color=255,0,0 maxHeightPixels=80:80:11 ",add.on,sep="")
+                cat(track.line,"\n",file=file.name)
+                file.append(file.name,filename2)
+                
+              }
+              # tidy up
+              unlink(list.files(path = dirname(file.name),pattern = rndFile,full.names = T))
+            
+            }
+          
+          }
+          
+)
+
+
+#' @rdname bedgraph-methods
+#' @aliases bedgraph,methylRawListDB-method
+setMethod("bedgraph", signature(methylObj="methylRawListDB"),
+          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on){
+            if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
+              stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth' options")
+            }
+            
+            
+            
+            if( is.null(file.name) ){
+              
+              result=list()
+              for(i in 1:length(methylObj))
+              {
+                result[[ methylObj[[i]]@sample.id ]]=bedgraph(methylObj[[i]],file.name=NULL,
+                                                              col.name=col.name,unmeth=FALSE,log.transform=log.transform,
+                                                              negative=negative)
+              }
+              
+              return(result)
+            }else{
+
+                bedgraph(methylObj[[1]],file.name=file.name,
+                         col.name=col.name,unmeth=unmeth,log.transform=log.transform,
+                         negative=negative)
+                
+                for(i in 2:length(methylObj))
+                {
+                  bedgraph(methylObj[[i]],file.name=paste(file.name,i,sep = "_"),
+                           col.name=col.name,unmeth=unmeth,log.transform=log.transform,
+                           negative=negative)
+                  
+                  file.append(file.name,paste(file.name,i,sep = "_"))
+                }
+                
+                unlink(list.files(path = dirname(file.name),pattern = paste0(basename(file.name),"_[[:digit:]]+"),full.names = T))
+                
+            }
+          })
+
+
+#' @rdname bedgraph-methods
+#' @aliases bedgraph,methylDiffDB-method
+setMethod("bedgraph", signature(methylObj="methylDiffDB"),
+          function(methylObj,file.name,col.name,log.transform,negative,add.on){
+            
+            if(! col.name %in% c('pvalue','qvalue', 'meth.diff') )
+            {
+              stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
+            }
+            
+            bedgr <- function(data,col.name,file.name,log.transform,negative,add.on,sample.id){
+              
+              data <- as.data.table(data)
+              .setMethylDBNames(df = data,methylDBclass = "methylDiffDB")
+              
+              df=data[,.(chr,start=start-1,end,score=get(col.name) )]
+              if(log.transform){
+                df=df[,.(chr,start,end,score=log10(score))]
+              }
+              if(negative){
+                df=df[,.(chr,start,end,score=-1*score )]
+              }
+              if(is.null(file.name)){
+                return(as.data.frame(df))
+              }else{
+                  write.table(df,file=file.name,quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
+                }
+             }
+            
+            if(is.null(file.name)){
+              
+              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+                              col.name = col.name, file.name= file.name, log.transform=log.transform, negative= negative,
+                              add.on = add.on, sample.id = methylObj@sample.id)
+            } else {
+              
+              rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+              filename2=paste(file.name,rndFile,sep="_")
+              
+              txtPath <- applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+                                         col.name = col.name,file.name= filename2, log.transform=log.transform, negative= negative,
+                                         add.on = add.on, sample.id = methylObj@sample.id)
+              
+              track.line=paste(
+                "track type=bedGraph name='",file.name,"' description='",col.name,
+                "' visibility=full color=255,0,255 altColor=102,205,170 maxHeightPixels=80:80:11 ",add.on,sep="")
+              cat(track.line,"\n",file=file.name)
+              file.append(file.name,filename2)
+              
+              unlink(filename2)
+              
+            }
+        }
+)
+
 # coercion functions ------------------------------------------------------
 
 setAs("methylRawDB", "GRanges", function(from)
