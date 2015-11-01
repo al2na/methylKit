@@ -268,9 +268,9 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","dat
 tabix2dt<-function(tabixRes){
   if(Sys.info()['sysname']=="Windows") {
   
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ))
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE)
   
-  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ) }
+  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,,stringsAsFactors=TRUE) }
   
 }
 
@@ -279,9 +279,9 @@ tabix2dt<-function(tabixRes){
 tabix2df<-function(tabixRes){
   if(Sys.info()['sysname']=="Windows") {
     
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),data.table = FALSE)
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE,data.table = FALSE)
     
-  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,data.table = FALSE) }
+  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,stringsAsFactors=TRUE,data.table = FALSE) }
   
 }
 
@@ -293,10 +293,10 @@ tabix2gr<-function(tabixRes){
   if(Sys.info()['sysname']=="Windows") {
     
     from <- data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       select=c(1:4), data.table = FALSE)
+                       select=c(1:4),stringsAsFactors=TRUE, data.table = FALSE)
     
   }else{ from <-  data.table::fread( paste(tabixRes[[1]],collapse="\n"),
-                            select=c(1:4), data.table = FALSE) }
+                            select=c(1:4),stringsAsFactors=TRUE, data.table = FALSE) }
   
   GRanges(seqnames=as.character(from$V1),ranges=IRanges(start=from$V2, end=from$V3),
           strand=from$V4)

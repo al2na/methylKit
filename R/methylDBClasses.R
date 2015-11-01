@@ -1180,16 +1180,18 @@ setMethod("calculateDiffMeth", "methylBaseDB",
             # add backwards compatibility with old parameters
             if(slim==FALSE) adjust="BH" else adjust=adjust
             if(weighted.mean==FALSE) effect="mean" else effect=effect
+            
+            vars <- covariates
 
                         
             # function to apply the test to data
             diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
-                                 parShrinkNM,test,mc.cores){
+                                 parShrinkNM,test,adjust,mc.cores){
               
               cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
               
               tmp=simplify2array(
-                mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+                mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
                          parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
               tmp <- as.data.frame(t(tmp))
               #print(head(tmp))
@@ -1205,9 +1207,9 @@ setMethod("calculateDiffMeth", "methylBaseDB",
             chunk.size <- 1e4
             
             dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
-                                   Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=covariates,
+                                   Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
                                    treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
-                                   parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores)
+                                   parShrinkNM=parShrinkNM,test=test,adjust=adjust,mc.cores=mc.cores)
             
             
             obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
