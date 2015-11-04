@@ -2,13 +2,21 @@
 #'
 #' The function sums up coverage, numCs and numTs values within each group so 
 #' one representative sample for each group will be created in a new methylBase object
-#' @param obj  \code{methylBase} object with two groups or more and each group 
+#' @param obj  \code{methylBase} or \code{methylBaseDB} object with two groups or more and each group 
 #' should have multiple samples
 #' @param sample.ids  a character vector of new sample.ids ex:c("test","control"), 
 #'                     should follow the same order as unique treatment vector,
 #'                    and should be equal to the length of the unique treatment
 #'                     vector
-#' @return a  \code{methylBase} object
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6
+#' 
+#' @return a  \code{methylBase} or \code{methylBase} object depending on class of input object
+#'
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #'
 #' @usage pool(obj,sample.ids)
 #' @author  Altuna Akalin
@@ -24,7 +32,7 @@
 #'
 #' @docType methods
 #' @rdname pool-methods
-setGeneric("pool", function(obj,sample.ids) standardGeneric("pool"))
+setGeneric("pool", function(obj,sample.ids,chunk.size=1e6) standardGeneric("pool"))
 
 #' @rdname pool-methods
 #' @aliases pool,methylBase-method
