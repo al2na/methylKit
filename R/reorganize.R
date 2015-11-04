@@ -4,20 +4,21 @@
 
 #' Reorganize methylKit objects by creating new objects from subset of samples
 #' 
-#' The function creates a new  \code{methylRawList} or \code{methylBase} 
+#' The function creates a new  \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} 
 #' object by selecting a subset of samples from the input object, which is 
 #' a \code{methylRawList} or \code{methylBase} object. You can use the function
 #'  to partition a large methylRawList or methylBase object
 #' to smaller object based on sample ids or when you want to reorder samples
 #'  and/or give a new treatmet vector.
 #'
-#' @param methylObj a \code{methylRawList} or \code{methylBase} object
+#' @param methylObj a \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} object
 #' @param sample.ids a vector for sample.ids to be subset. Order is 
 #'        important and the order should be similar to treatment. sample.ids should be
 #'        a subset or reordered version of sample ids in the input object.
 #' @param treatment  treatment vector, should be same length as sample.ids vector
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} or \code{methylRawListDB} objects, default: 1e6
 #'
-#' @return returns a \code{methylRawList} or \code{methylBase} object depending on the input object
+#' @return returns a \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} object depending on the input object
 #' @usage reorganize(methylObj,sample.ids,treatment)
 #' @examples
 #' # this is a list of example files, ships with the package
@@ -38,10 +39,18 @@
 #' # # get samples named "test1" and "ctrl2" from meth and create a new methylBase object
 #' meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 #'
+#'
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' 
 #' @export
 #' @docType methods
 #' @rdname reorganize-methods
-setGeneric("reorganize", function(methylObj,sample.ids,treatment) standardGeneric("reorganize") )
+setGeneric("reorganize", function(methylObj,sample.ids,treatment,chunk.size=1e6) standardGeneric("reorganize") )
 
 
 #' @rdname reorganize-methods

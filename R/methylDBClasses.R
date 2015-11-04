@@ -286,7 +286,7 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
             dir <- dirname(methylObj@dbpath)
             filename <- paste(basename(tools::file_path_sans_ext(methylObj@dbpath)),"filtered",sep="_")
             
-            newdbpath <- applyTbxByChunk(methylObj@dbpath, dir=dir,filename = filename, 
+            newdbpath <- applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                          return.type = "tabix", FUN = filter, lo.count=lo.count, lo.perc=lo.perc, 
                                          hi.count=hi.count, hi.perc=hi.perc)
             
@@ -300,9 +300,9 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
 #' @aliases filterByCoverage,methylRawListDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size){
 
-              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
+              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size)
               new("methylRawListDB", new.list,treatment=methylObj@treatment)
             
           })
@@ -310,10 +310,10 @@ setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
 #' @rdname getCoverageStats-methods
 #' @aliases getCoverageStats,methylRawDB-method
 setMethod("getCoverageStats", "methylRawDB",
-          function(object,plot,both.strands,labels,...){
+          function(object,plot,both.strands,labels,...,chunk.size){
             
-            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
-                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage)])} )
+            tmp = applyTbxByChunk(object@dbpath,chunk.size = chunk.size,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x,"methylRawDB"); return(x[,.(strand,coverage)])} )
             
             if(!plot){
               qts=seq(0,0.9,0.1) # get quantiles
@@ -404,10 +404,10 @@ setMethod("getCoverageStats", "methylRawDB",
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRawDB-method
 setMethod("getMethylationStats", "methylRawDB",
-          function(object,plot,both.strands,labels,...){
+          function(object,plot,both.strands,labels,...,chunk.size){
             
-            tmp = applyTbxByChunk(object@dbpath,return.type = "data.table", 
-                                  FUN = function(x) { .setMethylDBNames(x); return(x[,.(strand,coverage,numCs)])} )
+            tmp = applyTbxByChunk(object@dbpath,chunk.size = chunk.size,return.type = "data.table", 
+                                  FUN = function(x) { .setMethylDBNames(x,"methylRawDB"); return(x[,.(strand,coverage,numCs)])} )
             
             
             plus.met=100* tmp[strand=="+",numCs/coverage]
@@ -493,14 +493,14 @@ setMethod("getMethylationStats", "methylRawDB",
 
 #' @rdname adjust.methylC
 #' @aliases adjust.methylC,methylRawDB,methylRawDB-method
-setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
+setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,chunk.size){
   
   lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
   base=unite(lst)
   
   adjust <- function(data) {
     
-    .setMethylDBNames(data)
+    .setMethylDBNames(data,"methylBaseDB")
     diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
     diff[diff<0]=0
     data$numCs1=diff
@@ -512,7 +512,7 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc){
   dir <- dirname(mc@dbpath) 
   filename <- paste(basename(tools::file_path_sans_ext(mc@dbpath)),"adjust",sep="_")
   
-  newdbpath <- applyTbxByChunk(base@dbpath, dir=dir,filename = filename, 
+  newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                return.type = "tabix", FUN = adjust)
   
   unlink(list.files(dirname(base@dbpath),pattern = basename(tools::file_path_sans_ext(base@dbpath)),full.names = TRUE))
@@ -683,7 +683,7 @@ readMethylBaseDB<-function(dbpath,dbtype,
 #' @rdname unite-methods
 #' @aliases unite,methylRawListDB-method
 setMethod("unite", "methylRawListDB",
-          function(object,destrand,min.per.group){
+          function(object,destrand,min.per.group,chunk.size,mc.cores){
             
             #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
             if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
@@ -701,6 +701,7 @@ setMethod("unite", "methylRawListDB",
             
             if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")}
             
+            if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
             # destrand single objects contained in methylRawListDB
             if(destrand) { 
               
@@ -710,8 +711,8 @@ setMethod("unite", "methylRawListDB",
                   dir <- dirname(obj@dbpath)
                   filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
                   # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-                  newdbpath <- applyTbxByChunk(obj@dbpath, dir=dir,filename = filename,return.type = "tabix", 
-                                               FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x) )})
+                  newdbpath <- applyTbxByChunk(obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename,return.type = "tabix", 
+                                               FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x,"methylRawDB") )})
                   
                   readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
                                   sample.id = obj@sample.id,
@@ -766,7 +767,7 @@ setMethod("unite", "methylRawListDB",
                 return(as.data.frame(df))
               }
 
-              dbpath <- applyTbxByChunk(tbxFile = tmpPath, dir = dir, filename = filename, 
+              dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
                                         return.type = "tabix", FUN = filter,treatment=object@treatment,
                                         coverage.ind=coverage.ind,min.per.group=min.per.group)
               
@@ -915,7 +916,7 @@ setMethod("getCorrelation", "methylBaseDB",
 #' @rdname percMethylation-methods
 #' @aliases percMethylation,methylBaseDB-method
 setMethod("percMethylation", "methylBaseDB",
-          function(methylBase.obj,rowids=FALSE,save.txt){
+          function(methylBase.obj,rowids=FALSE,save.txt,chunk.size){
             
             meth.fun <- function(data, numCs.index, numTs.index){
               
@@ -926,7 +927,7 @@ setMethod("percMethylation", "methylBaseDB",
               
               filename <- paste(basename(tools::file_path_sans_ext(methylBase.obj@dbpath)),"methMath.txt",sep = "_")
               
-              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "text",
+              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "text", chunk.size = chunk.size,
                                          dir = dirname(methylBase.obj@dbpath), filename = filename,
                                          FUN = meth.fun, numCs.index = methylBase.obj@numCs.index,
                                          numTs.index = methylBase.obj@numTs.index)
@@ -935,7 +936,7 @@ setMethod("percMethylation", "methylBaseDB",
               
             } else {
               
-              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "data.frame",
+              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "data.frame", chunk.size = chunk.size,
                                          FUN = meth.fun, numCs.index = methylBase.obj@numCs.index,
                                          numTs.index = methylBase.obj@numTs.index)
               
@@ -952,7 +953,7 @@ setMethod("percMethylation", "methylBaseDB",
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBaseDB-method
-setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase){
+setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,chunk.size){
   
   if(is.matrix(methMat) ) {
       
@@ -1158,7 +1159,7 @@ setMethod("calculateDiffMeth", "methylBaseDB",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                    effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
+                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size){
             
             if(length(.Object@treatment)<2 ){
               stop("can not do differential methylation calculation with less than two samples")
@@ -1204,8 +1205,7 @@ setMethod("calculateDiffMeth", "methylBaseDB",
               
             dir <- dirname(.Object@dbpath)
             filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),"diffMeth",sep="_")
-            chunk.size <- 1e4
-            
+
             dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
                                    Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
                                    treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
@@ -1221,7 +1221,7 @@ setMethod("calculateDiffMeth", "methylBaseDB",
 #' @aliases get.methylDiff,methylDiffDB-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiffDB", 
-          definition=function(.Object,difference,qvalue,type) {
+          definition=function(.Object,difference,qvalue,type,chunk.size) {
             
             if(!( type %in% c("all","hyper","hypo") )){
               stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
@@ -1307,7 +1307,7 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
             
             if(is.null(file.name)){
               
-              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+              applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, return.type = "data.frame", FUN = bedgr,
                               col.name = col.name, file.name = file.name, unmeth = unmeth, log.transform=log.transform, negative= negative,
                               add.on = add.on, sample.id = methylObj@sample.id)
               
@@ -1316,7 +1316,7 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
               rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
               filename2=paste(file.name,rndFile,sep="_")
               
-              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+              applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, return.type = "data.frame", FUN = bedgr,
                                     col.name = col.name, file.name= filename2, unmeth = unmeth, log.transform=log.transform, negative= negative,
                                     add.on = add.on, sample.id = methylObj@sample.id)
               
@@ -1357,13 +1357,10 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
 #' @rdname bedgraph-methods
 #' @aliases bedgraph,methylRawListDB-method
 setMethod("bedgraph", signature(methylObj="methylRawListDB"),
-          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on){
+          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on,chunk.size){
             if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
               stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth' options")
             }
-            
-            
-            
             if( is.null(file.name) ){
               
               result=list()
@@ -1371,21 +1368,20 @@ setMethod("bedgraph", signature(methylObj="methylRawListDB"),
               {
                 result[[ methylObj[[i]]@sample.id ]]=bedgraph(methylObj[[i]],file.name=NULL,
                                                               col.name=col.name,unmeth=FALSE,log.transform=log.transform,
-                                                              negative=negative)
+                                                              negative=negative,chunk.size=chunk.size)
               }
-              
               return(result)
             }else{
 
                 bedgraph(methylObj[[1]],file.name=file.name,
                          col.name=col.name,unmeth=unmeth,log.transform=log.transform,
-                         negative=negative)
+                         negative=negative,chunk.size=chunk.size)
                 
                 for(i in 2:length(methylObj))
                 {
                   bedgraph(methylObj[[i]],file.name=paste(file.name,i,sep = "_"),
                            col.name=col.name,unmeth=unmeth,log.transform=log.transform,
-                           negative=negative)
+                           negative=negative,chunk.size=chunk.size)
                   
                   file.append(file.name,paste(file.name,i,sep = "_"))
                 }

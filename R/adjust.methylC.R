@@ -5,11 +5,12 @@
 #' between the two. This function can adjust 5mC levels of a bisulfite sequencing experiment
 #' if the user supplies corresponding 5hmC levels from the same sample.
 #'
-#' @param mc a \code{methylRawList} or \code{methylRaw} containing 5mC levels of a sample or set of samples
-#' @param hmc a \code{methylRawList} or \code{methylRaw} containing 5hmC levels of a sample or set of samples. 
-#'            If a \code{methylRawList} given the sample order should be same as "mc" \code{methylRawList} object.
+#' @param mc a \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} or \code{methylRawListDB} containing 5mC levels of a sample or set of samples
+#' @param hmc a \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} or \code{methylRawListDB} containing 5hmC levels of a sample or set of samples. 
+#'            If a \code{methylRawList} or \code{methylRawListDB} given the sample order should be same as "mc" \code{methylRawList} or \code{methylRawListDB} object.
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects (default: 1e6)
 #'
-#' @return returns adjusted 5-methyl cytosine levels in the form of \code{methylRawList} or \code{methylRaw} object depending on the input object
+#' @return returns adjusted 5-methyl cytosine levels in the form of \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} or \code{methylRawListDB} object depending on the input object
 #' @usage adjust.methylC(mc,hmc)
 #' @examples
 #' 
@@ -23,6 +24,12 @@
 #' # adjusting the 5mC levels using 5hmC levels
 #' adjusted.5mC=adjust.methylC(my5mC,my5hmC)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @references
 #' 1. Booth, Branco, et al. (2012). Quantitative Sequencing of 5-Methylcytosine and 5-Hydroxymethylcytosine at Single-Base Resolution. Science, 934
 #' 
@@ -30,7 +37,7 @@
 #' @export
 #' @docType methods
 #' @rdname adjust.methylC
-setGeneric("adjust.methylC", function(mc,hmc) standardGeneric("adjust.methylC") )
+setGeneric("adjust.methylC", function(mc,hmc,chunk.size=1e6) standardGeneric("adjust.methylC") )
 
 #' @rdname adjust.methylC
 #' @aliases adjust.methylC,methylRaw,methylRaw-method

@@ -3,18 +3,22 @@
 
 #' Get bedgraph from methylRaw, methylRawList and methylDiff objects
 #'
-#' The function converts \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylDiff}} object 
+#' The function converts \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object 
 #' into a bedgraph format. It either writes as a file or returns a \code{data.frame}
-#' @param methylObj a \code{methylRaw} or \code{methlRawList} object
+#' @param methylObj a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+#'                  \code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object
 #' @param file.name  Default: NULL. if a string is given a bedgraph file will be written, if NULL a data.frame or a list of data frames will be returned
-#' @param col.name   name of the column in \code{methylRaw}, \code{methylRawList} or \code{methylDiff} objects to be used as a score for the bedgraph.
-#'                   For \code{methylDiff}, \code{col.name} must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw} and \code{methylRawList}
-#'                   it must be one of the following 'coverage', 'numCs','numTs', 'perc.meth'
-#' @param unmeth     when working with \code{methylRaw} or \code{methylRawList} objects should you output unmethylated C percentage
+#' @param col.name   name of the column in \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+#'                  \code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} objects to be used as a score for the bedgraph.
+#'                   For \code{methylDiff} or \code{methylDiffDB}, \code{col.name} must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw}, 
+#'                   \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} it must be one of the following 'coverage', 'numCs','numTs', 'perc.meth'
+#' @param unmeth     when working with \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} objects should you output unmethylated C percentage
 #'                   this makes it easier to see the unmethylated bases because their methylation percentage values will be zero. Only invoked when file.name is not NULL.
 #' @param log.transform Default FALSE, If TRUE the score column of the bedgraph wil be in log10 scale. Ignored when col.name='perc.meth'
 #' @param negative Default FALSE, If TRUE, the score column of the bedgraph will be multiplied by -1. Ignored when col.name='perc.meth'
 #' @param add.on additional string to be add on the track line of bedgraph. can be viewlimits,priority etc. Check bedgraph track line options at UCSC browser
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, default: 1e6
 #'
 #' @return Returns a \code{data.frame} or list of data.frames if \code{file.name=NULL}, if a file.name given appropriate bed file will be written to that file
 #' @usage bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
@@ -32,13 +36,17 @@
 #' 
 #' unlink("test2.bed") # remove the file
 #' 
-#' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @export
 #' @docType methods
 #' @rdname bedgraph-methods
 setGeneric("bedgraph", function(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,
-                                negative=FALSE,add.on="") standardGeneric("bedgraph") )
+                                negative=FALSE,add.on="",chunk.size=1e6) standardGeneric("bedgraph") )
 
 
 #' @rdname bedgraph-methods

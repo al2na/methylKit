@@ -576,6 +576,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded
 #' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
 #' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6
 #' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
 #' @examples
 #' data(methylKit)
@@ -587,12 +588,17 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
 #' 
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @return \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object depending on input object
 #' @export
 #' @docType methods
 #' @rdname filterByCoverage-methods
-setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL) standardGeneric("filterByCoverage") )
+setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,chunk.size=1e6) standardGeneric("filterByCoverage") )
 
 #' @aliases filterByCoverage,methylRaw-method
 #' @rdname filterByCoverage-methods
@@ -699,8 +705,8 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param min.per.group an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
 #'        are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
 #'       For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
-#' @param dbdir directory where flat file database should be stored, defaults
-#'        to getwd() working directory for \code{\link{methylRawListDB}} objects.
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6
+#' @param mc.cores number of cores to use when processing \code{methylRawListDB} objects, default: 1, but always 1 for Windows)
 #' 
 #' @usage unite(object,destrand=FALSE,min.per.group=NULL)
 #' @return a methylBase or methylBaseDB object depending on input
@@ -712,9 +718,17 @@ setClass("methylBase",contains="data.frame",representation(
 #'  my.methylBase=unite(methylRawList.obj) 
 #'  my.methylBase=unite(methylRawList.obj,destrand=TRUE)
 #'  
+#'  
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#'  
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL) standardGeneric("unite"))
+setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
@@ -961,6 +975,7 @@ setMethod("getCorrelation", "methylBase",
 #' @param both.strands do stats and plot for both strands if TRUE (default:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{\link[graphics]{hist}} function
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} objects (default: 1e6)
 #' @usage getCoverageStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
 #' @examples
 #' data(methylKit)
@@ -968,12 +983,17 @@ setMethod("getCorrelation", "methylBase",
 #' # gets coverage stats for the first sample in methylRawList.obj object
 #' getCoverageStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @return a summary of coverage statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
 #' @rdname getCoverageStats-methods
-setGeneric("getCoverageStats", function(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...) standardGeneric("getCoverageStats"))
+setGeneric("getCoverageStats", function(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size=1e6) standardGeneric("getCoverageStats"))
 
 #' @rdname getCoverageStats-methods
 #' @aliases getCoverageStats,methylRaw-method
@@ -1071,6 +1091,7 @@ setMethod("getCoverageStats", "methylRaw",
 #' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{\link[graphics]{hist}} function.
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} objects (default: 1e6)
 #' @usage  getMethylationStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
 #' @examples
 #' data(methylKit)
@@ -1078,11 +1099,17 @@ setMethod("getCoverageStats", "methylRaw",
 #' # gets Methylation stats for the first sample in methylRawList.obj object
 #' getMethylationStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
 #'
+#'@section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @return a summary of Methylation statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
 #' @rdname getMethylationStats-methods
-setGeneric("getMethylationStats", function(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...) standardGeneric("getMethylationStats"))
+setGeneric("getMethylationStats", function(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size=1e6) standardGeneric("getMethylationStats"))
 
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRaw-method

@@ -352,7 +352,7 @@ setClass("methylDiff",representation(
 #' or Fisher's Exact test to calculate differential methylation. 
 #' See references for detailed explanation on statistics.
 #' 
-#' @param .Object a methylBase object to calculate differential methylation                    
+#' @param .Object a methylBase or methylBaseDB object to calculate differential methylation                    
 #' @param covariates a data.frame containing covariates, which should be included in the test.                   
 #' @param overdispersion If set to "none"(default), no overdispersion correction will be attempted.
 #'              If set to "MN", basic overdispersion correction will be applied. 
@@ -419,6 +419,11 @@ setClass("methylDiff",representation(
 #' F-test. The Chisq-test can be manually chosen in this case as well, but the F-test only 
 #' works with overdispersion correction switched on.
 #' 
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
 #'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
 #'             Christopher E. Mason. (2012). 
@@ -436,13 +441,12 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
                                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                                          effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE) standardGeneric("calculateDiffMeth"))
+                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size=1e6) standardGeneric("calculateDiffMeth"))
 
 setMethod("calculateDiffMeth", "methylBase",
-          function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-                   adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                   effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
+          function(.Object,covariates,overdispersion,
+                   adjust,effect,parShrinkNM,
+                   test,mc.cores,slim,weighted.mean){
             
             # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
@@ -597,17 +601,18 @@ setMethod("[","methylDiff",
 
 #' get differentially methylated regions/bases based on cutoffs 
 #' 
-#' The function subsets a \code{\link{methylDiff}} object in order to get 
+#' The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object in order to get 
 #' differentially methylated bases/regions
 #' satisfying thresholds.
 #' 
-#' @param .Object  a \code{\link{methylDiff}} object
+#' @param .Object  a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object
 #' @param difference  cutoff for absolute value of methylation percentage change between test and control (default:25)
 #' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
 #' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
 #'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylDiffDB} objects (default: 1e6)
 #' 
-#' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
+#' @return a methylDiff or methylDiffDB object containing the differential methylated locations satisfying the criteria 
 #' 
 #' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
 #' @examples
@@ -623,11 +628,16 @@ setMethod("[","methylDiff",
 #' # get hypo-methylated
 #' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylDiffDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #'
 #' @export
 #' @docType methods
 #' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("get.methylDiff"))
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all",chunk.size=1e6) standardGeneric("get.methylDiff"))
 
 #' @aliases get.methylDiff,methylDiff-method
 #' @rdname get.methylDiff-methods

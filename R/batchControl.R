@@ -17,6 +17,7 @@
 #' @param methMat percent methylation matrix, row order and order of the samples
 #'  same as the methylBase object
 #' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to be reconstructed 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
 #' 
 #' @return new \code{\link{methylBase}} or \code{\link{methylBase}} object where methylation percentage matches
 #'         input \code{methMat} and coverages matches input \code{mBase}
@@ -44,10 +45,16 @@
 #' # reconstruct the methylBase from the corrected matrix
 #' newobj=reconstruct(mat,methylBase.obj)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @export
 #' @docType methods
 #' @rdname reconstruct-methods
-setGeneric("reconstruct", function(methMat,mBase) standardGeneric("reconstruct"))
+setGeneric("reconstruct", function(methMat,mBase,chunk.size=1e6) standardGeneric("reconstruct"))
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBase-method
@@ -155,11 +162,12 @@ assocComp <- function(mBase,sampleAnnotation){
 #' position based on the reconstructed percent methylation matrix, and finally returns
 #' a new \code{\link{methylBase}} object.
 #' 
-#' @param mBase \code{\link{methylBase}} object with no NA values, that means
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values, that means
 #'               all bases should be covered in all samples.
 #' @param comp vector of component numbers to be removed
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
 #' 
-#' @return new \code{\link{methylBase}} object
+#' @return new \code{\link{methylBase}} or \code{\link{methylBaseDB}} object
 #' 
 #' @examples
 #' 
@@ -171,10 +179,20 @@ assocComp <- function(mBase,sampleAnnotation){
 #' # remove 3rd and 4th  principal components
 #' newObj=removeComp(methylBase.obj,comp=c(3,4))
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @export
 #' @docType methods
 #' @rdname removeComp-methods
-removeComp <- function(mBase,comp){ 
+setGeneric("removeComp", function(mBase,comp,chunk.size=1e6) standardGeneric("removeComp"))
+
+#' @rdname removeComp-methods
+#' @aliases removeComp,methylBase-method
+setMethod("removeComp",signature(mBase="methylBase"), function(mBase,comp){
   if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
@@ -201,3 +219,4 @@ removeComp <- function(mBase,comp){
   res[res<0]=0
   reconstruct(res,mBase)
 }
+)
