@@ -9,17 +9,14 @@
 .setMethylDBNames <- function(df,methylDBclass=c("methylDB","methylBaseDB","methylDiffDB")){
   
   if(missing(methylDBclass)){
-
-    if( length(df) == 7 & unique(sapply(df[,5:7],class))=="integer"){
-      
+        
+    if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
       
-    } else if( length(df) == 7 & unique(sapply(df[,5:7],class))=="numeric"){
-      
+    } else if( length(df) == 7 & unique(sapply(df,class)[5:7])=="numeric"){
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff")) 
 
     } else if( length(df) > 7){
-      
       data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -39,11 +36,9 @@
   } else {
     
     if( methylDBclass == "methylRawDB" ){
-    
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
     
     } else if ( methylDBclass == "methylBaseDB"){
-    
       data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -57,7 +52,6 @@
       data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
       
     } else if( methylDBclass == "methylDiffDB" ){
-      
       data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff"))
     
     #return(df)
