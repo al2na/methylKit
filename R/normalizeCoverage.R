@@ -1,10 +1,17 @@
 #' normalize read coverage between samples
 #'
 #' The function normalizes coverage values between samples using a scaling factor derived from differences between mean or median of coverage distributions
-#' @param obj  \code{methylRawList} object 
+#' @param obj  \code{methylRawList} or \code{methylRawListDB} object 
 #' @param method  a string "mean" or "median" which denotes median or mean should be used to calculate scaling factor. (Default:median)
-#' @return a  \code{methylRawList} object
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects. (Default: 1e6)
+#' @return a  \code{methylRawList} or \code{methylRawList} object depending on class of input object
 #'
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
 #' @usage normalizeCoverage(obj,method="median")
 #' @author  Altuna Akalin
 #' @export
@@ -15,7 +22,7 @@
 #'
 #' @docType methods
 #' @rdname normalizeCoverage-methods
-setGeneric("normalizeCoverage", function(obj,method="median") standardGeneric("normalizeCoverage"))
+setGeneric("normalizeCoverage", function(obj,method="median",chunk.size=1e6) standardGeneric("normalizeCoverage"))
 
 #' @rdname normalizeCoverage-methods
 #' @aliases normalizeCoverage,methylRawList-method

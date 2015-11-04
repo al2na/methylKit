@@ -20,6 +20,7 @@
 #' Only regions with base coverage above this threshold are returned.
 #' @param strand.aware if set to TRUE only CpGs that match the strand of 
 #' the region will be summarized. (default:FALSE)
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylDB} objects (default: 1e6)
 #' 
 #' @return  a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
 #'          set to FALSE (default). Even though the resulting object will have
@@ -40,12 +41,17 @@
 #' regional.methylRaw=regionCounts(object=methylRawList.obj, regions=my.win, 
 #' cov.bases=0,strand.aware=FALSE)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @export
 #' @docType methods
 #' @rdname regionCounts
 setGeneric("regionCounts", 
-           function(object,regions,cov.bases=0,strand.aware=FALSE)
+           function(object,regions,cov.bases=0,strand.aware=FALSE,chunk.size=1e6)
            standardGeneric("regionCounts") )
 
 
@@ -160,7 +166,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
 
 
             
-            #create a new methylRaw object to return
+            #create a new methylBase object to return
             new.data=data.frame(#id      =new.ids,
               chr     =temp.df[sum.dt$id,"seqnames"],
               start   =temp.df[sum.dt$id,"start"],
