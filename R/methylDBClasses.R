@@ -257,12 +257,12 @@ setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
 #' @aliases filterByCoverage,methylRawDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size){
             if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
             
             filter <- function(data,lo.count,lo.perc,hi.count,hi.perc) {
               
-              .setMethylDBNames(data)
+              .setMethylDBNames(data,"methylRawDB")
             
               #figure out which cut-offs to use, maybe there is more elagent ways, quick&dirty works for now
               if(is.numeric(lo.count) ){lo.count=lo.count}
@@ -521,19 +521,99 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,chunk
 
 #' @rdname adjust.methylC
 #' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
-setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc){
+setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc,chunk.size){
   
   # check lengths equal if not give error
   if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
   
   my.list=list()
   for(i in 1:length(mc)){
-    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]])
+    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],chunk.size)
   }
   new("methylRawListDB",my.list,treatment=mc@treatment )
   
 })
 
+
+#' @rdname reorganize-methods
+#' @aliases reorganize,methylRawListDB-method
+setMethod("reorganize", signature(methylObj="methylRawListDB"),
+          function(methylObj,sample.ids,treatment){
+            
+            #sample.ids length and treatment length should be equal
+            if(length(sample.ids) != length(treatment) ){
+              stop("length of sample.ids should be equal to treatment")
+            }
+            
+            orig.ids=sapply(methylObj,function(x) x@sample.id) # get ids from the list of methylRaw 
+            if( ! all(sample.ids %in% orig.ids) ){
+              stop("provided sample.ids is not a subset of the sample ids of the object")
+            }
+            
+            col.ord=order(match(orig.ids,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
+            
+            outList=list()    
+            for(i in 1:length(sample.ids)){
+              outList[[i]]=methylObj[[ col.ord[i]  ]]
+              
+            }
+            
+            new("methylRawListDB",outList,treatment=treatment)
+            
+          })
+
+#' @rdname normalizeCoverage-methods
+#' @aliases normalizeCoverage,methylRawListDB-method
+setMethod("normalizeCoverage", "methylRawListDB",
+          function(obj,method,chunk.size){
+            
+            
+            if( !(method %in% c("median","mean") ) ){
+
+              stop("method option should be either 'mean' or 'median'\n")
+            }
+            
+            normCov <- function(data,method) {
+              
+              .setMethylDBNames(data)
+              
+              if(method=="median"){
+                x=median(data$coverage)
+              }else {
+                x=mean(data$coverage)
+              }
+              
+              sc.fac=max(x)/x #get scaling factor
+              
+              all.cov=data$coverage
+              fCs    =data$numCs/all.cov
+              fTs    =data$numT/all.cov
+              data$coverage=round(sc.fac*data$coverage)
+              data$numCs   =round(data$coverage*fCs)
+              data$numTs   =round(data$coverage*fTs)
+              
+              return(data)
+            }
+            
+            dir <- dirname(obj[[1]]@dbpath) 
+            outList <- list()
+            
+            for(i in 1:length(obj)){
+              
+              filename <- paste(basename(tools::file_path_sans_ext(obj[[i]]@dbpath)),"norm",sep="_")
+              
+              newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                           return.type = "tabix", FUN = normCov,method = method)
+              
+              outList[[i]] <- readMethylRawDB(dbpath = newdbpath,sample.id=obj[[i]]@sample.id,
+                                            assembly=obj[[i]]@assembly, context =obj[[i]]@context,resolution=obj[[i]]@resolution,
+                                            dbtype = obj[[i]]@dbtype)
+                            
+            }
+            
+            new("methylRawListDB",outList,treatment=obj@treatment)
+            
+          })
 
 # methylBaseDB ------------------------------------------------------------
 
