@@ -1597,17 +1597,19 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
               if(col.name=="perc.meth"){
                 df= data[,.(chr,start=start-1,end,score=100*numCs/coverage )]
               }else{
-                df=data[,.(chr,start=start-1,end,score=get(col.name) )]
+                df=data[,.(chr,start=start-1,end,get(col.name) )]
+                df <- as.data.frame(df)
+                names(df)[4] <- col.name
                 if(log.transform){
-                  df=df[,.(chr,start,end,score=log10(score))]
+                  df[,4]=log10(df[,4])
                 }
                 if(negative){
-                  df=df[,.(chr,start,end,score=-1*score )]
+                  df[,4]=-1*(df[,4])
                 }
               }
               
               if(is.null(file.name)){
-                return(as.data.frame(df))
+                return(df)
               }else{
               
                 if(unmeth & col.name=="perc.meth")
@@ -1616,7 +1618,7 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
                   write.table(df,file=paste0(file.name,"_meth"),quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
                   
                   # write unmeth data to single file
-                  dfu=df[,.(chr,start,end,score=100-score)]
+                  df[,4]=100-df[,4]
                   write.table(dfu,file=paste0(file.name,"_unmeth"),quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
                   
                 }else{
@@ -1728,15 +1730,17 @@ setMethod("bedgraph", signature(methylObj="methylDiffDB"),
               data <- as.data.table(data)
               .setMethylDBNames(df = data,methylDBclass = "methylDiffDB")
               
-              df=data[,.(chr,start=start-1,end,score=get(col.name) )]
+              df=data[,.(chr,start=start-1,end,get(col.name) )]
+              df <- as.data.frame(df)
+              names(df)[4] <- col.name
               if(log.transform){
-                df=df[,.(chr,start,end,score=log10(score))]
+                df[,4]=log10(df[,4])
               }
               if(negative){
-                df=df[,.(chr,start,end,score=-1*score )]
+                df[,4]=-1*(df[,4])
               }
               if(is.null(file.name)){
-                return(as.data.frame(df))
+                return(df)
               }else{
                   write.table(df,file=file.name,quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t",append=TRUE)
                 }
@@ -1744,7 +1748,7 @@ setMethod("bedgraph", signature(methylObj="methylDiffDB"),
             
             if(is.null(file.name)){
               
-              applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+              applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, return.type = "data.frame", FUN = bedgr,
                               col.name = col.name, file.name= file.name, log.transform=log.transform, negative= negative,
                               add.on = add.on, sample.id = methylObj@sample.id)
             } else {
@@ -1752,7 +1756,7 @@ setMethod("bedgraph", signature(methylObj="methylDiffDB"),
               rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
               filename2=paste(file.name,rndFile,sep="_")
               
-              txtPath <- applyTbxByChunk(methylObj@dbpath,chunk.size = 1e6, return.type = "data.frame", FUN = bedgr,
+              txtPath <- applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, return.type = "data.frame", FUN = bedgr,
                                          col.name = col.name,file.name= filename2, log.transform=log.transform, negative= negative,
                                          add.on = add.on, sample.id = methylObj@sample.id)
               
