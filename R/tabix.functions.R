@@ -292,14 +292,14 @@ tabix2gr<-function(tabixRes){
   
   if(Sys.info()['sysname']=="Windows") {
     
-    from <- data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       select=c(1:4),stringsAsFactors=TRUE, data.table = FALSE)
+    from <- data.table::fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                              stringsAsFactors=TRUE, data.table = FALSE)
     
-  }else{ from <-  data.table::fread( paste(tabixRes[[1]],collapse="\n"),
-                            select=c(1:4),stringsAsFactors=TRUE, data.table = FALSE) }
+  }else{ from <-  data.table::fread(paste(tabixRes[[1]],collapse="\n"),
+                                    stringsAsFactors=TRUE, data.table = FALSE) }
   
   GRanges(seqnames=as.character(from$V1),ranges=IRanges(start=from$V2, end=from$V3),
-          strand=from$V4)
+          strand=from$V4, from[,5:ncol(from)])
 
 }
 

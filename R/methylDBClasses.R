@@ -1776,14 +1776,9 @@ setMethod("bedgraph", signature(methylObj="methylDiffDB"),
 
 setAs("methylRawDB", "GRanges", function(from)
 {
-  from2=getData(from)
-  GRanges(seqnames=as.character(from2$chr),ranges=IRanges(start=from2$start, end=from2$end),
-          strand=from2$strand, 
-          coverage=from2$coverage,
-          numCs   =from2$numCs,
-          numTs  =from2$numTs                                
-  )
-  
+  gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, return.type = "GRanges")
+  names(GenomicRanges::mcols(gr)) <- c("coverage","numCs","numTs") 
+  return(gr)
 })
 
 setAs("methylBaseDB", "GRanges", function(from)
@@ -1793,19 +1788,16 @@ setAs("methylBaseDB", "GRanges", function(from)
           strand=from$strand, 
           data.frame(from[,5:ncol(from)])
   )
-  
+#   gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, return.type = "GRanges")
+#   names(GenomicRanges::mcols(gr)) <- c("coverage","numCs","numTs") 
+#   return(gr)
 })
 
 setAs("methylDiffDB", "GRanges", function(from)
 {
-  
-  from = getData(from)
-  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
-          strand=from$strand, 
-          qvalue=from$qvalue,
-          meth.diff=from$meth.diff
-  )
-  
+  gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, return.type = "GRanges")
+  names(GenomicRanges::mcols(gr)) <- c("pvalue","qvalue","meth.diff") 
+  return(gr)
 })
 
 # accessors ---------------------------------------------------------------
