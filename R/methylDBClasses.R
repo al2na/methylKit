@@ -808,7 +808,7 @@ setMethod("unite", "methylRawListDB",
             
             if(is.null(min.per.group)) {
               
-               dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = 1) 
+               dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
                
                dbpath <- tools::file_path_sans_ext(dbpath)
                
@@ -816,7 +816,7 @@ setMethod("unite", "methylRawListDB",
               # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
               
               # keep rows with no matching in all samples  
-              tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = 1,all=TRUE) 
+              tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
               tmpPath <- tools::file_path_sans_ext(tmpPath)
               
               # get indices of coverage in the data frame 
@@ -1062,14 +1062,11 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
       stop("\nmethMat dimensions do not match number of samples\n",
            "and number of bases in methylBase object\n")
     }
-    
   }
-  
   
   reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
     
     mat=data[,numCs.index]+data[,numTs.index]
-    
     methMat = read.table(methMat,header = F, nrows = chunk)
     
     # get new unmethylated and methylated counts
@@ -1084,7 +1081,6 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
   
   dir <- dirname(mBase@dbpath)
   filename <- paste(basename(tools::file_path_sans_ext(mBase@dbpath)),"reconstruct",sep="_")
-  chunk.size <- 1e6
   con <- file(methMat,open = "r") 
   
   newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
@@ -1099,13 +1095,241 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
                    treatment = mBase@treatment,coverage.index = mBase@coverage.index,
                    numCs.index = mBase@numCs.index,numTs.index = mBase@numTs.index,
                    destranded = mBase@destranded)
-  
-  
-  
 }
 )
 
 
+#' @rdname removeComp-methods
+#' @aliases removeComp,methylBaseDB-method
+setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chunk.size){
+  if(is.na(comp) || is.null(comp)){
+    stop("no component to remove\n")
+  }
+  
+  if(any(comp > length(mBase@sample.ids) )){
+    stop("'comp' elements can only take values between 1 and number of samples\n")
+  }
+  
+  scale=TRUE
+  center=TRUE
+  mat=percMethylation(mBase,chunk.size=chunk.size)  
+  mat=scale(mat,scale=scale,center=center)
+  centers <- attr(mat,'scaled:center') 
+  scales <- attr(mat,'scaled:scale') 
+  pr=prcomp(mat,scale.=FALSE,center=FALSE)
+  
+  pr$rotation[,comp]=0
+  res=pr$x %*% t(pr$rotation)
+  
+  res=(scale(res,center=(-centers/scales),scale=1/scales))
+  attr(res,"scaled:center")<-NULL 
+  attr(res,"scaled:scale")<-NULL 
+  res[res>100]=100
+  res[res<0]=0
+  reconstruct(res,mBase,chunk.size)
+}
+)
+
+#' @rdname reorganize-methods
+#' @aliases reorganize,methylBaseDB-method
+setMethod("reorganize", signature(methylObj="methylBaseDB"),
+          function(methylObj,sample.ids,treatment,chunk.size){
+            
+            #sample.ids length and treatment length should be equal
+            if(length(sample.ids) != length(treatment) ){
+              stop("length of sample.ids should be equal to treatment")
+            }
+            
+            if( ! all(sample.ids %in% methylObj@sample.ids) ){
+              stop("provided sample.ids is not a subset of the sample ids of the object")
+            }
+            
+            
+            temp.id = methylObj@sample.ids # get the subset of ids
+            col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
+            
+            ind.mat=rbind(methylObj@coverage.index[col.ord],  # make a matrix indices for easy access 
+                          methylObj@numCs.index[col.ord],
+                          methylObj@numTs.index[col.ord])
+            
+            
+            getSub <- function(data,ind.mat) {
+            
+              newdat =data[,1:4]
+              for(i in 1:ncol(ind.mat))
+              {
+                newdat=cbind(newdat,data[,ind.mat[,i]])
+              }
+              
+              return(newdat)
+            
+            }
+            
+            dir <- dirname(methylObj@dbpath)
+            filename <- paste0(paste0(sample.ids,collapse = "_"),"_base.txt")
+            
+            newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                         return.type = "tabix", FUN = getSub, ind.mat=ind.mat) 
+            
+            # get indices of coverage,numCs and numTs in the data frame 
+            coverage.ind=seq(5,by=3,length.out=length(sample.ids))
+            numCs.ind   =coverage.ind+1
+            numTs.ind   =coverage.ind+2
+            
+            readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,sample.ids=sample.ids,
+                assembly=methylObj@assembly,context=methylObj@context,
+                treatment=treatment,coverage.index=coverage.ind,
+                numCs.index=numCs.ind,numTs.index=numTs.ind,
+                destranded=methylObj@destranded, resolution=methylObj@resolution )
+            
+          })
+
+#' @rdname clusterSamples-methods
+#' @aliases clusterSamples,methylBaseDB-method
+setMethod("clusterSamples", "methylBaseDB",
+          function(.Object, dist, method ,sd.filter, sd.threshold, 
+                   filterByQuantile, plot,chunk.size)
+          {
+            
+            getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, sd.threshold, filterByQuantile){
+              
+              # remove rows containing NA values, they might be introduced at unite step
+              mat      =mat[ rowSums(is.na(mat))==0, ] 
+              
+              meth.mat = mat[, numCs.index]/
+                (mat[,numCs.index] + mat[,numTs.index] )                                      
+              
+              
+              # if Std. Dev. filter is on remove rows with low variation
+              if(sd.filter){
+                if(filterByQuantile){
+                  sds=rowSds(as.matrix(meth.mat))
+                  cutoff=quantile(sds,sd.threshold)
+                  meth.mat=meth.mat[sds>cutoff,]
+                }else{
+                  meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
+                }
+              }
+            
+            }
+            
+            meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,return.type = "data.frame",FUN=getMethMat,
+                                        numCs.ind=.Object@numCs.index,numTs.ind=.Object@numTs.index,
+                                        sd.filter=sd.filter, sd.threshold=sd.threshold, filterByQuantile=filterByQuantile)
+            
+            names(meth.mat)=.Object@sample.ids
+            
+            .cluster(meth.mat, dist.method=dist, hclust.method=method, 
+                     plot=plot, treatment=.Object@treatment,
+                     sample.ids=.Object@sample.ids,
+                     context=.Object@context)
+            
+          }
+)
+
+#' @rdname PCASamples-methods
+#' @aliases PCASamples,methylBaseDB-method
+setMethod("PCASamples", "methylBaseDB",
+          function(.Object, screeplot, adj.lim,scale,center,comp,
+                   transpose,sd.filter, sd.threshold, 
+                   filterByQuantile,obj.return,chunk.size)
+          {
+            
+            getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, sd.threshold, filterByQuantile){
+              
+              # remove rows containing NA values, they might be introduced at unite step
+              mat      =mat[ rowSums(is.na(mat))==0, ] 
+              
+              meth.mat = mat[, numCs.index]/
+                (mat[,numCs.index] + mat[,numTs.index] )                                      
+              
+              
+              # if Std. Dev. filter is on remove rows with low variation
+              if(sd.filter){
+                if(filterByQuantile){
+                  sds=rowSds(as.matrix(meth.mat))
+                  cutoff=quantile(sds,sd.threshold)
+                  meth.mat=meth.mat[sds>cutoff,]
+                }else{
+                  meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
+                }
+              }
+              
+            }
+            
+            meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,return.type = "data.frame",FUN=getMethMat,
+                                        numCs.ind=.Object@numCs.index,numTs.ind=.Object@numTs.index,
+                                        sd.filter=sd.filter, sd.threshold=sd.threshold, filterByQuantile=filterByQuantile)
+            
+            names(meth.mat)=.Object@sample.ids
+            
+            if(transpose){
+              .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+                        adj.lim=adj.lim, 
+                        treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+                        context=.Object@context
+                        ,scale=scale,center=center,obj.return=obj.return)
+              
+            }else{
+              .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+                       adj.lim=adj.lim, 
+                       treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+                       context=.Object@context,
+                       scale=scale,center=center,  obj.return=obj.return)
+            }
+            
+          }      
+)
+
+#' @rdname pool-methods
+#' @aliases pool,methylBaseDB-method
+setMethod("pool", "methylBaseDB",
+          function(obj,sample.ids,chunk.size){
+            
+            
+            mypool <- function(df,treatment,numCs.index){
+              
+              treat=unique(treatment)
+              res=df[,1:4]
+              for(i in 1:length(treat) ){
+                
+                # get indices
+                setCs=numCs.index[treatment==treat[i]]
+                setTs=setCs+1
+                set.cov=setCs-1
+                
+                if(length(setCs)>1){
+                  Cs=rowSums(df[,setCs],na.rm=TRUE)
+                  Ts=rowSums(df[,setTs],na.rm=TRUE)
+                  covs=rowSums(df[,set.cov],na.rm=TRUE)
+                  
+                }else{
+                  Cs  =df[,setCs]
+                  Ts  =df[,setTs]
+                  covs=df[,set.cov]
+                }
+                res=cbind(res,covs,Cs,Ts) # bind new data
+              }
+              return(res)
+            }
+            
+            treat = unique(obj@treatment)
+            coverage.ind=3*(1:length(treat)) + 2
+            
+            dir <- dirname(obj@dbpath)
+            filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"pool",sep="_")
+            
+            newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                         return.type = "tabix", FUN = mypool, treatment = obj@treatment,numCs.index = obj@numCs.index) 
+            
+            readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,sample.ids=sample.ids,
+                     assembly=obj@assembly,context=obj@context,
+                     treatment=treat,coverage.index=coverage.ind,
+                     numCs.index=coverage.ind+1,numTs.index=coverage.ind+2,
+                     destranded=obj@destranded,resolution=obj@resolution )
+            
+            
+          })
 
 # methylDiffDB -------------------------------------------------------
 
