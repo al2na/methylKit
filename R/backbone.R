@@ -1543,3 +1543,170 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
             select(x,i)
           }
 )
+
+
+#' Get or Set treatment vector of methylKit object
+#' 
+#' The function returns or replaces the treatment vector stored in any of the following methylKit objects:
+#' \code{\link{methylBase}},\code{\link{methylRawList}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRawListDB}},\code{\link{methylDiff}},\code{\link{methylDiffDB}}.
+#'  
+#' 
+#' @param x a \code{methylKit} object
+#' @param value a valid replacement for the treatment vector of the object
+#' @usage 
+#' getTreatment(x)
+#' getTreatment(x) <- value
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' # The treatment vector can be printed ..
+#' getTreatment(methylBase.obj)
+#'  
+#' # .. or replaced with a new one  
+#' newObj <- methylBase.obj
+#' getTreatment(newObj) <- c(1,2,3,4)
+#' getTreatment(newObj)
+#' 
+#' 
+#' @export
+#' @docType methods
+#' @rdname getTreatment-methods
+setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
+#' @rdname 'getTreatment<-'-methods
+setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
+
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylRawList-method
+setMethod("getTreatment", signature = "methylRawList", function(x) {
+  return(x@treatment)
+})
+
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-',methylRawList-method
+setReplaceMethod("getTreatment", signature = "methylRawList", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+})
+
+
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylBase-method
+setMethod("getTreatment", signature = "methylBase", function(x) {
+  return(x@treatment)
+})
+
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-'getTreatment,methylBase-method
+setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+  
+})
+
+
+
+
+#' Get or Set Sample-IDs of the methylKit objects
+#' 
+#' The function returns or replaces the sample-ids stored in any of the following \code{methylKit} objects:
+#' \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylBase}}, \code{\link{methylBaseDB}},
+#' \code{\link{methylRawList}}, \code{\link{methylRawListDB}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}}.
+#' 
+#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
+#' @param value a valid replacement vector for the sample-ids of the object 
+#' @usage 
+#' getSampleID(x)
+#' getSampleID(x) <- value
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' #The Sample-Ids can be printed ..
+#' getSampleID(methylBaseDB.obj)
+#' 
+#' # .. or replaced. 
+#' newObj <- methylBaseDB.obj
+#' getSampleID(newObj) <- c("sample1","sample2","sample3","sample4")
+#' getSampleID(newObj)
+#' 
+#' 
+#' @export
+#' @docType methods
+#' @rdname getSampleID-methods
+setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+#' @rdname 'getSampleID<-'-methods
+setGeneric("getSampleID<-", def=function(x, value="numeric") {standardGeneric("getSampleID<-")})
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylRawList-method
+setMethod("getSampleID", signature = "methylRawList", function(x) {
+  names <- vapply(x,function(z) z@sample.id,FUN.VALUE = "character")
+  return(names)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylRawList-method
+setReplaceMethod("getSampleID", signature = "methylRawList", function(x, value) {
+  
+  if(! ( length(getSampleID(x)) == length(value) ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    treatment <- x@treatment
+    x <- mapply(`getSampleID<-`, x, value)
+    x <- new("methylRawList",x,treatment=treatment)
+    return(x)
+  }
+  
+})
+
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylBase-method
+setMethod("getSampleID", signature = "methylBase", function(x) {
+  return(x@sample.ids)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylBase-method
+setReplaceMethod("getSampleID", signature = "methylBase", function(x, value) {
+  
+  if(! ( length(x@sample.ids) == length(value) ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.ids <- value
+    return(x)
+  }
+  
+})
+
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylRaw-method
+setMethod("getSampleID", signature = "methylRaw", function(x) {
+  return(x@sample.id)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylRaw-method
+setReplaceMethod("getSampleID", signature = "methylRaw", function(x, value) {
+  
+  if(! ( length(value) == 1 ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.id <- value
+    return(x)
+  }
+  
+})
+

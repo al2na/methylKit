@@ -541,6 +541,44 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 }) 
 
 
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylDiff-method
+setMethod("getTreatment", signature = "methylDiff", function(x) {
+  return(x@treatment)
+})
+
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-'getTreatment,methylDiff-method
+setReplaceMethod("getTreatment", signature = "methylDiff", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+  
+})
+
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylDiff-method
+setMethod("getSampleID", signature = "methylDiff", function(x) {
+  return(x@sample.id)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylDiff-method
+setReplaceMethod("getSampleID", signature = "methylDiff", function(x, value) {
+  
+  if(! ( length(value) == length(x@sample.ids) ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.ids <- value
+    return(x)
+  }
+  
+})
 
 ##############################################################################
 ## CONVERTOR FUNCTIONS FOR methylDiff OBJECT

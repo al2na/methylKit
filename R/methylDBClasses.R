@@ -2031,30 +2031,53 @@ setMethod("[","methylDiffDB",
 # get/set values ----------------------------------------------------------
 
 
-#' get treatment vector of the methylRawListDB or methylBaseDB object
-#' 
-#' The function returns the treatment vector stored in any of the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects 
-#' 
-#' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage getTreatment(x)
-#' @examples
-#' 
-#' data(methylKit)
-#' 
-#' getTreatment(methylBaseDB.obj)
-#' getTreatment(methylRawListDB.obj)
-#' 
-#' 
-#' @return the treatment vector for the object
-#' @export
-#' @docType methods
-#' @rdname getTreatment-methods
-setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
+# #' Get or Set treatment vector of the methylRawListDB or methylBaseDB object
+# #' 
+# #' The function returns or replaces the treatment vector stored in any of the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects 
+# #' 
+# #' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
+# #' @param value a valid replacement for the treatment vector of the object
+# #' @usage 
+# #' getTreatment(x)
+# #' getTreatment(x) <- value
+# #' @examples
+# #' 
+# #' data(methylKit)
+# #' 
+# #' # The treatment vector can be printed ..
+# #' getTreatment(methylBaseDB.obj)
+# #'  
+# #' # .. or replaced with a new one  
+# #' newObj <- methylBaseDB.obj
+# #' getTreatment(newObj) <- c(1,2,3,4)
+# #' getTreatment(newObj)
+# #' 
+# #' 
+# #' @export
+# #' @docType methods
+# #' @rdname getTreatment-methods
+# setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
+# #' @rdname 'getTreatment<-'-methods
+# setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
+
 #' @rdname getTreatment-methods
 #' @aliases getTreatment,methylRawListDB-method
 setMethod("getTreatment", signature = "methylRawListDB", function(x) {
     return(x@treatment)
 })
+
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-',methylRawListDB-method
+setReplaceMethod("getTreatment", signature = "methylRawListDB", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+})
+
 
 #' @rdname getTreatment-methods
 #' @aliases getTreatment,methylBaseDB-method
@@ -2062,54 +2085,32 @@ setMethod("getTreatment", signature = "methylBaseDB", function(x) {
   return(x@treatment)
 })
 
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-'getTreatment,methylBaseDB-method
+setReplaceMethod("getTreatment", signature = "methylBaseDB", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+  
+})
+
+
 #' @rdname getTreatment-methods
 #' @aliases getTreatment,methylDiffDB-method
 setMethod("getTreatment", signature = "methylDiffDB", function(x) {
   return(x@treatment)
 })
 
-
-#' set treatment vector of the methylRawListDB or methylBaseDB object
-#' 
-#' The function directly modifies the treatment vector of the given \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} object.
-#' If you rather want to create a new object use 
-#' 
-#' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage setTreatment(x) <- c(1,1,0,0)
-#' @examples
-#' 
-#' data(methylKit)
-#' 
-#' setTreatment(methylBaseDB.obj) <- c(2,2,1,1)
-#' setTreatment(methylRawListDB.obj) <- c(2,2,1,1)
-#' 
-#' 
-#' @return \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @export
-#' @docType methods
-#' @rdname setTreatment-methods
-setGeneric("setTreatment<-", def=function(x, value="numeric") {standardGeneric("setTreatment<-")})
-#' @rdname setTreatment-methods
-#' @aliases setTreatment,methylRawListDB-method
-setReplaceMethod("setTreatment", signature = "methylRawListDB", function(x, value) {
+#' @rdname 'getTreatment<-'-methods
+#' @aliases 'getTreatment<-'getTreatment,methylDiffDB-method
+setReplaceMethod("getTreatment", signature = "methylDiffDB", function(x, value) {
   
   if(! ( length(x@treatment) == length(value) ) ){
-    message("The new treatment vector is not valid, check the length of input")
-    return(x)
-  } else {
-    x@treatment <- value
-    return(x)
-  }
-  
-})
-
-#' @rdname setTreatment-methods
-#' @aliases setTreatment,methylBaseDB-method
-setReplaceMethod("setTreatment", signature = "methylBaseDB", function(x, value) {
-  
-  if(! ( length(x@treatment) == length(value) ) ){
-    message("The new treatment vector is not valid, check the length of input")
-    return(x)
+    stop("The new treatment vector is not valid, check the length of input")
   } else {
     x@treatment <- value
     return(x)
@@ -2119,25 +2120,37 @@ setReplaceMethod("setTreatment", signature = "methylBaseDB", function(x, value) 
 
 
 
-#' get sample ids of the methylRawListDB or methylBaseDB object
-#' 
-#' The function returns the sample ids stored in any of the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects 
-#' 
-#' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage getSampleID(x)
-#' @examples
-#' 
-#' data(methylKit)
-#' 
-#' getSampleID(methylBaseDB.obj)
-#' getSampleID(methylRawListDB.obj)
-#' 
-#' 
-#' @return the sample ids stored in the object
-#' @export
-#' @docType methods
-#' @rdname getSampleID-methods
-setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+
+
+
+# #' Get or Set sample ids of the methylDB objects
+# #' 
+# #' The function returns or replaces the sample-ids stored in any of the \code{\link{methylRawDB}}, \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} objects 
+# #' 
+# #' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
+# #' @param value a valid replacement for the sample-ids of the object 
+# #' @usage 
+# #' getSampleID(x)
+# #' getSampleID(x) <- value
+# #' @examples
+# #' 
+# #' data(methylKit)
+# #' 
+# #' #The Sample-Ids can be printed ..
+# #' getSampleID(methylBaseDB.obj)
+# #' 
+# #' # .. or replaced. 
+# #' newObj <- methylBaseDB.obj
+# #' getSampleID(newObj) <- c("sample1","sample2","sample3","sample4")
+# #' getSampleID(newObj)
+# #' 
+# #' 
+# #' @export
+# #' @docType methods
+# #' @rdname getSampleID-methods
+# setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+# #' @rdname 'getSampleID<-'-methods
+# setGeneric("getSampleID<-", def=function(x, value="numeric") {standardGeneric("getSampleID<-")})
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylRawListDB-method
 setMethod("getSampleID", signature = "methylRawListDB", function(x) {
@@ -2145,69 +2158,34 @@ setMethod("getSampleID", signature = "methylRawListDB", function(x) {
   return(names)
 })
 
-#' @rdname getSampleID-methods
-#' @aliases getSampleID,methylBaseDB-method
-setMethod("getSampleID", signature = "methylBaseDB", function(x) {
-  return(x@sample.ids)
-})
-
-
-#' set sample ids of the methylRawListDB or methylBaseDB object
-#' 
-#' The function returns the \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} objects with the new sample ids stored in it.
-#' 
-#' @param x an \code{\link{methylBaseDB}} or \code{\link{methylRawListDB}} object
-#' @usage setSampleID(x) <- c("id.1","id.2","id.3",...,"id.n")
-#' @examples
-#' 
-#' data(methylKit)
-#' 
-#' setSampleID(methylBaseDB.obj) <- c("t1","t2","c1","c2")
-#' setSampleID(methylRawListDB.obj) <- c("test-one","test-two","control-one","control-two")
-#' 
-#' 
-#' @return the object with new sample ids
-#' @export
-#' @docType methods
-#' @rdname setSampleID-methods
-setGeneric("setSampleID<-", def=function(x, value="numeric") {standardGeneric("setSampleID<-")})
-#' @rdname setSampleID-methods
-#' @aliases setSampleID,methylRawDB-method
-setReplaceMethod("setSampleID", signature = "methylRawDB", function(x, value) {
-  
-  if(! ( length(value) == 1 ) ){
-    message("The vector of new sample ids is not valid, check the length of input")
-    return(x)
-  } else {
-    x@sample.id <- value
-    return(x)
-  }
-  
-})
-
-#' @rdname setSampleID-methods
-#' @aliases setSampleID,methylRawListDB-method
-setReplaceMethod("setSampleID", signature = "methylRawListDB", function(x, value) {
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylRawListDB-method
+setReplaceMethod("getSampleID", signature = "methylRawListDB", function(x, value) {
   
   if(! ( length(getSampleID(x)) == length(value) ) ){
-    message("The vector of new sample ids is not valid, check the length of input")
-    return(x)
+    stop("The vector of new sample ids is not valid, check the length of input")
   } else {
     treatment <- x@treatment
-    x <- mapply(`setSampleID<-`, x, value)
+    x <- mapply(`getSampleID<-`, x, value)
     x <- new("methylRawListDB",x,treatment=treatment)
     return(x)
   }
   
 })
 
-#' @rdname setSampleID-methods
-#' @aliases setSampleID,methylBaseDB-method
-setReplaceMethod("setSampleID", signature = "methylBaseDB", function(x, value) {
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylBaseDB-method
+setMethod("getSampleID", signature = "methylBaseDB", function(x) {
+  return(x@sample.ids)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylBaseDB-method
+setReplaceMethod("getSampleID", signature = "methylBaseDB", function(x, value) {
   
   if(! ( length(x@sample.ids) == length(value) ) ){
-    message("The vector of new sample ids is not valid, check the length of input")
-    return(x)
+    stop("The vector of new sample ids is not valid, check the length of input")
   } else {
     x@sample.ids <- value
     return(x)
@@ -2215,3 +2193,41 @@ setReplaceMethod("setSampleID", signature = "methylBaseDB", function(x, value) {
   
 })
 
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylRawDB-method
+setMethod("getSampleID", signature = "methylRawDB", function(x) {
+  return(x@sample.id)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylRawDB-method
+setReplaceMethod("getSampleID", signature = "methylRawDB", function(x, value) {
+  
+  if(! ( length(value) == 1 ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.id <- value
+    return(x)
+  }
+  
+})
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylDiffDB-method
+setMethod("getSampleID", signature = "methylDiffDB", function(x) {
+  return(x@sample.id)
+})
+
+#' @rdname 'getSampleID<-'-methods
+#' @aliases 'getSampleID<-',methylDiffDB-method
+setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
+  
+  if(! ( length(value) == length(x@sample.ids) ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.ids <- value
+    return(x)
+  }
+  
+})
