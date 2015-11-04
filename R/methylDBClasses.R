@@ -1544,7 +1544,7 @@ setMethod(f="get.methylDiff", signature="methylDiffDB",
             dir <- dirname(.Object@dbpath)
             filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),type,sep="_")
             
-            dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir, filename = filename, return.type = "tabix", FUN = f,
+            dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
                                       difference = difference, qv = qvalue, type = type)
             
             
@@ -1555,13 +1555,36 @@ setMethod(f="get.methylDiff", signature="methylDiffDB",
             }) 
 
 
+#' @aliases annotate.WithGenicParts,methylDiffDB,GRangesList-method
+#' @rdname annotate.WithGenicParts-methods
+setMethod("annotate.WithGenicParts", signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
+          function(target,GRangesList.obj,strand){
+            gr=as(target,"GRanges")
+            annotate.WithGenicParts(gr,GRangesList.obj,strand)
+          })
+
+#' @aliases annotate.WithFeature.Flank,methylDiffDB,GRanges,GRanges-method
+#' @rdname annotate.WithFeature.Flank-methods
+setMethod("annotate.WithFeature.Flank", signature(target= "methylDiffDB",feature="GRanges",flank="GRanges"),
+          function(target, feature, flank,feature.name,flank.name,strand){
+            gr=as(target,"GRanges")
+            annotate.WithFeature.Flank(gr,feature, flank,feature.name,flank.name,strand)
+          })
+
+#' @aliases annotate.WithFeature,methylDiffDB,GRanges-method
+#' @rdname annotate.WithFeature-methods
+setMethod("annotate.WithFeature", signature(target = "methylDiffDB",feature="GRanges"),
+          function(target, feature, strand,extend,feature.name){                      
+            gr=as(target,"GRanges")
+            annotate.WithFeature(gr, feature, strand,extend,feature.name)
+          })
 
 # bedgraph methods --------------------------------------------------------
 
 #' @rdname bedgraph-methods
 #' @aliases bedgraph,methylRawDB-method
 setMethod("bedgraph", signature(methylObj="methylRawDB"),
-          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on){
+          function(methylObj,file.name,col.name,unmeth,log.transform,negative,add.on,chunk.size){
             if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
               stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth'")
             }
@@ -1693,7 +1716,7 @@ setMethod("bedgraph", signature(methylObj="methylRawListDB"),
 #' @rdname bedgraph-methods
 #' @aliases bedgraph,methylDiffDB-method
 setMethod("bedgraph", signature(methylObj="methylDiffDB"),
-          function(methylObj,file.name,col.name,log.transform,negative,add.on){
+          function(methylObj,file.name,col.name,log.transform,negative,add.on,chunk.size){
             
             if(! col.name %in% c('pvalue','qvalue', 'meth.diff') )
             {
