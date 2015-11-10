@@ -2050,6 +2050,99 @@ setMethod("[","methylDiffDB",
 )
 
 
+# select by range ---------------------------------------------------------
+
+
+#' selects records of methylDB objects lying inside a GRanges range
+#'
+#' The function selects records from a \code{\link{methylBaseDB}}, \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
+#' that lie inside the regions given by \code{ranges} of class \code{GRanges} and returns an object of class 
+#' \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}} 
+#' 
+#' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
+#' @param range a GRanges object specifying the regions of interest
+#' @usage selectByOverlap(region,ranges)
+#' @examples
+#' data(methylKit)
+#' 
+#' # define the windows of interest as a GRanges object, this can be any set 
+#' # of genomic locations
+#' library(GenomicRanges)
+#' my.win=GRanges(seqnames="chr21",
+#' ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+#' 
+#' # selects the records that lie inside the regions
+#' myRaw <- selectByOverlap(methylRawListDB.obj[[1]],my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myBase <- selectByOverlap(methylBaseDB.obj,my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myDiff <- selectByOverlap(methylDiffDB.obj,my.win)
+#' 
+#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
+#'           \code{\link{methylDiff}} object depending on the input object.
+#' @export
+#' @docType methods
+#' @rdname selectByOverlap-methods
+setGeneric("selectByOverlap", def=function(object,ranges) standardGeneric("selectByOverlap"))
+
+#' @aliases selectByOverlap,methylRawDB-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylRawDB",
+          function(object, ranges){
+            
+            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
+            
+            new("methylRaw",.setMethylDBNames(df,"methylRawDB"),
+                sample.id=object@sample.id,
+                assembly=object@assembly,
+                context=object@context,
+                resolution=object@resolution)
+            
+          }
+)
+
+#' @aliases selectByOverlap,methylBaseDB-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylBaseDB",
+          function(object, ranges){
+  
+            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
+            
+            new("methylBase",.setMethylDBNames(df,"methylBaseDB"),
+                sample.ids = object@sample.ids, 
+                assembly = object@assembly,
+                context = object@context,
+                treatment=object@treatment,
+                coverage.index=object@coverage.index,
+                numCs.index=object@numCs.index,
+                numTs.index=object@numTs.index,
+                destranded=object@destranded,
+                resolution =object@resolution)
+            
+}
+)
+
+#' @aliases selectByOverlap,methylDiffDB-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylDiffDB",
+          function(object, ranges){
+            
+            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
+            
+            new("methylDiff",.setMethylDBNames(df,"methylDiffDB"),
+                sample.ids = object@sample.ids,
+                assembly = object@assembly,
+                context = object@context,
+                treatment=object@treatment,
+                destranded=object@destranded,
+                resolution=object@resolution)
+            
+          }
+)
+
+
 # get/set values ----------------------------------------------------------
 
 
