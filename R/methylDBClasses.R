@@ -736,8 +736,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
 # it is called from read function or whenever this functionality is needed
 readMethylBaseDB<-function(dbpath,dbtype,
                            sample.ids, assembly ,context,
-                           resolution,treatment,coverage.index,
-                           numCs.index,numTs.index,destranded,skip=0){
+                           resolution,treatment,destranded,skip=0){
   
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
@@ -746,11 +745,21 @@ readMethylBaseDB<-function(dbpath,dbtype,
   }
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
-  new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
-      sample.ids = sample.ids, assembly = assembly,context=context,
-      resolution=resolution,dbtype=dbtype,treatment=treatment,
-      coverage.index=coverage.index,numCs.index=numCs.index,numTs.index=numTs.index,
-      destranded=destranded)
+  # determine postion of coverage/numCs/numTs indices
+  df <- headTabix(dbpath)
+  numsamples = (length(df)-4)/3
+  coverage.ind=seq(5,by=3,length.out=numsamples)
+  numCs.ind   =coverage.ind+1
+  numTs.ind   =coverage.ind+2
+  
+  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
+              sample.ids = sample.ids, assembly = assembly,context=context,
+              resolution=resolution,dbtype=dbtype,treatment=treatment,
+              coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
+              destranded=destranded)
+ 
+  if(valid.methylBaseDB(obj)) {return(obj)}   
+    
 }
 
 
@@ -1938,7 +1947,12 @@ setMethod("select", "methylRawDB",
           function(x, i)
           {
             
-            new("methylRaw",getData(x)[i,],sample.id=x@sample.id,
+            if(missing(i)) { i <- 1:x@num.records }
+            df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
+            .setMethylDBNames(df,"methylRawDB")
+            
+            new("methylRaw",df[i,],
+                sample.id=x@sample.id,
                 assembly=x@assembly,
                 context=x@context,
                 resolution=x@resolution)
@@ -1952,7 +1966,11 @@ setMethod("select", "methylBaseDB",
           function(x, i)
           {
             
-            new("methylBase",getData(x)[i,],
+            if(missing(i)) { i <- 1:x@num.records }
+            df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
+            .setMethylDBNames(df,"methylBaseDB")
+            
+            new("methylBase",df[i,],
                 sample.ids = x@sample.ids, 
                 assembly = x@assembly,
                 context = x@context,
@@ -1971,7 +1989,11 @@ setMethod("select", "methylDiffDB",
           function(x, i)
           {
             
-            new("methylDiff",getData(x)[i,],
+            if(missing(i)) { i <- 1:x@num.records }
+            df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
+            .setMethylDBNames(df,"methylDiffDB")
+            
+            new("methylDiff",df[i,],
                 sample.ids = x@sample.ids,
                 assembly = x@assembly,
                 context = x@context,
