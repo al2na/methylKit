@@ -508,7 +508,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
-    do.call("rbind",res)
+    data.frame(data.table::rbindlist(res))
   }else{
     
     myFunc<-function(chr,tbxFile,FUN,...){
@@ -519,13 +519,127 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
-    data.table(do.call("rbind",res))
+    data.table::rbindlist(res)
   }
-  
- 
-  
- 
-  
 }
 
-
+# applyTbxByOverlap
+#' Serially apply a function on regions of tabix files
+#' 
+#' The function reads regions of a tabix file and applies a function on them. 
+#' The function (FUN argument) should apply on data.frames and return a data frame
+#' as a result. The function is serially applied to chunks (means no parallelization). 
+#' However, the function FUN itself can be a parallelized function
+#' and related arguments could be passed on to the function via ... argument.
+#' 
+#' @param tbxFile tabix file to read. a TabixFile object
+#' @param ranges a GRanges object specifying the regions
+#' @param chunk.size number of rows to be taken as a chunk, default: 1e6
+#' @param return.type indicates the return type for the function
+#' @param FUN function to apply to chunks, it takes a data.frame and returns a 
+#'            data.frame. First argument of the function should be a data frame
+#' @param ... parameters to be passed to FUN. 
+#' @param dir directory to create temporary files and the resulting tabix file
+#' @param filename the filename for the resulting tabix file, this should not be 
+#' a path, just a file name.
+#'
+#' @return either a path to a tabix or text file, or a data frame or data.table
+applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
+                          return.type=c("tabix","data.frame","data.table"),
+                          FUN,...){
+  
+  return.type <- match.arg(return.type)
+  FUN <- match.fun(FUN)
+  
+  # open tabix file with given chunk size
+  if( class(tbxFile) != "TabixFile" ){
+    tbxFile <- Rsamtools::TabixFile(tbxFile)
+    
+  } 
+#   else {
+#     if(Rsamtools::isOpen(tbxFile)){close(tbxFile)}# close if already open
+#     Rsamtools::yieldSize(tbxFile) <-  chunk.size 
+#   }
+  
+  
+  # calculate number of chunks
+  total.width = sum(as.numeric(width(ranges)))
+  chunk.num=ceiling((total.width/width(ranges)[1])/chunk.size)
+  groups <- ceiling(seq(length(ranges))/ceiling(length(ranges)/chunk.num))
+  
+  if( (chunk.num > length(ranges)) ){
+    chunk.num <- length(ranges)
+     groups <- seq(length(ranges))
+  }
+  print(paste("chunks:",chunk.num))
+  region.split <- split(ranges,groups)
+  if(return.type =="tabix"){
+    
+    # create a custom function that contains the function
+    # to be applied
+    myFunc<-function(chunk.num,region.split,tbxFile,dir,filename,FUN,...){
+      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+      
+      if( class(data)== "try-error") {
+        
+#         warning( paste("No records found in range between", min(IRanges::end(region.split[[chunk.num]])),
+#                        "and",max(IRanges::end(region.split[[chunk.num]])),
+#                        "for Chromosome",unique(as.character(region.split[[chunk.num]]@seqnames))))
+        
+      } else {
+      
+      res=FUN(data,...)  
+      
+      # for tabix
+      outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
+      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+                  sep="\t")
+    }
+    }
+    
+    # attach a random string to the file name 
+    rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+    filename2=paste(rndFile,filename,sep="_")
+    
+    # apply function to chunks
+    res=lapply(1:chunk.num,myFunc,region.split,tbxFile,dir,filename2,FUN,...)
+    
+    # collect & cat temp files,then make tabix
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
+    
+    return(tools::file_path_sans_ext(path))
+    
+  } else if(return.type=="data.frame"){
+    
+    # create a custom function that contains the function
+    # to be applied
+    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
+      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+      
+      if( !(class(data)== "try-error") ) {
+      res=FUN(data,...) 
+      }
+    }
+    
+    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    
+    # collect and return
+    data.frame(data.table::rbindlist(res))
+  }else{
+    
+    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
+      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.table"),silent = TRUE)
+      
+      if( !(class(data)== "try-error") ) {
+      res=FUN(data,...)  
+      }
+    }
+    
+    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    
+    
+    # collect and return
+    data.table::rbindlist(res)
+  }
+  
+}
