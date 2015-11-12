@@ -56,7 +56,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       unlink(outfile)
     }
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,mc.cores=1,all=all)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,all=all,mc.cores=mc.cores,mc.preschedule=FALSE)
     outfile= file.path(path.expand(dir),filename) 
   }
   
@@ -212,10 +212,13 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if(return.type=="data.table")
   {
-    tabix2dt(res)
-  }else{
-    tabix2df(res)
+    tabix2dt( res )
+  }else if (return.type=="data.frame"){
+    tabix2df( res )
+  }else {
+    tabix2gr( res )
   }
+  
 }
 
 
@@ -270,7 +273,7 @@ tabix2dt<-function(tabixRes){
   
     data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE)
   
-  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,,stringsAsFactors=TRUE) }
+  }else{ data.table::fread( paste(tabixRes[[1]],collapse="\n") ,stringsAsFactors=TRUE) }
   
 }
 
@@ -304,16 +307,16 @@ tabix2gr<-function(tabixRes){
 }
 
 # applyTbxByChunk
-#' serially apply a function on chunks of tabix files
+#' Serially apply a function on chunks of tabix files
 #' 
-#' The function reads chunks and applies a function. 
+#' The function reads chunks of a tabix file and applies a function on them. 
 #' The function (FUN argument) should apply on data.frames and return a data frame
-#' as a result. The function is serially applied to chunks (means no parallelization)
-#' However, the function FUN itseld can be parallelized function
+#' as a result. The function is serially applied to chunks (means no parallelization). 
+#' However, the function FUN itself can be a parallelized function
 #' and related arguments could be passed on to the function via ... argument.
 #' 
 #' @param tbxFile tabix file to read. a TabixFile object
-#' @param chunk.size number of rows to be taken as a chunk, default:
+#' @param chunk.size number of rows to be taken as a chunk, default: 1e6
 #' @param return.type indicates the return type for the function
 #' @param FUN function to apply to chunks, it takes a data.frame and returns a 
 #'            data.frame. First argument of the function should be a data frame
@@ -421,7 +424,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
     
     # collect and return
-    do.call("rbind",res)
+    data.frame(data.table::rbindlist(res))
   }else{
     
     myFunc<-function(chunk.num,tbxFile,FUN,...){
@@ -433,13 +436,19 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
   
     
     # collect and return
-    data.table(do.call("rbind",res))
+    data.table::rbindlist(res)
   }
   
 }
 
 
-#' apply a function on tabix files chromosome by chromosome 
+# applyTbxByCHr
+#' Apply a function on tabix files chromosome by chromosome 
+#' 
+#' The function reads a tabix file chromosome by chromosome and applies a function on each. 
+#' The function (FUN argument) should apply on data.frames and return a data frame
+#' as a result. The function is parallel applied to each chromosome 
+#' and related arguments could be passed on to the function via ... argument.
 #' 
 #' @param tbxFile tabix file to read. a TabixFile object
 #' @param chrs chromosome names. Based on chromosome names the chunks of tabix file
@@ -452,8 +461,8 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param filename the filename for the resulting tabix file, this should not be 
 #' a path, just a file name.
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
-
 #' 
+#' @return either a path to a tabix or text file, or a data frame or data.table
 applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores){
   
   return.type <- match.arg(return.type)
