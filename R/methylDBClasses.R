@@ -615,6 +615,275 @@ setMethod("normalizeCoverage", "methylRawListDB",
             
           })
 
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylRawDB,GRanges-method
+setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
+          function(object,regions,cov.bases,strand.aware,chunk.size){
+            
+
+            getCounts <- function(data,regions,cov.bases,strand.aware){
+              .setMethylDBNames(data)
+              # overlap data with regions
+              # convert data to GRanges without metacolumns
+              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+              if(!strand.aware){
+                strand(g.meth)="*"
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                
+              }else{
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                
+              }
+              
+              #require(data.table)
+              # create a temporary data.table row ids from regions and counts from object
+              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+              #dt=data.table::data.table(dt)
+              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+              
+              coverage=NULL
+              numCs=NULL
+              numTs=NULL
+              id=NULL
+              
+              # use data.table to sum up counts per region
+              sum.dt=temp.dt[,list(coverage=sum(coverage),
+                              numCs   =sum(numCs),
+                              numTs   =sum(numTs),covered=length(numTs)),by=id] 
+              sum.dt=sum.dt[covered>=cov.bases,]
+              temp.df=as.data.frame(regions) # get regions to a dataframe
+              
+              # look for values with "name" in it, eg. "tx_name" or "name"
+              # valuesList = names(values(regions))
+              # nameid = valuesList[grep (valuesList, pattern="name")]
+              
+              #create id string for the new object to be returned
+              #ids have to be unique and we can not assume GRanges objects will 
+              #have a name attribute
+#               if("name" %in% names(temp.df))
+#               {
+#                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+#                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+#                 
+#               }else{
+#                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+#                               temp.df[sum.dt$id,"end"],sep=".")
+#               }
+              
+              #create a new methylRaw object to return
+              new.data=data.frame(#id      =new.ids,
+                chr     =temp.df[sum.dt$id,"seqnames"],
+                start   =temp.df[sum.dt$id,"start"],
+                end     =temp.df[sum.dt$id,"end"],
+                strand  =temp.df[sum.dt$id,"strand"],
+                coverage=sum.dt$coverage,
+                numCs   =sum.dt$numCs,
+                numTs   =sum.dt$numTs)
+            }
+            
+            dir <- dirname(object@dbpath) 
+            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
+            
+            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                         return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+            
+            readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                            assembly=object@assembly, context =object@context,resolution="region",
+                            dbtype = object@dbtype)
+            
+          }
+)
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylRawDB,GRangesList-method
+# assume that each name of the element in the GRangesList is unique and 
+setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
+          function(object,regions,cov.bases,strand.aware,chunk.size){
+            
+            # combine and sort GRanges from List
+            regions <- unlist(regions)
+            regions <- sortSeqlevels(regions)
+            regions <- sort(regions,ignore.strand=TRUE)
+            
+            getCounts <- function(data,regions,cov.bases,strand.aware){
+              
+              .setMethylDBNames(data)
+              
+              # overlap data with regions
+              # convert data to GRanges without metacolumns
+              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+              
+              if(!strand.aware){
+                strand(g.meth)="*"
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                
+              }else{
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                
+              }
+              
+              #require(data.table)
+              # create a temporary data.table row ids from regions and counts from object
+              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+              #dt=data.table::data.table(dt)
+              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+              
+              coverage=NULL
+              numCs=NULL
+              numTs=NULL
+              id=NULL
+              
+              # use data.table to sum up counts per region
+              sum.dt=temp.dt[,list(coverage=sum(coverage),
+                                   numCs   =sum(numCs),
+                                   numTs   =sum(numTs),covered=length(numTs)),by=id] 
+              sum.dt=sum.dt[covered>=cov.bases,]
+              temp.df=as.data.frame(regions) # get regions to a dataframe
+              
+              # look for values with "name" in it, eg. "tx_name" or "name"
+              # valuesList = names(values(regions))
+              # nameid = valuesList[grep (valuesList, pattern="name")]
+              
+              #create id string for the new object to be returned
+              #ids have to be unique and we can not assume GRanges objects will 
+              #have a name attribute
+              #               if("name" %in% names(temp.df))
+              #               {
+              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+              #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+              #                 
+              #               }else{
+              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+              #                               temp.df[sum.dt$id,"end"],sep=".")
+              #               }
+              
+              #create a new methylRaw object to return
+              new.data=data.frame(#id      =new.ids,
+                chr     =temp.df[sum.dt$id,"seqnames"],
+                start   =temp.df[sum.dt$id,"start"],
+                end     =temp.df[sum.dt$id,"end"],
+                strand  =temp.df[sum.dt$id,"strand"],
+                coverage=sum.dt$coverage,
+                numCs   =sum.dt$numCs,
+                numTs   =sum.dt$numTs)
+            }
+            
+            dir <- dirname(object@dbpath) 
+            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
+            
+            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                           return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+            
+            
+            readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                            assembly=object@assembly, context =object@context,resolution="region",
+                            dbtype = object@dbtype)
+            
+          }
+)
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylRawListDB,GRanges-method
+setMethod("regionCounts", signature(object="methylRawListDB",regions="GRanges"),
+          function(object,regions,cov.bases,strand.aware,chunk.size){
+            
+            outList=list()
+            
+            for(i in 1:length(object))
+            {
+              obj = regionCounts(object = object[[i]],
+                                 regions=regions,
+                                 cov.bases,strand.aware,
+                                 chunk.size = chunk.size)
+              outList[[i]] = obj
+            }
+            
+            myobj=new("methylRawListDB", outList,treatment=object@treatment)
+            myobj
+          }
+)
+
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylRawListDB,GRangesList-method
+setMethod("regionCounts", signature(object="methylRawListDB",
+                                    regions="GRangesList"),
+          function(object,regions,cov.bases,strand.aware,chunk.size){
+            
+            outList=list()
+            
+            for(i in 1:length(object))
+            {
+              obj = regionCounts(object = object[[i]],regions=regions,
+                                 cov.bases,strand.aware,chunk.size = chunk.size)
+              outList[[i]] = obj
+            }
+            
+            myobj=new("methylRawListDB", outList,treatment=object@treatment)
+            myobj
+          }
+)
+
+#' @aliases tileMethylCounts,methylRawDB-method
+#' @rdname tileMethylCounts-methods
+setMethod("tileMethylCounts", signature(object="methylRawDB"),
+          function(object,win.size,step.size,cov.bases,mc.cores,chunk.size){
+            
+
+            tileCount <- function(data,win.size,step.size,cov.bases,object) {
+
+              .setMethylDBNames(data,"methylRawDB")
+              # overlap data with regions
+              # convert data to GRanges without metacolumns
+              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+              rm(data)
+              chrs   =as.character(unique(seqnames(g.meth)))
+
+              # get max length of feature covered chromosome
+              max.length=max(IRanges::end(g.meth)) 
+              # get start of sliding window
+              min.length=min(IRanges::end(g.meth))
+              win.start = floor(min.length/win.size)*win.size
+              
+              #get sliding windows with covered CpGs
+              numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+              
+              all.wins=GRanges(seqnames=rep(chrs,numTiles),
+                                ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
+                                               width=rep(win.size,numTiles)) )
+
+              as.data.frame(all.wins)
+              
+            }
+
+           
+ 
+            all.wins <- applyTbxByChr(object@dbpath, return.type = "data.frame",
+                                       FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,object=object,
+                                       mc.cores = mc.cores)
+            
+            print(paste("total ranges",dim(all.wins)[1]))
+            
+            regionCounts(object,as(all.wins,"GRanges"),cov.bases,strand.aware=FALSE,chunk.size = chunk.size)
+
+          }
+)
+
+#' @aliases tileMethylCounts,methylRawListDB-method
+#' @rdname tileMethylCounts-methods
+setMethod("tileMethylCounts", signature(object="methylRawListDB"),
+          function(object,win.size,step.size,cov.bases){
+            
+            new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases) 
+            new("methylRawListDB", new.list,treatment=object@treatment)
+            
+          })
+
 # methylBaseDB ------------------------------------------------------------
 
 
@@ -623,9 +892,9 @@ valid.methylBaseDB <- function(object) {
   
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
-  check3=( length(object@sample.ids) != length(object@treatment) )
+  check3=( length(object@sample.ids) == length(object@treatment) )
   
-  if(check1 & check2 ){
+  if(check1 & check2 & check3 ){
     return(TRUE)
   }
   else if (! check1 ){
@@ -1333,12 +1602,138 @@ setMethod("pool", "methylBaseDB",
             
             readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,sample.ids=sample.ids,
                      assembly=obj@assembly,context=obj@context,
-                     treatment=treat,coverage.index=coverage.ind,
-                     numCs.index=coverage.ind+1,numTs.index=coverage.ind+2,
-                     destranded=obj@destranded,resolution=obj@resolution )
+                     treatment=treat,destranded=obj@destranded,
+                     resolution=obj@resolution )
             
             
           })
+
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylBaseDB,GRanges-method
+setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
+          function(object,regions,cov.bases,strand.aware,chunk.size){
+            
+            getCounts <- function(data,regions,cov.bases,strand.aware){
+              .setMethylDBNames(data)
+              # overlap data with regions
+              # convert data to GRanges without metacolumns
+              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+              if(!strand.aware){
+                strand(g.meth)="*"
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                
+              }else{
+                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                
+              }
+              
+              #require(data.table)
+              # create a temporary data.table row ids from regions and counts from object
+              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+              #dt=data.table::data.table(dt)
+              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+              
+              coverage=NULL
+              numCs=NULL
+              numTs=NULL
+              id=NULL
+              
+              # use data.table to sum up counts per region
+              sum.dt=temp.dt[,list(coverage=sum(coverage),
+                                   numCs   =sum(numCs),
+                                   numTs   =sum(numTs),covered=length(numTs)),by=id] 
+              sum.dt=sum.dt[covered>=cov.bases,]
+              temp.df=as.data.frame(regions) # get regions to a dataframe
+              
+              # look for values with "name" in it, eg. "tx_name" or "name"
+              # valuesList = names(values(regions))
+              # nameid = valuesList[grep (valuesList, pattern="name")]
+              
+              #create id string for the new object to be returned
+              #ids have to be unique and we can not assume GRanges objects will 
+              #have a name attribute
+              #               if("name" %in% names(temp.df))
+              #               {
+              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+              #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+              #                 
+              #               }else{
+              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+              #                               temp.df[sum.dt$id,"end"],sep=".")
+              #               }
+              
+              #create a new methylRaw object to return
+              new.data=data.frame(#id      =new.ids,
+                chr     =temp.df[sum.dt$id,"seqnames"],
+                start   =temp.df[sum.dt$id,"start"],
+                end     =temp.df[sum.dt$id,"end"],
+                strand  =temp.df[sum.dt$id,"strand"],
+                coverage=sum.dt$coverage,
+                numCs   =sum.dt$numCs,
+                numTs   =sum.dt$numTs)
+            }
+            
+            dir <- dirname(object@dbpath) 
+            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
+            
+            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                           return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+
+            if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
+            readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
+                assembly=object@assembly,context=object@context,treatment=object@treatment,
+                destranded=destranded,resolution="region")
+            
+          }
+)
+
+#' @aliases tileMethylCounts,methylBaseDB-method
+#' @rdname tileMethylCounts-methods
+setMethod("tileMethylCounts", signature(object="methylBaseDB"),
+          function(object,win.size,step.size,cov.bases,mc.cores,chunk.size){
+            
+            
+            tileCount <- function(data,win.size,step.size,cov.bases,object) {
+              
+              .setMethylDBNames(data,"methylBaseDB")
+              # overlap data with regions
+              # convert data to GRanges without metacolumns
+              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+              rm(data)
+              chrs   =as.character(unique(seqnames(g.meth)))
+              
+              # get max length of feature covered chromosome
+              max.length=max(IRanges::end(g.meth)) 
+              # get start of sliding window
+              min.length=min(IRanges::end(g.meth))
+              win.start = floor(min.length/win.size)*win.size
+              
+              #get sliding windows with covered CpGs
+              numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+              
+              all.wins=GRanges(seqnames=rep(chrs,numTiles),
+                               ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
+                                              width=rep(win.size,numTiles)) )
+              
+              as.data.frame(all.wins)
+              
+            }
+            
+            
+            
+            all.wins <- applyTbxByChr(object@dbpath, return.type = "data.frame",
+                                      FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,object=object,
+                                      mc.cores = mc.cores)
+            
+            print(paste("total ranges",dim(all.wins)[1]))
+            
+            regionCounts(object,as(all.wins,"GRanges"),cov.bases,strand.aware=FALSE,chunk.size = chunk.size)
+
+          }
+)
 
 # methylDiffDB -------------------------------------------------------
 
@@ -1348,9 +1743,9 @@ valid.methylDiffDB <- function(object) {
   
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
-  check3=( length(object@sample.ids) != length(object@treatment) )
+  check3=( length(object@sample.ids) == length(object@treatment) )
   
-  if(check1 & check2 ){
+  if(check1 & check2 & check3 ){
     return(TRUE)
   }
   else if (! check1 ){

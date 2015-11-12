@@ -10,9 +10,11 @@
 
 #' Get regional counts for given GRanges or GRangesList object
 #'
-#' Convert \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}}  object into 
+#' Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}}  object into 
 #' regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
-#' @param object a \code{methylRaw} or \code{methlRawList} object
+#' @param object a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}} object
 #' @param regions a GRanges or GRangesList object. Make sure that the GRanges objects are
 #'        unique in chr,start,end and strand columns.You can make them unique by 
 #'        using unique() function.
@@ -200,6 +202,11 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
             
     #require(GenomicRanges)
     
+    # combine and sort GRanges from List
+    regions <- unlist(regions)
+    regions <- sortSeqlevels(regions)
+    regions <- sort(regions,ignore.strand=TRUE)
+    
     # overlap object with regions
     # convert object to GRanges
     #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
@@ -221,39 +228,51 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
     
     #require(data.table)
     # create a temporary data.table row ids from regions and counts from object
-    dt=data.table::data.table(id=mat[,1],getData(object)[mat[,2],c(5,6,7)] )
+    df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
+    dt=data.table::data.table(df)
+    #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
+    coverage=NULL
+    numCs=NULL
+    numTs=NULL
+    id=NULL
     # use data.table to sum up counts per region
     sum.dt=dt[,list(coverage=sum(coverage),
                     numCs   =sum(numCs),
                     numTs   =sum(numTs),covered=length(numTs)),by=id] 
     sum.dt=sum.dt[sum.dt$covered>=cov.bases,]
+    temp.df=as.data.frame(regions) # get regions to a dataframe
     
-    #temp.df=as.data.frame(regions) # get regions to a dataframe
-    temp.dt=data.table(as.data.frame(regions))
-    first.element = function(x) x[1]
-    sum.temp.dt=temp.dt[, list(chr = first.element(seqnames), 
-                               start = min(start), 
-                               end = max(end),
-                               strand = first.element(strand)),
-                        by=element]
-    # if it is intron, some of the symbols may not have any intron GRanges
-    sum.id=names(regions)[sum.dt$id]
+    # look for values with "name" in it, eg. "tx_name" or "name"
+    # valuesList = names(values(regions))
+    # nameid = valuesList[grep (valuesList, pattern="name")]
+    
+    #create id string for the new object to be returned
+    #ids have to be unique and we can not assume GRanges objects will 
+    #have a name attribute
+    if("name" %in% names(temp.df))
+    {
+      new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                    temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+      
+    }else{
+      new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                    temp.df[sum.dt$id,"end"],sep=".")
+    }
+    
     #create a new methylRaw object to return
-    new.data=data.frame(
-      #id      =sum.id,
-      chr     =sum.temp.dt$chr[sum.temp.dt$element %in% sum.id],
-      start   =sum.temp.dt$start[sum.temp.dt$element %in% sum.id],
-      end     =sum.temp.dt$end[sum.temp.dt$element %in% sum.id],
-      strand  =sum.temp.dt$strand[sum.temp.dt$element %in% sum.id],
+    new.data=data.frame(#id      =new.ids,
+      chr     =temp.df[sum.dt$id,"seqnames"],
+      start   =temp.df[sum.dt$id,"start"],
+      end     =temp.df[sum.dt$id,"end"],
+      strand  =temp.df[sum.dt$id,"strand"],
       coverage=sum.dt$coverage,
       numCs   =sum.dt$numCs,
       numTs   =sum.dt$numTs)
     
     new("methylRaw",new.data,sample.id=object@sample.id,
         assembly=object@assembly,context=object@context,
-        resolution="region")
-    
+        resolution="region")   
   }
 )
 # Note: some genes do not have intron, need to take care of it.
@@ -332,7 +351,7 @@ setMethod("regionCounts", signature(object="methylRawList",
 #' @docType methods
 #' @rdname tileMethylCounts-methods
 setGeneric("tileMethylCounts", 
-           function(object,win.size=1000,step.size=1000,cov.bases=0)
+           function(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,chunk.size=1e6)
              standardGeneric("tileMethylCounts") )
 
 #' @aliases tileMethylCounts,methylRaw-method
