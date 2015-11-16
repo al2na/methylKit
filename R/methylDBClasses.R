@@ -1067,108 +1067,124 @@ readMethylBaseDB<-function(dbpath,dbtype,
 #' @rdname unite-methods
 #' @aliases unite,methylRawListDB-method
 setMethod("unite", "methylRawListDB",
-          function(object,destrand,min.per.group,chunk.size,mc.cores){
+          function(object,destrand,min.per.group,chunk.size,mc.cores,save.db=TRUE,...){
             
-            #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
-            if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
-            {
-              stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
-            }
-            if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
-            {
-              stop("supplied methylRawList object have different genome assemblies")
-            }                     
-            if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
-            {
-              stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
-            } 
+            if(save.db) {
             
-            if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")}
-            
-            if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
-            # destrand single objects contained in methylRawListDB
-            if(destrand) { 
-              
-              destrandFun <- function(obj){
-              
-                if(obj@resolution == "base") {
-                  dir <- dirname(obj@dbpath)
-                  filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
-                  # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-                  newdbpath <- applyTbxByChunk(obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename,return.type = "tabix", 
-                                               FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x,"methylRawDB") )})
-                  
-                  readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
-                                  sample.id = obj@sample.id,
-                                  assembly = obj@assembly, context = obj@context,
-                                  resolution = obj@resolution)
-                }else {obj}
-                
+              #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
+              if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
+              {
+                stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
               }
-              new.list=lapply(object,destrandFun)
-              object <- new("methylRawListDB", new.list,treatment=object@treatment)
+              if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
+              {
+                stop("supplied methylRawList object have different genome assemblies")
+              }                     
+              if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
+              {
+                stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
+              } 
               
-              on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",full.names = TRUE)))    
-            }
-            #merge raw methylation calls together
-            
-            objList <- sapply(object,FUN = function(x) x@dbpath)
-            dir <- dirname(object[[1]]@dbpath)
-            filename <- paste(getSampleID(object),collapse = "_")
-            
-            if(is.null(min.per.group)) {
+              if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")}
               
-               dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
-               
-               dbpath <- tools::file_path_sans_ext(dbpath)
-               
-            } else {
-              # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
-              
-              # keep rows with no matching in all samples  
-              tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
-              tmpPath <- tools::file_path_sans_ext(tmpPath)
-              
-              # get indices of coverage in the data frame 
-              coverage.ind=seq(5,by=3,length.out=length(object))
-
-              filter <- function(df, coverage.ind, treatment,min.per.group){
+              if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
+              # destrand single objects contained in methylRawListDB
+              if(destrand) { 
                 
-                df <- as.data.table(df)
+                destrandFun <- function(obj){
                 
-                for(i in unique(treatment) ){
-                  
-                  my.ind=coverage.ind[treatment==i]
-                  ldat = !is.na(df[,my.ind,with=FALSE])
-                  
-                  if(  is.null(dim(ldat))  ){  # if there is only one dimension
-                    df=df[ldat>=min.per.group,]
-                  }else{
-                    df=df[rowSums(ldat)>=min.per.group,]
-                  }
+                  if(obj@resolution == "base") {
+                    dir <- dirname(obj@dbpath)
+                    filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
+                    # need to use .CpG.dinuc.unifyOld because output needs to be ordered
+                    newdbpath <- applyTbxByChunk(obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename,return.type = "tabix", 
+                                                 FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x,"methylRawDB") )})
+                    
+                    readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                                    sample.id = obj@sample.id,
+                                    assembly = obj@assembly, context = obj@context,
+                                    resolution = obj@resolution)
+                  }else {obj}
                   
                 }
-                return(as.data.frame(df))
+                new.list=lapply(object,destrandFun)
+                object <- new("methylRawListDB", new.list,treatment=object@treatment)
+                
+                on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",full.names = TRUE)))    
               }
-
-              dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
-                                        return.type = "tabix", FUN = filter,treatment=object@treatment,
-                                        coverage.ind=coverage.ind,min.per.group=min.per.group)
+              #merge raw methylation calls together
               
-              unlink(list.files(dirname(tmpPath),pattern = basename(tools::file_path_sans_ext(tmpPath)),full.names = TRUE))
+              objList <- sapply(object,FUN = function(x) x@dbpath)
+              
+              args <- list(...)
+              #print(args)
+              if( ( "dbdir" %in% names(args)) )
+              { 
+                dir <- .check.dbdir(args$dbdir) 
+              } else {
+                dir <- dirname(object[[1]]@dbpath)
               }
+              
+              filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
+              
+              if(is.null(min.per.group)) {
+                
+                 dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
+                 
+                 dbpath <- tools::file_path_sans_ext(dbpath)
+                 
+              } else {
+                # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
+                
+                # keep rows with no matching in all samples  
+                tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
+                tmpPath <- tools::file_path_sans_ext(tmpPath)
+                
+                # get indices of coverage in the data frame 
+                coverage.ind=seq(5,by=3,length.out=length(object))
+  
+                filter <- function(df, coverage.ind, treatment,min.per.group){
+                  
+                  df <- as.data.table(df)
+                  
+                  for(i in unique(treatment) ){
+                    
+                    my.ind=coverage.ind[treatment==i]
+                    ldat = !is.na(df[,my.ind,with=FALSE])
+                    
+                    if(  is.null(dim(ldat))  ){  # if there is only one dimension
+                      df=df[ldat>=min.per.group,]
+                    }else{
+                      df=df[rowSums(ldat)>=min.per.group,]
+                    }
+                    
+                  }
+                  return(as.data.frame(df))
+                }
+                
+
+  
+                dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
+                                          return.type = "tabix", FUN = filter,treatment=object@treatment,
+                                          coverage.ind=coverage.ind,min.per.group=min.per.group)
+                
+                unlink(list.files(dirname(tmpPath),pattern = basename(tools::file_path_sans_ext(tmpPath)),full.names = TRUE))
+                }
+              
+
+              
+              readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+                               sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                               context = object[[1]]@context,resolution = object[[1]]@resolution,
+                               treatment = object@treatment,destranded = destrand)
             
-            
-            coverage.ind=seq(5,by=3,length.out=length(object))
-            numCs.ind   =coverage.ind+1
-            numTs.ind   =coverage.ind+2
-            
-            readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
-                             sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
-                             context = object[[1]]@context,resolution = object[[1]]@resolution,
-                             treatment = object@treatment,coverage.index = coverage.ind,
-                             numCs.index = numCs.ind,numTs.index = numTs.ind,
-                             destranded = destrand)
+            } else {
+              
+              
+              obj <- object
+              class(obj) <- "methylRawList"
+              unite(obj,destrand,min.per.group,chunk.size,mc.cores,save.db=FALSE,...)
+            }
             
           }
 )           

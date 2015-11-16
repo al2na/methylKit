@@ -919,12 +919,45 @@ setMethod("unite", "methylRawList",
             names(df)[numCs.ind]   =paste(c("numCs"),1:length(object),sep="" )
             names(df)[numTs.ind]   =paste(c("numTs"),1:length(object),sep="" )
             
-            #make methylbase object and return the object
-            obj=new("methylBase",(df),sample.ids=sample.ids,
-                    assembly=unique(assemblies),context=unique(contexts),
-                    treatment=object@treatment,coverage.index=coverage.ind,
-                    numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=object[[1]]@resolution )
-            obj
+            if(!save.db) {
+            
+              #make methylbase object and return the object
+              obj=new("methylBase",(df),sample.ids=sample.ids,
+                      assembly=unique(assemblies),context=unique(contexts),
+                      treatment=object@treatment,coverage.index=coverage.ind,
+                      numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=object[[1]]@resolution )
+              obj
+            
+            } else {
+            
+              #print(names(as.list(match.call())))
+              # catch additional args 
+              args <- list(...)
+              #print(args)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- .check.dbdir(getwd())
+              } else { dbdir <- .check.dbdir(args$dbdir) }
+              #                         if(!( "dbtype" %in% names(args) ) ){
+              #                           dbtype <- "tabix"
+              #                         } else { dbtype <- args$dbtype }
+#               if(!( "suffix" %in% names(args) ) ){
+#                 suffix <- paste0("_","base")
+#               } else { 
+#                 suffix <- args$suffix
+#                 suffix <- paste0("_",suffix)
+#               }
+              
+              # create methylBaseDB
+              #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
+              obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",sample.ids=sample.ids,
+                                      assembly=unique(assemblies),context=unique(contexts),
+                                      treatment=object@treatment,coverage.index=coverage.ind,
+                                      numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,resolution=object[[1]]@resolution)#,
+                                      #suffix=suffix)
+              obj@sample.ids <- sample.ids
+              obj
+          }
           }
 )           
 
