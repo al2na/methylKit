@@ -76,7 +76,7 @@
     tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
     dir.create(tabixDir)
     dir <- paste(dir,"/",tabixDir,collapse = "",sep = "")
-    message(paste("creating directory: ","/",tabixDir,sep = ""))
+    message(paste("creating directory ",getwd(),"/",tabixDir,sep = ""))
   }
   else{
     tempdir <- paste(getwd(),"/",dir,sep = "")
@@ -577,7 +577,25 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
 #' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6
-#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to original directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
+#'                  
+#'                   
+#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,save.db,...)
 #' @examples
 #' data(methylKit)
 #' 
@@ -587,6 +605,10 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' # filter out bases with cread coverage above 99.9th percentile of coverage distribution
 #' filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
 #' 
+#' # filter out bases with covereage above 500 reads and save to database "test1_max500.bgz" 
+#' # in directory "methylDB", filtered3 now becomes a \code{methylRawDB} object
+#' filtered3=filterByCoverage(methylRawList.obj[[1]],lo.count=NULL,lo.perc=NULL,hi.count=500,hi.perc=NULL,
+#'                            save.db=TRUE,suffix="max500",dbdir="methylDB")
 #' 
 #' @section Details:
 #' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
@@ -594,16 +616,24 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB} and \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRaw} and \code{methylRawList}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might change the value of this parameter.
+#' 
+#' 
+#' 
+#' 
 #' @return \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object depending on input object
 #' @export
 #' @docType methods
 #' @rdname filterByCoverage-methods
-setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,chunk.size=1e6) standardGeneric("filterByCoverage") )
+setGeneric("filterByCoverage",function(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,chunk.size=1e6,save.db=FALSE,...) standardGeneric("filterByCoverage") )
 
 #' @aliases filterByCoverage,methylRaw-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRaw"),
-                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
+                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc,save.db=FALSE,...){
                       if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
                       
                       data=getData(methylObj) # get the data part
@@ -617,20 +647,61 @@ setMethod("filterByCoverage", signature(methylObj="methylRaw"),
                       if(is.numeric(lo.count)){data=data[data$coverage>=lo.count,]}
                       if(is.numeric(hi.count)){data=data[data$coverage<hi.count,]}
                       
+                      
+                      if(!save.db) {
+                      
+                        new("methylRaw",data,sample.id=methylObj@sample.id,
+                                             assembly=methylObj@assembly,
+                                             context=methylObj@context,resolution=methylObj@resolution)
+                      } else {
+                        
+                        #print(names(as.list(match.call())))
+                        # catch additional args 
+                        args <- list(...)
+                        #print(args)
 
-                      new("methylRaw",data,sample.id=methylObj@sample.id,
-                                           assembly=methylObj@assembly,
-                                           context=methylObj@context,resolution=methylObj@resolution)
-
+                        if( !( "dbdir" %in% names(args)) ){
+                          dbdir <- .check.dbdir(getwd())
+                        } else { dbdir <- .check.dbdir(args$dbdir) }
+#                         if(!( "dbtype" %in% names(args) ) ){
+#                           dbtype <- "tabix"
+#                         } else { dbtype <- args$dbtype }
+                        if(!( "suffix" %in% names(args) ) ){
+                          suffix <- paste0("_","filtered")
+                        } else { 
+                          suffix <- args$suffix
+                          suffix <- paste0("_",suffix)
+                        }
+                        
+                        # create methylRawDB
+                        #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
+                        obj <- makeMethylRawDB(df=data,dbpath=dbdir,dbtype="tabix",sample.id=paste0(methylObj@sample.id,suffix),
+                                               assembly=methylObj@assembly,context=methylObj@context,resolution=methylObj@resolution)
+                        obj@sample.id <- methylObj@sample.id
+                        
+                        #print(class(obj))
+                        obj
+                      }
                       
 })
 
 #' @aliases filterByCoverage,methylRawList-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawList"),
-                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc){
-                      new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
-                      new("methylRawList", new.list,treatment=methylObj@treatment)
+                    function(methylObj,lo.count,lo.perc,hi.count,hi.perc,save.db=FALSE,...){
+                      
+                      
+                      if(!save.db) {
+                        new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
+                        new("methylRawList", new.list,treatment=methylObj@treatment)
+                      } else {
+                        args <- list(...)
+                        if( !( "dbdir" %in% names(args)) ){
+                          dbdir <- .check.dbdir(getwd())
+                        } else { dbdir <- .check.dbdir(args$dbdir) }
+                        new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,save.db=TRUE,dbdir=basename(dbdir),...)
+                        new("methylRawListDB", new.list,treatment=methylObj@treatment)
+                      }
 })
 
 
@@ -707,6 +778,22 @@ setClass("methylBase",contains="data.frame",representation(
 #'       For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6
 #' @param mc.cores number of cores to use when processing \code{methylRawListDB} objects, default: 1, but always 1 for Windows)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#            \code{suffix}
+#                  A character string to append to the name of the output flat file database, 
+#                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
 #' 
 #' @usage unite(object,destrand=FALSE,min.per.group=NULL)
 #' @return a methylBase or methylBaseDB object depending on input
@@ -725,15 +812,20 @@ setClass("methylBase",contains="data.frame",representation(
 #' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB} and \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRaw} and \code{methylRawList}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might change the value of this parameter.
+#' 
 #'  
 #' @docType methods
 #' @rdname unite-methods
-setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1) standardGeneric("unite"))
+setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1,save.db=FALSE,...) standardGeneric("unite"))
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
 setMethod("unite", "methylRawList",
-          function(object,destrand,min.per.group){
+          function(object,destrand,min.per.group,save.db=FALSE,...){
             
             
             

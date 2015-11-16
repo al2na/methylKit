@@ -257,8 +257,10 @@ setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
 #' @aliases filterByCoverage,methylRawDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=TRUE,...){
             if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
+            
+            if(save.db) {
             
             filter <- function(data,lo.count,lo.perc,hi.count,hi.perc) {
               
@@ -277,8 +279,25 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
               
             }
             
-            dir <- dirname(methylObj@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(methylObj@dbpath)),"filtered",sep="_")
+            # catch additional args 
+            args <- list(...)
+            
+            
+            if( !( "dbdir" %in% names(args)) ){
+              dir <- dirname(methylObj@dbpath)
+            } else { dir <- .check.dbdir(args$dbdir) }
+            
+            if(!( "suffix" %in% names(args) ) ){
+              suffix <- paste0("_","filtered")
+            } else { 
+              suffix <- args$suffix
+              suffix <- paste0("_",suffix)
+            }
+            
+
+            filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+            
+            #print(filename)
             
             newdbpath <- applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                          return.type = "tabix", FUN = filter, lo.count=lo.count, lo.perc=lo.perc, 
@@ -289,15 +308,28 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
                             assembly = methylObj@assembly, context = methylObj@context,
                             resolution = methylObj@resolution)
             
+            } else {
+              
+              methylObj <- methylObj[]
+              #print(class(methylObj))
+              filterByCoverage(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=FALSE,...)
+              
+            }
+            
           })
 
 #' @aliases filterByCoverage,methylRawListDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
-          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size){
+          function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=TRUE,...){
 
-              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size)
+            if(save.db){
+              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db,...)
               new("methylRawListDB", new.list,treatment=methylObj@treatment)
+            } else {
+              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=FALSE,...)
+              new("methylRawList", new.list,treatment=methylObj@treatment)
+            }
             
           })
 
