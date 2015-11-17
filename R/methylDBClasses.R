@@ -115,6 +115,7 @@ valid.methylRawDB <- function(object) {
 #'  Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if subsetting is done on
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
+#'  \code{x[]} will return the \code{methylRawDB} object as new \code{methylRaw} object
 #' 
 #' @section Accessors:
 #' The following functions provides access to data slots of methylRawDB:
@@ -122,8 +123,9 @@ valid.methylRawDB <- function(object) {
 #' \code{\link[methylKit]{getContext}}
 #' 
 #' @section Coercion:
-#'   \code{methylRawDB} object can be coerced to 
+#'   \code{methylRawDB} object can be coerced to:
 #'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link{methylRaw}} object via \code{\link{[]}} function, see section Subsetting.
 #' 
 #' @examples
 #' 
@@ -143,6 +145,9 @@ valid.methylRawDB <- function(object) {
 #' 
 #' #coercing methylRawDB object to GRanges object
 #' my.gr=as(methylRawListDB.obj[[1]],"GRanges")
+#' 
+#' #' #coercing methylRawDB object to methylRaw object
+#' myRaw=methylRawListDB.obj[[1]][]
 #' 
 #' @name methylRawDB-class
 #' @aliases methylRawDB
@@ -188,17 +193,6 @@ readMethylRawDB<-function(dbpath,dbtype,
       sample.id = sample.id, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype)
 }
-
-
-# PRIVATE function:
-# selects records in \code{object} of class \code{methylRawDB} 
-# that lie inside the regions given by \code{ranges} of class \code{GRanges}. 
-selectByOverlap<-function(object, ranges){
-  
-  return( getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") )
-  
-}
-  
 
 # methylRawListDB
 
@@ -2495,7 +2489,6 @@ setMethod(f="getData", signature="methylDiffDB", definition=function(x) {
   return(df)
 })
 
-
 # show functions ----------------------------------------------------------
 
 #' @rdname show-methods
@@ -2712,14 +2705,37 @@ setGeneric("selectByOverlap", def=function(object,ranges) standardGeneric("selec
 setMethod("selectByOverlap", "methylRawDB",
           function(object, ranges){
             
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            
             df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
             
-            new("methylRaw",.setMethylDBNames(df,"methylRawDB"),
+            obj <- new("methylRaw",.setMethylDBNames(df,"methylRawDB"),
                 sample.id=object@sample.id,
                 assembly=object@assembly,
                 context=object@context,
                 resolution=object@resolution)
             
+            obj
+            
+          }
+)
+
+
+#' @aliases selectByOverlap,methylRawListDB-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylRawListDB",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            
+            new.list <- lapply(object,selectByOverlap,ranges)
+            
+            new("methylRawList",new.list,treatment=object@treatment)
+              
           }
 )
 
@@ -2728,6 +2744,10 @@ setMethod("selectByOverlap", "methylRawDB",
 setMethod("selectByOverlap", "methylBaseDB",
           function(object, ranges){
   
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            
             df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
             
             new("methylBase",.setMethylDBNames(df,"methylBaseDB"),
@@ -2748,6 +2768,10 @@ setMethod("selectByOverlap", "methylBaseDB",
 #' @rdname selectByOverlap-methods
 setMethod("selectByOverlap", "methylDiffDB",
           function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
             
             df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
             
