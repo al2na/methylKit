@@ -141,17 +141,13 @@ setMethod("reorganize", signature(methylObj="methylBase"),
                             suffix <- paste0("_",args$suffix)
                           }
                           
-                          # create methylRawDB
+                          # create methylBaseDB
                           makeMethylBaseDB(df=as.data.frame(newdat),dbpath=dbdir,dbtype="tabix",sample.ids=sample.ids,
                                            assembly=methylObj@assembly,context=methylObj@context,
                                            treatment=treatment,coverage.index=coverage.ind,
                                            numCs.index=numCs.ind,numTs.index=numTs.ind,
                                            destranded=methylObj@destranded, resolution=methylObj@resolution,suffix=suffix )
-                  
-                          
                         }
-                  
- 
 })
 
 
@@ -176,10 +172,7 @@ setMethod("reorganize", signature(methylObj="methylRawList"),
                           
                           outList=list()    
                           for(i in 1:length(sample.ids)){
-                            #ind=which( orig.ids==sample.ids[i] )
                             outList[[i]]=methylObj[[ col.ord[i]  ]]
-                            #outList[[i]]=methylObj[[ ind  ]]
-  
                           }
             
                           new("methylRawList",outList,treatment=treatment)
@@ -192,21 +185,23 @@ setMethod("reorganize", signature(methylObj="methylRawList"),
                           if( !( "dbdir" %in% names(args)) ){
                             dbdir <- .check.dbdir(getwd())
                           } else { dbdir <- .check.dbdir(args$dbdir) }
+#                         if(!( "dbtype" %in% names(args) ) ){
+#                           dbtype <- "tabix"
+#                         } else { dbtype <- args$dbtype }
                           if(!( "suffix" %in% names(args) ) ){
                             suffix <- NULL
                           } else { 
                             suffix <- paste0("_",args$suffix)
                           }
 
+
                           outList=list()    
                           for(i in 1:length(sample.ids)){
-                            #ind=which( orig.ids==sample.ids[i] )
                             # create methylRawDB
                             obj <- makeMethylRawDB(df=getData(methylObj[[ col.ord[i]  ]]),dbpath=dbdir,dbtype="tabix",sample.id=paste0(methylObj[[ col.ord[i]  ]]@sample.id,suffix),
                                                    assembly=methylObj[[ col.ord[i]  ]]@assembly,context=methylObj[[ col.ord[i]  ]]@context,resolution=methylObj[[ col.ord[i]  ]]@resolution)
                             obj@sample.id <- methylObj[[ col.ord[i]  ]]@sample.id
                             outList[[i]]=obj
-                            #outList[[i]]=methylObj[[ ind  ]]
                           }
                           
                           new("methylRawListDB",outList,treatment=treatment)
