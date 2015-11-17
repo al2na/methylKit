@@ -1150,11 +1150,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   
   # new tabix file is named by concatenation of sample.ids, works for now
   # additional suffix is possible
-  if(is.null(suffix)){ 
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),".txt")
-  } else { 
-    filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
-  }
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
   #print(filepath)
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
@@ -2063,10 +2059,11 @@ setClass("methylDiffDB",slots = list(dbpath= "character",num.records= "numeric",
 # it is called from read function or whenever this functionality is needed
 makeMethylDiffDB<-function(df,dbpath,dbtype,
                            sample.ids, assembly ,context,
-                           resolution,treatment,destranded){
+                           resolution,treatment,destranded,
+                           suffix=NULL){
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),"_diff.txt")
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
@@ -2102,7 +2099,8 @@ setMethod("calculateDiffMeth", "methylBaseDB",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                    effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size){
+                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
+                   chunk.size,save.db=TRUE,...){
             
             if(length(.Object@treatment)<2 ){
               stop("can not do differential methylation calculation with less than two samples")
@@ -2121,81 +2119,121 @@ setMethod("calculateDiffMeth", "methylBaseDB",
             #### check if covariates+intercept+treatment more than replicates ####
             if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index)){stop("Too many covariates/too few replicates.")}}
             
-            # add backwards compatibility with old parameters
-            if(slim==FALSE) adjust="BH" else adjust=adjust
-            if(weighted.mean==FALSE) effect="mean" else effect=effect
+            if(save.db) {
             
-            vars <- covariates
-
-                        
-            # function to apply the test to data
-            diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
-                                 parShrinkNM,test,adjust,mc.cores){
+              # add backwards compatibility with old parameters
+              if(slim==FALSE) adjust="BH" else adjust=adjust
+              if(weighted.mean==FALSE) effect="mean" else effect=effect
               
-              cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+              vars <- covariates
+  
+                          
+              # function to apply the test to data
+              diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
+                                   parShrinkNM,test,adjust,mc.cores){
+                
+                cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+                
+                tmp=simplify2array(
+                  mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
+                           parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
+                tmp <- as.data.frame(t(tmp))
+                #print(head(tmp))
+                x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                
+                return(x)
+                
+                
+              }
               
-              tmp=simplify2array(
-                mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
-                         parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
-              tmp <- as.data.frame(t(tmp))
-              #print(head(tmp))
-              x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+              # catch additional args 
+              args <- list(...)
               
-              return(x)
               
+              if( ( "dbdir" %in% names(args))   ){
+                if( !(is.null(args$dbdir)) ) { 
+                  dir <- .check.dbdir(args$dbdir) }
+              } else { dir <- dirname(.Object@dbpath) }
+              
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- "_diffMeth"
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+                
+              #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+  
+              dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
+                                     Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
+                                     treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+                                     parShrinkNM=parShrinkNM,test=test,adjust=adjust,mc.cores=mc.cores)
+              
+              
+              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                      destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              obj
+            
+            } else {
+              
+              tmp <- .Object[]
+              calculateDiffMeth(tmp,covariates,overdispersion=overdispersion,
+                                adjust=adjust,
+                                effect=effect,parShrinkNM=parShrinkNM,
+                                test=test,mc.cores=mc.cores,slim=slim,weighted.mean=weighted.mean,
+                                save.db=FALSE)
               
             }
-              
-            dir <- dirname(.Object@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),"diffMeth",sep="_")
-
-            dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
-                                   Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
-                                   treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
-                                   parShrinkNM=parShrinkNM,test=test,adjust=adjust,mc.cores=mc.cores)
             
             
-            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                    destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-            obj
             }
 )
 
 #' @aliases get.methylDiff,methylDiffDB-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiffDB", 
-          definition=function(.Object,difference,qvalue,type,chunk.size) {
+          definition=function(.Object,difference,qvalue,type,chunk.size,save.db=TRUE,...) {
             
             if(!( type %in% c("all","hyper","hypo") )){
               stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
             }
               
-            #function applied to data
-            f <- function(data,difference,qv,type){
-              
-              data <- data.table(data)
-              .setMethylDBNames(data,methylDBclass = "methylDiffDB")
-              
-              if(type=="all"){
-                data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
-              }else if(type=="hyper"){
-                data <- data[(qvalue < qv) & (meth.diff > difference)]
-              }else if(type=="hypo"){
-                data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+            if(save.db) {
+            
+              #function applied to data
+              f <- function(data,difference,qv,type){
+                
+                data <- data.table(data)
+                .setMethylDBNames(data,methylDBclass = "methylDiffDB")
+                
+                if(type=="all"){
+                  data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
+                }else if(type=="hyper"){
+                  data <- data[(qvalue < qv) & (meth.diff > difference)]
+                }else if(type=="hypo"){
+                  data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+                }
+                return(data)
               }
-              return(data)
+              
+              dir <- dirname(.Object@dbpath)
+              filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),type,sep="_")
+              
+              dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
+                                        difference = difference, qv = qvalue, type = type)
+              
+              
+              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                                   destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              return(obj)
+            
+            } else {
+              
+              tmp <- .Object[]
+              get.methylDiff(tmp,difference,qvalue,type,save.db=FALSE)
+              
             }
-            
-            dir <- dirname(.Object@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),type,sep="_")
-            
-            dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
-                                      difference = difference, qv = qvalue, type = type)
-            
-            
-            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                                 destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-            return(obj)
 
             }) 
 
@@ -2572,6 +2610,9 @@ setMethod("show", "methylDiffDB", function(object) {
   cat("context:", object@context,"\n")
   cat("treament:", object@treatment,"\n")
   cat("resolution:", object@resolution,"\n")
+  cat("dbtype:", object@dbtype,"\n")
+  #cat("dbpath:",object@dbpath,"\n")
+  cat("\n")
 })
 
 # subset classes ----------------------------------------------------------

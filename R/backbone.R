@@ -85,7 +85,6 @@
       dir.create(tempdir,recursive = T)
     }
     dir <- tempdir
-    rm(tempdir)
   }
   return(dir)
 }
@@ -335,8 +334,11 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'                
 #' @section Details:
 #'  The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
-#'  The first three are obligatory, while if the last argument is given database features are enabled. If \code{location} refers to an uncompressed file the function will create a flat file database and the associated methylRawDB object will link to this database. 
-#'  If \code{location} refers to an earlier created database file then the object will directly link to this database skipping the preprocessing steps. 
+#'  The first three are obligatory, while if the last argument is given database features are enabled. 
+#'  If \code{location} refers to an uncompressed file the function will create a flat file database and 
+#'  the associated methylRawDB object will link to this database. 
+#'  If \code{location} refers to an earlier created database file then the object will directly link to this database, 
+#'  skipping the preprocessing steps. 
 #'  
 #'  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
 #'  'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
