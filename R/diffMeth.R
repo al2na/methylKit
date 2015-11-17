@@ -372,12 +372,29 @@ setClass("methylDiff",representation(
 #'              differential methylation calculations (can only be used in
 #'              machines with multiple cores).
 #' @param slim If set to FALSE, \code{adjust} will be set to "BH" (default behaviour of earlier versions)
-#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)               
+#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)  
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)             
 #'                    
 #' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
 #'         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
 #'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-#'         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
+#'         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size,save.db,...)
 #' 
 #' @examples
 #' 
@@ -424,6 +441,11 @@ setClass("methylDiff",representation(
 #' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
+#' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
 #'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
 #'             Christopher E. Mason. (2012). 
@@ -441,12 +463,13 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
                                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                                          effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size=1e6) standardGeneric("calculateDiffMeth"))
+                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
+                                         chunk.size=1e6,save.db=FALSE,...) standardGeneric("calculateDiffMeth"))
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion,
                    adjust,effect,parShrinkNM,
-                   test,mc.cores,slim,weighted.mean){
+                   test,mc.cores,slim,weighted.mean,save.db=FALSE,...){
             
             # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
@@ -490,10 +513,36 @@ setMethod("calculateDiffMeth", "methylBase",
             tmp <- as.data.frame(t(tmp))
             x=data.frame(subst[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
             colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
-            obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                    destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-            obj
+            
+            if(!save.db) {
+              obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                      destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              obj
+            } else {
+              
+              # catch additional args 
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- .check.dbdir(getwd())
+              } else { dbdir <- .check.dbdir(args$dbdir) }
+              #                         if(!( "dbtype" %in% names(args) ) ){
+              #                           dbtype <- "tabix"
+              #                         } else { dbtype <- args$dbtype }
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- "_diffMeth"
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              # create methylBaseDB
+              makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                               assembly=.Object@assembly,context=.Object@context,
+                               destranded=.Object@destranded,treatment=.Object@treatment,
+                               resolution=.Object@resolution,suffix=suffix )
             }
+
+        }
 )
 
 
@@ -649,6 +698,22 @@ setMethod("[","methylDiff",
 #' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
 #'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylDiffDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: see Details  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
 #' 
 #' @return a methylDiff or methylDiffDB object containing the differential methylated locations satisfying the criteria 
 #' 
@@ -671,34 +736,83 @@ setMethod("[","methylDiff",
 #' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
 #' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylDiffDB}, 
+#' while being per default FALSE for \code{methylDiff}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
 #'
 #' @export
 #' @docType methods
 #' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all",chunk.size=1e6) standardGeneric("get.methylDiff"))
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all",chunk.size=1e6,save.db=FALSE,...) standardGeneric("get.methylDiff"))
 
 #' @aliases get.methylDiff,methylDiff-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
-          definition=function(.Object,difference,qvalue,type) {
+          definition=function(.Object,difference,qvalue,type,save.db=FALSE,...) {
             
-            if(type=="all"){
-              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-              return(new.obj)
-            }else if(type=="hyper"){
-              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-              return(new.obj)
-            }else if(type=="hypo"){
-              new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                          sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
-              return(new.obj)
-            }else{
-              stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
+            if(!save.db) {
+            
+              if(type=="all"){
+                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+                return(new.obj)
+              }else if(type=="hyper"){
+                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
+                return(new.obj)
+              }else if(type=="hypo"){
+                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
+                return(new.obj)
+              }else{
+                stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
+              }
+            
+            } else {
+              
+              # catch additional args 
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- .check.dbdir(getwd())
+              } else { dbdir <- .check.dbdir(args$dbdir) }
+              #                         if(!( "dbtype" %in% names(args) ) ){
+              #                           dbtype <- "tabix"
+              #                         } else { dbtype <- args$dbtype }
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_",type)
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              # create methylBaseDB
+              if(type=="all"){
+                new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                                   assembly=.Object@assembly,context=.Object@context,
+                                   destranded=.Object@destranded,treatment=.Object@treatment,
+                                   resolution=.Object@resolution,suffix=suffix )
+              }else if(type=="hyper"){
+              new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                                   assembly=.Object@assembly,context=.Object@context,
+                                   destranded=.Object@destranded,treatment=.Object@treatment,
+                                   resolution=.Object@resolution,suffix=suffix )
+              }else if(type=="hypo"){
+                new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                                   assembly=.Object@assembly,context=.Object@context,
+                                   destranded=.Object@destranded,treatment=.Object@treatment,
+                                   resolution=.Object@resolution,suffix=suffix )
+              }else{
+                stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
+              }
+              return(new.obj) 
             }
           }) 
 

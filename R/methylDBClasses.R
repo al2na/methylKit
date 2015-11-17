@@ -777,81 +777,102 @@ setMethod("normalizeCoverage", "methylRawListDB",
 #' @rdname regionCounts
 #' @aliases regionCounts,methylRawDB,GRanges-method
 setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
-          function(object,regions,cov.bases,strand.aware,chunk.size){
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
+            if(save.db) {
 
-            getCounts <- function(data,regions,cov.bases,strand.aware){
-              .setMethylDBNames(data)
-              # overlap data with regions
-              # convert data to GRanges without metacolumns
-              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-              if(!strand.aware){
-                strand(g.meth)="*"
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
-                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+              getCounts <- function(data,regions,cov.bases,strand.aware){
+                .setMethylDBNames(data)
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                if(!strand.aware){
+                  strand(g.meth)="*"
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                  
+                }else{
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                  
+                }
                 
-              }else{
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
-                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                #require(data.table)
+                # create a temporary data.table row ids from regions and counts from object
+                temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+                #dt=data.table::data.table(dt)
+                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
                 
+                coverage=NULL
+                numCs=NULL
+                numTs=NULL
+                id=NULL
+                
+                # use data.table to sum up counts per region
+                sum.dt=temp.dt[,list(coverage=sum(coverage),
+                                numCs   =sum(numCs),
+                                numTs   =sum(numTs),covered=length(numTs)),by=id] 
+                sum.dt=sum.dt[covered>=cov.bases,]
+                temp.df=as.data.frame(regions) # get regions to a dataframe
+                
+                # look for values with "name" in it, eg. "tx_name" or "name"
+                # valuesList = names(values(regions))
+                # nameid = valuesList[grep (valuesList, pattern="name")]
+                
+                #create id string for the new object to be returned
+                #ids have to be unique and we can not assume GRanges objects will 
+                #have a name attribute
+  #               if("name" %in% names(temp.df))
+  #               {
+  #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+  #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+  #                 
+  #               }else{
+  #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+  #                               temp.df[sum.dt$id,"end"],sep=".")
+  #               }
+                
+                #create a new methylRaw object to return
+                new.data=data.frame(#id      =new.ids,
+                  chr     =temp.df[sum.dt$id,"seqnames"],
+                  start   =temp.df[sum.dt$id,"start"],
+                  end     =temp.df[sum.dt$id,"end"],
+                  strand  =temp.df[sum.dt$id,"strand"],
+                  coverage=sum.dt$coverage,
+                  numCs   =sum.dt$numCs,
+                  numTs   =sum.dt$numTs)
               }
               
-              #require(data.table)
-              # create a temporary data.table row ids from regions and counts from object
-              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
-              #dt=data.table::data.table(dt)
-              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
               
-              coverage=NULL
-              numCs=NULL
-              numTs=NULL
-              id=NULL
+              if( "dbdir" %in% names(args) ){
+                if( !(is.null(args$dbdir)) ){
+                dir <- .check.dbdir(args$dbdir) 
+                }
+              } 
               
-              # use data.table to sum up counts per region
-              sum.dt=temp.dt[,list(coverage=sum(coverage),
-                              numCs   =sum(numCs),
-                              numTs   =sum(numTs),covered=length(numTs)),by=id] 
-              sum.dt=sum.dt[covered>=cov.bases,]
-              temp.df=as.data.frame(regions) # get regions to a dataframe
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","regions")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+
               
-              # look for values with "name" in it, eg. "tx_name" or "name"
-              # valuesList = names(values(regions))
-              # nameid = valuesList[grep (valuesList, pattern="name")]
+              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
               
-              #create id string for the new object to be returned
-              #ids have to be unique and we can not assume GRanges objects will 
-              #have a name attribute
-#               if("name" %in% names(temp.df))
-#               {
-#                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-#                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
-#                 
-#               }else{
-#                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-#                               temp.df[sum.dt$id,"end"],sep=".")
-#               }
+              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                           return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
               
-              #create a new methylRaw object to return
-              new.data=data.frame(#id      =new.ids,
-                chr     =temp.df[sum.dt$id,"seqnames"],
-                start   =temp.df[sum.dt$id,"start"],
-                end     =temp.df[sum.dt$id,"end"],
-                strand  =temp.df[sum.dt$id,"strand"],
-                coverage=sum.dt$coverage,
-                numCs   =sum.dt$numCs,
-                numTs   =sum.dt$numTs)
+              readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                              assembly=object@assembly, context =object@context,resolution="region",
+                              dbtype = object@dbtype)
+            
+            } else {
+              tmp <- object[]
+              regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
             }
-            
-            dir <- dirname(object@dbpath) 
-            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
-            
-            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                         return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
-            
-            readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
-                            assembly=object@assembly, context =object@context,resolution="region",
-                            dbtype = object@dbtype)
-            
           }
 )
 
@@ -859,88 +880,113 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
 #' @aliases regionCounts,methylRawDB,GRangesList-method
 # assume that each name of the element in the GRangesList is unique and 
 setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
-          function(object,regions,cov.bases,strand.aware,chunk.size){
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
             # combine and sort GRanges from List
             regions <- unlist(regions)
             regions <- sortSeqlevels(regions)
             regions <- sort(regions,ignore.strand=TRUE)
+            regions <- unique(regions)
             
-            getCounts <- function(data,regions,cov.bases,strand.aware){
-              
-              .setMethylDBNames(data)
-              
-              # overlap data with regions
-              # convert data to GRanges without metacolumns
-              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-              
-              if(!strand.aware){
-                strand(g.meth)="*"
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
-                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+            if(save.db) {
+            
+              getCounts <- function(data,regions,cov.bases,strand.aware){
                 
-              }else{
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
-                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                .setMethylDBNames(data)
                 
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                
+                if(!strand.aware){
+                  strand(g.meth)="*"
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                  
+                }else{
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                  
+                }
+                
+                #require(data.table)
+                # create a temporary data.table row ids from regions and counts from object
+                temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+                #dt=data.table::data.table(dt)
+                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+                
+                coverage=NULL
+                numCs=NULL
+                numTs=NULL
+                id=NULL
+                
+                # use data.table to sum up counts per region
+                sum.dt=temp.dt[,list(coverage=sum(coverage),
+                                     numCs   =sum(numCs),
+                                     numTs   =sum(numTs),covered=length(numTs)),by=id] 
+                sum.dt=sum.dt[covered>=cov.bases,]
+                temp.df=as.data.frame(regions) # get regions to a dataframe
+                
+                # look for values with "name" in it, eg. "tx_name" or "name"
+                # valuesList = names(values(regions))
+                # nameid = valuesList[grep (valuesList, pattern="name")]
+                
+                #create id string for the new object to be returned
+                #ids have to be unique and we can not assume GRanges objects will 
+                #have a name attribute
+                #               if("name" %in% names(temp.df))
+                #               {
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+                #                 
+                #               }else{
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],sep=".")
+                #               }
+                
+                #create a new methylRaw object to return
+                new.data=data.frame(#id      =new.ids,
+                  chr     =temp.df[sum.dt$id,"seqnames"],
+                  start   =temp.df[sum.dt$id,"start"],
+                  end     =temp.df[sum.dt$id,"end"],
+                  strand  =temp.df[sum.dt$id,"strand"],
+                  coverage=sum.dt$coverage,
+                  numCs   =sum.dt$numCs,
+                  numTs   =sum.dt$numTs)
               }
               
-              #require(data.table)
-              # create a temporary data.table row ids from regions and counts from object
-              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
-              #dt=data.table::data.table(dt)
-              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
               
-              coverage=NULL
-              numCs=NULL
-              numTs=NULL
-              id=NULL
               
-              # use data.table to sum up counts per region
-              sum.dt=temp.dt[,list(coverage=sum(coverage),
-                                   numCs   =sum(numCs),
-                                   numTs   =sum(numTs),covered=length(numTs)),by=id] 
-              sum.dt=sum.dt[covered>=cov.bases,]
-              temp.df=as.data.frame(regions) # get regions to a dataframe
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
               
-              # look for values with "name" in it, eg. "tx_name" or "name"
-              # valuesList = names(values(regions))
-              # nameid = valuesList[grep (valuesList, pattern="name")]
+              if( "dbdir" %in% names(args) ){
+                if( !(is.null(args$dbdir)) ){
+                  dir <- .check.dbdir(args$dbdir) 
+                }
+              } 
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","regions")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
               
-              #create id string for the new object to be returned
-              #ids have to be unique and we can not assume GRanges objects will 
-              #have a name attribute
-              #               if("name" %in% names(temp.df))
-              #               {
-              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-              #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
-              #                 
-              #               }else{
-              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-              #                               temp.df[sum.dt$id,"end"],sep=".")
-              #               }
               
-              #create a new methylRaw object to return
-              new.data=data.frame(#id      =new.ids,
-                chr     =temp.df[sum.dt$id,"seqnames"],
-                start   =temp.df[sum.dt$id,"start"],
-                end     =temp.df[sum.dt$id,"end"],
-                strand  =temp.df[sum.dt$id,"strand"],
-                coverage=sum.dt$coverage,
-                numCs   =sum.dt$numCs,
-                numTs   =sum.dt$numTs)
-            }
-            
-            dir <- dirname(object@dbpath) 
-            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
-            
-            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                           return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
-            
-            
-            readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
-                            assembly=object@assembly, context =object@context,resolution="region",
-                            dbtype = object@dbtype)
+              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              
+              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+              
+              
+              readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                              assembly=object@assembly, context =object@context,resolution="region",
+                              dbtype = object@dbtype)
+              
+          } else {
+            tmp <- object[]
+            regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
+          }
             
           }
 )
@@ -948,21 +994,24 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
 #' @rdname regionCounts
 #' @aliases regionCounts,methylRawListDB,GRanges-method
 setMethod("regionCounts", signature(object="methylRawListDB",regions="GRanges"),
-          function(object,regions,cov.bases,strand.aware,chunk.size){
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
-            outList=list()
+            if(save.db){
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- NULL
+              } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
             
-            for(i in 1:length(object))
-            {
-              obj = regionCounts(object = object[[i]],
-                                 regions=regions,
-                                 cov.bases,strand.aware,
-                                 chunk.size = chunk.size)
-              outList[[i]] = obj
+              outList = lapply(object,regionCounts,regions,cov.bases, strand.aware,
+                                   chunk.size,save.db,dbdir=dbdir,...)
+              new("methylRawListDB", outList,treatment=object@treatment)
+            
+            } else {
+              outList = lapply(object,regionCounts,regions,cov.bases,strand.aware,
+                               chunk.size,save.db=FALSE)
+              new("methylRawList", outList,treatment=object@treatment)
             }
-            
-            myobj=new("methylRawListDB", outList,treatment=object@treatment)
-            myobj
           }
 )
 
@@ -971,19 +1020,24 @@ setMethod("regionCounts", signature(object="methylRawListDB",regions="GRanges"),
 #' @aliases regionCounts,methylRawListDB,GRangesList-method
 setMethod("regionCounts", signature(object="methylRawListDB",
                                     regions="GRangesList"),
-          function(object,regions,cov.bases,strand.aware,chunk.size){
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
-            outList=list()
-            
-            for(i in 1:length(object))
-            {
-              obj = regionCounts(object = object[[i]],regions=regions,
-                                 cov.bases,strand.aware,chunk.size = chunk.size)
-              outList[[i]] = obj
+            if(save.db){
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- NULL
+              } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
+              
+              outList = lapply(object,regionCounts,regions,cov.bases, strand.aware,
+                               chunk.size,save.db,dbdir=dbdir,...)
+              new("methylRawListDB", outList,treatment=object@treatment)
+              
+            } else {
+              outList = lapply(object,regionCounts,regions,cov.bases,strand.aware,
+                               chunk.size,save.db=FALSE)
+              new("methylRawList", outList,treatment=object@treatment)
             }
-            
-            myobj=new("methylRawListDB", outList,treatment=object@treatment)
-            myobj
           }
 )
 
@@ -1150,11 +1204,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   
   # new tabix file is named by concatenation of sample.ids, works for now
   # additional suffix is possible
-  if(is.null(suffix)){ 
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),".txt")
-  } else { 
-    filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
-  }
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
   #print(filepath)
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
@@ -1853,83 +1903,223 @@ setMethod("pool", "methylBaseDB",
 #' @rdname regionCounts
 #' @aliases regionCounts,methylBaseDB,GRanges-method
 setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
-          function(object,regions,cov.bases,strand.aware,chunk.size){
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
-            getCounts <- function(data,regions,cov.bases,strand.aware){
-              .setMethylDBNames(data)
-              # overlap data with regions
-              # convert data to GRanges without metacolumns
-              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-              if(!strand.aware){
-                strand(g.meth)="*"
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
-                #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+            if(save.db) {
+            
+              getCounts <- function(data,regions,cov.bases,strand.aware){
+                .setMethylDBNames(data)
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                if(!strand.aware){
+                  strand(g.meth)="*"
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                  
+                }else{
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                  
+                }
                 
-              }else{
-                mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
-                #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                #require(data.table)
+                # create a temporary data.table row ids from regions and counts from object
+                temp.dt=data.table(id = mat[, 1], data[mat[, 2], 5:ncol(data)])
+                #dt=data.table::data.table(dt)
+                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
                 
+                coverage=NULL
+                numCs=NULL
+                numTs=NULL
+                id=NULL
+                
+                # use data.table to sum up counts per region
+                sum.dt=temp.dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
+                sum.dt=sum.dt[covered>=cov.bases,]
+                temp.df=as.data.frame(regions) # get regions to a dataframe
+                
+                # look for values with "name" in it, eg. "tx_name" or "name"
+                # valuesList = names(values(regions))
+                # nameid = valuesList[grep (valuesList, pattern="name")]
+                
+                #create id string for the new object to be returned
+                #ids have to be unique and we can not assume GRanges objects will 
+                #have a name attribute
+                #               if("name" %in% names(temp.df))
+                #               {
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+                #                 
+                #               }else{
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],sep=".")
+                #               }
+                
+                #create a new methylRaw object to return
+                new.data=data.frame(#id      =new.ids,
+                  chr     =temp.df[sum.dt$id,"seqnames"],
+                  start   =temp.df[sum.dt$id,"start"],
+                  end     =temp.df[sum.dt$id,"end"],
+                  strand  =temp.df[sum.dt$id,"strand"],
+                  as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
               }
               
-              #require(data.table)
-              # create a temporary data.table row ids from regions and counts from object
-              temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
-              #dt=data.table::data.table(dt)
-              #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
               
-              coverage=NULL
-              numCs=NULL
-              numTs=NULL
-              id=NULL
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
               
-              # use data.table to sum up counts per region
-              sum.dt=temp.dt[,list(coverage=sum(coverage),
-                                   numCs   =sum(numCs),
-                                   numTs   =sum(numTs),covered=length(numTs)),by=id] 
-              sum.dt=sum.dt[covered>=cov.bases,]
-              temp.df=as.data.frame(regions) # get regions to a dataframe
+              if( "dbdir" %in% names(args) ){
+                # if( !(is.null(args$dbdir)) ){
+                  dir <- .check.dbdir(args$dbdir) 
+                # }
+              } 
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","regions")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
               
-              # look for values with "name" in it, eg. "tx_name" or "name"
-              # valuesList = names(values(regions))
-              # nameid = valuesList[grep (valuesList, pattern="name")]
+            
               
-              #create id string for the new object to be returned
-              #ids have to be unique and we can not assume GRanges objects will 
-              #have a name attribute
-              #               if("name" %in% names(temp.df))
-              #               {
-              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-              #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
-              #                 
-              #               }else{
-              #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
-              #                               temp.df[sum.dt$id,"end"],sep=".")
-              #               }
               
-              #create a new methylRaw object to return
-              new.data=data.frame(#id      =new.ids,
-                chr     =temp.df[sum.dt$id,"seqnames"],
-                start   =temp.df[sum.dt$id,"start"],
-                end     =temp.df[sum.dt$id,"end"],
-                strand  =temp.df[sum.dt$id,"strand"],
-                coverage=sum.dt$coverage,
-                numCs   =sum.dt$numCs,
-                numTs   =sum.dt$numTs)
+              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+              
+              print(filename)
+              print(dir)
+              
+              #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              
+              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+              
+              print(newdbpath)
+  
+              if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
+              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
+                  assembly=object@assembly,context=object@context,treatment=object@treatment,
+                  destranded=destranded,resolution="region")
+              
+            } else {
+              
+              tmp <- object[]
+              regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
+              
             }
-            
-            dir <- dirname(object@dbpath) 
-            filename <- paste(basename(tools::file_path_sans_ext(object@dbpath)),"region",sep="_")
-            
-            newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                           return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
-
-            if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
-            readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
-                assembly=object@assembly,context=object@context,treatment=object@treatment,
-                destranded=destranded,resolution="region")
-            
           }
 )
+
+
+#' @rdname regionCounts
+#' @aliases regionCounts,methylBaseDB,GRangesList-method
+setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList"),
+          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
+            
+            # combine and sort GRanges from List
+            regions <- unlist(regions)
+            regions <- sortSeqlevels(regions)
+            regions <- sort(regions,ignore.strand=TRUE)
+            regions <- unique(regions)
+            
+            if(save.db) {
+              
+              getCounts <- function(data,regions,cov.bases,strand.aware){
+                .setMethylDBNames(data)
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                if(!strand.aware){
+                  strand(g.meth)="*"
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+                  
+                }else{
+                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+                  
+                }
+                
+                #require(data.table)
+                # create a temporary data.table row ids from regions and counts from object
+                temp.dt=data.table(id = mat[, 1], data[mat[, 2], 5:ncol(data)])
+                #dt=data.table::data.table(dt)
+                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+                
+                coverage=NULL
+                numCs=NULL
+                numTs=NULL
+                id=NULL
+                
+                # use data.table to sum up counts per region
+                sum.dt=temp.dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
+                sum.dt=sum.dt[covered>=cov.bases,]
+                temp.df=as.data.frame(regions) # get regions to a dataframe
+                
+                # look for values with "name" in it, eg. "tx_name" or "name"
+                # valuesList = names(values(regions))
+                # nameid = valuesList[grep (valuesList, pattern="name")]
+                
+                #create id string for the new object to be returned
+                #ids have to be unique and we can not assume GRanges objects will 
+                #have a name attribute
+                #               if("name" %in% names(temp.df))
+                #               {
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],temp.df[sum.dt$id,"name"],sep=".")
+                #                 
+                #               }else{
+                #                 new.ids=paste(temp.df[sum.dt$id,"seqnames"],temp.df[sum.dt$id,"start"],
+                #                               temp.df[sum.dt$id,"end"],sep=".")
+                #               }
+                
+                #create a new methylRaw object to return
+                new.data=data.frame(#id      =new.ids,
+                  chr     =temp.df[sum.dt$id,"seqnames"],
+                  start   =temp.df[sum.dt$id,"start"],
+                  end     =temp.df[sum.dt$id,"end"],
+                  strand  =temp.df[sum.dt$id,"strand"],
+                  as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
+              }
+              
+              
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
+              
+              if( "dbdir" %in% names(args) ){
+                # if( !(is.null(args$dbdir)) ){
+                  dir <- .check.dbdir(args$dbdir) 
+                # }
+              } 
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","regions")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              
+              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+              
+              #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              
+              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
+                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+              
+              if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
+              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
+                               assembly=object@assembly,context=object@context,treatment=object@treatment,
+                               destranded=destranded,resolution="region")
+              
+            } else {
+              
+              tmp <- object[]
+              regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
+              
+            }
+          }
+)
+
 
 #' @aliases tileMethylCounts,methylBaseDB-method
 #' @rdname tileMethylCounts-methods
@@ -2063,10 +2253,11 @@ setClass("methylDiffDB",slots = list(dbpath= "character",num.records= "numeric",
 # it is called from read function or whenever this functionality is needed
 makeMethylDiffDB<-function(df,dbpath,dbtype,
                            sample.ids, assembly ,context,
-                           resolution,treatment,destranded){
+                           resolution,treatment,destranded,
+                           suffix=NULL){
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),"_diff.txt")
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
@@ -2102,7 +2293,8 @@ setMethod("calculateDiffMeth", "methylBaseDB",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
                    effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size){
+                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
+                   chunk.size,save.db=TRUE,...){
             
             if(length(.Object@treatment)<2 ){
               stop("can not do differential methylation calculation with less than two samples")
@@ -2121,81 +2313,138 @@ setMethod("calculateDiffMeth", "methylBaseDB",
             #### check if covariates+intercept+treatment more than replicates ####
             if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index)){stop("Too many covariates/too few replicates.")}}
             
-            # add backwards compatibility with old parameters
-            if(slim==FALSE) adjust="BH" else adjust=adjust
-            if(weighted.mean==FALSE) effect="mean" else effect=effect
+            if(save.db) {
             
-            vars <- covariates
-
-                        
-            # function to apply the test to data
-            diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
-                                 parShrinkNM,test,adjust,mc.cores){
+              # add backwards compatibility with old parameters
+              if(slim==FALSE) adjust="BH" else adjust=adjust
+              if(weighted.mean==FALSE) effect="mean" else effect=effect
               
-              cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+              vars <- covariates
+  
+                          
+              # function to apply the test to data
+              diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
+                                   parShrinkNM,test,adjust,mc.cores){
+                
+                cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+                
+                tmp=simplify2array(
+                  mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
+                           parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
+                tmp <- as.data.frame(t(tmp))
+                #print(head(tmp))
+                x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                
+                return(x)
+                
+                
+              }
               
-              tmp=simplify2array(
-                mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
-                         parShrinkNM=parShrinkNM,test=test,mc.cores=mc.cores))
-              tmp <- as.data.frame(t(tmp))
-              #print(head(tmp))
-              x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+              # catch additional args 
+              args <- list(...)
               
-              return(x)
               
+              if( ( "dbdir" %in% names(args))   ){
+                if( !(is.null(args$dbdir)) ) { 
+                  dir <- .check.dbdir(args$dbdir) }
+              } else { dir <- dirname(.Object@dbpath) }
+              
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- "_diffMeth"
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+                
+              #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+  
+              dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
+                                     Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
+                                     treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+                                     parShrinkNM=parShrinkNM,test=test,adjust=adjust,mc.cores=mc.cores)
+              
+              
+              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                      destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              obj
+            
+            } else {
+              
+              tmp <- .Object[]
+              calculateDiffMeth(tmp,covariates,overdispersion=overdispersion,
+                                adjust=adjust,
+                                effect=effect,parShrinkNM=parShrinkNM,
+                                test=test,mc.cores=mc.cores,slim=slim,weighted.mean=weighted.mean,
+                                save.db=FALSE)
               
             }
-              
-            dir <- dirname(.Object@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),"diffMeth",sep="_")
-
-            dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
-                                   Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
-                                   treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
-                                   parShrinkNM=parShrinkNM,test=test,adjust=adjust,mc.cores=mc.cores)
             
             
-            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                    destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-            obj
             }
 )
 
 #' @aliases get.methylDiff,methylDiffDB-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiffDB", 
-          definition=function(.Object,difference,qvalue,type,chunk.size) {
+          definition=function(.Object,difference,qvalue,type,chunk.size,save.db=TRUE,...) {
             
             if(!( type %in% c("all","hyper","hypo") )){
               stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
             }
               
-            #function applied to data
-            f <- function(data,difference,qv,type){
-              
-              data <- data.table(data)
-              .setMethylDBNames(data,methylDBclass = "methylDiffDB")
-              
-              if(type=="all"){
-                data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
-              }else if(type=="hyper"){
-                data <- data[(qvalue < qv) & (meth.diff > difference)]
-              }else if(type=="hypo"){
-                data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+            if(save.db) {
+            
+              #function applied to data
+              f <- function(data,difference,qv,type){
+                
+                data <- data.table(data)
+                .setMethylDBNames(data,methylDBclass = "methylDiffDB")
+                
+                if(type=="all"){
+                  data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
+                }else if(type=="hyper"){
+                  data <- data[(qvalue < qv) & (meth.diff > difference)]
+                }else if(type=="hypo"){
+                  data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+                }
+                return(data)
               }
-              return(data)
+              
+              
+              # catch additional args 
+              args <- list(...)
+              
+              
+              if( ( "dbdir" %in% names(args))   ){
+                if( !(is.null(args$dbdir)) ) { 
+                  dir <- .check.dbdir(args$dbdir) }
+              } else { dir <- dirname(.Object@dbpath) }
+              
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_diffMeth_",type)
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+              
+              #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+              
+              dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
+                                        difference = difference, qv = qvalue, type = type)
+              
+              
+              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
+                                   destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              return(obj)
+            
+            } else {
+              
+              tmp <- .Object[]
+              get.methylDiff(tmp,difference,qvalue,type,save.db=FALSE)
+              
             }
-            
-            dir <- dirname(.Object@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(.Object@dbpath)),type,sep="_")
-            
-            dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
-                                      difference = difference, qv = qvalue, type = type)
-            
-            
-            obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                                 destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-            return(obj)
 
             }) 
 
@@ -2572,6 +2821,9 @@ setMethod("show", "methylDiffDB", function(object) {
   cat("context:", object@context,"\n")
   cat("treament:", object@treatment,"\n")
   cat("resolution:", object@resolution,"\n")
+  cat("dbtype:", object@dbtype,"\n")
+  #cat("dbpath:",object@dbpath,"\n")
+  cat("\n")
 })
 
 # subset classes ----------------------------------------------------------
@@ -2696,6 +2948,7 @@ setMethod("[","methylDiffDB",
 #' 
 #' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
 #' @param range a GRanges object specifying the regions of interest
+
 #' @usage selectByOverlap(region,ranges)
 #' @examples
 #' data(methylKit)
@@ -2733,14 +2986,14 @@ setMethod("selectByOverlap", "methylRawDB",
             
             df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
             
+            
+
             obj <- new("methylRaw",.setMethylDBNames(df,"methylRawDB"),
-                sample.id=object@sample.id,
-                assembly=object@assembly,
-                context=object@context,
-                resolution=object@resolution)
-            
+                       sample.id=object@sample.id,
+                       assembly=object@assembly,
+                       context=object@context,
+                       resolution=object@resolution)
             obj
-            
           }
 )
 
