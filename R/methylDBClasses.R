@@ -703,7 +703,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
 #' @rdname normalizeCoverage-methods
 #' @aliases normalizeCoverage,methylRawListDB-method
 setMethod("normalizeCoverage", "methylRawListDB",
-          function(obj,method,chunk.size){
+          function(obj,method,chunk.size,save.db=TRUE,...){
             
             
             if( !(method %in% c("median","mean") ) ){
@@ -711,45 +711,74 @@ setMethod("normalizeCoverage", "methylRawListDB",
               stop("method option should be either 'mean' or 'median'\n")
             }
             
-            normCov <- function(data,method) {
-              
-              .setMethylDBNames(data)
-              
-              if(method=="median"){
-                x=median(data$coverage)
-              }else {
-                x=mean(data$coverage)
+            if(save.db) { 
+            
+              normCov <- function(data,method) {
+                
+                .setMethylDBNames(data)
+                
+                if(method=="median"){
+                  x=median(data$coverage)
+                }else {
+                  x=mean(data$coverage)
+                }
+                
+                sc.fac=max(x)/x #get scaling factor
+                
+                all.cov=data$coverage
+                fCs    =data$numCs/all.cov
+                fTs    =data$numT/all.cov
+                data$coverage=round(sc.fac*data$coverage)
+                data$numCs   =round(data$coverage*fCs)
+                data$numTs   =round(data$coverage*fTs)
+                
+                return(data)
               }
               
-              sc.fac=max(x)/x #get scaling factor
+              # catch additional args 
+              args <- list(...)
               
-              all.cov=data$coverage
-              fCs    =data$numCs/all.cov
-              fTs    =data$numT/all.cov
-              data$coverage=round(sc.fac*data$coverage)
-              data$numCs   =round(data$coverage*fCs)
-              data$numTs   =round(data$coverage*fTs)
+              if( ( "dbdir" %in% names(args))   ){
+#                 if(!(is.null(args$dbdir))) {
+                  dir <- .check.dbdir(args$dbdir)
+#                 }
+              } else { 
+                dir <- dirname(obj[[1]]@dbpath)
+              }
               
-              return(data)
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","normed")
+              } else { 
+                
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              outList <- list()
+              
+              for(i in 1:length(obj)){
+                
+                filename <- paste0(basename(gsub(".txt.bgz",replacement = "",obj[[i]]@dbpath)),suffix,".txt")
+                
+                newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                             return.type = "tabix", FUN = normCov,method = method)
+                
+                outList[[i]] <- readMethylRawDB(dbpath = newdbpath,sample.id=obj[[i]]@sample.id,
+                                              assembly=obj[[i]]@assembly, context =obj[[i]]@context,resolution=obj[[i]]@resolution,
+                                              dbtype = obj[[i]]@dbtype)
+                              
+              }
+              
+              new("methylRawListDB",outList,treatment=obj@treatment)
+            
+            } else {
+              
+              # coerce methylRawDB to methylRaw
+              tmp.list <- lapply(obj,function(x) x[])
+              tmp <- new("methylRawList",tmp.list,treatment=obj@treatment)
+              normalizeCoverage(tmp,method,save.db=FALSE)
+              
+              
             }
-            
-            dir <- dirname(obj[[1]]@dbpath) 
-            outList <- list()
-            
-            for(i in 1:length(obj)){
-              
-              filename <- paste(basename(tools::file_path_sans_ext(obj[[i]]@dbpath)),"norm",sep="_")
-              
-              newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                                           return.type = "tabix", FUN = normCov,method = method)
-              
-              outList[[i]] <- readMethylRawDB(dbpath = newdbpath,sample.id=obj[[i]]@sample.id,
-                                            assembly=obj[[i]]@assembly, context =obj[[i]]@context,resolution=obj[[i]]@resolution,
-                                            dbtype = obj[[i]]@dbtype)
-                            
-            }
-            
-            new("methylRawListDB",outList,treatment=obj@treatment)
             
           })
 

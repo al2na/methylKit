@@ -690,6 +690,7 @@ setMethod("filterByCoverage", signature(methylObj="methylRaw"),
 setMethod("filterByCoverage", signature(methylObj="methylRawList"),
                     function(methylObj,lo.count,lo.perc,hi.count,hi.perc,save.db=FALSE,...){
                       
+                      if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){return(methylObj)}
                       
                       if(!save.db) {
                         new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc)
@@ -795,7 +796,7 @@ setClass("methylBase",contains="data.frame",representation(
 #                  The type of the flat file database, currently only option is "tabix"
 #                  (only used for newly stored databases)
 #' 
-#' @usage unite(object,destrand=FALSE,min.per.group=NULL)
+#' @usage unite(object,destrand=FALSE,min.per.group=NULL,save.db,...)
 #' @return a methylBase or methylBaseDB object depending on input
 #' @export
 #' @examples
@@ -812,8 +813,8 @@ setClass("methylBase",contains="data.frame",representation(
 #' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB} and \code{methylRawListDB}, 
-#' while being per default FALSE for \code{methylRaw} and \code{methylRawList}. If you wish to save the result of an 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRawList}. If you wish to save the result of an 
 #' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
 #' then you might change the value of this parameter.
 #' 
