@@ -74,6 +74,11 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
 #' 
 df2tabix<-function(df,outfile){
   
+  if(file.exists(outfile)){
+    message("overwriting ",outfile)
+    unlink(outfile)
+  }
+  
   # write the file to disk
   write.table(df,outfile,quote=FALSE,sep="\t",
               col.names=FALSE,row.names=FALSE)
