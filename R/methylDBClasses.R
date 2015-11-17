@@ -2990,3 +2990,64 @@ setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
   }
   
 })
+
+
+#' Get path to database of the methylDB objects
+#' 
+#' The function returns the path to the flat file database that stores the data of the \code{\link{methylRawDB}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBaseDB}} or \code{\link{methylDiffDB}} objects. 
+#'  
+#' 
+#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
+#' @param value a valid replacement for the dbpath of the object 
+#' @usage 
+#' getDBPath(x)
+#' @examples
+#' 
+#' data(methylKit)
+#' 
+#' #The path to the database is returned
+#' getDBPath(methylBaseDB.obj)
+#' 
+#' 
+#' 
+#' @export
+#' @docType methods
+#' @rdname getDBPath-methods
+setGeneric("getDBPath", def=function(x) standardGeneric("getDBPath"))
+#' @rdname 'getDBPath<-'-methods
+setGeneric("getDBPath<-", def=function(x, value="character") {standardGeneric("getDBPath<-")})
+
+#' @rdname getDBPath-methods
+#' @aliases getDBPath,methylRawListDB-method
+setMethod("getDBPath", signature = "methylRawListDB", function(x) {
+  names <- vapply(x,function(z) z@dbpath,FUN.VALUE = "character")
+  return(names)
+})
+
+
+
+
+#' @rdname getDBPath-methods
+#' @aliases getDBPath,methylBaseDB-method
+setMethod("getDBPath", signature = "methylBaseDB", function(x) {
+  return(x@dbpath)
+})
+
+
+
+
+#' @rdname getDBPath-methods
+#' @aliases getDBPath,methylRawDB-method
+setMethod("getDBPath", signature = "methylRawDB", function(x) {
+  return(x@dbpath)
+})
+
+
+
+#' @rdname getDBPath-methods
+#' @aliases getDBPath,methylDiffDB-method
+setMethod("getDBPath", signature = "methylDiffDB", function(x) {
+  return(x@dbpath)
+})
+
