@@ -535,8 +535,27 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,chunk
     
   }
   
-  dir <- dirname(mc@dbpath) 
-  filename <- paste(basename(tools::file_path_sans_ext(mc@dbpath)),"adjust",sep="_")
+  # catch additional args 
+  args <- list(...)
+  
+  
+  if( !( "dbdir" %in% names(args))   ){
+    dir <- dirname(mc@dbpath)
+  } else if(is.null(args$dbdir)) {
+    dir <- dirname(mc@dbpath)
+  } else { 
+    dir <- .check.dbdir(args$dbdir) 
+  }
+  
+  if(!( "suffix" %in% names(args) ) ){
+    suffix <- paste0("_","adjusted")
+  } else { 
+    
+    suffix <- paste0("_",args$suffix)
+  }
+  
+  
+  filename <- paste0(basename(gsub(".txt.bgz",replacement = "",mc@dbpath)),suffix,".txt")
   
   newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                return.type = "tabix", FUN = adjust)
@@ -547,30 +566,57 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,chunk
                   assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
                   dbtype = mc@dbtype)
   
+  } else {
+    
+    mc.tmp <- mc[]
+    hmc.tmp <- hmc[]
+    adjust.methylC(mc.tmp,hmc.tmp,save.db=FALSE,...)
+    
+    
+  }
+  
   
 })
 
 
 #' @rdname adjust.methylC
 #' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
-setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc,chunk.size){
+setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),function(mc,hmc,save.db=TRUE,...,chunk.size){
   
   # check lengths equal if not give error
   if(length(mc) != length(hmc)){stop("lengths of methylRawList objects should be same\n")}
   
-  my.list=list()
-  for(i in 1:length(mc)){
-    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],chunk.size)
-  }
-  new("methylRawListDB",my.list,treatment=mc@treatment )
+  if(save.db){
+    
+    args <- list(...)
+    
+    if( !( "dbdir" %in% names(args)) ){
+      dbdir <- NULL
+    } else { dbdir <- .check.dbdir(args$dbdir) }
+    
+    my.list=list()
+    for(i in 1:length(mc)){
+      my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],save.db,dbdir=basename(dbdir),...,chunk.size)
+    }
+    new("methylRawListDB",my.list,treatment=mc@treatment )
   
+  } else {
+    
+    my.list=list()
+    for(i in 1:length(mc)){
+      my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],save.db=FALSE,...)
+    }
+    new("methylRawList",my.list,treatment=mc@treatment )
+    
+  }
+    
 })
 
 
 #' @rdname reorganize-methods
 #' @aliases reorganize,methylRawListDB-method
 setMethod("reorganize", signature(methylObj="methylRawListDB"),
-          function(methylObj,sample.ids,treatment){
+          function(methylObj,sample.ids,treatment,chunk.size,save.db=TRUE,...){
             
             #sample.ids length and treatment length should be equal
             if(length(sample.ids) != length(treatment) ){
