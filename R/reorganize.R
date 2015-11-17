@@ -35,7 +35,7 @@
 #                  (only used for newly stored databases)
 #'
 #' @return returns a \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} object depending on the input object
-#' @usage reorganize(methylObj,sample.ids,treatment)
+#' @usage reorganize(methylObj,sample.ids,treatment,chunk.num,save.db,...)
 #' @examples
 #' # this is a list of example files, ships with the package
 #' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),

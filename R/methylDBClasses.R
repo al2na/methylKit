@@ -283,18 +283,16 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
             args <- list(...)
             
             
-            if( !( "dbdir" %in% names(args))   ){
+            if( ( "dbdir" %in% names(args))   ){
+              if( !(is.null(args$dbdir)) ) {
+                dir <- .check.dbdir(args$dbdir) 
+            }} else { 
               dir <- dirname(methylObj@dbpath)
-            } else if(is.null(args$dbdir)) {
-              dir <- dirname(methylObj@dbpath)
-            } else { 
-              dir <- .check.dbdir(args$dbdir) 
             }
             
             if(!( "suffix" %in% names(args) ) ){
               suffix <- paste0("_","filtered")
             } else { 
-              
               suffix <- paste0("_",args$suffix)
             }
             
@@ -552,18 +550,17 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,save.
   args <- list(...)
   
   
-  if( !( "dbdir" %in% names(args))   ){
-    dir <- dirname(mc@dbpath)
-  } else if(is.null(args$dbdir)) {
-    dir <- dirname(mc@dbpath)
+  if( ( "dbdir" %in% names(args))   ){
+    if( !(is.null(args$dbdir)) ) {
+      dir <- .check.dbdir(args$dbdir) 
+    }
   } else { 
-    dir <- .check.dbdir(args$dbdir) 
+    dir <- dirname(mc@dbpath)
   }
   
   if(!( "suffix" %in% names(args) ) ){
     suffix <- paste0("_","adjusted")
   } else { 
-    
     suffix <- paste0("_",args$suffix)
   }
   
@@ -1497,81 +1494,101 @@ setMethod("percMethylation", "methylBaseDB",
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBaseDB-method
-setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,chunk.size){
+setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,chunk.size,save.db=TRUE,...){
   
-  if(is.matrix(methMat) ) {
+  if(save.db){
+  
+    if(is.matrix(methMat) ) {
+        
+      # check if indeed methMat is percent methylation matrix
+      if(max(methMat)<=1){
+        warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+      }
       
-    # check if indeed methMat is percent methylation matrix
-    if(max(methMat)<=1){
-      warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+      # check if methMat is percent methylation matrix fitting to mBase  
+      if(nrow(methMat) != mBase@num.records | ncol(methMat) != length(mBase@numCs.index) ){
+        stop("\nmethMat dimensions do not match number of samples\n",
+             "and number of bases in methylBase object\n")
+      }
+      
+      rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
+      matFile=paste(rndFile,"methMat.txt",sep="_")
+      write.table(methMat,matFile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+                  sep="\t")
+      methMat = matFile
+      
+    } else {
+      
+      # methMat can also be a file containing a percent methylation matrix
+      mat <- read.table(methMat,header = F)
+      
+      # check if indeed methMat is percent methylation matrix
+      if(max(mat)<=1){
+        warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+      }
+      
+      # check if methMat is percent methylation matrix fitting to mBase  
+      if(nrow(mat) != mBase@num.records | ncol(mat) != length(mBase@numCs.index) ){
+        stop("\nmethMat dimensions do not match number of samples\n",
+             "and number of bases in methylBase object\n")
+      }
+      rm(mat)
     }
     
-    # check if methMat is percent methylation matrix fitting to mBase  
-    if(nrow(methMat) != mBase@num.records | ncol(methMat) != length(mBase@numCs.index) ){
-      stop("\nmethMat dimensions do not match number of samples\n",
-           "and number of bases in methylBase object\n")
+    reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
+      
+      mat=data[,numCs.index]+data[,numTs.index]
+      methMat = read.table(methMat,header = F, nrows = chunk)
+      
+      # get new unmethylated and methylated counts
+      numCs=round(methMat*mat/100)
+      numTs=round((100-methMat)*mat/100)
+      
+      data[,numCs.index]=numCs
+      data[,numTs.index]=numTs
+      
+      return(data)
     }
     
-    rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
-    matFile=paste(rndFile,"methMat.txt",sep="_")
-    write.table(methMat,matFile,quote=FALSE,col.names=FALSE,row.names=FALSE,
-                sep="\t")
-    methMat = matFile
+    # catch additional args 
+    args <- list(...)
     
+    if( !( "dbdir" %in% names(args)) ){
+      dir <- dirname(mBase@dbpath)
+    } else { dir <- .check.dbdir(args$dbdir) }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- "_reconstructed"
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    
+    filename <- filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
+    con <- file(methMat,open = "r") 
+    
+    newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                 return.type = "tabix", FUN = reconstr, con,chunk.size,mBase@numCs.index,mBase@numTs.index)
+    
+    close(con)
+    if(file.exists(matFile)) {unlink(matFile)}
+    
+    readMethylBaseDB(dbpath = newdbpath,dbtype = mBase@dbtype,
+                     sample.ids = mBase@sample.ids,assembly = mBase@assembly,
+                     context = mBase@context,resolution = mBase@resolution,
+                     treatment = mBase@treatment,destranded = mBase@destranded)
   } else {
     
-    mat <- read.table(methMat,header = F)
+    tmp <- mBase[]
+    reconstruct(methMat,tmp,save.db=FALSE)
     
-    # check if indeed methMat is percent methylation matrix
-    if(max(mat)<=1){
-      warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
-    }
-    
-    # check if methMat is percent methylation matrix fitting to mBase  
-    if(nrow(mat) != mBase@num.records | ncol(mat) != length(mBase@numCs.index) ){
-      stop("\nmethMat dimensions do not match number of samples\n",
-           "and number of bases in methylBase object\n")
-    }
   }
-  
-  reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
-    
-    mat=data[,numCs.index]+data[,numTs.index]
-    methMat = read.table(methMat,header = F, nrows = chunk)
-    
-    # get new unmethylated and methylated counts
-    numCs=round(methMat*mat/100)
-    numTs=round((100-methMat)*mat/100)
-    
-    data[,numCs.index]=numCs
-    data[,numTs.index]=numTs
-    
-    return(data)
-  }
-  
-  dir <- dirname(mBase@dbpath)
-  filename <- paste(basename(tools::file_path_sans_ext(mBase@dbpath)),"reconstruct",sep="_")
-  con <- file(methMat,open = "r") 
-  
-  newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                               return.type = "tabix", FUN = reconstr, con,chunk.size,mBase@numCs.index,mBase@numTs.index)
-  
-  close(con)
-  if(file.exists(matFile)) {unlink(matFile)}
-  
-  readMethylBaseDB(dbpath = newdbpath,dbtype = mBase@dbtype,
-                   sample.ids = mBase@sample.ids,assembly = mBase@assembly,
-                   context = mBase@context,resolution = mBase@resolution,
-                   treatment = mBase@treatment,coverage.index = mBase@coverage.index,
-                   numCs.index = mBase@numCs.index,numTs.index = mBase@numTs.index,
-                   destranded = mBase@destranded)
 }
 )
 
 
 #' @rdname removeComp-methods
 #' @aliases removeComp,methylBaseDB-method
-setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chunk.size){
+setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chunk.size,save.db=TRUE,...){
   if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
@@ -1596,7 +1613,7 @@ setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chun
   attr(res,"scaled:scale")<-NULL 
   res[res>100]=100
   res[res<0]=0
-  reconstruct(res,mBase,chunk.size)
+  reconstruct(res,mBase,chunk.size,save.db = save.db,...=...)
 }
 )
 
