@@ -1781,8 +1781,9 @@ setMethod("PCASamples", "methylBaseDB",
 #' @rdname pool-methods
 #' @aliases pool,methylBaseDB-method
 setMethod("pool", "methylBaseDB",
-          function(obj,sample.ids,chunk.size){
+          function(obj,sample.ids,chunk.size,save.db,...){
             
+          if(save.db) {
             
             mypool <- function(df,treatment,numCs.index){
               
@@ -1813,8 +1814,22 @@ setMethod("pool", "methylBaseDB",
             treat = unique(obj@treatment)
             coverage.ind=3*(1:length(treat)) + 2
             
-            dir <- dirname(obj@dbpath)
-            filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"pool",sep="_")
+            # catch additional args 
+            args <- list(...)
+            
+            
+            if( ( "dbdir" %in% names(args))   ){
+              if( !(is.null(args$dbdir)) ) { 
+                dir <- .check.dbdir(args$dbdir) }
+            } else { dir <- dirname(obj@dbpath) }
+            
+            if(!( "suffix" %in% names(args) ) ){
+              suffix <- NULL
+            } else { 
+              suffix <- paste0("_",args$suffix)
+            }
+            
+            filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
             
             newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                          return.type = "tabix", FUN = mypool, treatment = obj@treatment,numCs.index = obj@numCs.index) 
@@ -1824,8 +1839,15 @@ setMethod("pool", "methylBaseDB",
                      treatment=treat,destranded=obj@destranded,
                      resolution=obj@resolution )
             
+          } else {
             
-          })
+            tmp <- obj[]
+            pool(tmp,sample.ids,save.db=FALSE)
+            
+          }
+            
+            
+})
 
 
 #' @rdname regionCounts
