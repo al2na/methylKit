@@ -283,15 +283,19 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
             args <- list(...)
             
             
-            if( !( "dbdir" %in% names(args)) ){
+            if( !( "dbdir" %in% names(args))   ){
               dir <- dirname(methylObj@dbpath)
-            } else { dir <- .check.dbdir(args$dbdir) }
+            } else if(is.null(args$dbdir)) {
+              dir <- dirname(methylObj@dbpath)
+            } else { 
+              dir <- .check.dbdir(args$dbdir) 
+            }
             
             if(!( "suffix" %in% names(args) ) ){
               suffix <- paste0("_","filtered")
             } else { 
-              suffix <- args$suffix
-              suffix <- paste0("_",suffix)
+              
+              suffix <- paste0("_",args$suffix)
             }
             
 
@@ -324,8 +328,15 @@ setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
           function(methylObj,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=TRUE,...){
 
             if(save.db){
-              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db,...)
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- NULL
+              } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
+              
+              new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db,dbdir=dbdir,...)
               new("methylRawListDB", new.list,treatment=methylObj@treatment)
+              
             } else {
               new.list=lapply(methylObj,filterByCoverage,lo.count,lo.perc,hi.count,hi.perc,chunk.size,save.db=FALSE,...)
               new("methylRawList", new.list,treatment=methylObj@treatment)
@@ -519,7 +530,9 @@ setMethod("getMethylationStats", "methylRawDB",
 
 #' @rdname adjust.methylC
 #' @aliases adjust.methylC,methylRawDB,methylRawDB-method
-setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,chunk.size){
+setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,save.db=TRUE,...,chunk.size){
+  
+  if(save.db) {
   
   lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
   base=unite(lst)
@@ -630,13 +643,60 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
             
             col.ord=order(match(orig.ids,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
             
-            outList=list()    
-            for(i in 1:length(sample.ids)){
-              outList[[i]]=methylObj[[ col.ord[i]  ]]
+            if(save.db) {
               
-            }
+              # catch additional args 
+              args <- list(...)
+              
+              outList=list()
+              # do not rename per default
+              suffix <- NULL
+              
+              
+              if( ("dbdir" %in% names(args)) | ( "suffix" %in% names(args) ) ) {
+                if( "suffix" %in% names(args) ) { suffix <- paste0("_",args$suffix) }
+                if( ( "dbdir" %in% names(args)) ){ 
+                  dir <- .check.dbdir(args$dbdir) 
+                  
+                  for(i in 1:length(sample.ids)){
+                    obj <- methylObj[[ col.ord[i]  ]]
+                    filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = "",obj@dbpath)),suffix,".txt.bgz")
+                    file.copy(obj@dbpath,filename)
+                    
+                    outList[[i]]=readMethylRawDB(dbpath = filename,dbtype = obj@dbtype,sample.id = obj@sample.id,
+                                                 assembly = obj@assembly, context = obj@context, resolution = obj@resolution)
+                  }
+                } else {
+                  
+                  for(i in 1:length(sample.ids)){
+                    obj <- methylObj[[ col.ord[i]  ]]
+                    filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),suffix,".txt.bgz")
+                    file.copy(obj@dbpath,filename)
+                    
+                    outList[[i]]=readMethylRawDB(dbpath = filename,dbtype = obj@dbtype,sample.id = obj@sample.id,
+                                                 assembly = obj@assembly, context = obj@context, resolution = obj@resolution)
+                  }
+                }
+              } else {
+                
+                for(i in 1:length(sample.ids)){
+                  outList[[i]]=methylObj[[ col.ord[i]  ]]
+                }
+              }
+                
+              
+              new("methylRawListDB",outList,treatment=treatment)
             
-            new("methylRawListDB",outList,treatment=treatment)
+            } else {
+              
+              outList=list()    
+              for(i in 1:length(sample.ids)){
+                outList[[i]]=methylObj[[ col.ord[i]  ]][]
+                
+              }
+              
+              new("methylRawList",outList,treatment=treatment)
+            }
             
           })
 
@@ -1063,10 +1123,19 @@ setClass("methylBaseDB",slots=list(dbpath = "character", num.records = "numeric"
 makeMethylBaseDB<-function(df,dbpath,dbtype,
                            sample.ids, assembly ,context,
                            resolution,treatment,coverage.index,
-                           numCs.index,numTs.index,destranded){
+                           numCs.index,numTs.index,destranded,
+                           suffix=NULL
+                           )
+  {
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),"_base.txt")
+  # additional suffix is possible
+  if(is.null(suffix)){ 
+  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),".txt")
+  } else { 
+    filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
+  }
+  #print(filepath)
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
@@ -1505,7 +1574,7 @@ setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chun
 #' @rdname reorganize-methods
 #' @aliases reorganize,methylBaseDB-method
 setMethod("reorganize", signature(methylObj="methylBaseDB"),
-          function(methylObj,sample.ids,treatment,chunk.size){
+          function(methylObj,sample.ids,treatment,chunk.size,save.db=TRUE,...){
             
             #sample.ids length and treatment length should be equal
             if(length(sample.ids) != length(treatment) ){
@@ -1516,43 +1585,59 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
               stop("provided sample.ids is not a subset of the sample ids of the object")
             }
             
+            if(save.db) {
             
-            temp.id = methylObj@sample.ids # get the subset of ids
-            col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
-            
-            ind.mat=rbind(methylObj@coverage.index[col.ord],  # make a matrix indices for easy access 
-                          methylObj@numCs.index[col.ord],
-                          methylObj@numTs.index[col.ord])
-            
-            
-            getSub <- function(data,ind.mat) {
-            
-              newdat =data[,1:4]
-              for(i in 1:ncol(ind.mat))
-              {
-                newdat=cbind(newdat,data[,ind.mat[,i]])
+              temp.id = methylObj@sample.ids # get the subset of ids
+              col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
+              
+              ind.mat=rbind(methylObj@coverage.index[col.ord],  # make a matrix indices for easy access 
+                            methylObj@numCs.index[col.ord],
+                            methylObj@numTs.index[col.ord])
+              
+              
+              getSub <- function(data,ind.mat) {
+              
+                newdat =data[,1:4]
+                for(i in 1:ncol(ind.mat))
+                {
+                  newdat=cbind(newdat,data[,ind.mat[,i]])
+                }
+                
+                return(newdat)
+              
               }
               
-              return(newdat)
+              # catch additional args 
+              args <- list(...)
+              
+              
+              if( ( "dbdir" %in% names(args))   ){
+                if( !(is.null(args$dbdir)) ) { dir <- .check.dbdir(args$dbdir) }
+              } else { dir <- dirname(methylObj@dbpath) }
+              
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- NULL
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+              # filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+              
+              newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                           return.type = "tabix", FUN = getSub, ind.mat=ind.mat) 
+              
+              readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,sample.ids=sample.ids,
+                  assembly=methylObj@assembly,context=methylObj@context,
+                  treatment=treatment,destranded=methylObj@destranded, 
+                  resolution=methylObj@resolution )
             
+            } else {
+              
+              obj <- methylObj[]
+              reorganize(obj,sample.ids,treatment,save.db=FALSE,...)
+              
             }
-            
-            dir <- dirname(methylObj@dbpath)
-            filename <- paste0(paste0(sample.ids,collapse = "_"),"_base.txt")
-            
-            newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                                         return.type = "tabix", FUN = getSub, ind.mat=ind.mat) 
-            
-            # get indices of coverage,numCs and numTs in the data frame 
-            coverage.ind=seq(5,by=3,length.out=length(sample.ids))
-            numCs.ind   =coverage.ind+1
-            numTs.ind   =coverage.ind+2
-            
-            readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,sample.ids=sample.ids,
-                assembly=methylObj@assembly,context=methylObj@context,
-                treatment=treatment,coverage.index=coverage.ind,
-                numCs.index=numCs.ind,numTs.index=numTs.ind,
-                destranded=methylObj@destranded, resolution=methylObj@resolution )
             
           })
 
