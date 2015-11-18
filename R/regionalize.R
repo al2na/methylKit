@@ -87,6 +87,9 @@ setGeneric("regionCounts",
 setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
   function(object,regions,cov.bases,strand.aware,save.db=FALSE,...){
     #require(GenomicRanges)
+    # sort regions
+    regions <- sortSeqlevels(regions)
+    regions <- sort(regions,ignore.strand=TRUE)
     # overlap object with regions
     # convert object to GRanges
     if(!strand.aware){
@@ -187,6 +190,11 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
 setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
           function(object,regions,cov.bases,strand.aware,save.db=FALSE,...){
             #require(GenomicRanges)
+            
+            # sort regions
+            regions <- sortSeqlevels(regions)
+            regions <- sort(regions,ignore.strand=TRUE)
+            
             # overlap object with regions
             # convert object to GRanges
             if(!strand.aware){
@@ -277,7 +285,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
 #' @aliases regionCounts,methylRaw,GRangesList-method
 # assume that each name of the element in the GRangesList is unique and 
 setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
-  function(object,regions,cov.bases,strand.aware,save.db,...){
+  function(object,regions,cov.bases,strand.aware,save.db=FALSE,...){
             
     #require(GenomicRanges)
     
@@ -560,6 +568,23 @@ setMethod("regionCounts", signature(object="methylRawList",
 #' @param win.size an integer for the size of the tiling windows
 #' @param step.size an integer for the step size of tiling windows
 #' @param cov.bases minimum number of bases to be covered in a given window
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
+#'
 #' @usage tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0)
 #' @return \code{methylRaw},\code{methylBase} or \code{methylRawList} object
 #' @export
@@ -570,16 +595,27 @@ setMethod("regionCounts", signature(object="methylRawList",
 #'                                  step.size=1000,cov.bases=0)
 #' 
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{methylRawList}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
+#' 
 #' @docType methods
 #' @rdname tileMethylCounts-methods
 setGeneric("tileMethylCounts", 
-           function(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,chunk.size=1e6)
+           function(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,save.db=FALSE,...)
              standardGeneric("tileMethylCounts") )
 
 #' @aliases tileMethylCounts,methylRaw-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylRaw"),
-  function(object,win.size,step.size,cov.bases){
+  function(object,win.size,step.size,cov.bases,save.db=FALSE,...){
     
     g.meth =as(object,"GRanges")
     #chrs   =IRanges::levels(seqnames(g.meth))
@@ -599,17 +635,40 @@ setMethod("tileMethylCounts", signature(object="methylRaw"),
                                        width=rep(win.size,numTiles)) )
       all.wins=suppressWarnings(c(all.wins,temp.wins))
     }
-    regionCounts(object,all.wins,cov.bases,strand.aware=FALSE)
+    #catch additional args
+    args <- list(...)
+    if( !( "suffix" %in% names(args)) ){
+      suffix <- "tiled"
+    } else { suffix <- args$suffix }
+    
+    regionCounts(object,all.wins,cov.bases,strand.aware=FALSE,save.db=save.db,suffix=suffix,... = ...)
   }
 )
 
 #' @aliases tileMethylCounts,methylRawList-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylRawList"),
-  function(object,win.size,step.size,cov.bases){
+  function(object,win.size,step.size,cov.bases,save.db=FALSE,...){
     
-    new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases) 
-    new("methylRawList", new.list,treatment=object@treatment)
+    if (save.db) {
+    
+    #catch additional args
+    args <- list(...)
+    if( !( "dbdir" %in% names(args)) ){
+      dbdir <- .check.dbdir(getwd())
+    } else { dbdir <- .check.dbdir(args$dbdir) }
+    
+    new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases,save.db=save.db,dbdir=basename(dbdir),... = ...) 
+    new("methylRawListDB", new.list,treatment=object@treatment)
+    
+    } else {
+      
+      new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases) 
+      new("methylRawList", new.list,treatment=object@treatment)
+      
+    }
+    
+    
     
 })
 
@@ -618,7 +677,7 @@ setMethod("tileMethylCounts", signature(object="methylRawList"),
 #' @aliases tileMethylCounts,methylBase-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylBase"),
-          function(object,win.size,step.size,cov.bases){
+          function(object,win.size,step.size,cov.bases,save.db=FALSE,...){
             
             g.meth =as(object,"GRanges")
             #chrs   =IRanges::levels(seqnames(g.meth))
@@ -640,7 +699,13 @@ setMethod("tileMethylCounts", signature(object="methylBase"),
                                                width=rep(win.size,numTiles)) )
               all.wins=suppressWarnings(c(all.wins,temp.wins))
             }
-            regionCounts(object,all.wins,cov.bases,strand.aware=FALSE)
+            #catch additional args
+            args <- list(...)
+            if( !( "suffix" %in% names(args)) ){
+              suffix <- "tiled"
+            } else { suffix <- args$suffix }
+            
+            regionCounts(object,all.wins,cov.bases,strand.aware=FALSE,save.db=save.db,suffix=suffix,... = ...)
           }
 )
 

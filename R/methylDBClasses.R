@@ -781,6 +781,10 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
           function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
             if(save.db) {
+              
+              # sort regions
+              regions <- sortSeqlevels(regions)
+              regions <- sort(regions,ignore.strand=TRUE)
 
               getCounts <- function(data,regions,cov.bases,strand.aware){
                 .setMethylDBNames(data)
@@ -1045,44 +1049,79 @@ setMethod("regionCounts", signature(object="methylRawListDB",
 #' @aliases tileMethylCounts,methylRawDB-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylRawDB"),
-          function(object,win.size,step.size,cov.bases,mc.cores,chunk.size){
+          function(object,win.size,step.size,cov.bases,mc.cores,save.db=TRUE,...){
             
-
-            tileCount <- function(data,win.size,step.size,cov.bases,object) {
-
-              .setMethylDBNames(data,"methylRawDB")
-              # overlap data with regions
-              # convert data to GRanges without metacolumns
-              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-              rm(data)
-              chrs   =as.character(unique(seqnames(g.meth)))
-
-              # get max length of feature covered chromosome
-              max.length=max(IRanges::end(g.meth)) 
-              # get start of sliding window
-              min.length=min(IRanges::end(g.meth))
-              win.start = floor(min.length/win.size)*win.size
+            if(save.db) {
               
-              #get sliding windows with covered CpGs
-              numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
-              
-              all.wins=GRanges(seqnames=rep(chrs,numTiles),
-                                ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
-                                               width=rep(win.size,numTiles)) )
+            
+              tileCount <- function(data,win.size,step.size,cov.bases,resolution) {
+                
+                .setMethylDBNames(data,"methylRawDB")
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
 
-              as.data.frame(all.wins)
+                chrs   =as.character(unique(seqnames(g.meth)))
+  
+                # get max length of feature covered chromosome
+                max.length=max(IRanges::end(g.meth)) 
+                # get start of sliding window
+                min.length=min(IRanges::end(g.meth))
+                win.start = floor(min.length/win.size)*win.size
+                
+                #get sliding windows with covered CpGs
+                numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+                
+                all.wins=GRanges(seqnames=rep(chrs,numTiles),
+                                  ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
+                                                 width=rep(win.size,numTiles)) )
+  
+                # clean up
+                rm(g.meth)
+                
+                tmp <- new("methylRaw",data,resolution=object@resolution)
+                # clean up
+                rm(data)
+                
+                res <- regionCounts(tmp,all.wins,cov.bases,strand.aware=FALSE)
+                # clean up
+                rm(tmp)
+                
+                getData(res)
+                
+              }
+              
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
+              
+              if( "dbdir" %in% names(args) ){
+                if( !(is.null(args$dbdir)) ){
+                  dir <- .check.dbdir(args$dbdir) 
+                }
+              } 
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","tiled")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              
+              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              
+              newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",dir = dir,filename = filename,
+                                         FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,resolution=object@resolution,
+                                         mc.cores = mc.cores)
+              
+              readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                              assembly=object@assembly, context =object@context,resolution="region",
+                              dbtype = object@dbtype)
+            } else {
+              
+              tmp <- object[]
+              tileMethylCounts(tmp,win.size,step.size,cov.bases,mc.cores)
               
             }
-
-           
- 
-            all.wins <- applyTbxByChr(object@dbpath, return.type = "data.frame",
-                                       FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,object=object,
-                                       mc.cores = mc.cores)
-            
-            print(paste("total ranges",dim(all.wins)[1]))
-            
-            regionCounts(object,as(all.wins,"GRanges"),cov.bases,strand.aware=FALSE,chunk.size = chunk.size)
 
           }
 )
@@ -1090,10 +1129,23 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
 #' @aliases tileMethylCounts,methylRawListDB-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylRawListDB"),
-          function(object,win.size,step.size,cov.bases){
+          function(object,win.size,step.size,cov.bases,mc.cores,save.db=TRUE,...){
             
-            new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases) 
-            new("methylRawListDB", new.list,treatment=object@treatment)
+            
+            if(save.db){
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- NULL
+              } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
+              
+              new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases,mc.cores,save.db,dbdir=dbdir,...) 
+              new("methylRawListDB", new.list,treatment=object@treatment)
+              
+            } else {
+              new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases,save.db=FALSE) 
+              new("methylRawList", new.list,treatment=object@treatment)
+            }
             
           })
 
@@ -1908,6 +1960,10 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
           function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
             if(save.db) {
+              
+              # sort regions
+              regions <- sortSeqlevels(regions)
+              regions <- sort(regions,ignore.strand=TRUE)
             
               getCounts <- function(data,regions,cov.bases,strand.aware){
                 .setMethylDBNames(data)
@@ -2126,48 +2182,82 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
 #' @aliases tileMethylCounts,methylBaseDB-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylBaseDB"),
-          function(object,win.size,step.size,cov.bases,mc.cores,chunk.size){
+          function(object,win.size,step.size,cov.bases,mc.cores,save.db=TRUE,...){
             
-            
-            tileCount <- function(data,win.size,step.size,cov.bases,object) {
+            if(save.db) {
               
-              .setMethylDBNames(data,"methylBaseDB")
-              # overlap data with regions
-              # convert data to GRanges without metacolumns
-              g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-              rm(data)
-              chrs   =as.character(unique(seqnames(g.meth)))
               
-              # get max length of feature covered chromosome
-              max.length=max(IRanges::end(g.meth)) 
-              # get start of sliding window
-              min.length=min(IRanges::end(g.meth))
-              win.start = floor(min.length/win.size)*win.size
+              tileCount <- function(data,win.size,step.size,cov.bases,resolution,destranded) {
+                
+                .setMethylDBNames(data,"methylBaseDB")
+                # overlap data with regions
+                # convert data to GRanges without metacolumns
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                
+                chrs   =as.character(unique(seqnames(g.meth)))
+                
+                # get max length of feature covered chromosome
+                max.length=max(IRanges::end(g.meth)) 
+                # get start of sliding window
+                min.length=min(IRanges::end(g.meth))
+                win.start = floor(min.length/win.size)*win.size
+                
+                #get sliding windows with covered CpGs
+                numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+                
+                all.wins=GRanges(seqnames=rep(chrs,numTiles),
+                                 ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
+                                                width=rep(win.size,numTiles)) )
+                
+                # clean up
+                rm(g.meth)
+                
+                tmp <- new("methylBase",data,resolution=object@resolution,destranded=object@destranded)
+                # clean up
+                rm(data)
+                
+                res <- regionCounts(tmp,all.wins,cov.bases,strand.aware=FALSE)
+                # clean up
+                rm(tmp)
+                
+                getData(res)
+                
+              }
               
-              #get sliding windows with covered CpGs
-              numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+              # catch additional args 
+              args <- list(...)
+              dir <- dirname(object@dbpath)
               
-              all.wins=GRanges(seqnames=rep(chrs,numTiles),
-                               ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
-                                              width=rep(win.size,numTiles)) )
+              if( "dbdir" %in% names(args) ){
+                if( !(is.null(args$dbdir)) ){
+                  dir <- .check.dbdir(args$dbdir) 
+                }
+              } 
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- paste0("_","tiled")
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
               
-              as.data.frame(all.wins)
+              
+              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+              
+              newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",dir = dir,filename = filename,
+                                         FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,resolution=object@resolution,
+                                         mc.cores = mc.cores)
+              
+              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
+                               assembly=object@assembly,context=object@context,treatment=object@treatment,
+                               destranded=TRUE,resolution="region")
+            } else {
+              
+              tmp <- object[]
+              tileMethylCounts(tmp,win.size,step.size,cov.bases,mc.cores)
               
             }
             
-            
-            
-            all.wins <- applyTbxByChr(object@dbpath, return.type = "data.frame",
-                                      FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,object=object,
-                                      mc.cores = mc.cores)
-            
-            print(paste("total ranges",dim(all.wins)[1]))
-            
-            regionCounts(object,as(all.wins,"GRanges"),cov.bases,strand.aware=FALSE,chunk.size = chunk.size)
-
           }
 )
-
 # methylDiffDB -------------------------------------------------------
 
 
