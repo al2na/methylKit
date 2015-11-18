@@ -2344,12 +2344,15 @@ setMethod("calculateDiffMeth", "methylBaseDB",
               
               # catch additional args 
               args <- list(...)
+              dir <- dirname(.Object@dbpath)
               
-              
+
               if( ( "dbdir" %in% names(args))   ){
                 if( !(is.null(args$dbdir)) ) { 
-                  dir <- .check.dbdir(args$dbdir) }
-              } else { dir <- dirname(.Object@dbpath) }
+                  dir <- .check.dbdir(args$dbdir) 
+                }
+              }
+              
               
               if(!( "suffix" %in% names(args) ) ){
                 suffix <- "_diffMeth"
@@ -2381,8 +2384,6 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                                 save.db=FALSE)
               
             }
-            
-            
             }
 )
 
@@ -2413,21 +2414,22 @@ setMethod(f="get.methylDiff", signature="methylDiffDB",
                 return(data)
               }
               
-              
               # catch additional args 
               args <- list(...)
-              
-              
+              dir <- dirname(.Object@dbpath)
+
               if( ( "dbdir" %in% names(args))   ){
                 if( !(is.null(args$dbdir)) ) { 
-                  dir <- .check.dbdir(args$dbdir) }
-              } else { dir <- dirname(.Object@dbpath) }
+                  dir <- .check.dbdir(args$dbdir) 
+                } 
+              }
               
               if(!( "suffix" %in% names(args) ) ){
                 suffix <- paste0("_diffMeth_",type)
               } else { 
                 suffix <- paste0("_",args$suffix)
               }
+              
               
               filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
               
