@@ -275,14 +275,13 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
             
             # catch additional args 
             args <- list(...)
+            dir <- dirname(methylObj@dbpath)
             
-            
-            if( ( "dbdir" %in% names(args))   ){
-              if( !(is.null(args$dbdir)) ) {
+            if( "dbdir" %in% names(args) ){
+              if( !(is.null(args$dbdir)) ){
                 dir <- .check.dbdir(args$dbdir) 
-            }} else { 
-              dir <- dirname(methylObj@dbpath)
-            }
+              }
+            } 
             
             if(!( "suffix" %in% names(args) ) ){
               suffix <- paste0("_","filtered")
@@ -290,8 +289,8 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
               suffix <- paste0("_",args$suffix)
             }
             
-
-            filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+            filename <- paste0(paste(methylObj@sample.id,collapse = "_"),suffix,".txt")
+            #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
             
             #print(filename)
             
@@ -526,50 +525,49 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),function(mc,hmc,save.
   
   if(save.db) {
   
-  lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
-  base=unite(lst)
-  
-  adjust <- function(data) {
+    lst=new("methylRawListDB",list(mc,hmc),treatment=c(1,0))
+    base=unite(lst)
     
-    .setMethylDBNames(data,"methylBaseDB")
-    diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
-    diff[diff<0]=0
-    data$numCs1=diff
-    data$numTs1=data$coverage1-data$numCs1
-    return(data[1:7])
-    
-  }
-  
-  # catch additional args 
-  args <- list(...)
-  
-  
-  if( ( "dbdir" %in% names(args))   ){
-    if( !(is.null(args$dbdir)) ) {
-      dir <- .check.dbdir(args$dbdir) 
+    adjust <- function(data) {
+      
+      .setMethylDBNames(data,"methylBaseDB")
+      diff=(data$numCs1)-round(data$coverage1*(data$numCs2/data$coverage2))
+      diff[diff<0]=0
+      data$numCs1=diff
+      data$numTs1=data$coverage1-data$numCs1
+      return(data[1:7])
+      
     }
-  } else { 
+    
+    # catch additional args 
+    args <- list(...)
     dir <- dirname(mc@dbpath)
-  }
-  
-  if(!( "suffix" %in% names(args) ) ){
-    suffix <- paste0("_","adjusted")
-  } else { 
-    suffix <- paste0("_",args$suffix)
-  }
-  
-  
-  filename <- paste0(basename(gsub(".txt.bgz",replacement = "",mc@dbpath)),suffix,".txt")
-  
-  newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                               return.type = "tabix", FUN = adjust)
-  
-  unlink(list.files(dirname(base@dbpath),pattern = basename(tools::file_path_sans_ext(base@dbpath)),full.names = TRUE))
-  
-  readMethylRawDB(dbpath = newdbpath,sample.id=mc@sample.id,
-                  assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
-                  dbtype = mc@dbtype)
-  
+    
+    if( "dbdir" %in% names(args) ){
+      if( !(is.null(args$dbdir)) ){
+        dir <- .check.dbdir(args$dbdir) 
+      }
+    } 
+    
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_","adjusted")
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    
+    filename <- paste0(paste(mc@sample.id,collapse = "_"),suffix,".txt")
+    #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",mc@dbpath)),suffix,".txt")
+    
+    newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
+                                 return.type = "tabix", FUN = adjust)
+    
+    unlink(list.files(dirname(base@dbpath),pattern = basename(gsub(".txt.bgz","",base@dbpath)),full.names = TRUE))
+    
+    readMethylRawDB(dbpath = newdbpath,sample.id=mc@sample.id,
+                    assembly=mc@assembly, context =mc@context,resolution=mc@resolution,
+                    dbtype = mc@dbtype)
+    
   } else {
     
     mc.tmp <- mc[]
@@ -651,7 +649,8 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                   
                   for(i in 1:length(sample.ids)){
                     obj <- methylObj[[ col.ord[i]  ]]
-                    filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = "",obj@dbpath)),suffix,".txt.bgz")
+                    filename <- paste0(dir,"/",paste(obj@sample.ids,collapse = "_"),suffix,".txt.bgz")
+                    #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = "",obj@dbpath)),suffix,".txt.bgz")
                     file.copy(obj@dbpath,filename)
                     
                     outList[[i]]=readMethylRawDB(dbpath = filename,dbtype = obj@dbtype,sample.id = obj@sample.id,
@@ -661,7 +660,8 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                   
                   for(i in 1:length(sample.ids)){
                     obj <- methylObj[[ col.ord[i]  ]]
-                    filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),suffix,".txt.bgz")
+                    filename <- paste0(paste(obj@sample.ids,collapse = "_"),suffix,".txt.bgz")
+                    #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),suffix,".txt.bgz")
                     file.copy(obj@dbpath,filename)
                     
                     outList[[i]]=readMethylRawDB(dbpath = filename,dbtype = obj@dbtype,sample.id = obj@sample.id,
@@ -748,7 +748,8 @@ setMethod("normalizeCoverage", "methylRawListDB",
               
               for(i in 1:length(obj)){
                 
-                filename <- paste0(basename(gsub(".txt.bgz",replacement = "",obj[[i]]@dbpath)),suffix,".txt")
+                filename <- paste0(paste(obj[[i]]@sample.id,collapse = "_"),suffix,".txt")
+                #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",obj[[i]]@dbpath)),suffix,".txt")
                 
                 newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = normCov,method = method)
@@ -1510,7 +1511,7 @@ setMethod("percMethylation", "methylBaseDB",
             }
             if (save.txt) {
               
-              filename <- paste(basename(tools::file_path_sans_ext(methylBase.obj@dbpath)),"methMath.txt",sep = "_")
+              filename <- paste0(basename(gsub(".txt.bgz","",methylBase.obj@dbpath)),"_methMath.txt")
               
               meth.mat = applyTbxByChunk(methylBase.obj@dbpath,return.type = "text", chunk.size = chunk.size,
                                          dir = dirname(methylBase.obj@dbpath), filename = filename,
@@ -1606,8 +1607,9 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
       suffix <- paste0("_",args$suffix)
     }
     
+    filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
+    #filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
     
-    filename <- filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
     con <- file(methMat,open = "r") 
     
     newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 

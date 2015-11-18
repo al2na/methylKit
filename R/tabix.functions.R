@@ -576,7 +576,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     chunk.num <- length(ranges)
      groups <- seq(length(ranges))
   }
-  print(paste("chunks:",chunk.num))
+  #print(paste("chunks:",chunk.num))
   region.split <- split(ranges,groups)
   if(return.type =="tabix"){
     
