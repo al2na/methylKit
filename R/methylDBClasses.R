@@ -2253,7 +2253,7 @@ setMethod("tileMethylCounts", signature(object="methylBaseDB"),
               
               tmp <- object[]
               tileMethylCounts(tmp,win.size,step.size,cov.bases,mc.cores)
-              
+
             }
             
           }
