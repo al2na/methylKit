@@ -56,7 +56,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       unlink(outfile)
     }
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,all=all,mc.cores=mc.cores,mc.preschedule=FALSE)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,all=all,mc.cores=mc.cores)
     outfile= file.path(path.expand(dir),filename) 
   }
   
