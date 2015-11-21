@@ -46,7 +46,8 @@
 #'
 #' # read the files to a methylRawList object: myobj
 #' myobj=read( file.list,
-#'           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
+#'           sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'           assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 #' meth=unite(myobj,destrand=TRUE)
 #'
 #' # get samples named "test1" and "ctrl2" from myobj and create a new methylRawList object

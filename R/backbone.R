@@ -1644,6 +1644,7 @@ setMethod("select", "methylRaw",
 #' @aliases [
 #' @docType methods
 #' @rdname extract-methods
+#' @aliases [,methylRaw-method
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))

@@ -250,7 +250,7 @@ colSds <- function(x, ...) {
 #'        
 #' @usage clusterSamples(.Object, dist="correlation", method="ward",
 #'                        sd.filter=TRUE,sd.threshold=0.5,
-#'                        filterByQuantile=TRUE, plot=TRUE)
+#'                        filterByQuantile=TRUE, plot=TRUE,chunk.size)
 #' @examples
 #' data(methylKit)
 #' 
@@ -350,7 +350,7 @@ setMethod("clusterSamples", "methylBase",
 #' 
 #' @usage PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1), scale=TRUE,
 #' center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
-#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
+#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE,chunk.size)
 #' 
 #' @examples
 #' data(methylKit) 

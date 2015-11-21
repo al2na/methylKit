@@ -11,7 +11,7 @@ import(emdbook)
 #importClassesFrom("GenomicRanges",GRanges,GRangesList)
 
 
-importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths )
+importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths ,sortSeqlevels)
 
 
 importClassesFrom("IRanges", RangedData, RangedDataList,RangedSelection)
