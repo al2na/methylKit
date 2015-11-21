@@ -156,7 +156,8 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                         cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
                         if(save.db) { dbtype="tabix"; 
                           if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
-                          obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,dbtype=dbtype,pipeline="bismark",header=T, context=read.context,dbdir = dbdir)
+                          obj=read(location=out.files[[read.context]],sample.id=paste(sample.id,tolower(read.context),sep = "_"),assembly=assembly,dbtype=dbtype,pipeline="bismark",header=T, context=read.context,dbdir = dbdir)
+                          obj@sample.id <- sample.id
                         }
                         else {
                           obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
