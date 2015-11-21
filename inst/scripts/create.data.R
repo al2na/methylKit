@@ -24,4 +24,6 @@ methylRawListDB.obj=read( db.list,
 
 methylBaseDB.obj=unite(methylRawListDB.obj)
 
-save(methylRawList.obj,methylBase.obj,methylDiff.obj,methylRawListDB.obj,methylBaseDB.obj,file="methylKit.RData")
+methylDiffDB.obj=calculateDiffMeth(methylBaseDB.obj)
+
+save(methylRawList.obj,methylBase.obj,methylDiff.obj,methylRawListDB.obj,methylBaseDB.obj,methylDiffDB.obj,file="methylKit.RData")
