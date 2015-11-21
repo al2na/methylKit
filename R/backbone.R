@@ -335,9 +335,9 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @section Details:
 #'  The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
 #'  The first three are obligatory, while if the last argument is given database features are enabled. 
-#'  If \code{location} refers to an uncompressed file the function will create a flat file database and 
+#'  If then \code{location} refers to an uncompressed file the function will create a flat file database and 
 #'  the associated methylRawDB object will link to this database. 
-#'  If \code{location} refers to an earlier created database file then the object will directly link to this database, 
+#'  If then \code{location} refers to an earlier created database file then the object will directly link to this database, 
 #'  skipping the preprocessing steps. 
 #'  
 #'  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
