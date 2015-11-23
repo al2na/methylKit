@@ -5,14 +5,18 @@
 
 #' merge tabix files by chr, start,end, strand
 #' 
-#' @param tabixList list of tabix files 
+#' @param tabixList list of tabix files
 #' @param dir working directory
 #' @param filename the output file name
-#' @param mc.cores number of multiple cores. If mc.cores>1 temporary files for each chromsome
-#'        will be created prior to cat, zipping and indexing the single output file
-#' @param all logical parameter passed to \code{\link{merge}} function 
-#'        
-#'        mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1) 
+#' @param mc.cores number of multiple cores. If mc.cores>1 temporary files for
+#'   each chromsome will be created prior to cat, zipping and indexing the
+#'   single output file
+#' @param all logical parameter passed to \code{\link{merge}} function
+#'   
+#'   mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1)
+#'   
+#' @usage mergeTabix(tabixList,dir,filename,mc.cores=1 ,all=FALSE)
+#'   
 mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
   
   # get outfile
@@ -71,6 +75,10 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
 #' make a tabix file from a data.frame or data.table part of a 
 #' methylKit object
 #' 
+#' @param df data part of a methylKit object, either data.frame or data.table
+#' @param outfile name of the output file
+#' 
+#' @usage df2tabix(df,outfile)
 #' 
 df2tabix<-function(df,outfile){
   
@@ -96,7 +104,7 @@ df2tabix<-function(df,outfile){
 #' @param filename output file name
 #' @param sort sort list of subfiles in alpha, numerical way
 #' 
-#' 
+#' @usage catsub2tabix(dir,pattern,filename,sort=F)
 catsub2tabix<-function(dir,pattern,filename,sort=F){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
@@ -120,8 +128,14 @@ catsub2tabix<-function(dir,pattern,filename,sort=F){
   
 }
 
-# make tabix from a flat file where first 3 columns
-# are chr,start,end in that order
+#' make tabix from a flat file where first 3 columns
+#' are chr,start,end in that order
+#' 
+#' @param filepath path to the uncompressed file
+#' @param skip number of lines to skip
+#' 
+#' @usage makeMethTabix(filepath,skip=0)
+#' 
 makeMethTabix<-function(filepath,skip=0){
   message("compressing the file with bgzip...")
   zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
@@ -136,6 +150,12 @@ makeMethTabix<-function(filepath,skip=0){
 
 #' merge the data tables for a given chr
 #' 
+#' @param chr chromosome to merge 
+#' @param tabixList list of tabix files
+#' @param dir working directory
+#' @param filename the output file name
+#' @param parallel logical to determine internal processing of output
+#' @param all logical parameter passed to \code{\link{merge}} function
 mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   #get first file on the list
@@ -183,7 +203,7 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.fra
   return.type <- match.arg(return.type)
   
   if( class(tbxFile) != "TabixFile" ){
-    tbxFile <- Rsamtools::TabixFile(tbxFile)
+    tbxFile <- TabixFile(tbxFile)
   }
   
   res=Rsamtools:::.tabix_scan(tbxFile,space=chr,start=1L,end=500000000L) 
@@ -208,10 +228,10 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.fra
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
-    tbxFile <- Rsamtools::TabixFile(tbxFile)
+    tbxFile <- TabixFile(tbxFile)
   }
   
-  res=Rsamtools::scanTabix(tbxFile,param=granges) 
+  res=scanTabix(tbxFile,param=granges) 
   
   res <- list(unlist(res))
   
@@ -235,7 +255,7 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
-    tbxFile <- Rsamtools::TabixFile(tbxFile)
+    tbxFile <- TabixFile(tbxFile)
     open(tbxFile)
   }
   
@@ -256,17 +276,17 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","dat
     stop("tbxFile has to be a class of TabixFile and should be open for reading ")
   }
   
-  if(is.na(Rsamtools::yieldSize(tbxFile)) | is.numeric(chunk.size)  ){
-    Rsamtools::yieldSize(tbxFile)<-chunk.size
+  if(is.na(yieldSize(tbxFile)) | is.numeric(chunk.size)  ){
+    yieldSize(tbxFile)<-chunk.size
   }
   
   if(return.type=="data.table")
   {
-    tabix2dt(Rsamtools::scanTabix(tbxFile) )
+    tabix2dt(scanTabix(tbxFile) )
   }else if (return.type=="data.frame"){
-    tabix2df(Rsamtools::scanTabix(tbxFile) )
+    tabix2df(scanTabix(tbxFile) )
   }else {
-    tabix2gr(Rsamtools::scanTabix(tbxFile))
+    tabix2gr(scanTabix(tbxFile))
   }
 }
 
@@ -367,7 +387,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     # collect & cat temp files,then make tabix
     path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
 
-    return(tools::file_path_sans_ext(path))
+    return(gsub(".tbi","",path))
     
   } else if(return.type =="text"){
     
@@ -418,7 +438,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
     
     # collect and return
-    data.frame(data.table::rbindlist(res))
+    data.frame(rbindlist(res))
   }else{
     
     myFunc<-function(chunk.num,tbxFile,FUN,...){
@@ -487,7 +507,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
 
     path <- catsub2tabix(dir,filename2,filename)
     
-    return(tools::file_path_sans_ext(path))
+    return(gsub(".tbi","",path))
 
     
   }else if(return.type=="data.frame"){
@@ -502,7 +522,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
-    data.frame(data.table::rbindlist(res))
+    data.frame(rbindlist(res))
   }else{
     
     myFunc<-function(chr,tbxFile,FUN,...){
@@ -513,7 +533,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
-    data.table::rbindlist(res)
+    rbindlist(res)
   }
 }
 
@@ -601,7 +621,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     # collect & cat temp files,then make tabix
     path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
     
-    return(tools::file_path_sans_ext(path))
+    return(gsub(".tbi","",path))
     
   } else if(return.type=="data.frame"){
     
@@ -618,7 +638,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
     
     # collect and return
-    data.frame(data.table::rbindlist(res))
+    data.frame(rbindlist(res))
   }else{
     
     myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
@@ -633,7 +653,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     
     
     # collect and return
-    data.table::rbindlist(res)
+    rbindlist(res)
   }
   
 }
