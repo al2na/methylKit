@@ -26,13 +26,15 @@
 #' data(methylKit)
 #' 
 #' # getting a bedgraph file from a methylDiff object containing differential methylation percentages
-#' bedgraph(methylDiff.obj,file.name="test.bed",col.name="meth.diff",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' bedgraph(methylDiff.obj, file.name="test.bed", col.name="meth.diff", 
+#'          unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 #' 
 #' # remove the file
 #' unlink("test.bed")
 #' 
 #' # getting a bedgraph file from a methylBase object containing percent methylation values
-#' bedgraph(methylRawList.obj[[1]],file.name="test2.bed",col.name="perc.meth",unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' bedgraph(methylRawList.obj[[1]], file.name="test2.bed", col.name="perc.meth", 
+#'          unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 #' 
 #' unlink("test2.bed") # remove the file
 #' 

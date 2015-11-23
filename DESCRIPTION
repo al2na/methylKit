@@ -29,6 +29,7 @@ Imports:
     parallel,
     S4Vectors,
     GenomeInfoDb,
+    KernSmooth,
     qvalue,
     emdbook,
     Rsamtools,

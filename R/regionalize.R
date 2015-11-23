@@ -563,12 +563,17 @@ setMethod("regionCounts", signature(object="methylRawList",
 #' windows accross genome. This function can be used when differential 
 #' methylated analysis is preferable to tilling windows instead of base pairs.
 #'
-#' @param object \code{\link{methylRaw}}, \code{\link{methylRawList}} or \code{\link{methylBase}} 
-#' object containing base pair resolution methylation information
+#' @param object \code{\link{methylRaw}}, \code{\link{methylRawDB}},
+#'   \code{\link{methylRawList}}, \code{\link{methylRawListDB}},
+#'   \code{\link{methylBase}} or \code{\link{methylBaseDB}} object containing
+#'   base pair resolution methylation information
 #' @param win.size an integer for the size of the tiling windows
 #' @param step.size an integer for the step size of tiling windows
 #' @param cov.bases minimum number of bases to be covered in a given window
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param mc.cores number of cores to use when processing \code{methylDB}
+#'   objects, default: 1, but always 1 for Windows)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#'   saved as flat file database or not, default: explained in Details sections
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
@@ -585,7 +590,7 @@ setMethod("regionCounts", signature(object="methylRawList",
 #                  The type of the flat file database, currently only option is "tabix"
 #                  (only used for newly stored databases)
 #'
-#' @usage tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0)
+#' @usage tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,save.db,...)
 #' @return \code{methylRaw},\code{methylBase} or \code{methylRawList} object
 #' @export
 #' @examples

@@ -392,9 +392,10 @@ setClass("methylDiff",representation(
 #                  (only used for newly stored databases)             
 #'                    
 #' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-#'         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
-#'         "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-#'         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,chunk.size,save.db,...)
+#'                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH",
+#'                          "BY","fdr","none","qvalue"),effect=c("wmean","mean","predicted"), 
+#'                          parShrinkNM=list(),test=c("F","Chisq"),mc.cores=1,slim=TRUE, 
+#'                          weighted.mean=TRUE, chunk.size, save.db,...)
 #' 
 #' @examples
 #' 
@@ -717,7 +718,7 @@ setMethod("[","methylDiff",
 #' 
 #' @return a methylDiff or methylDiffDB object containing the differential methylated locations satisfying the criteria 
 #' 
-#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
+#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all",chunk.size,save.db,...)
 #' @examples
 #' 
 #' data(methylKit)

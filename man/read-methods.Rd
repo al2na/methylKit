@@ -5,11 +5,9 @@
 \alias{read}
 \alias{read,character,character,character,character-method}
 \alias{read,character,character,character,missing-method}
-\alias{read,character,character,character-method}
 \alias{read,list,list,character,character-method}
 \alias{read,list,list,character,missing-method}
-\alias{read,list,list,character-method}
-\title{read file(s) to a methylRaw object}
+\title{read file(s) to methylRaw or methylRawList objects}
 \usage{
 read(location, sample.id, assembly, dbtype = NULL, pipeline = "amp",
   header = T, skip = 0, sep = "\\t", context = "CpG",
@@ -57,14 +55,20 @@ The named \code{list} should containt column numbers which denotes which column 
 to getwd(), working directory.}
 }
 \value{
-returns methylRaw, methylRawList, methylRawDB, methylRawListDB objects
+returns methylRaw, methylRawList, methylRawDB, methylRawListDB object
 }
 \description{
-The function reads a list of files or single files with methylation information for bases/region in the genome
-and either creates a methylrawList or methylraw object stored memory
-or creates a methylrawlistDB or methylrawDB object stored as flat file database.
+The function reads a list of files or single files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object.
+The information can be stored as flat file database by creating a methylrawlistDB or methylrawDB object.
 }
 \section{Details}{
+
+ The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}.
+ The first three are obligatory, while if the last argument is given database features are enabled.
+ If then \code{location} refers to an uncompressed file the function will create a flat file database and
+ the associated methylRawDB object will link to this database.
+ If then \code{location} refers to an earlier created database file then the object will directly link to this database,
+ skipping the preprocessing steps.
 
  When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
  'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
@@ -78,7 +82,7 @@ or creates a methylrawlistDB or methylrawDB object stored as flat file database.
 \examples{
 # this is a list of example files, ships with the package
 # for your own analysis you will just need to provide set of paths to files
-#you will not need the "system.file(..."  part
+# you will not need the "system.file(..."  part
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
@@ -86,7 +90,8 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 
 # read the files to a methylRawList object: myobj
 myobj=read( file.list,
-            sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+            sample.id=list("test1","test2","ctrl1","ctrl2"),
+            assembly="hg18",treatment=c(1,1,0,0))
 
 # read one file as methylRaw object
 myobj=read( file.list[[1]],
@@ -98,11 +103,13 @@ generic.file=system.file("extdata", "generic1.CpG.txt", package = "methylKit")
 read.table(generic.file,header=TRUE)
 
 # And this is how you can read that generic file as a methylKit object
- myobj=read( generic.file,pipeline=list(fraction=FALSE, chr.col=1,start.col=2,end.col=2,coverage.col=4,strand.col=3,freqC.col=5),
-            sample.id="test1",assembly="hg18")
+ myobj=read( generic.file,
+             pipeline=list(fraction=FALSE,chr.col=1,start.col=2,end.col=2,
+                           coverage.col=4,strand.col=3,freqC.col=5),
+             sample.id="test1",assembly="hg18")
 
 # This creates tabix files that save methylation data
-# With empty \\code{dbdir} first creates a folder named the following in working directory:
+# Without specified dbdir first creates a folder named the following in working directory:
 # paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
 #
 # Then, saves tabix files from methylKit objects there

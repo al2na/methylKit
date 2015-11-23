@@ -97,7 +97,7 @@ valid.methylRawDB <- function(object) {
 #' percent methylation values and read coverage values per genomic base/region.
 #'
 #' @section Slots:\describe{
-#'  \item{\code{dbpath}:}{path to flat file database(s) }
+#'  \item{\code{dbpath}:}{path to flat file database }
 #'  \item{\code{num.records}:}{number of records (lines) in the object}
 #'  \item{\code{sample.id}:}{string for an identifier of the sample}
 #'  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
@@ -125,13 +125,18 @@ valid.methylRawDB <- function(object) {
 #' @section Coercion:
 #'   \code{methylRawDB} object can be coerced to:
 #'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
-#'   \code{\link{methylRaw}} object via \code{\link{[]}} function, see section Subsetting.
+#'   \code{\link{methylRaw}} object via \code{\link{[}} function, see section Subsetting.
 #' 
 #' @examples
 #' 
 #' # example of a raw methylation data contained as a text file
 #' read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 #' header=TRUE,nrows=5)
+#' 
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 #' 
 #' methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
 #'                             assembly = "hg18",treatment = c(1,1,0,0),
@@ -1333,7 +1338,7 @@ setMethod("unite", "methylRawListDB",
                 
                   if(obj@resolution == "base") {
                     dir <- dirname(obj@dbpath)
-                    filename <- paste(basename(tools::file_path_sans_ext(obj@dbpath)),"destrand",sep="_")
+                    filename <- paste(basename(gsub(".txt.bgz","",obj@dbpath)),"destrand.txt",sep="_")
                     # need to use .CpG.dinuc.unifyOld because output needs to be ordered
                     newdbpath <- applyTbxByChunk(obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename,return.type = "tabix", 
                                                  FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x,"methylRawDB") )})
@@ -1369,14 +1374,14 @@ setMethod("unite", "methylRawListDB",
                 
                  dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
                  
-                 dbpath <- tools::file_path_sans_ext(dbpath)
+                 dbpath <- gsub(".tbi","",dbpath)
                  
               } else {
                 # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
                 
                 # keep rows with no matching in all samples  
                 tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
-                tmpPath <- tools::file_path_sans_ext(tmpPath)
+                tmpPath <- gsub(".tbi","",tmpPath)
                 
                 # get indices of coverage in the data frame 
                 coverage.ind=seq(5,by=3,length.out=length(object))
@@ -1406,7 +1411,7 @@ setMethod("unite", "methylRawListDB",
                                           return.type = "tabix", FUN = filter,treatment=object@treatment,
                                           coverage.ind=coverage.ind,min.per.group=min.per.group)
                 
-                unlink(list.files(dirname(tmpPath),pattern = basename(tools::file_path_sans_ext(tmpPath)),full.names = TRUE))
+                unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
                 }
               
 
@@ -2986,6 +2991,7 @@ setMethod("select", "methylDiffDB",
 
 
 #' @aliases [,methylRawDB-method
+#' @aliases extract,methylRawDB-method
 #' @rdname extract-methods
 setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),  
           function(x,i,j){
@@ -3001,6 +3007,7 @@ setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),
 )
 
 #' @aliases [,methylBaseDB-method
+#' @aliases extract,methylBaseDB-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"), 
           function(x,i,j,drop){
@@ -3016,6 +3023,7 @@ setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"),
 )
 
 #' @rdname extract-methods
+#' @aliases extract,methylDiffDB-method
 #' @aliases [,methylDiffDB-method
 setMethod("[","methylDiffDB", 
           function(x,i,j){
@@ -3041,9 +3049,9 @@ setMethod("[","methylDiffDB",
 #' \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}} 
 #' 
 #' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
-#' @param range a GRanges object specifying the regions of interest
+#' @param ranges a GRanges object specifying the regions of interest
 
-#' @usage selectByOverlap(region,ranges)
+#' @usage selectByOverlap(object,ranges)
 #' @examples
 #' data(methylKit)
 #' 
@@ -3194,7 +3202,7 @@ setMethod("getTreatment", signature = "methylRawListDB", function(x) {
     return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 #' @aliases 'getTreatment<-',methylRawListDB-method
 setReplaceMethod("getTreatment", signature = "methylRawListDB", function(x, value) {
   
@@ -3213,7 +3221,7 @@ setMethod("getTreatment", signature = "methylBaseDB", function(x) {
   return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 #' @aliases 'getTreatment<-'getTreatment,methylBaseDB-method
 setReplaceMethod("getTreatment", signature = "methylBaseDB", function(x, value) {
   
@@ -3233,7 +3241,7 @@ setMethod("getTreatment", signature = "methylDiffDB", function(x) {
   return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 #' @aliases 'getTreatment<-'getTreatment,methylDiffDB-method
 setReplaceMethod("getTreatment", signature = "methylDiffDB", function(x, value) {
   
@@ -3368,9 +3376,7 @@ setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
 #'  
 #' 
 #' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
-#' @param value a valid replacement for the dbpath of the object 
-#' @usage 
-#' getDBPath(x)
+#' @usage getDBPath(x)
 #' @examples
 #' 
 #' data(methylKit)
@@ -3378,14 +3384,10 @@ setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
 #' #The path to the database is returned
 #' getDBPath(methylBaseDB.obj)
 #' 
-#' 
-#' 
 #' @export
 #' @docType methods
 #' @rdname getDBPath-methods
 setGeneric("getDBPath", def=function(x) standardGeneric("getDBPath"))
-#' @rdname 'getDBPath<-'-methods
-setGeneric("getDBPath<-", def=function(x, value="character") {standardGeneric("getDBPath<-")})
 
 #' @rdname getDBPath-methods
 #' @aliases getDBPath,methylRawListDB-method
@@ -3394,25 +3396,17 @@ setMethod("getDBPath", signature = "methylRawListDB", function(x) {
   return(names)
 })
 
-
-
-
 #' @rdname getDBPath-methods
 #' @aliases getDBPath,methylBaseDB-method
 setMethod("getDBPath", signature = "methylBaseDB", function(x) {
   return(x@dbpath)
 })
 
-
-
-
 #' @rdname getDBPath-methods
 #' @aliases getDBPath,methylRawDB-method
 setMethod("getDBPath", signature = "methylRawDB", function(x) {
   return(x@dbpath)
 })
-
-
 
 #' @rdname getDBPath-methods
 #' @aliases getDBPath,methylDiffDB-method

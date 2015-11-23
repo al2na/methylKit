@@ -8,7 +8,7 @@
 assocComp(mBase, sampleAnnotation)
 }
 \arguments{
-\item{mBase}{\code{\link{methylBase}} object with no NA values in the data part.}
+\item{mBase}{\code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values in the data part.}
 
 \item{sampleAnnotation}{a data frame where columns are different annotations and
                        rows are the samples, in the same order as in the methylBase object.}

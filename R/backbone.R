@@ -597,7 +597,8 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #                  (only used for newly stored databases)
 #'                  
 #'                   
-#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,save.db,...)
+#' @usage filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,
+#'                         chunk.size,save.db,...)
 #' @examples
 #' data(methylKit)
 #' 
@@ -607,10 +608,11 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' # filter out bases with cread coverage above 99.9th percentile of coverage distribution
 #' filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
 #' 
-#' # filter out bases with covereage above 500 reads and save to database "test1_max500.bgz" 
+#' # filter out bases with covereage above 500 reads and save to database "test1_max500.txt.bgz" 
 #' # in directory "methylDB", filtered3 now becomes a \code{methylRawDB} object
-#' filtered3=filterByCoverage(methylRawList.obj[[1]],lo.count=NULL,lo.perc=NULL,hi.count=500,hi.perc=NULL,
-#'                            save.db=TRUE,suffix="max500",dbdir="methylDB")
+#' filtered3=filterByCoverage(methylRawList.obj[[1]], lo.count=NULL, lo.perc=NULL, 
+#'                            hi.count=500, hi.perc=NULL, save.db=TRUE, 
+#'                            suffix="max500", dbdir="methylDB")
 #' 
 #' @section Details:
 #' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
@@ -798,7 +800,7 @@ setClass("methylBase",contains="data.frame",representation(
 #                  The type of the flat file database, currently only option is "tabix"
 #                  (only used for newly stored databases)
 #' 
-#' @usage unite(object,destrand=FALSE,min.per.group=NULL,save.db,...)
+#' @usage unite(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1,save.db,...)
 #' @return a methylBase or methylBaseDB object depending on input
 #' @export
 #' @examples
@@ -973,7 +975,7 @@ setMethod("unite", "methylRawList",
 #' @param plot scatterPlot if TRUE (default:FALSE) 
 #' @param nrow a numeric giving the number of lines to read in of methylBaseDB object, defaults to 2e6 
 #' @return a correlation matrix object and plot scatterPlot
-#' @usage getCorrelation(object,method="pearson",plot=FALSE)
+#' @usage getCorrelation(object,method="pearson",plot=FALSE,nrow)
 #' @examples
 #' 
 #' data(methylKit)
@@ -1104,7 +1106,7 @@ setMethod("getCorrelation", "methylBase",
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{\link[graphics]{hist}} function
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} objects (default: 1e6)
-#' @usage getCoverageStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
+#' @usage getCoverageStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size)
 #' @examples
 #' data(methylKit)
 #' 
@@ -1220,7 +1222,7 @@ setMethod("getCoverageStats", "methylRaw",
 #' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{\link[graphics]{hist}} function.
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} objects (default: 1e6)
-#' @usage  getMethylationStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...)
+#' @usage  getMethylationStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size)
 #' @examples
 #' data(methylKit)
 #' 
@@ -1640,10 +1642,11 @@ setMethod("select", "methylRaw",
 #' # That means the resulting object will ceases to be a methylKit object
 #' chrs=methylDiff.obj[[2]]
 #' 
-#' @aliases [,methylRaw-method
+#' 
 #' @aliases [
 #' @docType methods
 #' @rdname extract-methods
+#' @aliases extract,methylRaw-method
 #' @aliases [,methylRaw-method
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
           function(x,i,j){
@@ -1658,6 +1661,7 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
           }
               )
 
+#' @aliases extract,methylBase-method
 #' @aliases [,methylBase-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
@@ -1703,7 +1707,7 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 #' @docType methods
 #' @rdname getTreatment-methods
 setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
 
 #' @rdname getTreatment-methods
@@ -1712,7 +1716,7 @@ setMethod("getTreatment", signature = "methylRawList", function(x) {
   return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 #' @aliases 'getTreatment<-',methylRawList-method
 setReplaceMethod("getTreatment", signature = "methylRawList", function(x, value) {
   
@@ -1731,7 +1735,7 @@ setMethod("getTreatment", signature = "methylBase", function(x) {
   return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
+#' @rdname getTreatment-methods
 #' @aliases 'getTreatment<-'getTreatment,methylBase-method
 setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
   
@@ -1763,10 +1767,10 @@ setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
 #' data(methylKit)
 #' 
 #' #The Sample-Ids can be printed ..
-#' getSampleID(methylBaseDB.obj)
+#' getSampleID(methylBase.obj)
 #' 
 #' # .. or replaced. 
-#' newObj <- methylBaseDB.obj
+#' newObj <- methylBase.obj
 #' getSampleID(newObj) <- c("sample1","sample2","sample3","sample4")
 #' getSampleID(newObj)
 #' 
@@ -1775,8 +1779,8 @@ setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
 #' @docType methods
 #' @rdname getSampleID-methods
 setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
-#' @rdname 'getSampleID<-'-methods
-setGeneric("getSampleID<-", def=function(x, value="numeric") {standardGeneric("getSampleID<-")})
+#' @rdname getSampleID-methods
+setGeneric("getSampleID<-", def=function(x, value="character") {standardGeneric("getSampleID<-")})
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylRawList-method
 setMethod("getSampleID", signature = "methylRawList", function(x) {
@@ -1784,7 +1788,7 @@ setMethod("getSampleID", signature = "methylRawList", function(x) {
   return(names)
 })
 
-#' @rdname 'getSampleID<-'-methods
+#' @rdname getSampleID-methods
 #' @aliases 'getSampleID<-',methylRawList-method
 setReplaceMethod("getSampleID", signature = "methylRawList", function(x, value) {
   
@@ -1806,7 +1810,7 @@ setMethod("getSampleID", signature = "methylBase", function(x) {
   return(x@sample.ids)
 })
 
-#' @rdname 'getSampleID<-'-methods
+#' @rdname getSampleID-methods
 #' @aliases 'getSampleID<-',methylBase-method
 setReplaceMethod("getSampleID", signature = "methylBase", function(x, value) {
   
@@ -1826,7 +1830,7 @@ setMethod("getSampleID", signature = "methylRaw", function(x) {
   return(x@sample.id)
 })
 
-#' @rdname 'getSampleID<-'-methods
+#' @rdname getSampleID-methods
 #' @aliases 'getSampleID<-',methylRaw-method
 setReplaceMethod("getSampleID", signature = "methylRaw", function(x, value) {
   

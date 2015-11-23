@@ -35,7 +35,7 @@
 #                  The type of the flat file database, currently only option is "tabix"
 #                  (only used for newly stored databases)
 #'
-#' @usage reconstruct(methMat,mBase,chunk.num,save.db,...)
+#' @usage reconstruct(methMat,mBase,chunk.size,save.db,...)
 #' 
 #' @return new \code{\link{methylBase}} or \code{\link{methylBase}} object where methylation percentage matches
 #'         input \code{methMat} and coverages matches input \code{mBase}

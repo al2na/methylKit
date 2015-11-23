@@ -28,7 +28,7 @@
 #'
 #'
 #' @return returns adjusted 5-methyl cytosine levels in the form of \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} or \code{methylRawListDB} object depending on the input object
-#' @usage adjust.methylC(mc,hmc,save.db,...)
+#' @usage adjust.methylC(mc,hmc,save.db,...,chunk.size)
 #' @examples
 #' 
 #' # read 5hmC and 5mC files

@@ -12,7 +12,7 @@ percent methylation values and read coverage values per genomic base/region.
 }
 \section{Slots}{
 \describe{
- \item{\code{dbpath}:}{path to flat file database(s) }
+ \item{\code{dbpath}:}{path to flat file database }
  \item{\code{num.records}:}{number of records (lines) in the object}
  \item{\code{sample.id}:}{string for an identifier of the sample}
  \item{\code{assembly}:}{string for genome assembly, ex: hg18,hg19,mm9}
@@ -25,45 +25,56 @@ percent methylation values and read coverage values per genomic base/region.
 
 \section{Details}{
 
-\code{methylRawDB} class extends \code{\link{data.frame}} class therefore
-providing novice and experienced R users with a data structure that is well
-known and ubiquitous in many R packages.
+\code{methylRawDB} is created via \code{\link{read}} function and has the same functionality as \code{\link{methylRaw}} class,
+but the data is saved in a flat database file and therefore allocates less space in memory.
 }
 
 \section{Subsetting}{
 
- In the following code snippets, \code{x} is a \code{methylDiff}.
- Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
+ In the following code snippets, \code{x} is a \code{methylRawDB}.
+ Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if subsetting is done on
  rows. Column subsetting is not directly allowed to prevent errors in the
  downstream analysis. see ?methylKit[ .
+ \code{x[]} will return the \code{methylRawDB} object as new \code{methylRaw} object
 }
 
 \section{Accessors}{
 
-The following functions provides access to data slots of methylDiff:
+The following functions provides access to data slots of methylRawDB:
 \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 \code{\link[methylKit]{getContext}}
 }
 
 \section{Coercion}{
 
-  \code{methylRaw} object can be coerced to
+  \code{methylRawDB} object can be coerced to:
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link{methylRaw}} object via \code{\link{[}} function, see section Subsetting.
 }
 \examples{
 # example of a raw methylation data contained as a text file
 read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 header=TRUE,nrows=5)
 
-data(methylKit)
+file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
-# example of a methylRaw object
-head(methylRawList.obj[[1]])
-str(head(methylRawList.obj[[1]]))
+methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
+                            assembly = "hg18",treatment = c(1,1,0,0),
+                            dbtype = "tabix",dbdir = "methylDB")
+
+# example of a methylRawDB object
+methylRawListDB.obj[[1]]
+str(methylRawListDB.obj[[1]])
 
 library(GenomicRanges)
 
-#coercing methylRaw object to GRanges object
-my.gr=as(methylRawList.obj[[1]],"GRanges")
+#coercing methylRawDB object to GRanges object
+my.gr=as(methylRawListDB.obj[[1]],"GRanges")
+
+#' #coercing methylRawDB object to methylRaw object
+myRaw=methylRawListDB.obj[[1]][]
 }
 
