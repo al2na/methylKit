@@ -23,14 +23,15 @@ suppressMessages(methidhDB <- unite(mydblist))
 suppressMessages(methidh2DB <- unite(mydblist,min.per.group=1L))
 
 
-ta2methylDB=unite(myobj,destrand=T)
-suppressMessages(taDB2methyl <- unite(mydblist,destrand=T))
+suppressMessages(ta2methylDB <- unite(myobj,destrand=T,save.db = T,dbdir="methylDB"))
+taDB2methyl <- unite(mydblist,destrand=T,save.db = F)
 
 
 test_that("test if output of unite is  methylBase object", {
     expect_is(ta, 'methylBase')
     expect_is(methidh, 'methylBase')
     expect_is(methidh2, 'methylBase')
+    expect_is(taDB2methyl, 'methylBase')
 
 })
 
@@ -38,6 +39,6 @@ test_that("test if output of unite is  methylBaseDB object", {
   expect_is(taDB, 'methylBaseDB')
   expect_is(methidhDB, 'methylBaseDB')
   expect_is(methidh2DB, 'methylBaseDB')
-  
+  expect_is(ta2methylDB, 'methylBaseDB')
 })
 
