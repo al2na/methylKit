@@ -107,8 +107,3 @@ setMethod("normalizeCoverage", "methylRawList",
                       
                       
 })
-
-
-
-
-

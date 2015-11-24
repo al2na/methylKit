@@ -116,7 +116,4 @@ setMethod("pool", "methylBase",
                      destranded=obj@destranded, resolution=obj@resolution,
                      suffix=suffix )
   }
-
-  
-                    
 })

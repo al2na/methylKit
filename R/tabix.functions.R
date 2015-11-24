@@ -477,7 +477,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
 #' 
 #' @return either a path to a tabix or text file, or a data frame or data.table
-applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores){
+applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores=1){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)

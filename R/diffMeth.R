@@ -536,7 +536,7 @@ setMethod("calculateDiffMeth", "methylBase",
                 suffix <- paste0("_",args$suffix)
               }
               
-              # create methylBaseDB
+              # create methylDiffDB
               makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
                                assembly=.Object@assembly,context=.Object@context,
                                destranded=.Object@destranded,treatment=.Object@treatment,
