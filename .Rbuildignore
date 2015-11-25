@@ -16,3 +16,4 @@
 ^man/headTabix\.Rd$
 ^man/makeMethTabix\.Rd$
 ^man/mergeTabix\.Rd$
+^man/mergeTbxByChr\.Rd$
