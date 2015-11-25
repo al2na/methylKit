@@ -290,21 +290,21 @@ valid.methylBaseDB <- function(object) {
 #'          
 #' @section Slots:\describe{
 #'                  \item{\code{dbpath}:}{path to flat file database(s) }
-#'                  
+#'                  \item{\code{num.records}:}{number of records (lines) in the object}
 #'                  \item{\code{sample.ids}:}{character vector for ids of samples in the object}
-#'
 #'                  \item{\code{assembly}:}{name of the genome assembly}
-#'
 #'                  \item{\code{context}:}{context of methylation. Ex: CpG,CpH,CHH, etc}
-#'
 #'                  \item{\code{treatment}:}{treatment vector denoting which samples are test and control}
-#'
-#'                  \item{\code{coverage.index}:}{vector denoting which columns in the data correspons to coverage values}
-#'
-#'                  \item{\code{numCs.index}:}{vector denoting which columns in the data correspons to number of methylatedCs values}
-#'                  \item{\code{numTs.index}:}{vector denoting which columns in the data correspons to number of unmethylated Cs values}
-#'                  \item{\code{destranded}:}{ logical value. If \code{TRUE} object is destranded, if \code{FALSE} it is not.}
-#'                  \item{\code{resolution}:}{ resolution of methylation information, allowed values: 'base' or 'region'}
+#'                  \item{\code{coverage.index}:}{vector denoting which columns in the data correspond to 
+#'                  coverage values}
+#'                  \item{\code{numCs.index}:}{vector denoting which columns in the data correspond to 
+#'                  number of methylatedCs values}
+#'                  \item{\code{numTs.index}:}{vector denoting which columns in the data correspond to 
+#'                  number of unmethylated Cs values}
+#'                  \item{\code{destranded}:}{ logical value. If \code{TRUE} object is destranded, 
+#'                  if \code{FALSE} it is not.}
+#'                  \item{\code{resolution}:}{ resolution of methylation information, 
+#'                  allowed values: 'base' or 'region'}
 #'                  \item{\code{dbtype}:}{string for type of the flat file database, ex: tabix}
 #' }
 #' 
@@ -446,6 +446,8 @@ valid.methylDiffDB <- function(object) {
 #' with \code{methylDiffDB} class.
 #'          
 #' @section Slots:\describe{
+#'    \item{\code{dbpath}:}{path to flat file database(s) }
+#'    \item{\code{num.records}:}{number of records (lines) in the object}
 #'    \item{\code{sample.ids}}{ids/names of samples in a vector}
 #'    \item{\code{assembly}}{a name of genome assembly, such as :hg18,mm9, etc}
 #'    \item{\code{context}}{numeric vector identifying which samples are which
@@ -456,6 +458,7 @@ valid.methylDiffDB <- function(object) {
 #'     destranded or not}
 #'    \item{\code{resolution}}{string either 'base' or 'region' defining the 
 #'    resolution of methylation information}
+#'    \item{\code{dbtype}:}{string for type of the flat file database, ex: tabix}
 #'
 #' }
 #' 
@@ -480,7 +483,7 @@ valid.methylDiffDB <- function(object) {
 #' @examples
 #' data(methylKit)
 #' 
-#' methyDiffDB.obj <- calculateDiffMeth(methylBase.obj,save.db=TRUE,dbdir="methylDB")
+#' methylDiffDB.obj <- calculateDiffMeth(methylBase.obj,save.db=TRUE,dbdir="methylDB")
 #' 
 #' library(GenomicRanges)
 #' my.gr=as(methylDiffDB.obj,"GRanges")
@@ -1161,8 +1164,16 @@ setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
 #' 
 #' data(methylKit)
 #' 
+#' methylBaseDB.obj <- unite(methylRawList.obj,save.db=TRUE,dbdir="methylDB")
+#' 
+#' 
 #' #The path to the database is returned
 #' getDBPath(methylBaseDB.obj)
+#' 
+#' 
+#' # remove Database again
+#' rm(methylBaseDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @export
 #' @docType methods

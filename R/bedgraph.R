@@ -21,7 +21,7 @@
 #' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, default: 1e6
 #'
 #' @return Returns a \code{data.frame} or list of data.frames if \code{file.name=NULL}, if a file.name given appropriate bed file will be written to that file
-#' @usage bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+#' @usage bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="",chunk.size=1e6)
 #' @examples
 #' data(methylKit)
 #' 

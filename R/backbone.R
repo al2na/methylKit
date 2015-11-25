@@ -334,7 +334,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'            
 #'  # tidy up                  
 #'  rm(myobj)              
-#'  unlink(list.files(pattern = "methylDB",full.names = T),recursive = TRUE)
+#'  unlink(list.files(pattern = "methylDB",full.names = TRUE),recursive = TRUE)
 #'                
 #'                
 #'  
@@ -623,7 +623,7 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #'                            
 #' # tidy up
 #' rm(filtered3)
-#' unlink(list.files(pattern = "methylDB",full.names = T),recursive = TRUE)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @section Details:
 #' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
