@@ -331,6 +331,13 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'                sample.id="test1",
 #'                assembly="hg18",
 #'                dbtype="tabix",dbdir="methylDB_objects")
+#'            
+#'  # tidy up                  
+#'  rm(myobj)              
+#'  unlink(list.files(pattern = "methylDB",full.names = T),recursive = TRUE)
+#'                
+#'                
+#'  
 #'                
 #' @section Details:
 #'  The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
@@ -613,6 +620,10 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #' filtered3=filterByCoverage(methylRawList.obj[[1]], lo.count=NULL, lo.perc=NULL, 
 #'                            hi.count=500, hi.perc=NULL, save.db=TRUE, 
 #'                            suffix="max500", dbdir="methylDB")
+#'                            
+#' # tidy up
+#' rm(filtered3)
+#' unlink(list.files(pattern = "methylDB",full.names = T),recursive = TRUE)
 #' 
 #' @section Details:
 #' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
@@ -979,11 +990,23 @@ setMethod("unite", "methylRawList",
 #' @examples
 #' 
 #' data(methylKit)
+#' 
 #' getCorrelation(methylBase.obj,method="pearson",plot=FALSE)
+#' 
+#' # create methylBaseDB
+#' methylBaseDB.obj <- unite(methylRawList.obj,save.db=TRUE,dbdir="methylDB")
+#' 
 #' getCorrelation(methylBaseDB.obj,method="pearson",plot=FALSE,nrow=10000)
+#' 
+#' 
+#' 
+#' 
+#' # remove Database again
+#' rm(methylBaseDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #'
 #' @section Details: The argument 'nrow' is only evaluated if the input is a \code{methylBaseDB} object.
-#' When 'nrow' is not specified \code{getCorrelation} will read the first 2M records of the given object,
+#' If 'nrow' is not specified \code{getCorrelation} will read the first 2M records of the given object,
 #' but if you want to read all records 'nrow' has to be NULL. 
 #' You should change 'nrow' if using \code{getCorrelation} with all records of the methylBaseDB object would take to long. 
 #' 
@@ -1553,9 +1576,18 @@ setAs("methylBase", "GRanges", function(from)
 #' @usage select(x,i)
 #' @examples
 #' data(methylKit)
+#' 
+#' 
+#' methylRawDB.obj=read( system.file("extdata","test1.txt.bgz",package="methylKit"),
+#'                           sample.id="test1", assembly="hg18",
+#'                           dbtype = "tabix",dbdir = "methylDB")
+#'
+#' methylBaseDB.obj=unite(methylRawList.obj,save.db=TRUE,dbdir="methylDB")
+#' 
+#' 
 #'  # selects first hundred rows, returns a methylRaw object
 #' subset1=select(methylRawList.obj[[1]],1:100)
-#' subset1=select(methylRawListDB.obj[[1]],1:100)
+#' subset1=select(methylRawDB.obj,1:100)
 #' 
 #' # selects first hundred rows, returns a methylBase object
 #' subset2=select(methylBase.obj,1:100) 
@@ -1563,6 +1595,14 @@ setAs("methylBase", "GRanges", function(from)
 #' 
 #' # selects first hundred rows, returns a methylDiff object
 #' subset3=select(methylDiff.obj,1:100)
+#' 
+#' 
+#' 
+#' 
+#' # remove Database again
+#' rm(methylBaseDB.obj)
+#' rm(methylRawDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
 #'           \code{\link{methylDiff}} object depending on the input object.
@@ -1717,7 +1757,7 @@ setMethod("getTreatment", signature = "methylRawList", function(x) {
 })
 
 #' @rdname getTreatment-methods
-#' @aliases 'getTreatment<-',methylRawList-method
+#' @aliases getTreatment,methylRawList-method
 setReplaceMethod("getTreatment", signature = "methylRawList", function(x, value) {
   
   if(! ( length(x@treatment) == length(value) ) ){
@@ -1736,7 +1776,7 @@ setMethod("getTreatment", signature = "methylBase", function(x) {
 })
 
 #' @rdname getTreatment-methods
-#' @aliases 'getTreatment<-'getTreatment,methylBase-method
+#' @aliases getTreatment,methylBase-method
 setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
   
   if(! ( length(x@treatment) == length(value) ) ){
@@ -1789,7 +1829,7 @@ setMethod("getSampleID", signature = "methylRawList", function(x) {
 })
 
 #' @rdname getSampleID-methods
-#' @aliases 'getSampleID<-',methylRawList-method
+#' @aliases getSampleID,methylRawList-method
 setReplaceMethod("getSampleID", signature = "methylRawList", function(x, value) {
   
   if(! ( length(getSampleID(x)) == length(value) ) ){
@@ -1811,7 +1851,7 @@ setMethod("getSampleID", signature = "methylBase", function(x) {
 })
 
 #' @rdname getSampleID-methods
-#' @aliases 'getSampleID<-',methylBase-method
+#' @aliases getSampleID,methylBase-method
 setReplaceMethod("getSampleID", signature = "methylBase", function(x, value) {
   
   if(! ( length(x@sample.ids) == length(value) ) ){
@@ -1831,7 +1871,7 @@ setMethod("getSampleID", signature = "methylRaw", function(x) {
 })
 
 #' @rdname getSampleID-methods
-#' @aliases 'getSampleID<-',methylRaw-method
+#' @aliases getSampleID,methylRaw-method
 setReplaceMethod("getSampleID", signature = "methylRaw", function(x, value) {
   
   if(! ( length(value) == 1 ) ){

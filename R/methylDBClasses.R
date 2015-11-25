@@ -331,8 +331,15 @@ valid.methylBaseDB <- function(object) {
 #' 
 #' @examples
 #' data(methylKit)
+#' methylBaseDB.obj <- unite(methylRawList.obj,save.db=TRUE,dbdir="methylDB")
 #' library(GenomicRanges)
 #' my.gr=as(methylBaseDB.obj,"GRanges")
+#' 
+#' 
+#' #' # remove Database again
+#' rm(methylBaseDB.obj)
+#' unlink("methylDB",recursive=TRUE)
+#' 
 #' 
 #' @name methylBaseDB-class
 #' @aliases methylBaseDB
@@ -472,8 +479,15 @@ valid.methylDiffDB <- function(object) {
 #' 
 #' @examples
 #' data(methylKit)
+#' 
+#' methyDiffDB.obj <- calculateDiffMeth(methylBase.obj,save.db=TRUE,dbdir="methylDB")
+#' 
 #' library(GenomicRanges)
 #' my.gr=as(methylDiffDB.obj,"GRanges")
+#' 
+#' # remove Database again
+#' rm(methylDiffDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @name methylDiffDB-class
 #' @aliases methylDiffDB
@@ -813,7 +827,20 @@ setMethod("[","methylDiffDB",
 
 #' @usage selectByOverlap(object,ranges)
 #' @examples
-#' data(methylKit)
+#' 
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+#' 
+#' methylRawListDB.obj=read(file.list,
+#'                          sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'                          assembly="hg18",treatment=c(1,1,0,0),
+#'                          dbtype = "tabix",dbdir = "methylDB")
+#'
+#' methylBaseDB.obj=unite(methylRawListDB.obj)
+#'
+#' methylDiffDB.obj = calculateDiffMeth(methylBaseDB.obj)
 #' 
 #' # define the windows of interest as a GRanges object, this can be any set 
 #' # of genomic locations
@@ -829,6 +856,12 @@ setMethod("[","methylDiffDB",
 #' 
 #' # selects the records that lie inside the regions
 #' myDiff <- selectByOverlap(methylDiffDB.obj,my.win)
+#' 
+#' 
+#' rm(methylRawListDB.obj)
+#' rm(methylBaseDB.obj)
+#' rm(methylDiffDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
 #'           \code{\link{methylDiff}} object depending on the input object.
