@@ -25,7 +25,7 @@ Depends:
 Imports:
     GenomicRanges (>= 1.18.1),
     IRanges,
-    data.table (>= 1.9.2),
+    data.table (>= 1.9.6),
     parallel,
     S4Vectors,
     GenomeInfoDb,
@@ -38,6 +38,7 @@ Suggests:
     testthat
 Collate:
     'backbone.R'
+    'methylDBClasses.R'
     'diffMeth.R'
     'annotate.R'
     'clusterSamples.R'
@@ -53,5 +54,5 @@ Collate:
     'updateMethObject.R'
     'batchControl.R'
     'dataSim.R'
-    'methylDBClasses.R'
+    'methylDBFunctions.R'
     'tabix.functions.R'
