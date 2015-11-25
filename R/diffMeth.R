@@ -859,10 +859,10 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
             dmc.hyper=100*nrow(temp.hyper)/nrow(x) # get percentages of hypo/ hyper
             dmc.hypo =100*nrow(temp.hypo )/nrow(x)
             
-            all.hyper.hypo=data.frame(percentage.of.hypermethylated=dmc.hyper,
-                                      number.of.hypermethylated=nrow(temp.hyper),
-                                      percentage.of.hypomethylated=dmc.hypo  ,
-                                      number.of.hypomethylated=nrow(temp.hypo))
+            all.hyper.hypo=data.frame(number.of.hypermethylated=nrow(temp.hyper),
+                                      percentage.of.hypermethylated=dmc.hyper,
+                                      number.of.hypomethylated=nrow(temp.hypo),
+                                      percentage.of.hypomethylated=dmc.hypo)
             
             # plot barplot for percentage of DMCs per chr
             dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), as.data.frame(table(x$chr)),by="Var1")
@@ -871,25 +871,24 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
             dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), as.data.frame(table(x$chr)),by="Var1")
             dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
             
-            dmc.hypo.hyper=merge(dmc.hypo.chr[,c(1,2,4)],dmc.hyper.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome
-            dmc.hypo.hyper=dmc.hypo.hyper[order(as.numeric(sub("chr","",dmc.hypo.hyper$Var1))),] # order the chromosomes
+            dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],dmc.hypo.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome
+            dmc.hyper.hypo=dmc.hyper.hypo[order(as.numeric(sub("chr","",dmc.hyper.hypo$Var1))),] # order the chromosomes
             
-            names(dmc.hypo.hyper)=c("chr","number.of.hypomethylated","percentage.of.hypomethylated","number.of.hypermethylated","percentage.of.hypermethylated")
+            names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated","percentage.of.hypermethylated","number.of.hypomethylated","percentage.of.hypomethylated")
             if(plot){
               
-              if(!is.null(exclude)){dmc.hypo.hyper=dmc.hypo.hyper[! dmc.hypo.hyper$chr %in% exclude,]}
+              if(!is.null(exclude)){dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
               
               barplot(
-                t(as.matrix(data.frame(hyper=dmc.hypo.hyper[,5],hypo=dmc.hypo.hyper[,3],row.names=dmc.hypo.hyper[,1]) ))
+                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],hypo=dmc.hyper.hypo[,5],row.names=dmc.hyper.hypo[,1]) ))
                 ,las=2,horiz=T,col=c("magenta","aquamarine4"),main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),xlab="% (percentage)",...)
               mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",meth.cutoff," %",sep="") )
               legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
             }else{
               
-              list(diffMeth.per.chr=dmc.hypo.hyper,diffMeth.all=all.hyper.hypo)
+              list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
               
             }
             
           })
-
 
