@@ -39,6 +39,11 @@
 #'                  parameters are \code{list}s and you are trying to read-in 
 #'                  multiple samples that are related to eachother in down-stream 
 #'                  analysis. 
+#' @param save.db A Logical to decide whether the resulting object should be saved 
+#'                as flat file database or not ( default: FALSE). 
+#'                If TRUE, database will either be saved to location \code{save.folder} or 
+#'                if this is NULL, to a new folder in the current working directory 
+#'                named after this scheme: "methylDB <Date> <3randomlettersornumbers>"
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'
@@ -73,7 +78,7 @@
 setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
                                     save.context=c("CpG"),read.context="CpG",
                                     nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
-                                    ,treatment) standardGeneric("read.bismark"))
+                                    ,treatment,save.db=FALSE) standardGeneric("read.bismark"))
 
 #' @aliases read.bismark,character,character,character-method
 #' @rdname read.bismark-methods
@@ -81,7 +86,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                                     assembly= "character"),
                     function(location,sample.id,assembly,save.folder,save.context
                              ,read.context,
-                             nolap,mincov,minqual,phred64){
+                             nolap,mincov,minqual,phred64,save.db=FALSE){
                       
                       # check if file exists
                       if(! file.exists(location) ){
@@ -149,7 +154,14 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                       # read the result
                       if(read.context != "none"){
                         cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
-                        obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
+                        if(save.db) { dbtype="tabix"; 
+                          if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
+                          obj=read(location=out.files[[read.context]],sample.id=paste(sample.id,tolower(read.context),sep = "_"),assembly=assembly,dbtype=dbtype,pipeline="bismark",header=T, context=read.context,dbdir = dbdir)
+                          obj@sample.id <- sample.id
+                        }
+                        else {
+                          obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
+                        }
                         if(temp.files ){dummy=lapply(out.files,unlink)}
                         
                         return(obj)
@@ -163,7 +175,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
 #' @aliases read.bismark,list,list,character-method
 setMethod("read.bismark", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,save.folder,save.context,read.context,
-                             nolap,mincov,minqual,phred64,treatment){
+                             nolap,mincov,minqual,phred64,treatment,save.db=FALSE){
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
@@ -171,17 +183,31 @@ setMethod("read.bismark", signature(location = "list",sample.id="list",assembly=
             if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
               stop("length of 'treatment', 'name' and 'location' should be same\n")
             }
-            
-            # read each given location and record it as methylraw object
-            outList=list()
-            for(i in 1:length(location))
-            {
-              data=read.bismark(location[[i]],sample.id[[i]],assembly,
-                                save.folder,save.context,read.context,
-                                nolap,mincov,minqual,phred64)# read data
-              outList[[i]]=data  
+            if(!save.db) { 
+              # read each given location and record it as methylraw object
+              outList=list()
+              for(i in 1:length(location))
+              {
+                data=read.bismark(location[[i]],sample.id[[i]],assembly,
+                                  save.folder,save.context,read.context,
+                                  nolap,mincov,minqual,phred64)# read data
+                outList[[i]]=data  
+              }
+              myobj=new("methylRawList",outList,treatment=treatment)
+              
+              myobj
             }
-            myobj=new("methylRawList",outList,treatment=treatment)
-            
-            myobj
+            else {
+              if(is.null(save.folder)) save.folder=getwd() 
+              # read each given location and record it as methylrawDB object
+              outList=list()
+              for(i in 1:length(location))
+              {
+                data=read.bismark(location[[i]],sample.id[[i]],assembly,
+                                  save.folder,save.context,read.context,
+                                  nolap,mincov,minqual,phred64)# read data
+                outList[[i]]=data  
+              }
+              return(new("methylRawListDB",outList,treatment=treatment))
+            }
           })

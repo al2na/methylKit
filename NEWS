@@ -1,3 +1,10 @@
+methylKit 0.9.4.2
+--------------
+NEW FUNCTIONS AND FEATURES
+
+* new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, methylDiffDB and respective methods implemented. Tests are updated to check proper function in R CMD check. Contributed by Alexander Gosdschan.
+
+
 methylKit 0.9.4.1
 --------------
 NEW FUNCTIONS AND FEATURES
