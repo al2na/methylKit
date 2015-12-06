@@ -224,7 +224,7 @@ colSds <- function(x, ...) {
 #' region for each sample.
 #' 
 #' 
-#' @param .Object a \code{methylBase} object
+#' @param .Object a \code{methylBase} or \code{methylBaseDB} object
 #' @param dist the distance measure to be used. This must be one of 
 #'        "\code{correlation}", "\code{euclidean}", "\code{maximum}", 
 #'        "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". 
@@ -246,15 +246,23 @@ colSds <- function(x, ...) {
 #'        bases/regions (the default), or as an absolute value
 #' @param plot a logical value indicating whether to plot hierarchical 
 #'        clustering. (default:TRUE) 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects, default: 1e6
+#'        
 #' @usage clusterSamples(.Object, dist="correlation", method="ward",
 #'                        sd.filter=TRUE,sd.threshold=0.5,
-#'                        filterByQuantile=TRUE, plot=TRUE)
+#'                        filterByQuantile=TRUE, plot=TRUE,chunk.size)
 #' @examples
 #' data(methylKit)
 #' 
 #' clusterSamples(methylBase.obj, dist="correlation", method="ward", plot=TRUE)
 #' 
 #' 
+#' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB}  objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @return a \code{tree} object of a hierarchical cluster analysis using a set 
 #'          of dissimilarities for the n objects being clustered.
@@ -264,7 +272,7 @@ colSds <- function(x, ...) {
 #' @rdname clusterSamples-methods
 setGeneric("clusterSamples", function(.Object, dist="correlation", method="ward",
                                       sd.filter=TRUE,sd.threshold=0.5,
-                                      filterByQuantile=TRUE, plot=TRUE) 
+                                      filterByQuantile=TRUE, plot=TRUE,chunk.size=1e6) 
                                               standardGeneric("clusterSamples"))
 
 #' @rdname clusterSamples-methods
@@ -305,7 +313,7 @@ setMethod("clusterSamples", "methylBase",
 #' The function does a PCA analysis using \code{\link[stats]{prcomp}} function 
 #' using percent methylation matrix as an input.
 #' 
-#' @param .Object a \code{methylBase} object
+#' @param .Object a \code{methylBase} or \code{methylBaseDB} object
 #' @param screeplot a logical value indicating whether to plot the variances 
 #'        against the number of the principal component. (default: FALSE)
 #' @param adj.lim a vector indicating the propotional adjustment of 
@@ -338,9 +346,11 @@ setMethod("clusterSamples", "methylBase",
 #'        bases/regions (the default), or as an absolute value
 #' @param obj.return if the result of \code{prcomp} function should be returned 
 #'        or not. (Default:FALSE)
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6
+#' 
 #' @usage PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1), scale=TRUE,
 #' center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
-#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
+#'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE,chunk.size)
 #' 
 #' @examples
 #' data(methylKit) 
@@ -351,6 +361,11 @@ setMethod("clusterSamples", "methylBase",
 #'            scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
 #'            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
 #' @return The form of the value returned by \code{PCASamples} is the summary 
 #'         of principal component analysis by \code{prcomp}.
@@ -364,7 +379,7 @@ setMethod("clusterSamples", "methylBase",
 setGeneric("PCASamples", function(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1),
                                   scale=TRUE,center=TRUE,comp=c(1,2),transpose=TRUE,
                                   sd.filter=TRUE,sd.threshold=0.5,
-                                  filterByQuantile=TRUE,obj.return=FALSE) 
+                                  filterByQuantile=TRUE,obj.return=FALSE,chunk.size=1e6) 
           standardGeneric("PCASamples"))
 
 #' @rdname PCASamples-methods

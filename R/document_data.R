@@ -1,6 +1,6 @@
 #' Example methylRawList object.
 #' 
-#' methylKit has several objects. This data set includes examples of the following objects:
+#'
 #'  \code{methylBase}, \code{methylDiff} and \code{methylRawList}. You can load the data using \code{data(methylKit)}
 #'
 #' @name methylRawList.obj
@@ -11,7 +11,6 @@
 NULL
 #' Example methylBase object.
 #' 
-#' methylKit has several objects. This data set includes examples of the following objects:
 #'  \code{methylBase}, \code{methylDiff} and \code{methylRawList}. You can load the data using \code{data(methylKit)}
 #'
 #' @name methylBase.obj
@@ -22,7 +21,6 @@ NULL
 NULL
 #' Example methylKit objects.
 #' 
-#' methylKit has several objects. This data set includes examples of the following objects:
 #'  \code{methylBase}, \code{methylDiff} and \code{methylRawList}. You can load the data using \code{data(methylKit)}
 #'
 #' @name methylDiff.obj
