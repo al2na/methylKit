@@ -9,17 +9,15 @@
 \usage{
 read.bismark(location, sample.id, assembly, save.folder = NULL,
   save.context = c("CpG"), read.context = "CpG", nolap = FALSE,
-  mincov = 10, minqual = 20, phred64 = FALSE, treatment,
-  save.db = FALSE)
+  mincov = 10, minqual = 20, phred64 = FALSE, treatment)
 
 \S4method{read.bismark}{character,character,character}(location, sample.id,
   assembly, save.folder, save.context, read.context, nolap, mincov, minqual,
-  phred64, save.db = FALSE)
+  phred64)
 
 \S4method{read.bismark}{list,list,character}(location, sample.id, assembly,
   save.folder = NULL, save.context = c("CpG"), read.context = "CpG",
-  nolap = FALSE, mincov = 10, minqual = 20, phred64 = FALSE, treatment,
-  save.db = FALSE)
+  nolap = FALSE, mincov = 10, minqual = 20, phred64 = FALSE, treatment)
 }
 \arguments{
 \item{location}{location of sam file(s). If multiple files are given this 
@@ -61,12 +59,6 @@ Currently bismark gives only phred33 scale}
 parameters are \code{list}s and you are trying to read-in 
 multiple samples that are related to eachother in down-stream 
 analysis.}
-
-\item{save.db}{A Logical to decide whether the resulting object should be saved 
-as flat file database or not ( default: FALSE). 
-If TRUE, database will either be saved to location \code{save.folder} or 
-if this is NULL, to a new folder in the current working directory 
-named after this scheme: "methylDB <Date> <3randomlettersornumbers>"}
 }
 \value{
 \code{methylRaw} or \code{methylRawList} object

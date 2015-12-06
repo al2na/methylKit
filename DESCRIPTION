@@ -2,22 +2,22 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.4.2
+Version: 0.9.4.1
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "altuna.akalin@mdc-berlin.de"),
 	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
 	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"),
 	      person("Adrian", "Bierling", role= "aut", comment="providing basic overdispersion correction and data simulation"))
 Description: methylKit is an R package for DNA methylation analysis and
-  annotation from high-throughput bisulfite sequencing. The package is designed 
-  to deal with sequencing data from RRBS and its variants, but also target-capture 
-  methods and whole genome bisulfite sequencing. It also has functions to analyze 
-  base-pair resolution 5hmC data from experimental protocols such as oxBS-Seq 
-  and TAB-Seq. Perl is needed to read SAM files only.
+    annotation from high-throughput bisulfite sequencing. The package is designed
+    to deal with sequencing data from RRBS and its variants, but also target-capture
+    methods and whole genome bisulfite sequencing. It also has functions to analyze
+    base-pair resolution 5hmC data from experimental protocols such as oxBS-Seq and
+    TAB-Seq. Perl is needed to read SAM files only.
 License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
-SystemRequirements:  Perl
+SystemRequirements: Perl
 biocViews: DNAMethylation
 Depends:
     R (>= 2.15.0),
@@ -25,21 +25,17 @@ Depends:
 Imports:
     GenomicRanges (>= 1.18.1),
     IRanges,
-    data.table (>= 1.9.6),
+    data.table (>= 1.9.2),
     parallel,
     S4Vectors,
     GenomeInfoDb,
-    KernSmooth,
     qvalue,
     emdbook,
-    limma,
-    Rsamtools,
-    gtools
+    limma
 Suggests:
     testthat
 Collate:
     'backbone.R'
-    'methylDBClasses.R'
     'diffMeth.R'
     'annotate.R'
     'clusterSamples.R'
@@ -56,5 +52,4 @@ Collate:
     'batchControl.R'
     'dataSim.R'
     'diffMethDSS.R'
-    'methylDBFunctions.R'
-    'tabix.functions.R'
+RoxygenNote: 5.0.1

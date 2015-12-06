@@ -13,12 +13,5 @@ methylBase.obj=unite(methylRawList.obj)
 
 methylDiff.obj=calculateDiffMeth(methylBase.obj)
 
-# methylRawListDB.obj=read( file.list,
-#                           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0),
-#                           dbtype = "tabix",dbdir = "methylDB")
-# 
-# methylBaseDB.obj=unite(methylRawListDB.obj)
-# 
-# methylDiffDB.obj = calculateDiffMeth(methylBaseDB.obj)
 
 save(methylRawList.obj,methylBase.obj,methylDiff.obj,file="methylKit.RData")

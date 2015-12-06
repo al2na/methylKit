@@ -7,13 +7,12 @@
 \title{Calculate differential methylation statistics}
 \usage{
 calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-                         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH",
-                         "BY","fdr","none","qvalue"),effect=c("wmean","mean","predicted"), 
-                         parShrinkNM=list(),test=c("F","Chisq"),mc.cores=1,slim=TRUE, 
-                         weighted.mean=TRUE, chunk.size, save.db,...)
+        adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr",
+        "none","qvalue"), effect=c("wmean","mean","predicted"),parShrinkMN=list(),
+        test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE)
 }
 \arguments{
-\item{.Object}{a methylBase or methylBaseDB object to calculate differential methylation}
+\item{.Object}{a methylBase object to calculate differential methylation}
 
 \item{covariates}{a data.frame containing covariates, which should be included in the test.}
 
@@ -30,6 +29,8 @@ and for all other methods see \code{\link[stats]{p.adjust}}.}
 using read coverage as weights (default). When set to "mean", the generic mean is applied
 and when set to "predicted", a logistic model is used instead.}
 
+\item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
+
 \item{test}{the statistical test used to determine the methylation differences. 
 The Chisq-test is used by default, while the F-test can be chosen 
 if overdispersion control ist applied.}
@@ -41,24 +42,6 @@ machines with multiple cores).}
 \item{slim}{If set to FALSE, \code{adjust} will be set to "BH" (default behaviour of earlier versions)}
 
 \item{weighted.mean}{If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)}
-
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)}
-
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
-
-\item{...}{optional Arguments used when save.db is TRUE
-
-\code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
-      
-\code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
-      to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
-
-\item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 }
 \value{
 a methylDiff object containing the differential methylation 
@@ -78,16 +61,6 @@ The Chisq-test is used per default only when no overdispersion correction is app
 If overdispersion correction is applied, the function automatically switches to the 
 F-test. The Chisq-test can be manually chosen in this case as well, but the F-test only 
 works with overdispersion correction switched on.
-
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
-
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
-while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
-then you might want to change the value of this parameter.
 }
 \examples{
 

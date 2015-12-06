@@ -12,7 +12,7 @@ import(limma)
 #importClassesFrom("GenomicRanges",GRanges,GRangesList)
 
 
-importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths ,sortSeqlevels)
+importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths )
 
 
 importClassesFrom("IRanges", RangedData, RangedDataList,RangedSelection)
@@ -30,12 +30,11 @@ importClassesFrom("S4Vectors",   DataTable,
 importMethodsFrom("IRanges",nearest,as.data.frame)
 #importFrom("qvalue",qvalue)
 
-importFrom( "Rsamtools", TabixFile, scanTabix, yieldSize, "yieldSize<-")
+
 
 #import( data.table)
 importFrom("data.table",data.table,setnames, setcolorder,as.data.table,
-           tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy,
-           rbindlist)
+           tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy)
 
 
 importFrom("parallel", mclapply)
@@ -47,10 +46,6 @@ exportClasses(methylBase)
 exportClasses(methylDiff)
 exportClasses(methylRaw)
 exportClasses(methylRawList)
-exportClasses(methylBaseDB)
-exportClasses(methylDiffDB)
-exportClasses(methylRawDB)
-exportClasses(methylRawListDB)
 exportMethods(adjust.methylC)
 exportMethods(PCASamples)
 exportMethods(annotate.WithFeature)
@@ -95,9 +90,3 @@ export(reconstruct)
 export(removeComp)
 export(assocComp)
 exportMethods(calculateDiffMethDSS)
-export(getTreatment)
-export(getSampleID)
-export("getTreatment<-")
-export("getSampleID<-")
-export(selectByOverlap)
-export(getDBPath)
