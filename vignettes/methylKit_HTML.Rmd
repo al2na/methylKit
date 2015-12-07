@@ -3,24 +3,35 @@ title: "methylKit: User Guide"
 author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.] 
 
 altuna.akalin@mdc-berlin.de"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: rmarkdown::html_vignette
+date: "`r doc_date()`"
+output: 
+    BiocStyle::html_document:
+      toc: true
+      number_sections: false
+      toc_depth: 2
+      highlight: haddock
+      
 bibliography: Vignette_methylKit.bib
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{methylKit: User Guide}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-## Introduction
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dpi = 300)
+knitr::opts_chunk$set(cache = FALSE)
+```
+
+# Introduction
 
 In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
-### DNA methylation
+## DNA methylation
 
 DNA methylation in vertebrates typically occurs at CpG dinucleotides, however non-CpG Cs are also methylated in certain tissues such as embryonic stem cells. DNA methylation can act as an epigenetic control mechanism for gene regulation. Methylation can hinder binding of transcription factors and/or methylated bases can be bound by methyl-binding-domain proteins which can recruit chromatin remodeling factors. In both cases, the transcription of the regulated gene will be effected. In addition, aberrant DNA methylation patterns have been associated with many human malignancies and can be used in a predictive manner. In malignant tissues, DNA is either hypo-methylated or hyper-methylated compared to the normal tissue. The location of hyper- and hypo-methylated sites gives a distinct signature to many diseases. Traditionally, hypo-methylation is associated with gene transcription (if it is on a regulatory region such as promoters) and hyper-methylation is associated with gene repression.
 
-### High-throughput bisulfite sequencing
+## High-throughput bisulfite sequencing
 
 Bisulfite sequencing is a technique that can determine DNA methylation patterns. The major difference from regular sequencing experiments is that, in bisulfite sequencing DNA is treated with bisulfite which converts cytosine residues to uracil, but leaves 5-methylcytosine residues unaffected. By sequencing and aligning those converted DNA fragments it is possible to call methylation status of a base. Usually, the methylation status of a base determined by a high-throughput bisulfite sequencing will not be a binary score, but it will be a percentage. The percentage simply determines how many of the bases that are aligning to a given cytosine location in the genome have actual C bases in the reads. Since bisulfite treatment leaves methylated Cs intact, that percentage will give us percent methylation score on that base. 
 The reasons why we will not get a binary response are:
@@ -29,14 +40,47 @@ The reasons why we will not get a binary response are:
 *  incomplete bisulfite conversion 
 *  (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 
 
-## Basics
+## Installation
 
-### Reading the methylation call files
+To install the package please use the code below.
+
+```{r,eval=FALSE}
+# dependencies
+install.packages( c("data.table","devtools"))
+source("http://bioconductor.org/biocLite.R")
+biocLite(c("GenomicRanges","IRanges"))
+
+# install the package from github
+library(devtools)
+install_github("al2na/methylKit",build_vignettes=FALSE)
+```
+
+### Developmental version
+
+The developmental version of this package sometimes has newer features or bugfixes, 
+but is not as stable as the master version.
+
+```{r,eval=FALSE}
+# dependencies
+install.packages( c("data.table","devtools"))
+source("http://bioconductor.org/biocLite.R")
+biocLite(c("GenomicRanges","IRanges"))
+
+# install the development version from github
+library(devtools)
+install_github("al2na/methylKit",ref="development",build_vignettes=FALSE)
+```
+
+# Basics
+
+## Reading the methylation call files
 
 We start by reading in the methylation call data from bisulfite sequencing with `read` function. Reading in the data this way will return a methylRawList object which stores methylation information per sample for each covered base. The methylation call files are basically text files that contain percent methylation score per base. A typical methylation call file looks like this:
 
-```{r, echo=FALSE}
-read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
+```{r, eval=TRUE, echo=FALSE}
+tab <- read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
+tab
+#knitr::kable(tab)
 ```
 
 Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving `treatment` vector option. For sake of subsequent analysis, file.list, sample.id and treatment option should have the same order. In the following example, first two files are have the sample ids "test1" and "test2" and as determined by treatment vector they belong to the same group. The third and fourth files have sample ids "ctrl1" and "ctrl2" and they belong to the same group as indicated by the treatment vector.
@@ -59,25 +103,26 @@ myobj=read(file.list,
            )
 ```
 
-### Reading the methylation calls from sorted  Bismark alignments
+## Reading the methylation calls from sorted  Bismark alignments
 
 Alternatively, methylation percentage calls can be calculated from
 sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
-popular aligner for bisulfite sequencing reads [@Krueger2011]. `read.bismark` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+popular aligner for bisulfite sequencing reads available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `read.bismark` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
 
 The following command reads a sorted SAM file and creates a `methylRaw` object for CpG methylation.The user has the option to save the methylation call files to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
 
 ```{r, eval=FALSE}
-my.methRaw=read.bismark(
-	   location=system.file("extdata", "test.fastq_bismark.sorted.min.sam", 
-	                    package = "methylKit"),
-             sample.id="test1",assembly="hg18",read.context="CpG",save.folder=getwd())
+my.methRaw=read.bismark( location = system.file("extdata",
+                                                "test.fastq_bismark.sorted.min.sam", 
+	                                              package = "methylKit"),
+                         sample.id="test1", assembly="hg18", 
+                         read.context="CpG",save.folder=getwd())
 ```
 
 
 It is also possible to read multiple SAM files at the same time, check `read.bismark` documentation.
 
-### Descriptive statistics on samples
+## Descriptive statistics on samples
 
 Since we read the methylation data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a `methylRawList` object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
 
@@ -87,17 +132,17 @@ getMethylationStats(myobj[[2]],plot=F,both.strands=F)
 
 The following command plots the histogram for percent methylation distribution.The figure below is the histogram and numbers on bars denote what percentage of locations are contained in that bin. Typically, percent methylation histogram should have two peaks on both ends. In any given cell, any given base are either methylated or not. Therefore, looking at many cells should yield a similar pattern where we see lots of locations with high methylation and lots of locations with low methylation.
 
-```{r, fig.width=5,fig.height=5, fig.align='center'}
+```{r} 
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 ```
 
 We can also plot the read coverage per base information in a similar way, again numbers on bars denote what percentage of locations are contained in that bin. Experiments that are highly suffering from PCR duplication bias will have a secondary peak towards the right hand side of the histogram.
 
-```{r, fig.width=5,fig.height=5, fig.align='center'}
+```{r}
 getCoverageStats(myobj[[2]],plot=T,both.strands=F)
 ```
 
-### Filtering samples based on read coverage
+## Filtering samples based on read coverage
 
 It might be useful to filter samples based on coverage. Particularly, if our samples are suffering from PCR bias it would be useful to discard bases with very high read coverage. Furthermore, we would also like to discard bases that have low read coverage, a high enough read coverage will increase the power of the statistical tests. The code below filters a `methylRawList` and discards bases that have coverage below 10X and also discards the bases that have more than 99.9th percentile of coverage in each sample.
 
@@ -107,8 +152,8 @@ filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
 ```
 
 
-## Comparative analysis
-### Merging samples
+# Comparative analysis
+## Merging samples
 
 In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting `destrand=TRUE` (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). In addition, setting `destrand=TRUE` will only work when operating on base-pair resolution, otherwise setting this option TRUE will have no effect. The `unite()` function will return a `methylBase` object which will be our main object for all comparative analysis. The `methylBase` object contains methylation information for regions/bases that are covered in all samples.
 
@@ -133,20 +178,20 @@ By default, `unite` function produces bases/regions covered in all samples. That
 meth.min=unite(myobj,min.per.group=1L)
 ```
 
-### Sample Correlation
+## Sample Correlation
 
 We can check the correlation between samples using `getCorrelation`. This function will either plot scatter plot and correlation coefficients or just print a correlation matrix
 
 
-```{r, fig.width=5,fig.height=5, fig.align='center'}
+```{r}
 getCorrelation(meth,plot=T)
 ```
 
-### Clustering samples
+## Clustering samples
 
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 
-```{r, fig.width=5,fig.height=5, fig.align='center',message=FALSE}
+```{r}
 clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
 ```
 
@@ -158,17 +203,17 @@ hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
 
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 
-```{r, fig.width=5,fig.height=5, fig.align='center'}
+```{r}
 PCASamples(meth, screeplot=TRUE)
 ```
 
 We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
 
-```{r, fig.width=5,fig.height=5, fig.align='center'}
+```{r}
 PCASamples(meth)
 ```
 
-### Batch effects
+## Batch effects
 
 We have implemented some rudimentary functionality for batch effect control. 
 You can check which one of the principal components are statistically associated with the potential batch effects such as batch processing dates, age of subjects, sex of subjects using `assocComp`. 
@@ -214,7 +259,7 @@ mat[mat==100]=80
 newobj=reconstruct(mat,meth)
 ```
 
-### Tiling windows analysis
+## Tiling windows analysis
 
 For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. `methylKit` provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a `methylRawList` object which can be fed into `unite and ``calculateDiffMeth` functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.
 
@@ -223,9 +268,9 @@ tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
 head(tiles[[1]],3)
 ```
 
-### Finding differentially methylated bases or regions
+## Finding differentially methylated bases or regions
 
-The `calculateDiffMeth()` function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using SLIM method [@Wang2011a].
+The `calculateDiffMeth()` function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using [SLIM method](http://www.ncbi.nlm.nih.gov/pubmed/21098430) [@Wang2011a].
 
 ```{r}
 myDiff=calculateDiffMeth(meth)
@@ -251,7 +296,7 @@ We can also visualize the distribution of hypo/hyper-methylated bases/regions pe
 diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
 ```
 
-### Finding differentially methylated bases using multiple-cores
+## Finding differentially methylated bases using multiple-cores
 
 The differential methylation calculation speed can be increased substantially by utilizing multiple-cores in a machine if available. Both Fisher's Exact test and logistic regression based test are able to use multiple-core option.
 
@@ -262,7 +307,7 @@ myDiff=calculateDiffMeth(meth,num.cores=2)
 ```
 
 
-## Annotating differentially methylated bases or regions
+# Annotating differentially methylated bases or regions
 
 We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using `GenomicFeatures` package available from Bioconductor.org.
 
@@ -289,7 +334,7 @@ diffCpGann=annotate.WithFeature.Flank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,
                                       feature.name="CpGi",flank.name="shores")
 ```
 
-### Regional analysis
+## Regional analysis
 
 We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a `methylRaw` or `methylRawList` object depending on the input.
 
@@ -299,16 +344,18 @@ promoters=regionCounts(myobj,gene.obj$promoters)
 head(promoters[[1]])
 ```
 
-### Convenience functions for annotation objects
+## Convenience functions for annotation objects
 
 After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the `getAssociationWithTSS` function.
 
-```{r}
+```{r,}
 diffAnn=annotate.WithGenicParts(myDiff25p,gene.obj)
 
 # target.row is the row number in myDiff25p
 head(getAssociationWithTSS(diffAnn))
 ```
+
+
 
 It is also desirable to get percentage/number of differentially methylated regions that overlap with intron/exon/promoters
 
@@ -318,14 +365,14 @@ getTargetAnnotationStats(diffAnn,percentage=TRUE,precedence=TRUE)
 
 We can also plot the percentage of differentially methylated bases overlapping with exon/intron/promoters
 
-```{r,fig.align='center',fig.width=5,fig.height=5}
+```{r}
 plotTargetAnnotation(diffAnn,precedence=TRUE,
     main="differential methylation annotation")
 ```
 
 We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
 
-```{r,fig.align='center',fig.width=5,fig.height=5}
+```{r}
 plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
        main="differential methylation annotation")
 ```
@@ -336,9 +383,9 @@ It might be also useful to get percentage of intron/exon/promoters that overlap 
 getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 ```
 
-## methylKit convenience functions
+# methylKit convenience functions
 
-### Coercion
+## Coercion
 
 Most `methylKit` objects (methylRaw,methylBase and methylDiff) can be coerced to `GRanges` objects from `GenomicRanges` package. Coercing methylKit objects to `GRanges` will give users additional flexibility when customizing their analyses.
 
@@ -350,9 +397,9 @@ as(myDiff,"GRanges")
 ```
 
 
-### select
+## select
 
-We can also select rows from `methylRaw`, `methylBase` and `methylDiff` objects with `"select"` function. An appropriate methylKit object will be returned as a result of `"select"` function. Or you can use the `"["` notation to subset the
+We can also select rows from `methylRaw`, `methylBase` and `methylDiff` objects with `select` function. An appropriate methylKit object will be returned as a result of `select` function. Or you can use the `[` notation to subset the
 methylKit objects.
 
 ```{r}
@@ -361,7 +408,7 @@ myDiff[21:25,] # get 5 rows of a methylDiff object
 ```
 
 
-### reorganize
+## reorganize
 
 The `methylBase` and `methylRawList` can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
 
@@ -373,7 +420,7 @@ meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 ```
 
 
-### percMethylation
+## percMethylation
 
 Percent methylation values can be extracted from `methylBase` object by using `percMethylation` function.
 
@@ -383,10 +430,12 @@ perc.meth=percMethylation(meth)
 ```
 
 
-## Frequently Asked Questions
+# Frequently Asked Questions
 
-Detailed answers to some of the frequently asked questions and various how-to's can be found at http://zvfak.blogspot.com/search/label/methylKit. 
-In addition, http://code.google.com/p/methylkit/ has online documentation and links to tutorials and other related material. You can also check methylKit Q\&A forum for answers https://groups.google.com/forum/#!forum/methylkit_discussion.
+Detailed answers to some of the frequently asked questions and various HOW-TO's can be found at
+
+* http://zvfak.blogspot.com/search/label/methylKit. 
+In addition, http://code.google.com/p/methylkit/ has online documentation and links to tutorials and other related material. You can also check methylKit Q\&A forum for answers https://groups.google.com/forum/&#35;!forum/methylkit_discussion.
 
 Apart from those here are some of the frequently asked questions.
 
@@ -412,7 +461,7 @@ But you can change that as well.
 
 ### What does Bismark SAM output look like, where can I get more info ?
 
-Check the Bismark [@Krueger2011] website and there are  also example files that ship with the package. Look at their formats and try to run different variations of 
+Check the Bismark [@Krueger2011] [website](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) and there are  also example files that ship with the package. Look at their formats and try to run different variations of 
 `read.bismark()` command on the example files.
 
 ### How can I reorder or remove samples at/from  `methylRawList` or `methylBase` objects ?
@@ -442,22 +491,30 @@ See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html
 for how to read methylation ratio files from BSMAP [@Xi2009] aligner.
 
 
-## Acknowledgements
+# Acknowledgements
 
 This package is developed at Weill Cornell Medical College by Altuna Akalin 
-with important code contributions from  
-Matthias Kormaksson (mk375@cornell.edu) and Sheng Li (shl2018@med.cornell.edu). 
+with important code contributions from Matthias Kormaksson (mk375@cornell.edu) 
+and Sheng Li (shl2018@med.cornell.edu). 
 We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
 Christopher Mason and Ari Melnick for their contribution of ideas, data and 
 support. Their support and discussions lead to development of methylKit.
 
-## R session info
+## Contributers
+
+Recent contributions to the package came from: 
+
+*  Adrian Bierling (add email)
+*  Alexander Gosdschan (alexgos@zedat.fu-berlin.de)
+
+
+# R session info
 
 ```{r}
 sessionInfo() 
 ```
 
 
-## References
+# References
 
 
