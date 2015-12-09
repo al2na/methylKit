@@ -46,7 +46,9 @@ but the data is saved in a flat database file and therefore allocates less space
 
 \section{Coercion}{
 
-  \code{methylDiffDB} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{methylDiffDB} object can be coerced to:
+  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link{methylDiff}} object via \code{\link{as}} function.
 }
 
 \section{Accessors}{

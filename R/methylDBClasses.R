@@ -125,7 +125,7 @@ valid.methylRawDB <- function(object) {
 #' @section Coercion:
 #'   \code{methylRawDB} object can be coerced to:
 #'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
-#'   \code{\link{methylRaw}} object via \code{\link{[}} function, see section Subsetting.
+#'   \code{\link{methylRaw}} object via \code{\link{as}} function.
 #' 
 #' @examples
 #' 
@@ -133,26 +133,26 @@ valid.methylRawDB <- function(object) {
 #' read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 #' header=TRUE,nrows=5)
 #' 
-#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 #' 
-#' methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
-#'                             assembly = "hg18",treatment = c(1,1,0,0),
-#'                             dbtype = "tabix",dbdir = "methylDB")
+#' methylRawDB.obj <- read(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                         sample.id = "ctrl1", assembly = "hg18",
+#'                         dbtype = "tabix", dbdir = "methylDB")
 #' 
 #' # example of a methylRawDB object
-#' methylRawListDB.obj[[1]]
-#' str(methylRawListDB.obj[[1]])
+#' methylRawDB.obj
+#' str(methylRawDB.obj)
 #' 
 #' library(GenomicRanges)
 #' 
 #' #coercing methylRawDB object to GRanges object
-#' my.gr=as(methylRawListDB.obj[[1]],"GRanges")
+#' my.gr=as(methylRawDB.obj,"GRanges")
 #' 
-#' #' #coercing methylRawDB object to methylRaw object
-#' myRaw=methylRawListDB.obj[[1]][]
+#' #coercing methylRawDB object to methylRaw object
+#' myRaw=as(methylRawDB.obj,"methylRaw")
+#' 
+#' # remove Database again
+#' rm(methylRawDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #' 
 #' @name methylRawDB-class
 #' @aliases methylRawDB
@@ -243,6 +243,11 @@ valid.methylRawListDB <- function(object) {
 #' 
 #' #applying functions designed for methylRawDB on methylRawListDB object
 #' lapply(methylRawListDB.obj,"getAssembly")
+#' 
+#' 
+#' # remove Database again
+#' rm(methylRawListDB.obj)
+#' unlink("methylDB",recursive=TRUE)
 #'
 #' @name methylRawListDB-class
 #' @aliases methylRawListDB
@@ -326,8 +331,9 @@ valid.methylBaseDB <- function(object) {
 #' 
 #' 
 #' @section Coercion:
-#'   \code{methylBaseDB} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
-#' 
+#'   \code{methylBaseDB} object can be coerced to:
+#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link{methylBase}} object via \code{\link{as}} function. 
 #' 
 #' @examples
 #' data(methylKit)
@@ -336,7 +342,7 @@ valid.methylBaseDB <- function(object) {
 #' my.gr=as(methylBaseDB.obj,"GRanges")
 #' 
 #' 
-#' #' # remove Database again
+#' # remove Database again
 #' rm(methylBaseDB.obj)
 #' unlink("methylDB",recursive=TRUE)
 #' 
@@ -474,8 +480,10 @@ valid.methylDiffDB <- function(object) {
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
-#'   \code{methylDiffDB} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
-#' 
+#'   \code{methylDiffDB} object can be coerced to:
+#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link{methylDiff}} object via \code{\link{as}} function.
+#'    
 #' @section Accessors: 
 #' The following functions provides access to data slots of methylDiffDB:
 #' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
@@ -568,6 +576,21 @@ setAs("methylDiffDB", "GRanges", function(from)
   gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, return.type = "GRanges")
   names(GenomicRanges::mcols(gr)) <- c("pvalue","qvalue","meth.diff") 
   return(gr)
+})
+
+setAs("methylRawDB","methylRaw", function(from)
+{
+  return(from[])
+})
+
+setAs("methylBaseDB","methylBase", function(from)
+{
+  return(from[])
+})
+
+setAs("methylDiffDB","methylDiff", function(from)
+{
+  return(from[])
 })
 
 # accessors ---------------------------------------------------------------
