@@ -8,11 +8,13 @@ my $debug; my $verbose; my $simulate;
 my $cmd; my $ret;
 use File::Basename;
 my $tag = 'myCpG';
+my $add_chr;
 
 GetOptions(
 
            'i|input|inputfile:s'  => \$inputfile,
            'tag:s'                => \$tag,
+           'add_chr'              => \$add_chr,
            'debug'                => \$debug,
            'verbose'              => \$verbose,
            'simulate'             => \$simulate,
@@ -37,6 +39,7 @@ while (<IN>) {
   chomp $_;
   my ($chr,$base,$sign_strand,$met_count,$unm_count,$c_context,$trinuc_context) = split("\t",$_);
   next if (0 == $met_count && 0 == $unm_count);
+  if ($add_chr) { my $tmp = $chr; $chr = 'chr' . $tmp; }
   my $chrBase = "$chr.$base";
   my $strand = 'F'; $strand = 'R' if ($sign_strand eq '-');
   my $coverage = $met_count + $unm_count;
@@ -78,6 +81,12 @@ bismark_cpg_report2mycpg.pl - DESCRIPTION
 =head1 SYNOPSIS
 
 Transforms from .CpG_report.txt.gz to .myCpG.txt format as below:
+
+The genome-wide cytosine report(optional) is tab-delimited in the following format:
+
+(1-basedcoords):<chromosome>  <position>  <strand>  <count methylated>  <count unmethylated>  <C-context> <trinucleotide context>
+
+The .myCpG.txt format is as follows:
 
 # chrBase	chr	base	strand	coverage	freqC	freqT
 # chr21.9826907	chr21	9826907	F	96	18.75	81.25
