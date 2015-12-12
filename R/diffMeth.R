@@ -682,9 +682,19 @@ setMethod("[","methylDiff",
           }
 )
 
-
-
-
+#' @aliases selectByOverlap,methylDiff-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylDiff",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
+            
+            return(object[hits])
+          }
+)
 
 
 #' get differentially methylated regions/bases based on cutoffs 
