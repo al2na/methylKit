@@ -23,6 +23,10 @@ knitr::opts_chunk$set(dpi = 300)
 knitr::opts_chunk$set(cache = FALSE)
 ```
 
+```{r ,eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
+devtools::load_all(".")
+```
+
 # Introduction
 
 In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
@@ -40,42 +44,11 @@ The reasons why we will not get a binary response are:
 *  incomplete bisulfite conversion 
 *  (and a more likely scenario) is heterogeneity of samples and heterogeneity of paired chromosomes from the same sample 
 
-## Installation
-
-To install the package please use the code below.
-
-```{r,eval=FALSE}
-# dependencies
-install.packages( c("data.table","devtools"))
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges","IRanges"))
-
-# install the package from github
-library(devtools)
-install_github("al2na/methylKit",build_vignettes=FALSE)
-```
-
-### Developmental version
-
-The developmental version of this package sometimes has newer features or bugfixes, 
-but is not as stable as the master version.
-
-```{r,eval=FALSE}
-# dependencies
-install.packages( c("data.table","devtools"))
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges","IRanges"))
-
-# install the development version from github
-library(devtools)
-install_github("al2na/methylKit",ref="development",build_vignettes=FALSE)
-```
-
 # Basics
 
 ## Reading the methylation call files
 
-We start by reading in the methylation call data from bisulfite sequencing with `read` function. Reading in the data this way will return a methylRawList object which stores methylation information per sample for each covered base. The methylation call files are basically text files that contain percent methylation score per base. A typical methylation call file looks like this:
+We start by reading in the methylation call data from bisulfite sequencing with `read` function. Reading in the data this way will return a `methylRawList` object which stores methylation information per sample for each covered base. The methylation call files are basically text files that contain percent methylation score per base. A typical methylation call file looks like this:
 
 ```{r, eval=TRUE, echo=FALSE}
 tab <- read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
@@ -86,7 +59,7 @@ tab
 Most of the time bisulfite sequencing experiments have test and control samples. The test samples can be from a disease tissue while the control samples can be from a healthy tissue. You can read a set of methylation call files that have test/control conditions giving `treatment` vector option. For sake of subsequent analysis, file.list, sample.id and treatment option should have the same order. In the following example, first two files are have the sample ids "test1" and "test2" and as determined by treatment vector they belong to the same group. The third and fourth files have sample ids "ctrl1" and "ctrl2" and they belong to the same group as indicated by the treatment vector.
 
 
-```{r, message=FALSE}
+```{r,message=FALSE}
 library(methylKit)
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
@@ -103,11 +76,49 @@ myobj=read(file.list,
            )
 ```
 
+##  Reading the methylation call files and store them as flat file database
+
+Sometimes, when dealing with multipe samples and increased sample sizes coming from genome wide bisulfite sequencing experiments, the memory of your  computer might not be sufficient enough. 
+
+Therefore methylKit offers a new group of classes, that are basically pendants to the orignal methylKit classes with one important difference: The methylation information, which normally is internally stored as data.frame, is stored in an external bgzipped file and is indexed by tabix [@Li2011], to enable fast retrieval of records or regions. This group contains `methylRawListDB`, `methylRawDB`, `methylBaseDB` and `methylDiffDB`, let us call them  **methylDB** objects.
+
+We can now create a `methylRawListDB` object, which stores the same content as *myobj* from above. But the single `methylRaw` objects retrieve their data from the tabix-file linked under dbpath. 
+
+```{r, message=FALSE}
+library(methylKit)
+file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+
+
+# read the files to a methylRawListDB object: myobjDB 
+# and save in databases in folder methylDB
+myobjDB=read(file.list,
+           sample.id=list("test1","test2","ctrl1","ctrl2"),
+           assembly="hg18",
+           treatment=c(1,1,0,0),
+           context="CpG",
+           dbtype = "tabix",
+           dbdir = "methylDB"
+           )
+
+print(myobjDB[[1]]@dbpath)
+
+
+```
+
+Every function in this package will work with methylDB objects the same way as it does with normal methylKit objects. 
+Functions that return methylKit objects, will return a methylDB object if provided, 
+but there are a few exceptions such as the `select`, the `[` and the `selectByOverlap` functions.
+
+
+
 ## Reading the methylation calls from sorted  Bismark alignments
 
 Alternatively, methylation percentage calls can be calculated from
 sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
-popular aligner for bisulfite sequencing reads available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `read.bismark` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `read.bismark` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
 
 The following command reads a sorted SAM file and creates a `methylRaw` object for CpG methylation.The user has the option to save the methylation call files to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
 
@@ -261,7 +272,7 @@ newobj=reconstruct(mat,meth)
 
 ## Tiling windows analysis
 
-For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. `methylKit` provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a `methylRawList` object which can be fed into `unite and ``calculateDiffMeth` functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.
+For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. `methylKit` provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a `methylRawList` object which can be fed into `unite` and `calculateDiffMeth` functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.
 
 ```{r,warning=FALSE}
 tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
@@ -387,7 +398,7 @@ getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 
 ## Coercion
 
-Most `methylKit` objects (methylRaw,methylBase and methylDiff) can be coerced to `GRanges` objects from `GenomicRanges` package. Coercing methylKit objects to `GRanges` will give users additional flexibility when customizing their analyses.
+Most `methylKit` objects (methylRaw,methylBase and methylDiff), including methylDB objects (methylRawDB,methylBaseDB and methylDiffDB) can be coerced to `GRanges` objects from `GenomicRanges` package. Coercing methylKit objects to `GRanges` will give users additional flexibility when customizing their analyses.
 
 ```{r}
 class(meth)
@@ -396,10 +407,16 @@ class(myDiff)
 as(myDiff,"GRanges")
 ```
 
+Also methylDB objects (methylRawDB, methylBaseDB and methylDiffDB) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing ressources are available. 
 
-## select
+```{r}
+class(myobjDB[[1]])
+as(myobjDB[[1]],"methylRaw")
+```
 
-We can also select rows from `methylRaw`, `methylBase` and `methylDiff` objects with `select` function. An appropriate methylKit object will be returned as a result of `select` function. Or you can use the `[` notation to subset the
+## Selection
+
+We can also select rows from `methylRaw`, `methylBase` and `methylDiff` objects and methylDB pendants with `select` function. An appropriate methylKit object will be returned as a result of `select` function. Or you can use the `'['` notation to subset the
 methylKit objects.
 
 ```{r}
@@ -407,10 +424,27 @@ select(meth,1:5) # get first 10 rows of a methylBase object
 myDiff[21:25,] # get 5 rows of a methylDiff object
 ```
 
+**Important:** Using `select` or `'['` on methylDB objects will return its normal `methylKit` pendant, to avoid overhead of database operations.
+
+### selectByOverlap
+
+We can select rows from any methylKit object, that lie inside the ranges of a `GRanges` object from `GenomicRanges` package with `selectByOverlap`
+ function. An appropriate methylKit object will be returned as a result of `selectByOverlap` function.
+ 
+```{r,message=FALSE,warning=FALSE}
+library(GenomicRanges)
+my.win=GRanges(seqnames="chr21",
+               ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+ 
+# selects the records that lie inside the regions
+selectByOverlap(myobj[[1]],my.win)
+```
+
+**Important:** Using `selectByOverlap` on methylDB objects will return its normal `methylKit` pendant, to avoid overhead of database operations.
 
 ## reorganize
 
-The `methylBase` and `methylRawList` can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
+The `methylBase` and `methylRawList`, aswell as methylDB pendants can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
 
 ```{r,eval=FALSE}
 # creates a new methylRawList object
@@ -432,9 +466,7 @@ perc.meth=percMethylation(meth)
 
 # Frequently Asked Questions
 
-Detailed answers to some of the frequently asked questions and various HOW-TO's can be found at
-
-* http://zvfak.blogspot.com/search/label/methylKit. 
+Detailed answers to some of the frequently asked questions and various HOW-TO's can be found at http://zvfak.blogspot.com/search/label/methylKit. 
 In addition, http://code.google.com/p/methylkit/ has online documentation and links to tutorials and other related material. You can also check methylKit Q\&A forum for answers https://groups.google.com/forum/&#35;!forum/methylkit_discussion.
 
 Apart from those here are some of the frequently asked questions.
@@ -489,6 +521,14 @@ containing the minimal information described above. Some aligners will come with
 scripts or built-in tools to provide such files.
 See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html 
 for how to read methylation ratio files from BSMAP [@Xi2009] aligner.
+
+### Can I transform an methylKit object into an methylDB object ?
+
+Yes, you can. Many functions of the analysis workflow provide an `save.db` argument, 
+which allows you to save the output as methylDB object. 
+For example see `?unite` and also check the `...` argument section for further details.
+
+
 
 
 # Acknowledgements
