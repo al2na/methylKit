@@ -530,7 +530,6 @@ For example see `?unite` and also check the `...` argument section for further d
 
 
 
-
 # Acknowledgements
 
 This package is developed at Weill Cornell Medical College by Altuna Akalin 
