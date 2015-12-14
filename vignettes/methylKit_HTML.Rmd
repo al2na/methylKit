@@ -1,5 +1,5 @@
 ---
-title: "methylKit: User Guide"
+title: "methylKit: User Guide V.2"
 author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.] 
 
 altuna.akalin@mdc-berlin.de"
@@ -13,7 +13,7 @@ output:
       
 bibliography: Vignette_methylKit.bib
 vignette: >
-  %\VignetteIndexEntry{methylKit: User Guide}
+  %\VignetteIndexEntry{methylKit: User Guide V.2}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
