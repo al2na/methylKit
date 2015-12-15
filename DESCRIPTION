@@ -20,7 +20,6 @@ URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
 SystemRequirements:  Perl
 biocViews: DNAMethylation
-VignetteBuilder: knitr
 Depends:
     R (>= 2.15.0),
     methods
