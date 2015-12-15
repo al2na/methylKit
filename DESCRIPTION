@@ -36,7 +36,8 @@ Imports:
     Rsamtools,
     gtools
 Suggests:
-    testthat
+    testthat, BiocStyle, knitr, rmarkdown
+VignetteBuilder: knitr
 Collate:
     'backbone.R'
     'diffMeth.R'
