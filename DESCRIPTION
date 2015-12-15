@@ -22,7 +22,7 @@ SystemRequirements:  Perl
 biocViews: DNAMethylation
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.0.0),
+    R (>= 2.15.0),
     methods
 Imports:
     GenomicRanges (>= 1.18.1),
@@ -41,7 +41,6 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown
-VignetteBuilder: knitr
 Collate:
     'backbone.R'
     'diffMeth.R'
