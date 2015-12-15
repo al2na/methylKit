@@ -36,10 +36,7 @@ Imports:
     Rsamtools,
     gtools
 Suggests:
-    testthat,
-    BiocStyle,
-    knitr,
-    rmarkdown
+    testthat
 Collate:
     'backbone.R'
     'diffMeth.R'
