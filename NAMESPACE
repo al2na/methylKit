@@ -1,12 +1,19 @@
 import(methods)
 
-import(GenomicRanges)
+
+
+
+
+importFrom("mclust",  densityMclust,Mclust )
+
+importFrom("rtracklayer",export.bed)
+
 #import(KernSmooth)
 import(qvalue)
 import(emdbook)
 #import(RHmm)
 
-#importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
+#importMethodsFrom("GenomicRanges",GRanges, strand,"strand<-")
 
 #importClassesFrom("GenomicRanges",GRanges,GRangesList)
 
@@ -30,6 +37,11 @@ importMethodsFrom("IRanges",nearest,as.data.frame)
 #importFrom("qvalue",qvalue)
 
 importFrom( "Rsamtools", TabixFile, scanTabix, yieldSize, "yieldSize<-")
+
+# http://stackoverflow.com/questions/8637993/better-explanation-of-when-to-use-imports-depends
+# fastseg depends on GenomicRanges, we need to depend on that too in Description
+import(GenomicRanges)
+import(fastseg)
 
 #import( data.table)
 importFrom("data.table",data.table,setnames, setcolorder,as.data.table,
@@ -99,3 +111,5 @@ export("getTreatment<-")
 export("getSampleID<-")
 export(selectByOverlap)
 export(getDBPath)
+export(methSeg)
+export(methSeg2bed)
