@@ -24,10 +24,10 @@ SystemRequirements: Perl
 biocViews: DNAMethylation
 Depends:
     R (>= 2.15.0),
+    GenomicRanges (>= 1.18.1),
     methods
 Imports:
     IRanges,
-    GenomicRanges (>= 1.18.1),
     data.table (>= 1.9.6),
     parallel,
     S4Vectors,
