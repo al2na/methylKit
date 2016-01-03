@@ -711,7 +711,7 @@ setMethod("show", "methylBaseDB", function(object) {
 #' @aliases show,methylDiffDB
 setMethod("show", "methylDiffDB", function(object) {
   
-  cat("methylDiffDB object with",nrow(object@num.records),"rows\n--------------\n")
+  cat("methylDiffDB object with",object@num.records,"rows\n--------------\n")
   print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylDiffDB"))
   cat("--------------\n")
   cat("sample.ids:",object@sample.ids,"\n")
