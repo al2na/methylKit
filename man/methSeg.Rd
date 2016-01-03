@@ -8,8 +8,8 @@
 methSeg(obj, diagnostic.plot = TRUE, ...)
 }
 \arguments{
-\item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}} or 
-\code{\link{methylBase}}. If the object is a 
+\item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}},
+\code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
 \code{\link[GenomicRanges]{GRanges}}
  it should have one meta column with methylation scores}
 
@@ -45,7 +45,7 @@ as high or low methylated regions.
 }
 \details{
 To be sure that the algorithm will work on your data, 
-       the object should have at least 5000
+       the object should have at least 5000 records
 }
 \examples{
 
