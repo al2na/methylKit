@@ -178,6 +178,10 @@ methSeg2bed<-function(segments,
                       filename="data/H1.chr21.chr22.trial.seg.bed",
                       colramp=colorRamp(c("gray","green", "darkgreen"))
                         ){
+  if(class(segments)!="GRanges"){
+    stop("segments object has to be of class GRanges")
+  }
+    
   #require(rtracklayer)
   ramp <- colramp
   mcols(segments)$name=as.character(segments$seg.group)

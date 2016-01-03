@@ -5,7 +5,8 @@ NEW FUNCTIONS AND FEATURES
 * new function methSeg() can segment methylation (methylRaw objects) and 
   differential methylation (methylDiff objects) profiles to segments.
   Associated function methSeg2bed() creates BED files from segments.
-  see ?methSeg. Contributed by Arsene Wabo and Alexander Gosdschan.
+  see ?methSeg. A test is added to check this in R CMD check. 
+  Contributed by Arsene Wabo and Alexander Gosdschan.
 
 
 methylKit 0.9.4.2
