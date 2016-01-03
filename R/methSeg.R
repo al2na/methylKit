@@ -9,8 +9,8 @@
 #' component ideally indicates quantitative classification of segments, such
 #' as high or low methylated regions.
 #' 
-#' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}} or 
-#'            \code{\link{methylRaw}}. If the object is a 
+#' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}},
+#'            \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
 #'            \code{\link[GenomicRanges]{GRanges}}
 #'             it should have one meta column with methylation scores
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
