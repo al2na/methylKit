@@ -6,25 +6,18 @@ import(qvalue)
 import(emdbook)
 #import(RHmm)
 
-#importMethodsFrom("GenomicRanges",elementMetadata,countOverlaps,findOverlaps, seqnames, seqlengths, strand,"strand<-")
-
-#importClassesFrom("GenomicRanges",GRanges,GRangesList)
-
 
 importMethodsFrom("GenomeInfoDb",  seqnames, seqlengths ,sortSeqlevels)
-
 
 importClassesFrom("IRanges", RangedData, RangedDataList,RangedSelection)
 
 importFrom("IRanges",   IRanges, RangedDataList, RangedData,
                   RangesList,  findOverlaps, RangedSelection,ranges,countOverlaps)
 
-
 importFrom("S4Vectors", DataFrame, Rle,levels, elementMetadata,"elementMetadata<-")
 importClassesFrom("S4Vectors",   DataTable,
                   Annotated, Vector, List, DataTableORNULL, characterORNULL,
                   SimpleList, DataFrame)
-
 
 importMethodsFrom("IRanges",nearest,as.data.frame)
 #importFrom("qvalue",qvalue)
@@ -36,6 +29,13 @@ importFrom("data.table",data.table,setnames, setcolorder,as.data.table,
            tables, setkey, setkeyv, key, "key<-", haskey, CJ, SJ, copy,
            rbindlist)
 
+importFrom("mclust",  densityMclust,Mclust )
+importFrom("rtracklayer",export.bed)
+
+# http://stackoverflow.com/questions/8637993/better-explanation-of-when-to-use-imports-depends
+# fastseg depends on GenomicRanges, we need to depend on that too in Description
+#import(GenomicRanges)
+importFrom("fastseg",fastseg)
 
 importFrom("parallel", mclapply)
 
@@ -99,3 +99,5 @@ export("getTreatment<-")
 export("getSampleID<-")
 export(selectByOverlap)
 export(getDBPath)
+export(methSeg)
+export(methSeg2bed)

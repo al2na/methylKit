@@ -12,6 +12,7 @@ Installation
 install.packages( c("data.table","devtools"))
 source("http://bioconductor.org/biocLite.R")
 biocLite(c("GenomicRanges"))
+biocLite(c("fastseg","rtracklayer"))
 
 # install the package from github
 library(devtools)
