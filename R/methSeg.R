@@ -10,7 +10,7 @@
 #' as high or low methylated regions.
 #' 
 #' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}} or 
-#'            \code{\link{methylBase}}. If the object is a 
+#'            \code{\link{methylRaw}}. If the object is a 
 #'            \code{\link[GenomicRanges]{GRanges}}
 #'             it should have one meta column with methylation scores
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
@@ -36,7 +36,7 @@
 #'               
 #' @details      
 #'        To be sure that the algorithm will work on your data, 
-#'        the object should have at least 5000
+#'        the object should have at least 5000 records
 #' @examples 
 #' 
 #' \donttest{
@@ -66,14 +66,14 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   dots <- list(...)  
   
-  if(class(obj)=="methylRaw"){
+  if( (class(obj)=="methylRaw" | class(obj)=="methylRawDB") & obj@resolution=="region" ){
     obj= as(obj,"GRanges")
     mcols(obj)=100*obj$numCs/obj$coverage
-  }else if(class(obj)=="methylDiff"){
+  }else if( (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") & obj@resolution=="region" ){
     obj = as(obj,"GRanges")
     obj = sort(obj[,-1])
   }else if (class(obj) != "GRanges"){
-    stop("only methylRaw, methylDiff or GRanges objects can be used in this function")
+    stop("only methylRaw or methylDiff with resolution=='region' or GRanges objects can be used in this function")
   }
   
   # match argument names to fastseg arguments
@@ -144,7 +144,7 @@ diagPlot<-function(dens,score.gr){
   barplot(table(dens$classification),xlab="segment groups",
           ylab="number of segments")
   plot(dens,what="density")  
-  plot(dens,what="BIC")  
+  plot(dens,what="BIC",legendArgs=list(cex=0.75))  
   
   par(mfrow=c(1,1))
   
