@@ -30,5 +30,10 @@ methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","
 #applying functions designed for methylRawDB on methylRawListDB object
 lapply(methylRawListDB.obj,"getAssembly")
 
+
+# remove Database again
+rm(methylRawListDB.obj)
+unlink("methylDB",recursive=TRUE)
+
 }
 

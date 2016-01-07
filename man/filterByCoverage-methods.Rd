@@ -65,19 +65,15 @@ Lower read cutoff is usefull for doing better statistical tests.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with
-\code{methylRawDB} or \code{methylRawListDB} objects, as they are read in
-chunk by chunk to enable processing large-sized objects which are stored as
-flat file database. Per default the chunk.size is set to 1M rows, which
-should work for most systems. If you encounter memory problems or have a high
-amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the \code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as
-\code{methylRawDB} and \code{methylRawListDB}, while being per default FALSE
-for \code{methylRaw} and \code{methylRawList}. If you wish to save the result
-of an in-memory-calculation as flat file database or if the size of the
-database allows the calculation in-memory, then you might change the value of
-this parameter.
+The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB} and \code{methylRawListDB}, 
+while being per default FALSE for \code{methylRaw} and \code{methylRawList}. If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+then you might change the value of this parameter.
 }
 \examples{
 data(methylKit)

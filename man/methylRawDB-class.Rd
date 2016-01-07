@@ -49,7 +49,7 @@ The following functions provides access to data slots of methylRawDB:
 
   \code{methylRawDB} object can be coerced to:
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
-  \code{\link{methylRaw}} object via \code{\link{[}} function, see section Subsetting.
+  \code{\link{methylRaw}} object via \code{\link{as}} function.
 }
 \examples{
 
@@ -57,26 +57,26 @@ The following functions provides access to data slots of methylRawDB:
 read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 header=TRUE,nrows=5)
 
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
-methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
-                            assembly = "hg18",treatment = c(1,1,0,0),
-                            dbtype = "tabix",dbdir = "methylDB")
+methylRawDB.obj <- read(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+                        sample.id = "ctrl1", assembly = "hg18",
+                        dbtype = "tabix", dbdir = "methylDB")
 
 # example of a methylRawDB object
-methylRawListDB.obj[[1]]
-str(methylRawListDB.obj[[1]])
+methylRawDB.obj
+str(methylRawDB.obj)
 
 library(GenomicRanges)
 
 #coercing methylRawDB object to GRanges object
-my.gr=as(methylRawListDB.obj[[1]],"GRanges")
+my.gr=as(methylRawDB.obj,"GRanges")
 
-#' #coercing methylRawDB object to methylRaw object
-myRaw=methylRawListDB.obj[[1]][]
+#coercing methylRawDB object to methylRaw object
+myRaw=as(methylRawDB.obj,"methylRaw")
+
+# remove Database again
+rm(methylRawDB.obj)
+unlink("methylDB",recursive=TRUE)
 
 }
 

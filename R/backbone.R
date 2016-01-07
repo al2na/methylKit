@@ -1717,6 +1717,109 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
           }
 )
 
+#' selects records of methylDB objects lying inside a GRanges range
+#'
+#' The function selects records from a \code{\link{methylBaseDB}}, \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
+#' that lie inside the regions given by \code{ranges} of class \code{GRanges} and returns an object of class 
+#' \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}} 
+#' 
+#' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
+#' @param ranges a GRanges object specifying the regions of interest
+#' 
+#' @usage selectByOverlap(object,ranges)
+#' @examples
+#' data(methylKit)
+#' 
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+#' 
+#' methylRawListDB.obj=read(file.list,
+#'                          sample.id=list("test1","test2","ctrl1","ctrl2"),
+#'                          assembly="hg18",treatment=c(1,1,0,0),
+#'                          dbtype = "tabix",dbdir = "methylDB")
+#'
+#' methylBaseDB.obj=unite(methylRawListDB.obj)
+#'
+#' methylDiffDB.obj = calculateDiffMeth(methylBaseDB.obj)
+#' 
+#' # define the windows of interest as a GRanges object, this can be any set 
+#' # of genomic locations
+#' library(GenomicRanges)
+#' my.win=GRanges(seqnames="chr21",
+#' ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+#' 
+#' # selects the records that lie inside the regions
+#' myRaw <- selectByOverlap(methylRawListDB.obj[[1]],my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myBase <- selectByOverlap(methylBaseDB.obj,my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myDiff <- selectByOverlap(methylDiffDB.obj,my.win)
+#' 
+#' 
+#' rm(methylRawListDB.obj)
+#' rm(methylBaseDB.obj)
+#' rm(methylDiffDB.obj)
+#' unlink("methylDB",recursive=TRUE)
+#' 
+#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
+#'           \code{\link{methylDiff}} object depending on the input object.
+#'           
+#' @author Alexander Gosdschan           
+#' @export
+#' @docType methods
+#' @rdname selectByOverlap-methods
+setGeneric("selectByOverlap", def=function(object,ranges) standardGeneric("selectByOverlap"))
+
+#' @aliases selectByOverlap,methylRaw-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylRaw",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
+            
+            return(object[hits])
+          }
+)
+
+#' @aliases selectByOverlap,methylRawList-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylRawList",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            
+            new.list <- lapply(object,selectByOverlap,ranges)
+            
+            new("methylRawList",new.list,treatment=object@treatment)
+            
+          }
+)
+
+#' @aliases selectByOverlap,methylBase-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylBase",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+            }
+            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
+            
+            return(object[hits])
+          }
+)
+
+
+
 
 #' Get or Set treatment vector of methylKit object
 #' 

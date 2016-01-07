@@ -55,7 +55,9 @@ The following functions provides access to data slots of \code{methylBaseDB}:
 
 \section{Coercion}{
 
-  \code{methylBaseDB} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{methylBaseDB} object can be coerced to:
+  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link{methylBase}} object via \code{\link{as}} function.
 }
 \examples{
 data(methylKit)
@@ -64,7 +66,7 @@ library(GenomicRanges)
 my.gr=as(methylBaseDB.obj,"GRanges")
 
 
-#' # remove Database again
+# remove Database again
 rm(methylBaseDB.obj)
 unlink("methylDB",recursive=TRUE)
 
