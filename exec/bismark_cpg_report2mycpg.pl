@@ -9,11 +9,13 @@ my $cmd; my $ret;
 use File::Basename;
 my $tag = 'myCpG';
 my $add_chr;
+my $context = 'CpG';
 
 GetOptions(
 
            'i|input|inputfile:s'  => \$inputfile,
            'tag:s'                => \$tag,
+           'context:s'            => \$context,
            'add_chr'              => \$add_chr,
            'debug'                => \$debug,
            'verbose'              => \$verbose,
