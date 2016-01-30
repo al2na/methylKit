@@ -7,8 +7,12 @@
 #include <deque>
 #include <string>
 #include <map>
+#include <getopt.h>
 #include <regex>
 //#include <Rcpp.h>
+
+
+
 
 bool String2Int(const std::string& str, int& result)
 {
@@ -47,6 +51,155 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 
+
+void print_usage(char *prog,int &helpflag) {
+  if(helpflag) {
+  printf(
+  "usage: %s $0 [options] input_file >outFile.bed"
+  "\n "         
+  "options: \n"
+  " --read1    : Must be provided at all cases, if given '-' the STDIN will be the input \n"
+  " --type     : one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n"
+  " --nolap    : if given and if the input is paired the overlapping paired reads will be ignored \n"
+  " --minqual  : minquality   (default:20) \n"
+  " --mincov   : min coverage (default:10) \n"
+  " --phred64  : quality scores phred64 scale used otherwise phred33 is the default \n"
+  " --CpG      : output filename for CpG methylation scores (if not specified no file is written out) \n"
+  " --CHH      : output filename for CHH methylation scores (if not specified no file is written out) \n"
+  " --CHG      : output filename for CHG methylation scores (if not specified no file is written out) \n"
+  "           \n"
+  "IMPORTANT: \n"
+  "  Files must be sorted based on chr and start of reads. \n"
+  "  In case of paired-end sam file from bismark, the file still must be sorted in the same way.\n "
+  "\n "
+  , prog);
+  }
+  helpflag=0;
+}
+
+int get_args(char *&read1, char *&type, int &nolap, int &minqual,
+             int &mincov, int &phred64, char *&CpGfile, char *&CHHfile, char *&CHGfile,
+               int &helpflag, int argc, char** argv) {
+
+  static const struct option longOpts[] = {
+    { "read1",    required_argument,  NULL,     'r' },
+    { "type",     required_argument,  NULL,     't' },
+    { "nolap",    no_argument,        &nolap,    1  },
+    { "minqual",  optional_argument,  NULL,     'q' },
+    { "mincov",   optional_argument,  NULL,     'c' },
+    { "phred64",  no_argument,        &phred64,  1  },
+    { "CpG",      optional_argument,  NULL,     'P' },
+    { "CHH",      optional_argument,  NULL,     'H' },
+    { "CHG",      optional_argument,  NULL,     'G' },
+    { NULL,       no_argument,        NULL,      0  }
+  };
+  
+  static const char *optString = "-r:t:q:c:P:H:G:";
+  
+  int longIndex = 0;
+  int opt;
+
+  opt = getopt_long_only(argc,argv, optString, longOpts, &longIndex );
+  
+  while( opt != -1 ) {
+    switch( opt ) {
+      case 'r':   // read in the location
+                  read1 = optarg; 
+                  //cout << "set read1 to: " << read1 << endl;
+                  break;
+      case 't':   // read in type 
+                  type = optarg;
+                  break;
+      case 'q':   // read minqual and convert to int
+                  minqual = atoi(optarg);
+                  break;
+      case 'c':   //read mincov and convert to int 
+                  mincov = atoi(optarg);
+                  break;
+      case 'P':   CpGfile = optarg;
+                  //cout << "set CpGfile to: " << CpGfile << endl;
+                  break; 
+      case 'H':   CHHfile = optarg;
+                  //cout << "set CHHfile to: " << CHHfile << endl;
+                  break; 
+      case 'G':   CHGfile = optarg;
+                  //cout << "set CHGfile to: " << CHGfile << endl;
+                  break;
+      case ':':   /* missing option argument */
+                  fprintf(stderr, "%s: option `-%c' requires an argument\n",
+                          argv[0], optopt);
+                  break;
+      case 'h':   print_usage(argv[0], helpflag);
+                  return -1;
+                  break;
+      case '?':   /* invalid option */
+                  if ( char(optopt) != 'h') 
+                  { 
+                    fprintf(stderr, "\n%s: option `-%c' is invalid: ignored\n",
+                            argv[0], optopt);
+                  }
+                  print_usage(argv[0], helpflag);
+                  break;
+      case 0:     /* getopt_long() set a variable, just keep going */
+      default:    /* You won't actually get here. */
+                  break;
+    }
+      opt = getopt_long_only( argc, argv, optString, longOpts, &longIndex );
+  }
+  
+  return 0;
+}
+
+int check_args (char *read1, char *type, char **argv, int &helpflag, std::istream *&input, std::ifstream &file) {
+     /**
+  ###########################################
+  # check if required arguments where given #
+  ###########################################
+  **/
+
+  // check read1 argument
+  if( read1==NULL ) 
+  { 
+      print_usage(argv[0],helpflag);std::cerr << " --read1 argument not supplied\n";
+      return -1;
+  } else {
+      //std::cout << read1 << std::endl;
+    //string line;
+    //reading input from read1
+      if( strcmp(read1,"-") ==0 ) {  
+        input = &std::cin;
+        // tmp = std::cin;
+        //while (getline(*tmp,line)) { cout << line << endl; }
+      } else {
+          file.open(read1);
+          if(!file.good()) {std::cerr << " the value of --read1 argument does not point to an existing file\n";return -1;}
+          else { 
+             input = &file;
+            //while (getline(*tmp,line)) { cout << line << endl; } 
+          }
+        }
+    } 
+
+  // check types argument
+  std::vector<std::string> types;
+  types.push_back("single_sam");
+  types.push_back("paired_sam");
+  types.push_back("single_bismark");
+  types.push_back("paired_bismark");
+
+  if( type==NULL) 
+  { 
+    print_usage(argv[0],helpflag  );fprintf(stderr, " --type argument not supplied\n");
+    return -1;
+  } else {
+      //std::cout << type << std::endl;
+    // find returns end of range if element is not found
+      if( ( find(types.begin(), types.end(), type)) == types.end()) {
+      printf(" --type argument must be one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n");
+    }
+  }
+return 0;
+}
 
 //###  SUBROUTINES ###################
 
@@ -302,7 +455,7 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
 }
 
 // processed the sam file
-int process_sam ( std::istream &fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual, int &nolap, int &paired) {
+int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual, int nolap, int paired) {
 
   
 // check the file status produce flags 
@@ -340,12 +493,12 @@ int process_sam ( std::istream &fh, char* CpGfile, char* CHHfile, char* CHGfile,
 
   std::string line;  
   
-  while(std::getline(fh, line))
+  while(std::getline(*fh, line))
   {
     
     //std::cout << line << std::endl;
-    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(fh, line);}  // step over the header line
-    if(std::regex_search(line, std::regex ("^@")))       {std::getline(fh, line);} // step over the header line
+    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
+    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
     /** example paired-end reads in SAM format (2 consecutive lines)
     # 1_R1/1	67	5	103172224	255	40M	=	103172417	233	AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:4	XX:Z:4T1T24TT7	XM:Z:....h.h........................hh.......	XR:Z:CT	XG:Z:CT
     # 1_R1/2	131	5	103172417	255	40M	=	103172224	-233	TATTTTTTTTTAGAGTATTTTTTAATGGTTATTAGATTTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:6	XX:Z:T5T1T9T9T7T3	XM:Z:h.....h.h.........h.........h.......h...	XR:Z:GA	XG:Z:CT
@@ -403,7 +556,10 @@ int process_sam ( std::istream &fh, char* CpGfile, char* CHHfile, char* CHGfile,
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        //die("The sam file is not sorted properly; you can sort the file in unix-like machines using:\n grep -v \'^[[:space:]]*\@\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
+        std::cout <<  "The sam file is not sorted properly; "
+                  <<  "you can sort the file in unix-like machines using:\n" 
+                  <<  " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n";
+        return -1;
         // ########################
       }
       chrPre=chr;
@@ -473,8 +629,8 @@ int process_sam ( std::istream &fh, char* CpGfile, char* CHHfile, char* CHGfile,
 
   double AvFconvRate  = 0 , AvRconvRate  = 0;
   //int medFconvRate = 0,  medRconvRate = 0;
-  if(numF > 0) { AvFconvRate = pMeth_nonCG["F"]["total"]/numF; }
-  if(numR > 0) { AvRconvRate = pMeth_nonCG["R"]["total"]/numR; }
+  if(numF > 0) { AvFconvRate = pMeth_nonCG["F"]["total"]/(double)numF; }
+  if(numR > 0) { AvRconvRate = pMeth_nonCG["R"]["total"]/(double)numR; }
   double AvconvRate =(pMeth_nonCG["F"]["total"] + pMeth_nonCG["R"]["total"])/(numF+numR);
   
   //std::vector<double> allesSchon; allesSchon.push_back(pMeth_nonCG["F")); allesSchon.push_back(pMeth_nonCG["R"));
@@ -487,16 +643,16 @@ int process_sam ( std::istream &fh, char* CpGfile, char* CHHfile, char* CHGfile,
 
    
   std::cout 
-    <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(9) << totCs       << "\n"
-    <<  "average conversion rate = "                      <<   std::setprecision(9)<< AvconvRate  << "\n"
+    <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
+    <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
       //"median conversion rate = %.2f\n\n";              //$medconvRate
     
-    <<  "total otherC considered (Forward) (>95%% C+T): " <<   std::setprecision(9)<< numF        << "\n"
-    <<  "average conversion rate (Forward) = "            <<   std::setprecision(9)<< AvFconvRate << "\n"
+    <<  "total otherC considered (Forward) (>95%% C+T): " <<   std::setprecision(14)<< numF        << "\n"
+    <<  "average conversion rate (Forward) = "            <<   std::setprecision(14)<< AvFconvRate << "\n"
       //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
     
-    <<  "total otherC considered (Reverse) (>95%% C+T): " <<   std::setprecision(9)<< numR        << "\n"
-    <<  "average conversion rate (Reverse) = "            <<   std::setprecision(9)<< AvRconvRate << "\n";
+    <<  "total otherC considered (Reverse) (>95%% C+T): " <<   std::setprecision(14)<< numR        << "\n"
+    <<  "average conversion rate (Reverse) = "            <<   std::setprecision(14)<< AvRconvRate << "\n";
   
   //open (my $hd,">".$prefix."_conversionRate.txt");
   //print $hd $res;
@@ -620,7 +776,7 @@ int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char
     lastChrom=chr;
   }
   //close $fh;
-  fclose(out);
+  //fclose(out);
 
 
   if(CpGstatus) { processCGmethHash(CGmethHash,out,mincov);     std::fclose(out); }
@@ -633,21 +789,23 @@ int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char
   // get the conversion rate and write it out!!
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  //std::printf( "%i %i\n", numF, numR);
-  // if( (numF == 0) && (numR == 0)) {
-  //   if(CpGstatus){std::remove(CpGfile);}
-  //   if(CHHstatus){std::remove(CHHfile);}
-  //   if(CHGstatus){std::remove(CHGfile);}
-  //   // #################
-  //   //die("\nnot enough alignments that pass coverage and phred score thresholds to calculate conversion rates\n EXITING....\n\n");
-  //   // ################
-  // }
+  std::printf( "%i %i\n", numF, numR);
+  if( (numF == 0) && (numR == 0)) {
+    if(CpGstatus){std::remove(CpGfile);}
+    if(CHHstatus){std::remove(CHHfile);}
+    if(CHGstatus){std::remove(CHGfile);}
+    // #################
+    std::cout << "\nnot enough alignments that pass coverage and phred score thresholds "
+              << "to calculate conversion rates\n EXITING....\n\n";
+    // ################
+    return -1;
+  }
 
 
   double AvFconvRate  = 0 , AvRconvRate  = 0;
   //int medFconvRate = 0,  medRconvRate = 0;
-  if(numF > 0) { AvFconvRate = pMeth_nonCG["F"]["total"]/numF; }
-  if(numR > 0) { AvRconvRate = pMeth_nonCG["R"]["total"]/numR; }
+  if(numF > 0) { AvFconvRate = pMeth_nonCG["F"]["total"]/(double) numF; }
+  if(numR > 0) { AvRconvRate = pMeth_nonCG["R"]["total"]/(double) numR; }
   double AvconvRate =(pMeth_nonCG["F"]["total"] + pMeth_nonCG["R"]["total"])/(numF+numR);
   
   //std::vector<double> allesSchon; allesSchon.push_back(pMeth_nonCG["F")); allesSchon.push_back(pMeth_nonCG["R"));
@@ -688,23 +846,51 @@ printf("Feature is not ready yet.\n");
 
 }
 
-int main() {
 
 
-  int offset = 33, mincov = 10 , minqual= 20, no_lap = 0, paired = 0;
+
+
+int main(int argc, char **argv){
+
+  // initialize variables
+  char *read1 = NULL,   *type = NULL, 
+       *CpGfile = NULL, *CHGfile = NULL, 
+       *CHHfile = NULL;
+  int minqual = 20, mincov  = 10;
+  int phred64 = 0,  nolap = 0;
+  int offset = 33;
+
+  int helpflag = 1;
   
-  char buffer[] = "test.fastq_bismark.sorted.min.sam.CpGfile";
-  char* empty, *cpgfile =buffer;
-  std::ifstream ifs ("test.fastq_bismark.sorted.min.sam" , std::ifstream::in);
-  process_sam( std::cin,
-   cpgfile,
-    empty,
-     empty,
-      offset,
-       mincov,
-        minqual,
-         no_lap,
-          paired);
+  get_args(read1, type, nolap, minqual, mincov,
+           phred64, CpGfile, CHHfile, CHGfile,
+           helpflag, argc, argv);
+  
+
+  if(phred64) offset = 64;
+
+  std::istream *input = NULL;
+  std::string line;
+  std::ifstream file;
+ 
+ check_args(read1, type, argv, helpflag, input, file);
+  
+  
+
+  if(strcmp(type,"single_sam")){
+    process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
+  }
+  // else if( strcmp(type,"single_bismark")){
+  //   process_single_bismark($fh,$CpGfile,$CHHfile,$CHGfile,$offset,$mincov,$minqual);
+  // }
+  // else if( strcmp(type,"paired_bismark")){
+  // die("--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n");
+  // }
+  else if( strcmp(type,"paired_sam")){
+    process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
+  }
+  // if(!process_sam( input, cpgfile, empty, empty, offset, mincov, minqual, nolap, paired)) 
+  //   {return -1;}
 
   return 0;
 
