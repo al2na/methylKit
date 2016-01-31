@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -99,7 +100,7 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
     { NULL,       no_argument,        NULL,      0  }
   };
   
-  static const char *optString = "-r:t:q:c:P:H:G:";
+  static const char *optString = "-r:t:q:c:P:H:G:h";
   
   int longIndex = 0;
   int opt;
@@ -110,25 +111,28 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
     switch( opt ) {
       case 'r':   // read in the location
                   read1 = optarg; 
-                  //cout << "set read1 to: " << read1 << endl;
+                  //std::cout << "set read1 to: " << read1 << std::endl;
                   break;
       case 't':   // read in type 
                   type = optarg;
+                  //std::cout << "set type to: " << type << std::endl;
                   break;
       case 'q':   // read minqual and convert to int
                   minqual = atoi(optarg);
+                  //std::cout << "set minqual to: " << minqual << std::endl;
                   break;
       case 'c':   //read mincov and convert to int 
                   mincov = atoi(optarg);
+                  // std::cout << "set mincov to: " << mincov << std::endl;
                   break;
       case 'P':   CpGfile = optarg;
-                  //cout << "set CpGfile to: " << CpGfile << endl;
+                  // std::cout << "set CpGfile to: " << CpGfile << std::endl;
                   break; 
       case 'H':   CHHfile = optarg;
-                  //cout << "set CHHfile to: " << CHHfile << endl;
+                  // std::cout << "set CHHfile to: " << CHHfile << std::endl;
                   break; 
       case 'G':   CHGfile = optarg;
-                  //cout << "set CHGfile to: " << CHGfile << endl;
+                  // std::cout << "set CHGfile to: " << CHGfile << std::endl;
                   break;
       case 'h':   print_usage(argv[0]);
                   return -1;
@@ -145,7 +149,8 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
                             argv[0], optopt);
                   }
                   break;
-      case 0:     /* getopt_long() set a variable, just keep going */
+      case 0:
+                break;     /* getopt_long() set a variable, just keep going */
       default:    /* You won't actually get here. */
                   break;
     }
@@ -192,6 +197,7 @@ int check_args (char *read1, char *type, char **argv, std::istream *&input, std:
   types.push_back("paired_sam");
   types.push_back("single_bismark");
   types.push_back("paired_bismark");
+  types.push_back("bam");
 
   if( type==NULL) 
   { 
@@ -201,7 +207,7 @@ int check_args (char *read1, char *type, char **argv, std::istream *&input, std:
       //std::cout << type << std::endl;
     // find returns end of range if element is not found
       if( ( find(types.begin(), types.end(), type)) == types.end()) {
-      std::cerr << " --type argument must be one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n";
+      std::cerr << " --type argument must be one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark','bam' \n";
     }
   }
 return 0;
@@ -670,6 +676,268 @@ int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile,
 }
 
 
+// processed  bam/sam file !! with header !!
+int process_bam ( char* input, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual, int nolap) {
+
+  // intialize hts objects which can refer to bam or sam
+  htsFile *in = NULL;
+  bam1_t *b = NULL;
+  bam_hdr_t *header = NULL;
+
+  in = sam_open(input,"r");
+  if (in==NULL) {std::cout << "fail to open bam " << std::endl; return -1;}
+
+  header = sam_hdr_read(in);
+  if (header==NULL) {std::cout << "fail to open bam header" << std::endl; return -1;}
+
+
+
+// check the file status produce flags 
+  int CpGstatus = 0, CHHstatus = 0, CHGstatus = 0;
+  FILE *out, *CHHout, *CHGout;
+  
+
+  if( (CpGfile!=NULL) &&  (std::strlen(CpGfile) != 0)) {
+    out = fopen(CpGfile,"w");
+    fprintf (out, "chrBase\tchr\tbase\tstrand\tcoverage\tfreqC\tfreqT\n");
+    CpGstatus=1;
+  }
+  if((CHHfile!=NULL) &&  (std::strlen(CHHfile) != 0)) {
+    CHHout = fopen(CHHfile,"w");
+    fprintf (CHHout, "chrBase\tchr\tbase\tstrand\tcoverage\tfreqC\tfreqT\n");
+    CHHstatus=1;
+  }
+  if((CHGfile!=NULL) &&  (std::strlen(CHGfile) != 0)) {
+    CHGout = fopen(CHGfile,"w");
+    fprintf (CHGout, "chrBase\tchr\tbase\tstrand\tcoverage\tfreqC\tfreqT\n");
+    CHGstatus=1;
+  }
+  
+  //# check if the file looks like sam
+  //#read-in file to count C bases
+  std::map<std::string, std::vector<int> > CGmethHash; 
+  std::map<std::string, std::vector<int> > nonCGmethHash; 
+  std::map<std::string, std::vector<int> > CHHmethHash;
+  std::map<std::string, std::vector<int> > CHGmethHash;
+  std::map<std::string,std::map<std::string, double> > pMeth_nonCG;
+
+  
+  int lastPos  =-1, startPre = -1 ;
+  std::string lastChrom="null", chrPre;
+
+  // initialize bam  
+  b = bam_init1();
+  // again sam_read1 reads bam or sam files
+  while ( sam_read1(in,header,b) >=0 ) 
+  {
+
+    
+    /** example paired-end reads in SAM format (2 consecutive lines)
+    # 1_R1/1  67  5 103172224 255 40M = 103172417 233 AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII  NM:i:4  XX:Z:4T1T24TT7  XM:Z:....h.h........................hh....... XR:Z:CT XG:Z:CT
+    # 1_R1/2  131 5 103172417 255 40M = 103172224 -233  TATTTTTTTTTAGAGTATTTTTTAATGGTTATTAGATTTT  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII  NM:i:6  XX:Z:T5T1T9T9T7T3 XM:Z:h.....h.h.........h.........h.......h... XR:Z:GA XG:Z:CT
+    # HWI-ST986_0098:1:1101:18264:11272#0/1 0 chr1  497 255 50M * 0 0 TGGGTTTGATTTGAGGAGAATTGTGTTTCGTTTTTAGAGTATTATCGAAA  CCCFFFFFHHHHHJJJIIJJJJJHHIIJIJHIJJJJJGIDHIJJJIIHJI  NM:i:13 XX:Z:C4C3CC9C4C1C2CC2C6CC1C5  XM:Z:z....x...hx.........x....h.xZ.hh..x......hh.xZ.... XR:Z:CT XG:Z:CT
+    **/
+
+
+    //get data from bam1_t struct 
+    // this link provides some explanations in the definitions
+    // https://github.com/samtools/htslib/blob/develop/htslib/sam.h
+
+  int32_t pos = b->core.pos,        // mapping pos aka start 
+          len = b->core.l_qseq,     // length of query
+          chrom = b->core.tid,      // chromosome id defined by bam_hdr_t, might differ from original names. Compare with ordering header in header!
+          mtid = b ->core.mtid,     // chromosome id of next read in template
+          mposi = b->core.mpos;     // 0-based leftmost coordinate of next read in template
+  
+  uint32_t *cigar_pointer = bam_get_cigar(b), // pointer to cigar array
+          len_cigar = b->core.n_cigar;        // number of cigar operations
+
+  // read methylation call string
+  char *meth = (char*) bam_aux_get(b,"XM");   
+  
+  // initialize buffers for sequence, qual and cigar string
+  std::string seq, qual;
+  char cigar_buffer [len];
+  
+  int i, n;
+
+
+  // parse the first cigar operation
+  n = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
+  // if further operations remain, append them to cigar_buffer
+  if (len_cigar >= 2 ) { 
+    for (i = 1; i < len_cigar; i++  ) {
+      char buffer [n];
+      n = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
+      std::strcat(cigar_buffer,buffer);
+    }
+  }
+
+  // std::cout << "Cigar with " << len_cigar << " operations:" << std::endl;
+  // std::cout << cigar_buffer << std::endl;
+
+  for (i = 0; i < len; i++  ) { qual += bam_get_qual(b)[i]+offset;}
+
+
+    int start = pos;                 
+    int end                       = start + len;
+    std::string chr               = std::to_string(chrom);
+    std::string cigar             = cigar_buffer ;
+    std::string methc             = meth; 
+    methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
+    // std::string qual              = cols[10];
+    std::string mrnm              = std::to_string(mtid);
+    int mpos                      = mposi;
+    int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
+    
+    // process cigar string to get indels
+    if( std::regex_search(cigar, std::regex ("[DI]"))) {
+      processCigar( cigar, methc, qual);
+    }
+    std::string mcalls = methc; // get the bismark methylation calls
+    std::string quals  = qual;  // get the quality scores
+    int slen   = mcalls.length(); // aligned sequence length
+    
+    // get strand
+    char strand;
+    std::string xr_tag = (char*) bam_aux_get(b, "XR"); //get "XR:Z:CT" from bam/sam, 
+    std::string xg_tag = (char*) bam_aux_get(b, "XG");   // but returns "ZCT" as string
+
+    if( (xr_tag == "ZCT") && (xg_tag == "ZCT") ) {strand='+';} // original top strand
+    else if( (xr_tag == "ZCT") && (xg_tag == "ZGA") ) {strand='-';} // original bottom strand
+    else if( (xr_tag == "ZGA") && (xg_tag == "ZCT") ) {strand='+';} // complementary to original top strand, bismark says - strand to this
+    else if( (xr_tag == "ZGA") && (xg_tag == "ZGA") ) {strand='-';} // complementary to original bottom strand, bismark says + strand to this
+    
+    // if there is no_overlap trim the mcalls and $quals
+    // adjust the start
+    if( nolap && ( ( mrnm == chr) && paired ) ){
+      if( ( start + slen - 1) > mpos) {
+        if( ( mpos - start ) > 0 ) { //{continue;}
+          mcalls.erase(mpos-start ,std::string::npos);
+          quals.erase(mpos-start, std::string::npos);
+        }
+      }
+    }
+    
+    
+    
+    //checking if the file is sorted
+    if( chr == chrPre) {
+      if( startPre > start ) {
+        // ####################### 
+        std::cerr <<  "The sam file is not sorted properly; "
+                  <<  "you can sort the file in unix-like machines using:\n" 
+                  <<  " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n";
+        return -1;
+        // ########################
+      }
+      chrPre=chr;
+      startPre=start;
+    } else {
+      startPre=start;
+      chrPre=chr;
+    }
+    
+    
+    //processes hashes if start-LastPos>100
+    if( ( (start- lastPos > 100) && (lastPos != -1 )) || ( (chr != lastChrom) && (lastChrom != "null")  ))
+    {
+      // if the user wants to write out files write them
+      if(CpGstatus){ processCGmethHash(CGmethHash,out,mincov);}
+      if(CHHstatus){ processCHmethHash(CHHmethHash,CHHout,mincov); }
+      if(CHGstatus){ processCHmethHash(CHGmethHash,CHGout,mincov);}
+      
+      //processnonCGmethHash(\%nonCGmethHash,\%pMeth_nonCG,$mincov);
+      processnonCGmethHash2(nonCGmethHash,pMeth_nonCG,mincov);
+      
+      nonCGmethHash.clear();
+      CGmethHash.clear();
+      CHHmethHash.clear();
+      CHGmethHash.clear();
+    }
+    
+    // iterate over the mapped sequence
+    for( int i=0; i < quals.length(); i++) 
+    {
+      if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
+      std::string key; // initialize the hash key
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
+      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
+
+      process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
+      
+      
+    }
+    lastPos=end;
+    lastChrom=chr;
+  }
+  //fh.close();
+  
+  if(CpGstatus) { processCGmethHash(CGmethHash,out,mincov);     std::fclose(out); }
+  if(CHHstatus) { processCHmethHash(CHHmethHash,CHHout,mincov); std::fclose(CHHout); }
+  if(CHGstatus) { processCHmethHash(CHGmethHash,CHGout,mincov); std::fclose(CHGout); }
+  //processnonCGmethHash(nonCGmethHash,pMeth_nonCG,mincov);
+  processnonCGmethHash2(nonCGmethHash,pMeth_nonCG,mincov);
+
+
+  // get the conversion rate and write it out!!
+  
+  
+  int numF= pMeth_nonCG["F"]["num"];
+  int numR= pMeth_nonCG["R"]["num"];
+  std::printf( "%i %i\n", numF, numR);
+  if( (numF == 0) && (numR == 0)) {
+    if(CpGstatus){std::remove(CpGfile);}
+    if(CHHstatus){std::remove(CHHfile);}
+    if(CHGstatus){std::remove(CHGfile);}
+    // #################
+    std::cerr << "\nnot enough alignments that pass coverage and phred score thresholds to calculate conversion rates\n EXITING....\n\n";
+    // ################
+    return -1;
+  }
+
+
+  double AvFconvRate  = 0 , AvRconvRate  = 0;
+  //int medFconvRate = 0,  medRconvRate = 0;
+  if(numF > 0) { AvFconvRate = pMeth_nonCG["F"]["total"]/(double)numF; }
+  if(numR > 0) { AvRconvRate = pMeth_nonCG["R"]["total"]/(double)numR; }
+  double AvconvRate =(pMeth_nonCG["F"]["total"] + pMeth_nonCG["R"]["total"])/(numF+numR);
+  
+  //std::vector<double> allesSchon; allesSchon.push_back(pMeth_nonCG["F")); allesSchon.push_back(pMeth_nonCG["R"));
+  //if( numF>0 ) { medFconvRate=median(pMeth_nonCG["F"]); }
+  //if( numR>0 ) { medRconvRate=median(pMeth_nonCG["R"]); }
+  //double medconvRate = median(\@allesSchon);
+  
+  //int totCs=allesSchon.size();
+  int totCs = numF + numR;
+
+   
+  std::cout 
+    <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
+    <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
+      //"median conversion rate = %.2f\n\n";              //$medconvRate
+    
+    <<  "total otherC considered (Forward) (>95%% C+T): " <<   std::setprecision(14)<< numF        << "\n"
+    <<  "average conversion rate (Forward) = "            <<   std::setprecision(14)<< AvFconvRate << "\n"
+      //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
+    
+    <<  "total otherC considered (Reverse) (>95%% C+T): " <<   std::setprecision(14)<< numR        << "\n"
+    <<  "average conversion rate (Reverse) = "            <<   std::setprecision(14)<< AvRconvRate << "\n";
+  
+  //open (my $hd,">".$prefix."_conversionRate.txt");
+  //print $hd $res;
+  //close $hd;
+  
+  bam_destroy1(b);
+  bam_hdr_destroy(header);
+  sam_close(in);
+  return 0;
+  
+}
+
+
+
+
 // processed the sam file
 int process_single_bismark (std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual ) {
 
@@ -879,28 +1147,31 @@ int main(int argc, char **argv){
   std::string line;
   std::ifstream file;
  
- if( check_args(read1, type, argv, input, file) != 0 ) { return -1; }
+  if( check_args(read1, type, argv, input, file) != 0 ) { return -1; }
   
-int res = 0;  
+  int res = 0;  
 
-if(type != NULL) {
-  if(strcmp(type,"single_sam") == 0){
-    res = process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
+  if(type != NULL) {
+    if(strcmp(type,"single_sam") == 0){
+      res = process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
+    }
+    else if( strcmp(type,"single_bismark") == 0){
+      res = process_single_bismark(input,CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
+    }
+    else if( strcmp(type,"paired_bismark") == 0){
+    std::cerr << "--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n" ;
+    return -1;
+    }
+    else if( strcmp(type,"paired_sam") == 0){
+      res = process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
+    }
+    if(strcmp(type,"bam") == 0){
+      res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
+    }
   }
-  else if( strcmp(type,"single_bismark") == 0){
-    res = process_single_bismark(input,CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
-  }
-  else if( strcmp(type,"paired_bismark") == 0){
-  std::cerr << "--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n" ;
-  return -1;
-  }
-  else if( strcmp(type,"paired_sam") == 0){
-    res = process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
-  }
-}
   
 
-  file.close();
+  if(file.is_open()) file.close();
   return res;
 
 }
