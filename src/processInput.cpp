@@ -9,11 +9,14 @@
 #include <map>
 #include <getopt.h>
 #include <regex>
+#include <htslib/sam.h>
+#include <htslib/bgzf.h>
 //#include <Rcpp.h>
 
 
+ // ############  Helper functions ################
 
-
+ // taken from http://www.kumobius.com/2013/08/c-string-to-int/
 bool String2Int(const std::string& str, int& result)
 {
     try
@@ -52,12 +55,13 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
 
 
-void print_usage(char *prog,int &helpflag) {
-  if(helpflag) {
+
+void print_usage(char *prog) {
   printf(
   "usage: %s $0 [options] input_file >outFile.bed"
   "\n "         
   "options: \n"
+  " --help     : Print this help message \n"
   " --read1    : Must be provided at all cases, if given '-' the STDIN will be the input \n"
   " --type     : one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n"
   " --nolap    : if given and if the input is paired the overlapping paired reads will be ignored \n"
@@ -74,12 +78,12 @@ void print_usage(char *prog,int &helpflag) {
   "\n "
   , prog);
   }
-  helpflag=0;
-}
 
+
+// function to parse command line  arguments
 int get_args(char *&read1, char *&type, int &nolap, int &minqual,
              int &mincov, int &phred64, char *&CpGfile, char *&CHHfile, char *&CHGfile,
-               int &helpflag, int argc, char** argv) {
+             int argc, char** argv) {
 
   static const struct option longOpts[] = {
     { "read1",    required_argument,  NULL,     'r' },
@@ -91,6 +95,7 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
     { "CpG",      optional_argument,  NULL,     'P' },
     { "CHH",      optional_argument,  NULL,     'H' },
     { "CHG",      optional_argument,  NULL,     'G' },
+    { "help",     no_argument,        NULL,     'h' },
     { NULL,       no_argument,        NULL,      0  }
   };
   
@@ -125,11 +130,12 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
       case 'G':   CHGfile = optarg;
                   //cout << "set CHGfile to: " << CHGfile << endl;
                   break;
+      case 'h':   print_usage(argv[0]);
+                  return -1;
+                  break;
       case ':':   /* missing option argument */
                   fprintf(stderr, "%s: option `-%c' requires an argument\n",
                           argv[0], optopt);
-                  break;
-      case 'h':   print_usage(argv[0], helpflag);
                   return -1;
                   break;
       case '?':   /* invalid option */
@@ -138,7 +144,6 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
                     fprintf(stderr, "\n%s: option `-%c' is invalid: ignored\n",
                             argv[0], optopt);
                   }
-                  print_usage(argv[0], helpflag);
                   break;
       case 0:     /* getopt_long() set a variable, just keep going */
       default:    /* You won't actually get here. */
@@ -150,7 +155,8 @@ int get_args(char *&read1, char *&type, int &nolap, int &minqual,
   return 0;
 }
 
-int check_args (char *read1, char *type, char **argv, int &helpflag, std::istream *&input, std::ifstream &file) {
+// check whether required arguments where given and valid
+int check_args (char *read1, char *type, char **argv, std::istream *&input, std::ifstream &file) {
      /**
   ###########################################
   # check if required arguments where given #
@@ -160,7 +166,7 @@ int check_args (char *read1, char *type, char **argv, int &helpflag, std::istrea
   // check read1 argument
   if( read1==NULL ) 
   { 
-      print_usage(argv[0],helpflag);std::cerr << " --read1 argument not supplied\n";
+      print_usage(argv[0]);std::cerr << " --read1 argument not supplied\n";
       return -1;
   } else {
       //std::cout << read1 << std::endl;
@@ -189,17 +195,18 @@ int check_args (char *read1, char *type, char **argv, int &helpflag, std::istrea
 
   if( type==NULL) 
   { 
-    print_usage(argv[0],helpflag  );fprintf(stderr, " --type argument not supplied\n");
+    print_usage(argv[0]  ); std::cerr <<  " --type argument not supplied\n";
     return -1;
   } else {
       //std::cout << type << std::endl;
     // find returns end of range if element is not found
       if( ( find(types.begin(), types.end(), type)) == types.end()) {
-      printf(" --type argument must be one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n");
+      std::cerr << " --type argument must be one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n";
     }
   }
 return 0;
 }
+
 
 //###  SUBROUTINES ###################
 
@@ -454,7 +461,7 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
 }
 
-// processed the sam file
+// processed sam file without header
 int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual, int nolap, int paired) {
 
   
@@ -510,7 +517,7 @@ int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile,
 
     std::vector<std::string> cols = split(line,'\t');
     int start;                     
-    if(!String2Int(cols[3],start)) { std::cout << "Error from String2Int" << std::endl;return -1;}
+    if(!String2Int(cols[3],start)) { std::cerr << "Error from String2Int" << std::endl;return -1;}
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
     std::string cigar             = cols[5];
@@ -520,8 +527,8 @@ int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile,
     std::string mrnm              = cols[6];
     int mpos;                     // = std::stoi(cols[7]);
     int isize;                    // = std::stoi(cols[8]);
-    if(!String2Int(cols[7],mpos)) { std::cout << "Error from String2Int" << std::endl;return -1;}
-    if(!String2Int(cols[8],isize)) { std::cout << "Error from String2Int" << std::endl;return -1;}
+    if(!String2Int(cols[7],mpos)) { std::cerr << "Error from String2Int" << std::endl;return -1;}
+    if(!String2Int(cols[8],isize)) { std::cerr << "Error from String2Int" << std::endl;return -1;}
     
     
     // process cigar string to get indels
@@ -556,7 +563,7 @@ int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile,
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        std::cout <<  "The sam file is not sorted properly; "
+        std::cerr <<  "The sam file is not sorted properly; "
                   <<  "you can sort the file in unix-like machines using:\n" 
                   <<  " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n";
         return -1;
@@ -663,11 +670,8 @@ int process_sam ( std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile,
 }
 
 
-
-
-
 // processed the sam file
-int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual ) {
+int process_single_bismark (std::istream *fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual ) {
 
   
 // check the file status produce flags 
@@ -707,16 +711,17 @@ int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char
 
   std::string line;  
   
-  while(fh)
+  while(std::getline(*fh, line))
   {
-    std::getline(fh, line);
-    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(fh, line);}  // step over the header line
-    if(std::regex_search(line, std::regex ("^@")))       {std::getline(fh, line);} // step over the header line
+    
+    //std::cout << line << std::endl;
+    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
+    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
     
     std::vector<std::string> cols = split(line,'\t');
     int start , end;                    
-    if(!String2Int(cols[3],start)) { std::cout << "Error from String2Int" << std::endl;return -1;}
-    if(!String2Int(cols[4],end)) { std::cout << "Error from String2Int" << std::endl;return -1;}
+    if(!String2Int(cols[3],start)) { std::cerr << "Error from String2Int" << std::endl;return -1;}
+    if(!String2Int(cols[4],end)) { std::cerr << "Error from String2Int" << std::endl;return -1;}
     char strand                   = cols[1][0];
     std::string chr               = cols[2]; 
     std::string qual              = cols[10];
@@ -730,8 +735,9 @@ int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        //die("The sam file is not sorted properly; you can sort the file in unix-like machines using:\n grep -v \'^[[:space:]]*\@\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
-        // ########################
+        std::cerr << "The sam file is not sorted properly; you can sort the file in unix-like machines using:\n"
+                  << "grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n";
+        return -1;
       }
       chrPre=chr;
       startPre=start;
@@ -795,7 +801,7 @@ int process_single_bismark (std::istream& fh, char* CpGfile, char* CHHfile, char
     if(CHHstatus){std::remove(CHHfile);}
     if(CHGstatus){std::remove(CHGfile);}
     // #################
-    std::cout << "\nnot enough alignments that pass coverage and phred score thresholds "
+    std::cerr << "\nnot enough alignments that pass coverage and phred score thresholds "
               << "to calculate conversion rates\n EXITING....\n\n";
     // ################
     return -1;
@@ -860,12 +866,12 @@ int main(int argc, char **argv){
   int phred64 = 0,  nolap = 0;
   int offset = 33;
 
-  int helpflag = 1;
+
   
-  get_args(read1, type, nolap, minqual, mincov,
-           phred64, CpGfile, CHHfile, CHGfile,
-           helpflag, argc, argv);
-  
+  if( get_args(read1, type, nolap, minqual, mincov, phred64, CpGfile, CHHfile, CHGfile, argc, argv) != 0 ) {
+    return -1;
+  }
+
 
   if(phred64) offset = 64;
 
@@ -873,26 +879,29 @@ int main(int argc, char **argv){
   std::string line;
   std::ifstream file;
  
- check_args(read1, type, argv, helpflag, input, file);
+ if( check_args(read1, type, argv, input, file) != 0 ) { return -1; }
   
+int res = 0;  
+
+if(type != NULL) {
+  if(strcmp(type,"single_sam") == 0){
+    res = process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
+  }
+  else if( strcmp(type,"single_bismark") == 0){
+    res = process_single_bismark(input,CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
+  }
+  else if( strcmp(type,"paired_bismark") == 0){
+  std::cerr << "--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n" ;
+  return -1;
+  }
+  else if( strcmp(type,"paired_sam") == 0){
+    res = process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
+  }
+}
   
 
-  if(strcmp(type,"single_sam")){
-    process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
-  }
-  // else if( strcmp(type,"single_bismark")){
-  //   process_single_bismark($fh,$CpGfile,$CHHfile,$CHGfile,$offset,$mincov,$minqual);
-  // }
-  // else if( strcmp(type,"paired_bismark")){
-  // die("--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n");
-  // }
-  else if( strcmp(type,"paired_sam")){
-    process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
-  }
-  // if(!process_sam( input, cpgfile, empty, empty, offset, mincov, minqual, nolap, paired)) 
-  //   {return -1;}
-
-  return 0;
+  file.close();
+  return res;
 
 }
 
