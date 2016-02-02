@@ -23,33 +23,3 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// readBam
-int readBam(std::string bampath);
-RcppExport SEXP methylKit_readBam(SEXP bampathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< std::string >::type bampath(bampathSEXP);
-    __result = Rcpp::wrap(readBam(bampath));
-    return __result;
-END_RCPP
-}
-// methCall_
-bool methCall_(std::string read1, std::string type, bool nolap, int minqual, int mincov, bool phred64, std::string CpGfile, std::string CHHfile, std::string CHGfile);
-RcppExport SEXP methylKit_methCall_(SEXP read1SEXP, SEXP typeSEXP, SEXP nolapSEXP, SEXP minqualSEXP, SEXP mincovSEXP, SEXP phred64SEXP, SEXP CpGfileSEXP, SEXP CHHfileSEXP, SEXP CHGfileSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< std::string >::type read1(read1SEXP);
-    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< bool >::type nolap(nolapSEXP);
-    Rcpp::traits::input_parameter< int >::type minqual(minqualSEXP);
-    Rcpp::traits::input_parameter< int >::type mincov(mincovSEXP);
-    Rcpp::traits::input_parameter< bool >::type phred64(phred64SEXP);
-    Rcpp::traits::input_parameter< std::string >::type CpGfile(CpGfileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type CHHfile(CHHfileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type CHGfile(CHGfileSEXP);
-    __result = Rcpp::wrap(methCall_(read1, type, nolap, minqual, mincov, phred64, CpGfile, CHHfile, CHGfile));
-    return __result;
-END_RCPP
-}

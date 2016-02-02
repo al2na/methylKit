@@ -597,8 +597,8 @@ setMethod("getTreatment", signature = "methylDiff", function(x) {
   return(x@treatment)
 })
 
-#' @rdname 'getTreatment<-'-methods
-#' @aliases 'getTreatment<-'getTreatment,methylDiff-method
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylDiff-method
 setReplaceMethod("getTreatment", signature = "methylDiff", function(x, value) {
   
   if(! ( length(x@treatment) == length(value) ) ){
@@ -617,8 +617,8 @@ setMethod("getSampleID", signature = "methylDiff", function(x) {
   return(x@sample.id)
 })
 
-#' @rdname 'getSampleID<-'-methods
-#' @aliases 'getSampleID<-',methylDiff-method
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylDiff-method
 setReplaceMethod("getSampleID", signature = "methylDiff", function(x, value) {
   
   if(! ( length(value) == length(x@sample.ids) ) ){
@@ -629,6 +629,7 @@ setReplaceMethod("getSampleID", signature = "methylDiff", function(x, value) {
   }
   
 })
+
 
 ##############################################################################
 ## CONVERTOR FUNCTIONS FOR methylDiff OBJECT

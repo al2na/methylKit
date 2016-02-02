@@ -60,28 +60,28 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
 
 
-void print_usage() {
-  printf(
-  "usage: ./methcall [options] input_file >outFile.bed"
-  "\n "         
-  "options: \n"
-  " --help     : Print this help message \n"
-  " --read1    : Must be provided at all cases, if given '-' the STDIN will be the input \n"
-  " --type     : one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n"
-  " --nolap    : if given and if the input is paired the overlapping paired reads will be ignored \n"
-  " --minqual  : minquality   (default:20) \n"
-  " --mincov   : min coverage (default:10) \n"
-  " --phred64  : quality scores phred64 scale used otherwise phred33 is the default \n"
-  " --CpG      : output filename for CpG methylation scores (if not specified no file is written out) \n"
-  " --CHH      : output filename for CHH methylation scores (if not specified no file is written out) \n"
-  " --CHG      : output filename for CHG methylation scores (if not specified no file is written out) \n"
-  "           \n"
-  "IMPORTANT: \n"
-  "  Files must be sorted based on chr and start of reads. \n"
-  "  In case of paired-end sam file from bismark, the file still must be sorted in the same way.\n "
-  "\n "
-  );
-  }
+// void print_usage() {
+//   printf(
+//   "usage: ./methcall [options] input_file >outFile.bed"
+//   "\n "         
+//   "options: \n"
+//   " --help     : Print this help message \n"
+//   " --read1    : Must be provided at all cases, if given '-' the STDIN will be the input \n"
+//   " --type     : one of the following: 'single_sam','paired_sam','single_bismark','paired_bismark' \n"
+//   " --nolap    : if given and if the input is paired the overlapping paired reads will be ignored \n"
+//   " --minqual  : minquality   (default:20) \n"
+//   " --mincov   : min coverage (default:10) \n"
+//   " --phred64  : quality scores phred64 scale used otherwise phred33 is the default \n"
+//   " --CpG      : output filename for CpG methylation scores (if not specified no file is written out) \n"
+//   " --CHH      : output filename for CHH methylation scores (if not specified no file is written out) \n"
+//   " --CHG      : output filename for CHG methylation scores (if not specified no file is written out) \n"
+//   "           \n"
+//   "IMPORTANT: \n"
+//   "  Files must be sorted based on chr and start of reads. \n"
+//   "  In case of paired-end sam file from bismark, the file still must be sorted in the same way.\n "
+//   "\n "
+//   );
+//   }
 
 
 // // function to parse command line  arguments
@@ -174,7 +174,7 @@ int check_args (const char *read1, const char *type, std::istream *&input, std::
   // check read1 argument
   if( read1==NULL ) 
   { 
-      print_usage();
+      //print_usage();
       Rcpp::stop (" --read1 argument not supplied\n");
       return -1;
   } else {
@@ -205,7 +205,7 @@ int check_args (const char *read1, const char *type, std::istream *&input, std::
 
   if( type==NULL) 
   { 
-    print_usage(); 
+    //print_usage(); 
     Rcpp::stop(" --type argument not supplied\n");
     return -1;
   } else {
@@ -634,15 +634,16 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  //std::printf( "%i %i\n", numF, numR);
-  // if( (numF == 0) && (numR == 0)) {
-  //   if(CpGstatus){std::remove(CpGfile);}
-  //   if(CHHstatus){std::remove(CHHfile);}
-  //   if(CHGstatus){std::remove(CHGfile);}
-  //   // #################
-  //   //die("\nnot enough alignments that pass coverage and phred score thresholds to calculate conversion rates\n EXITING....\n\n");
-  //   // ################
-  // }
+  std::cout <<  numF << " " <<  numR << std::endl;
+  if( (numF == 0) && (numR == 0)) {
+    if(CpGstatus){std::remove(CpGfile.c_str());}
+    if(CHHstatus){std::remove(CHHfile.c_str());}
+    if(CHGstatus){std::remove(CHGfile.c_str());}
+    // #################
+    Rcpp::stop("\nnot enough alignments that pass coverage and phred score thresholds to calculate conversion rates\n EXITING....\n\n");
+    // ################
+    return -1;
+  }
 
 
   double AvFconvRate  = 0 , AvRconvRate  = 0;
@@ -693,7 +694,10 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   if (in==NULL) {Rcpp::stop("fail to open sam/bam file: " + input );}
    
   header = sam_hdr_read(in);
-  if ( (header ==NULL) || (header->l_text == 0)) {Rcpp::stop("fail to open bam header, is there any?\n");}
+  if ( (header ==NULL) || (header->l_text == 0)) { 
+    return 2;
+    //Rcpp::stop("fail to open bam header, is there any?\n");
+    }
 
   
 // check the file status produce flags 
@@ -731,7 +735,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
 
   // initialize bam  
   b = bam_init1();
-  // stop("ende");
+  //stop("ende");
   // again sam_read1 reads bam or sam files
   while ( sam_read1(in,header,b) >=0 ) 
   {
@@ -890,7 +894,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  std::printf( "%i %i\n", numF, numR);
+  std::cout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -943,7 +947,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
 
 
 
-// processed the sam file
+// processed the Bismark 'vanilla' file
 int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual ) {
 
   
@@ -1068,7 +1072,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   // get the conversion rate and write it out!!
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  std::printf( "%i %i\n", numF, numR);
+  std::cout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -1121,7 +1125,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
 void process_paired_bismark () //std::istream& fh, char* CpGfile, char* CHHfile, char* CHGfile, int &offset, int &mincov, int &minqual, int &nolap, int &paired);
 {
 
-printf("Feature is not ready yet.\n");
+Rcpp::stop("Feature is not ready yet.\n");
 
 }
 
@@ -1145,7 +1149,7 @@ printf("Feature is not ready yet.\n");
 
 
 // [[Rcpp::export]]
-void methCall(std::string read1, std::string type, bool nolap=false, int minqual=20,
+void methCall(std::string read1, std::string type="bam", bool nolap=false, int minqual=20,
                 int mincov = 10 , bool phred64 = false , std::string CpGfile ="",
                 std::string CHHfile ="" , std::string CHGfile = "" ) {
 
@@ -1158,8 +1162,19 @@ void methCall(std::string read1, std::string type, bool nolap=false, int minqual
  
   check_args(read1.c_str(), type.c_str(), input, file);
   
+  int res = 0;
+  
   if(!type.empty()) {
-    if(type == "single_sam"){
+    // type is "bam" per default (reads both sam or bam), but if the header is missing, 
+    // the file will be treated as paired_sam
+    if( type == "bam"){
+      res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
+      // std::cout << res;
+    }
+    if( (res==2)  || (type == "paired_sam")){
+      process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
+    }
+    else if(type == "single_sam"){
       process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
     }
     else if( type == "single_bismark" ){
@@ -1169,17 +1184,10 @@ void methCall(std::string read1, std::string type, bool nolap=false, int minqual
     Rcpp::stop( "--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n") ;
     // return false;
     }
-    else if( type == "paired_sam"){
-      process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
-    }
-    if( type == "bam"){
-      process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
-    }
+
   }
   
-
   if(file.is_open()) file.close();
-
 
 }
 

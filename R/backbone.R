@@ -1383,6 +1383,8 @@ setMethod("getMethylationStats", "methylRaw",
 #' The show method works for \code{methylRaw},\code{methylRawDB},\code{methylRawList},\code{methylRawListDB},
 #' \code{methylBase},\code{methylBaseDB} and \code{methylDiff} objects
 #' 
+#' @param object any methylKit object
+#' 
 #' @examples
 #' data(methylKit)
 #' methylDiff.obj
@@ -1683,7 +1685,6 @@ setMethod("select", "methylRaw",
 #' chrs=methylDiff.obj[[2]]
 #' 
 #' 
-#' @aliases [
 #' @docType methods
 #' @rdname extract-methods
 #' @aliases extract,methylRaw-method
@@ -1850,6 +1851,7 @@ setMethod("selectByOverlap", "methylBase",
 #' @docType methods
 #' @rdname getTreatment-methods
 setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
+#' @export 
 #' @rdname getTreatment-methods
 setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
 
@@ -1922,8 +1924,11 @@ setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
 #' @docType methods
 #' @rdname getSampleID-methods
 setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+
+#' @export
 #' @rdname getSampleID-methods
-setGeneric("getSampleID<-", def=function(x, value="character") {standardGeneric("getSampleID<-")})
+setGeneric("getSampleID<-", def=function(x, value) {standardGeneric("getSampleID<-")})
+
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylRawList-method
 setMethod("getSampleID", signature = "methylRawList", function(x) {

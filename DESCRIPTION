@@ -21,6 +21,7 @@ License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
 SystemRequirements: Perl
+LinkingTo: Rcpp, Rhtslib, zlibbioc
 biocViews: DNAMethylation
 Depends:
     R (>= 2.15.0),
@@ -39,16 +40,19 @@ Imports:
     gtools,
     fastseg,
     rtracklayer,
-    mclust
+    mclust,
+    Rcpp
 Suggests:
     testthat
 Collate:
+    'methylKit.R'
     'backbone.R'
     'diffMeth.R'
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
     'read.bismark.R'
+    'RcppExports.R'
     'document_data.R'
     'bedgraph.R'
     'reorganize.R'
@@ -63,3 +67,4 @@ Collate:
     'methylDBFunctions.R'
     'tabix.functions.R'
     'methSeg.R'
+RoxygenNote: 5.0.1

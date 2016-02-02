@@ -14,6 +14,7 @@
 \alias{getSampleID<-}
 \alias{getSampleID<-,methylBase-method}
 \alias{getSampleID<-,methylBaseDB-method}
+\alias{getSampleID<-,methylDiff-method}
 \alias{getSampleID<-,methylDiffDB-method}
 \alias{getSampleID<-,methylRaw-method}
 \alias{getSampleID<-,methylRawDB-method}
@@ -39,6 +40,8 @@ getSampleID(x) <- value
 \S4method{getSampleID}{methylRaw}(x) <- value
 
 \S4method{getSampleID}{methylDiff}(x)
+
+\S4method{getSampleID}{methylDiff}(x) <- value
 
 \S4method{getSampleID}{methylRawListDB}(x)
 
