@@ -315,6 +315,7 @@ int processnonCGmethHash2 ( std::map<std::string, std::vector<int> > &nonCGmethH
     //push @{$CTconvArray->{$strand}},(($noTs*100)/($noTs+$noCs+$noOs));
     CTconvArray[strand]["num"]++;
     CTconvArray[strand]["total"] += ((noTs*100)/(noTs+noCs+noOs));
+    CTconvArray[strand]["total"] += ((noTs*100)/(double)(noTs+noCs+noOs));
 }
 }
 return 0;
