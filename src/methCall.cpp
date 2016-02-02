@@ -634,7 +634,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  std::cout <<  numF << " " <<  numR << std::endl;
+  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -661,7 +661,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   int totCs = numF + numR;
 
    
-  std::cout 
+  Rcpp::Rcout 
     <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
     <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
       //"median conversion rate = %.2f\n\n";              //$medconvRate
@@ -782,9 +782,6 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     }
   }
 
-  // std::cout << "Cigar with " << len_cigar << " operations:" << std::endl;
-  // std::cout << cigar_buffer << std::endl;
-
   for (i = 0; i < len; i++  ) { qual += bam_get_qual(b)[i]+offset;}
 
 
@@ -894,7 +891,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  std::cout <<  numF << " " <<  numR << std::endl;
+  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -921,7 +918,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   int totCs = numF + numR;
 
    
-  std::cout 
+  Rcpp::Rcout 
     <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
     <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
       //"median conversion rate = %.2f\n\n";              //$medconvRate
@@ -1072,7 +1069,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   // get the conversion rate and write it out!!
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  std::cout <<  numF << " " <<  numR << std::endl;
+  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -1100,7 +1097,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   int totCs = numF + numR;
   
    
-  std::cout 
+  Rcpp::Rcout 
     <<  "total otherC considered (>95%% C+T): "           << totCs       << "\n"
     <<  "average conversion rate = "                      << AvconvRate  << "\n"
       //"median conversion rate = %.2f\n\n";              //$medconvRate
