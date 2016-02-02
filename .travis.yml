@@ -17,9 +17,6 @@ bioc_required: true
 #  - ./travis-tool.sh install_deps
 #  - ./travis-tool.sh install_bioc_deps
 
-before_script:
-	- Rscript -e 'Sys.setenv("PKG_CXXFLAGS"="-std=c++11")''
-  
 #script: ./travis-tool.sh run_tests
 
 #after_failure:
@@ -28,6 +25,9 @@ before_script:
 #after_script:
 #  - ./travis-tool.sh dump_logs_by_extension "timings"
 #  - ./travis-tool.sh dump_sysinfo
+
+before_script:
+	- Rscript -e 'Sys.setenv("PKG_CXXFLAGS"="-std=c++11")''
   
 notifications:
   email:
