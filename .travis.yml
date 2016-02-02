@@ -36,3 +36,4 @@ env:
     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
     - R_CHECK_ARGS="--no-build-vignettes --no-manual"
     - _R_CHECK_FORCE_SUGGESTS_=FALSE
+    - PKG_CXXFLAGS="-std=c++11"
