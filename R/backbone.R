@@ -9,8 +9,9 @@
                          nrows = 100,stringsAsFactors=FALSE)
   classes  <- sapply(tab5rows, class)
   classes[classes=="logical"]="character"
-  return( read.table(filename, header = header,skip=skip,sep=sep, 
-                     colClasses = classes)  )
+  classes[1:2] = "character"
+  return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
+                     )  )
 }
 
 # reformats a data.frame to a standard methylraw data.frame
