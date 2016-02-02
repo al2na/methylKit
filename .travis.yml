@@ -8,6 +8,7 @@ language: c
 # Opt into fully virtualized infrastructure
 # cf http://blog.travis-ci.com/2015-03-31-docker-default-on-the-way/
 sudo: required
+bioc_required: true
 
 
 
