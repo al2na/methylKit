@@ -66,12 +66,16 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   dots <- list(...)  
   
-  if( (class(obj)=="methylRaw" | class(obj)=="methylRawDB") & obj@resolution=="region" ){
-    obj= as(obj,"GRanges")
-    mcols(obj)=100*obj$numCs/obj$coverage
-  }else if( (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") & obj@resolution=="region" ){
-    obj = as(obj,"GRanges")
-    obj = sort(obj[,-1])
+  if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
+    if(obj@resolution=="region" ){
+      obj= as(obj,"GRanges")
+      mcols(obj)=100*obj$numCs/obj$coverage
+    }
+  }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
+    if( obj@resolution=="region" ){
+      obj = as(obj,"GRanges")
+      obj = sort(obj[,-1])
+    }
   }else if (class(obj) != "GRanges"){
     stop("only methylRaw or methylDiff with resolution=='region' or GRanges objects can be used in this function")
   }
