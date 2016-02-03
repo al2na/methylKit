@@ -7,15 +7,23 @@
 language: r
 sudo: required
 bioc_required: true
-
-before_script:
-	- Rscript -e 'Sys.setenv("PKG_CXXFLAGS"="-std=c++11")''
+  
+before_install:
+ - curl -OL http://raw.githubusercontent.com/eddelbuettel/r-travis/master/scripts/travis-tool.sh
+ - chmod 755 ./travis-tool.sh
+ - ./travis-tool.sh bootstrap
+  
+install:
+ #- ./travis-tool.sh install_deps
+ #- ./travis-tool.sh install_bioc_deps
+ - ./travis-tool.sh install_aptget r-cran-rcpp g++-4.9
+ - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
   
 notifications:
   email:
     on_success: change
     on_failure: change
-
+  
 env:
   global:
     - R_BUILD_ARGS="--no-build-vignettes --no-manual --no-resave-data"
