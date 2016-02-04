@@ -27,12 +27,12 @@ bioc_required: true
 #  - ./travis-tool.sh dump_sysinfo
 
 addons:
- apt:
-   sources:
-   - ubuntu-toolchain-r-test
-   packages:
-   - gcc-4.8
-   - g++-4.8
+  apt:
+     sources:
+     - ubuntu-toolchain-r-test
+     packages:
+     - gcc-4.8
+     - g++-4.8
   
 notifications:
   email:
