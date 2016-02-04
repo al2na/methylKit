@@ -50,6 +50,5 @@ env:
     - R_CHECK_TIME="TRUE"
     - R_CHECK_TESTS="TRUE"
     - _R_CHECK_TIMINGS_="0"
-    - CXX="g++-4.8"
-    - CXXFLAGS="-std=c++11"
+    - CXXFLAGS="-std=c++0x"
 
