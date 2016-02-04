@@ -8,18 +8,18 @@ language: r
 sudo: required
 bioc_required: true
 
-before_install:
+#before_install:
 #  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
 #  - chmod 755 ./travis-tool.sh
 #  - ./travis-tool.sh bootstrap
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
+#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+#  - sudo apt-get update -qq
 
-install:
+#install:
 #  - ./travis-tool.sh install_deps
 #  - ./travis-tool.sh install_bioc_deps
-  - sudo apt-get install -qq g++-4.8
-  - export CXX="g++-4.8"
+#  - sudo apt-get install -qq g++-4.8
+#  - export CXX="g++-4.8"
   
 #script: ./travis-tool.sh run_tests
 
@@ -50,4 +50,5 @@ env:
     - R_CHECK_TIME="TRUE"
     - R_CHECK_TESTS="TRUE"
     - _R_CHECK_TIMINGS_="0"
+    - CXX="g++-4.8"
 

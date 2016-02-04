@@ -27,7 +27,7 @@ bool String2Int(const std::string& str, int& result)
     try
     {
         std::size_t lastChar;
-        result = stoi(str, &lastChar, 10);
+        result = std::stoi(str, &lastChar, 10);
         return lastChar == str.size();
     }
     catch (std::invalid_argument&)
@@ -421,37 +421,36 @@ double median(std::vector<double> vec) {
 
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
-  int position = 0;
-  int len = 0 ;
-  smatch m;
+  int position = 0, len;
+  std::smatch m;
   std::string cigar_part, insertion;
 
 
   std::deque<int> insPos; // location of the insertions
   std::deque<int> insLen; // location of the insert lengths
   while (!cigar.empty()){
-    if(regex_search(cigar, m, regex ("^[0-9]+[MIDS]"))) {
+    if(std::regex_search(cigar, m, std::regex ("^[0-9]+[MIDS]"))) {
       cigar_part = m.str();
-      if (regex_search(cigar_part, m, regex ("(\\d+)M"))) { // count matches
+      if (std::regex_search(cigar_part, m, std::regex ("(\\d+)M"))) { // count matches
         position += std::stoi(m[1].str());
       } 
-      else if (regex_search(cigar_part, m, regex ("(\\d+)I"))) { // count inserts
-        len = stoi(m[1].str());
+      else if (std::regex_search(cigar_part, m, std::regex ("(\\d+)I"))) { // count inserts
+        len = std::stoi(m[1].str());
         insertion = std::string ( len ,'-');
         insPos.push_front(position); 
         insLen.push_front(len); 
         
         position += len;
       } 
-      else if (regex_search(cigar_part, m, regex ("(\\d+)D"))) { // count deletions
-        len = stoi(m[1].str());
+      else if (std::regex_search(cigar_part, m, std::regex ("(\\d+)D"))) { // count deletions
+        len = std::stoi(m[1].str());
         insertion = std::string(len, '.');
         methc.insert(position, insertion);
         qual.insert(position, insertion);
         
         position += len;
       } 
-      else if (regex_search(cigar_part, regex ("\\d+)S"))) { 
+      else if (std::regex_search(cigar_part, std::regex ("\\d+)S"))) { 
         //#############################
         // die "Not ready for this!\n";   
         // ###########################
@@ -518,8 +517,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   {
     
     //std::cout << line << std::endl;
-    if(regex_search(line, regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
-    if(regex_search(line, regex ("^@")))       {std::getline(*fh, line);} // step over the header line
+    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
+    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
     /** example paired-end reads in SAM format (2 consecutive lines)
     # 1_R1/1	67	5	103172224	255	40M	=	103172417	233	AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:4	XX:Z:4T1T24TT7	XM:Z:....h.h........................hh.......	XR:Z:CT	XG:Z:CT
     # 1_R1/2	131	5	103172417	255	40M	=	103172224	-233	TATTTTTTTTTAGAGTATTTTTTAATGGTTATTAGATTTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:6	XX:Z:T5T1T9T9T7T3	XM:Z:h.....h.h.........h.........h.......h...	XR:Z:GA	XG:Z:CT
@@ -546,7 +545,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     
     
     // process cigar string to get indels
-    if( std::regex_search(cigar, regex ("[DI]"))) {
+    if( std::regex_search(cigar, std::regex ("[DI]"))) {
       processCigar( cigar, methc, qual);
     }
     std::string mcalls = methc; // get the bismark methylation calls
@@ -613,8 +612,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+to_string(start+i); }
-      else { key = "R|"+ chr+"|"+to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
+      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
 
       process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
@@ -781,7 +780,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     for (i = 1; i < len_cigar; i++  ) {
       char buffer [n];
       n = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
-      strcat(cigar_buffer,buffer);
+      std::strcat(cigar_buffer,buffer);
     }
   }
 
@@ -800,7 +799,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
     
     // process cigar string to get indels
-    if( regex_search(cigar, regex ("[DI]"))) {
+    if( std::regex_search(cigar, std::regex ("[DI]"))) {
       processCigar( cigar, methc, qual);
     }
     std::string mcalls = methc; // get the bismark methylation calls
@@ -870,8 +869,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+to_string(start+i); }
-      else { key = "R|"+ chr+"|"+to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
+      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
 
       process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
@@ -992,8 +991,8 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   {
     
     //std::cout << line << std::endl;
-  regex_search(line, regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
-  regex_search(line, regex ("^@")))       {std::getline(*fh, line);} // step over the header line
+    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
+    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
     
     std::vector<std::string> cols = split(line,'\t');
     int start , end;                    
@@ -1048,8 +1047,8 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
       //if last base is a C and it is a part of CCGG motif, don't call for meth
       if( ( (gbases[i] == 'C') && (i==quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
       std::string key; // initilaize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+to_string(start+i); }
-      else { key = "R|"+ chr+"|"+to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
+      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
       
       process_call_string(mcalls, i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
