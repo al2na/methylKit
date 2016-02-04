@@ -16,7 +16,7 @@
 #include <Rcpp.h>
 
 using namespace Rcpp;
-// [[Rcpp::plugins(cpp11)]]
+
 
 
  // ############  Helper functions ################
@@ -780,7 +780,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     for (i = 1; i < len_cigar; i++  ) {
       char buffer [n];
       n = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
-      std::strcat(cigar_buffer,buffer);
+      strcat(cigar_buffer,buffer);
     }
   }
 
