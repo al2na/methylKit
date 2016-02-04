@@ -9,7 +9,7 @@
                          nrows = 100,stringsAsFactors=FALSE)
   classes  <- sapply(tab5rows, class)
   classes[classes=="logical"]="character"
-  classes[1:2] = "character"
+  #classes[1:2] = "character"
   return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
                      )  )
 }

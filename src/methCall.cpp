@@ -1146,7 +1146,7 @@ Rcpp::stop("Feature is not ready yet.\n");
 //     return -1;
 //   }
 
-
+// [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 void methCall(std::string read1, std::string type="bam", bool nolap=false, int minqual=20,
                 int mincov = 10 , bool phred64 = false , std::string CpGfile ="",
