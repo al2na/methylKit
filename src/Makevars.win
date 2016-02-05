@@ -1,6 +1,14 @@
 RHTSLIB_LIBS=$(shell echo 'Rhtslib::pkgconfig("PKG_LIBS")'|\
     "${R_HOME}/bin/R" --vanilla --slave)
 PKG_LIBS=$(RHTSLIB_LIBS)
+<<<<<<< HEAD
 CXX?=g++-4.8		
 CC?=gcc-4.8
 #PKG_CXXFLAGS=-std=c++0x
+||||||| parent of 4bfc455... hope this is it
+PKG_CXXFLAGS=-std=c++0x
+=======
+CXX?=g++-4.8		
+CC?=gcc-4.8
+PKG_CXXFLAGS=-std=c++0x
+>>>>>>> 4bfc455... hope this is it
