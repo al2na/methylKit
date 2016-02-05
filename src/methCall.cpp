@@ -441,7 +441,7 @@ void split_cigar(std::string& source, std::string& regexString, std::vector<std:
   {
     if (regexec(&regexCompiled, cursor.c_str(), maxGroups, groupArray, 0)) break;  // No more matches
     
-    unsigned int g = 0;
+    // unsigned int g = 0;
     size_t offset = 0;
     
     offset = groupArray[0].rm_eo;
@@ -589,7 +589,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     std::string qual              = cols[10];
     std::string mrnm              = cols[6];
     int mpos                      = atoi(cols[7].c_str());
-    int isize                     = atoi(cols[8].c_str());
+    // int isize                     = atoi(cols[8].c_str());
 //     if(!String2Int(cols[7],mpos)) { Rcpp::stop("Error from String2Int");return -1;}
 //     if(!String2Int(cols[8],isize)) { Rcpp::stop("Error from String2Int");return -1;}
     

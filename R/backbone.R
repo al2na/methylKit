@@ -9,7 +9,15 @@
                          nrows = 100,stringsAsFactors=FALSE)
   classes  <- sapply(tab5rows, class)
   classes[classes=="logical"]="character"
-  #classes[1:2] = "character"
+  lines2keep <- 100
+  nL <- countLines(filename)
+  lastrows <- read.table(filename, header = header,skip=nL-lines2keep,sep=sep, 
+                         stringsAsFactors=FALSE)
+  lastclasses  <- sapply(lastrows, class)
+  if(any(classes!=lastclasses)) {
+    classes[which(classes!=lastclasses)] = lastclasses[which(classes!=lastclasses)]
+  }
+  
   return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
                      )  )
 }
