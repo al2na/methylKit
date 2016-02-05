@@ -30,13 +30,13 @@ bioc_required: true
 #  - ./travis-tool.sh dump_logs_by_extension "timings"
 #  - ./travis-tool.sh dump_sysinfo
 
-#addons:
-#  apt:
-#     sources:
-#     - ubuntu-toolchain-r-test
-#     packages:
-#     - gcc-4.9
-#     - g++-4.9
+addons:
+  apt:
+     sources:
+     - ubuntu-toolchain-r-test
+     packages:
+     - gcc-4.8
+     - g++-4.8
   
 notifications:
   email:
@@ -50,6 +50,6 @@ env:
     - R_CHECK_TIME="TRUE"
     - R_CHECK_TESTS="TRUE"
     - _R_CHECK_TIMINGS_="0"
-#    - CXX="g++-4.9"
-#    - CC="gcc-4.9"
+    - CXX="g++-4.8"
+    - CC="gcc-4.8"
 
