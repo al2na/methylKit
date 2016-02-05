@@ -468,7 +468,7 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   std::string ops ("MIDS"); // allowed operations
   
   std::vector<std::pair<int,std::string> > cigar_split; // Cigar string is splitted into its single operations
-  std::string regexString = "^([0-9]+)([MIDS])";       // -> each pair consists of number and type of operation
+  std::string regexString = "^([0-9]+)([MIDSNHP])";       // -> each pair consists of number and type of operation
   split_cigar(cigar,regexString, cigar_split);          // can be accessed via .first (number) and .second (op)
 
   std::deque<int> insPos; // location of the insertions
