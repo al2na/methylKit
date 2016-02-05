@@ -1,30 +1,43 @@
 # Sample .travis.yml for R projects.
 #
-# See https://github.com/craigcitro/r-travis
-#     https://github.com/eddelbuettel/r-travis/
+# See README.md for instructions, or for more configuration options,
+# see the wiki:
+#   https://github.com/craigcitro/r-travis/wiki
 
-language: c
-
-# Opt into fully virtualized infrastructure
-# cf http://blog.travis-ci.com/2015-03-31-docker-default-on-the-way/
+language: r
 sudo: required
-  
-before_install:
-  - curl -OL https://raw.githubusercontent.com/alexg9010/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-  
-install:
-  - ./travis-tool.sh install_deps
-  - ./travis-tool.sh install_bioc_deps
-  - ./travis-tool.sh install_aptget r-cran-rcpp g++-4.9
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
-  
-script:
-  - ./travis-tool.sh run_tests
+bioc_required: true
 
+#before_install:
+#  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+#  - chmod 755 ./travis-tool.sh
+#  - ./travis-tool.sh bootstrap
+#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+#  - sudo apt-get update -qq
+
+#install:
+#  - ./travis-tool.sh install_deps
+#  - ./travis-tool.sh install_bioc_deps
+#  - sudo apt-get install -qq g++-4.8
+#  - export CXX="g++-4.8"
+  
+#script: ./travis-tool.sh run_tests
+
+#after_failure:
+#  - ./travis-tool.sh dump_logs
+
+#after_script:
+#  - ./travis-tool.sh dump_logs_by_extension "timings"
+#  - ./travis-tool.sh dump_sysinfo
+
+addons:
+  apt:
+     sources:
+     - ubuntu-toolchain-r-test
+     packages:
+     - gcc-4.8
+     - g++-4.8
+  
 notifications:
   email:
     on_success: change
@@ -32,8 +45,11 @@ notifications:
 
 env:
   global:
-    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
-    - R_CHECK_ARGS="--no-build-vignettes --no-manual"
-    - _R_CHECK_FORCE_SUGGESTS_=FALSE
+    - R_BUILD_ARGS="--no-build-vignettes --no-manual --no-resave-data"
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual --timings"
+    - R_CHECK_TIME="TRUE"
+    - R_CHECK_TESTS="TRUE"
+    - _R_CHECK_TIMINGS_="0"
     - CXX="g++-4.8"
     - CC="gcc-4.8"
+
