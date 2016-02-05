@@ -9,7 +9,7 @@
 #include <string>
 #include <map>
 #include <getopt.h>
-#include <regex>
+#include <regex.h>
 #include "sam.h"
 #include "bgzf.h"
 #include "zlib.h"
@@ -18,27 +18,26 @@
 using namespace Rcpp;
 
 
-
  // ############  Helper functions ################
 
- // taken from http://www.kumobius.com/2013/08/c-string-to-int/
-bool String2Int(const std::string& str, int& result)
-{
-    try
-    {
-        std::size_t lastChar;
-        result = std::stoi(str, &lastChar, 10);
-        return lastChar == str.size();
-    }
-    catch (std::invalid_argument&)
-    {
-        return false;
-    }
-    catch (std::out_of_range&)
-    {
-        return false;
-    }
-}
+//  // taken from http://www.kumobius.com/2013/08/c-string-to-int/
+// bool String2Int(const std::string& str, int& result)
+// {
+//     try
+//     {
+//         std::size_t lastChar;
+//         result = std::stoi(str, &lastChar, 10);
+//         return lastChar == str.size();
+//     }
+//     catch (std::invalid_argument&)
+//     {
+//         return false;
+//     }
+//     catch (std::out_of_range&)
+//     {
+//         return false;
+//     }
+// }
 
 
 //split function to seperate strings by delimiter 
@@ -419,47 +418,98 @@ double median(std::vector<double> vec) {
 }
 
 
+void split_cigar(std::string& source, std::string& regexString, std::vector<std::pair<int,std::string> > &result) {
+
+  size_t maxMatches =  source.length();
+  size_t maxGroups = 3;
+  regex_t regexCompiled;
+  regmatch_t groupArray[maxGroups];
+  unsigned int m;
+  unsigned int op_len;
+  std::string cursor, op;
+  
+  if (regcomp(&regexCompiled, regexString.c_str(), REG_EXTENDED))
+  {
+    Rcpp::stop("Could not compile regular expression.\n");
+  };
+  
+  m = 0;
+  op_len = 0;
+  cursor = source;
+
+  for (m = 0; m < maxMatches; m ++)
+  {
+    if (regexec(&regexCompiled, cursor.c_str(), maxGroups, groupArray, 0)) break;  // No more matches
+    
+    unsigned int g = 0;
+    size_t offset = 0;
+    
+    offset = groupArray[0].rm_eo;
+    
+    op_len = atoi(cursor.substr(groupArray[1].rm_so,groupArray[1].rm_eo-groupArray[1].rm_so).c_str());
+    op = cursor.substr(groupArray[2].rm_so,groupArray[2].rm_eo-groupArray[2].rm_so);
+    
+//     std::cout << m  << " " <<  cursor 
+//               <<  " " << cursor.substr(groupArray[1].rm_so,groupArray[1].rm_eo-groupArray[1].rm_so) 
+//               <<  " " << cursor.substr(groupArray[2].rm_so,groupArray[2].rm_eo-groupArray[2].rm_so)
+//               << "\n";
+    
+    result.push_back(std::make_pair(op_len,op));
+    cursor.erase(cursor.begin(),cursor.begin()+offset);
+  }
+  regfree(&regexCompiled);
+}
+
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
+  
   int position = 0, len;
-  std::smatch m;
-  std::string cigar_part, insertion;
-
+  std::string insertion;
+  std::string ops ("MIDS"); // allowed operations
+  
+  std::vector<std::pair<int,std::string> > cigar_split; // Cigar string is splitted into its single operations
+  std::string regexString = "^([0-9]+)([MIDS])";       // -> each pair consists of number and type of operation
+  split_cigar(cigar,regexString, cigar_split);          // can be accessed via .first (number) and .second (op)
 
   std::deque<int> insPos; // location of the insertions
   std::deque<int> insLen; // location of the insert lengths
-  while (!cigar.empty()){
-    if(std::regex_search(cigar, m, std::regex ("^[0-9]+[MIDS]"))) {
-      cigar_part = m.str();
-      if (std::regex_search(cigar_part, m, std::regex ("(\\d+)M"))) { // count matches
-        position += std::stoi(m[1].str());
+  
+  std::pair<int,std::string> cigar_part;
+  
+  while (!cigar_split.empty()){
+    // if operation is allowed 
+    if( ops.find( cigar_split.front().second)!=std::string::npos ) {
+      cigar_part =cigar_split.front();
+      if (cigar_part.second =="M") { // count matches
+        position += cigar_part.first;
       } 
-      else if (std::regex_search(cigar_part, m, std::regex ("(\\d+)I"))) { // count inserts
-        len = std::stoi(m[1].str());
+      else if (cigar_part.second == "I") { // count inserts
+        len = cigar_part.first;
         insertion = std::string ( len ,'-');
         insPos.push_front(position); 
         insLen.push_front(len); 
         
         position += len;
       } 
-      else if (std::regex_search(cigar_part, m, std::regex ("(\\d+)D"))) { // count deletions
-        len = std::stoi(m[1].str());
+      else if (cigar_part.second=="D") { // count deletions
+        len = cigar_part.first;
         insertion = std::string(len, '.');
         methc.insert(position, insertion);
         qual.insert(position, insertion);
         
         position += len;
       } 
-      else if (std::regex_search(cigar_part, std::regex ("\\d+)S"))) { 
+      else if (cigar_part.second=="S") { 
         //#############################
-        // die "Not ready for this!\n";   
+        Rcpp::stop( "Not ready for this!\n");   
         // ###########################
 
       }
-      cigar.erase(0,cigar_part.length());
+      // erase the current element
+      cigar_split.erase(cigar_split.begin());
     } else {
         // #############################
-        // die "Unexpected cigar: $id $cigar\n";   
+        Rcpp::stop("Unexpected cigar: "+cigar_part.second+"\n");   
         // ###########################
     }
   }
@@ -517,8 +567,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   {
     
     //std::cout << line << std::endl;
-    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
-    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
+    if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
+    if(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
     /** example paired-end reads in SAM format (2 consecutive lines)
     # 1_R1/1	67	5	103172224	255	40M	=	103172417	233	AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:4	XX:Z:4T1T24TT7	XM:Z:....h.h........................hh.......	XR:Z:CT	XG:Z:CT
     # 1_R1/2	131	5	103172417	255	40M	=	103172224	-233	TATTTTTTTTTAGAGTATTTTTTAATGGTTATTAGATTTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:6	XX:Z:T5T1T9T9T7T3	XM:Z:h.....h.h.........h.........h.......h...	XR:Z:GA	XG:Z:CT
@@ -529,8 +579,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
 
     std::vector<std::string> cols = split(line,'\t');
-    int start;                     
-    if(!String2Int(cols[3],start)) { Rcpp::stop("Error from String2Int") ;return -1;}
+    int start                     = atoi(cols[3].c_str()); 
+    // if(!String2Int(cols[3],start)) { Rcpp::stop("Error from String2Int") ;return -1;}
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
     std::string cigar             = cols[5];
@@ -538,14 +588,15 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     methc.erase(methc.begin(),methc.begin()+ 5 ); //  remove "XM:Z:"
     std::string qual              = cols[10];
     std::string mrnm              = cols[6];
-    int mpos;                     // = std::stoi(cols[7]);
-    int isize;                    // = std::stoi(cols[8]);
-    if(!String2Int(cols[7],mpos)) { Rcpp::stop("Error from String2Int");return -1;}
-    if(!String2Int(cols[8],isize)) { Rcpp::stop("Error from String2Int");return -1;}
+    int mpos                      = atoi(cols[7].c_str());
+    int isize                     = atoi(cols[8].c_str());
+//     if(!String2Int(cols[7],mpos)) { Rcpp::stop("Error from String2Int");return -1;}
+//     if(!String2Int(cols[8],isize)) { Rcpp::stop("Error from String2Int");return -1;}
     
     
     // process cigar string to get indels
-    if( std::regex_search(cigar, std::regex ("[DI]"))) {
+    // if search finds nothing string::npos is returned
+    if( (cigar.find("D")!=std::string::npos) || (cigar.find("I")!=std::string::npos)) {
       processCigar( cigar, methc, qual);
     }
     std::string mcalls = methc; // get the bismark methylation calls
@@ -799,7 +850,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
     
     // process cigar string to get indels
-    if( std::regex_search(cigar, std::regex ("[DI]"))) {
+    // if search finds nothing string::npos is returned
+    if( (cigar.find("D")!=std::string::npos) || (cigar.find("I")!=std::string::npos)) {
       processCigar( cigar, methc, qual);
     }
     std::string mcalls = methc; // get the bismark methylation calls
@@ -991,13 +1043,14 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   {
     
     //std::cout << line << std::endl;
-    if(std::regex_search(line, std::regex ("Bismark")))  {std::getline(*fh, line);}  // step over the header line
-    if(std::regex_search(line, std::regex ("^@")))       {std::getline(*fh, line);} // step over the header line
+    if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
+    if(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
     
     std::vector<std::string> cols = split(line,'\t');
-    int start , end;                    
-    if(!String2Int(cols[3],start)) { Rcpp::stop("Error from String2Int");return -1;}
-    if(!String2Int(cols[4],end)) { Rcpp::stop( "Error from String2Int");return -1;}
+    int start                     = atoi(cols[3].c_str());
+    int end                       = atoi(cols[4].c_str());                    
+//     if(!String2Int(cols[3],start)) { Rcpp::stop("Error from String2Int");return -1;}
+//     if(!String2Int(cols[4],end)) { Rcpp::stop( "Error from String2Int");return -1;}
     char strand                   = cols[1][0];
     std::string chr               = cols[2]; 
     std::string qual              = cols[10];
@@ -1146,7 +1199,7 @@ Rcpp::stop("Feature is not ready yet.\n");
 //     return -1;
 //   }
 
-// [[Rcpp::plugins(cpp11)]]
+
 // [[Rcpp::export]]
 void methCall(std::string read1, std::string type="bam", bool nolap=false, int minqual=20,
                 int mincov = 10 , bool phred64 = false , std::string CpGfile ="",

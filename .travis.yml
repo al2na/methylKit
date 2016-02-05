@@ -35,8 +35,8 @@ addons:
      sources:
      - ubuntu-toolchain-r-test
      packages:
-     - gcc-4.8
-     - g++-4.8
+     - gcc-4.9
+     - g++-4.9
   
 notifications:
   email:
@@ -50,6 +50,6 @@ env:
     - R_CHECK_TIME="TRUE"
     - R_CHECK_TESTS="TRUE"
     - _R_CHECK_TIMINGS_="0"
-    - CXX="g++-4.8"
-    - CC="gcc-4.8"
+    - CXX="g++-4.9"
+    - CC="gcc-4.9"
 
