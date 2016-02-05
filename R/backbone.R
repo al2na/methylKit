@@ -10,7 +10,7 @@
   classes  <- sapply(tab5rows, class)
   classes[classes=="logical"]="character"
   lines2keep <- 100
-  nL <- countLines(filename)
+  nL <- R.utils::countLines(filename)
   lastrows <- read.table(filename, header = header,skip=nL-lines2keep,sep=sep, 
                          stringsAsFactors=FALSE)
   lastclasses  <- sapply(lastrows, class)
