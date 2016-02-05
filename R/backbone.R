@@ -17,7 +17,7 @@
   if(any(classes!=lastclasses)) {
     classes[which(classes!=lastclasses)] = lastclasses[which(classes!=lastclasses)]
   }
-  
+
   return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
                      )  )
 }
