@@ -557,3 +557,8 @@ sessionInfo()
 # References
 
 
+```{r,eval=TRUE,echo=FALSE}
+# tidy up                  
+rm(myobjDB)              
+unlink(list.files(pattern = "methylDB",full.names = TRUE),recursive = TRUE)
+```
