@@ -9,6 +9,7 @@
 \alias{[,methylRaw,ANY,ANY-method}
 \alias{[,methylRawDB,ANY,ANY-method}
 \alias{extract}
+\alias{extract,methylBase-method}
 \alias{extract,methylBaseDB-method}
 \alias{extract,methylDiff-method}
 \alias{extract,methylDiffDB-method}

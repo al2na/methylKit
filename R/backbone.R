@@ -1715,7 +1715,7 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
               )
 
 # @aliases [,methylBase-method
-# @aliases extract,methylBase-method
+#' @aliases extract,methylBase-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
           function(x,i,j){

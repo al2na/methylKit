@@ -14,8 +14,8 @@
 #'  @rdname updateMethObject
 setGeneric("updateMethObject",function(object) standardGeneric("updateMethObject"))
 
-#'  @aliases updateMethObject,methylRaw-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylRaw-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylRaw" ),
           function(object){
             
@@ -23,8 +23,8 @@ setMethod("updateMethObject" ,signature(object = "methylRaw" ),
                 assembly=object@assembly,context=object@context,resolution=object@resolution)
           })
 
-#' @aliases updateMethObject,methylRawList-method
-#'  @rdname updateMethObject
+# @aliases updateMethObject,methylRawList-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylRawList" ),
           function(object){
             
@@ -33,8 +33,8 @@ setMethod("updateMethObject" ,signature(object = "methylRawList" ),
           })
 
 
-#'  @aliases updateMethObject,methylBase-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylBase-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylBase" ),
           function(object){
             
@@ -52,8 +52,8 @@ setMethod("updateMethObject" ,signature(object = "methylBase" ),
             
           })
 
-#'  @aliases updateMethObject,methylDiff-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylDiff-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylDiff" ),
           function(object){
             
