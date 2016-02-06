@@ -65,6 +65,8 @@ To be sure that the algorithm will work on your data,
  methSeg2bed(res,filename="H1.chr21.chr22.trial.seg.bed")
 }
 
+unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
+
 }
 \author{
 Altuna Akalin, contributions by Arsene Wabo

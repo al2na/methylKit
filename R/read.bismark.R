@@ -1,8 +1,8 @@
 
 
-#' Read from sorted Bismark SAM files
+#' Read from sorted Bismark SAM or BAM files
 #'
-#' The function calls methylation percentage per base from sorted Bismark SAM 
+#' The function calls methylation percentage per base from sorted Bismark SAM or BAM 
 #' files and reads methylation information as \code{methylRaw} or \code{methylRawList}
 #' object. Bismark is a popular aligner for 
 #' high-throughput bisulfite sequencing experiments and it outputs its results in 
@@ -10,7 +10,7 @@
 #' aligner specific tags which are absolutely necessary for methylation 
 #' percentage calling. SAM files from other aligners will not work with this function.
 #'
-#' @param location location of sam file(s). If multiple files are given this 
+#' @param location location of sam or bam file(s). If multiple files are given this 
 #'                  argument must be a list.
 #' @param sample.id the id(s) of samples in the same order as file.  
 #'                  If multiple sam files are given this arugment must be a list.
@@ -105,7 +105,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                           
                       # if output.folder NULL create temp
                       # check output folder if not create
-                      out.files=list() # list of output files            
+                      out.files=list("CpG"="","CHG"="","CHH"="") # list of output files            
                       temp.files=FALSE
                       if(is.null(save.folder)){
                     
@@ -119,38 +119,19 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                           dir.create(save.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
                           )
 
-                        out.files=list()                        
+                                              
                         for(mytype in unique(c(save.context,read.context)) ){
                           out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
                         }
                         
                       }
                       
-                      # create the system command accordingly
-                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
-                      if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
+                      # call the Rcpp function 
+                      methCall(read1 = location, type = "bam", nolap = nolap, minqual = minqual, 
+                               mincov = mincov, phred64 = phred64, CpGfile = out.files[["CpG"]], 
+                               CHHfile = out.files[["CHH"]], CHGfile = out.files[["CHG"]] ) 
                       
-                      if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}
-                      if("CHG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHG",out.files[["CHG"]] )}
-                      if("CHH" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHH",out.files[["CHH"]] )}                     
-                      if(nolap){my.opt.str=paste(my.opt.str,"--nolap" )}
-                    
-                      # get location of the perl script
-                      ex.loc=(system.file("exec","methCall.pl", package="methylKit"))
-                      if(ex.loc == ""){
-                        cmd=paste("perl","/Users/ala2027/Dropbox/PAPERS/R-devel/methylkit/exec/methCall.pl",my.opt.str)
-                      }else{
-                        cmd=paste("perl",ex.loc,my.opt.str)
-                      }
-                      #cmd=paste("perl","~/Dropbox\\ Encore/Dropbox/temp/data/methCall.pl",my.opt.str)
-                      
-                      # then call perl to process the file
-                      cat("calling for metylation percentage per base for sample:",sample.id," \n")
-                      #cat(cmd)
-                      status=try( system(cmd) )
-                      
-                      if(status != 0){stop("\nError in methylation calling...\nMake sure the file is sorted correctly and it is a legitimate Bismark SAM file\n")}
-                      
+
                       # read the result
                       if(read.context != "none"){
                         cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")

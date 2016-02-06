@@ -2,29 +2,30 @@
 % Please edit documentation in R/backbone.R, R/diffMeth.R, R/methylDBClasses.R
 \docType{methods}
 \name{extract}
-\alias{[}
 \alias{[,methylBase,ANY,ANY-method}
 \alias{[,methylBaseDB,ANY,ANY-method}
-\alias{[,methylBaseDB-method}
 \alias{[,methylDiff,ANY,ANY-method}
-\alias{[,methylDiff-method}
 \alias{[,methylDiffDB,ANY,ANY-method}
+\alias{[,methylRaw,ANY,ANY-method}
 \alias{[,methylRawDB,ANY,ANY-method}
-\alias{[,methylRawDB-method}
 \alias{extract}
 \alias{extract,methylBase-method}
+\alias{extract,methylBaseDB-method}
+\alias{extract,methylDiff-method}
 \alias{extract,methylDiffDB-method}
+\alias{extract,methylRaw-method}
+\alias{extract,methylRawDB-method}
 \title{extract parts of methylRaw,methylRawDB,methylBase,methylBaseDB and methylDiff data}
 \usage{
 \S4method{[}{methylRaw,ANY,ANY}(x, i, j)
 
-\S4method{[}{methylBase,ANY,ANY}(x, i, j, drop)
+\S4method{[}{methylBase,ANY,ANY}(x, i, j)
 
 \S4method{[}{methylDiff,ANY,ANY}(x, i, j)
 
 \S4method{[}{methylRawDB,ANY,ANY}(x, i, j)
 
-\S4method{[}{methylBaseDB,ANY,ANY}(x, i, j, drop)
+\S4method{[}{methylBaseDB,ANY,ANY}(x, i, j)
 
 \S4method{[}{methylDiffDB,ANY,ANY}(x, i, j)
 }

@@ -1,3 +1,10 @@
+methylKit 0.9.4.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Ported the Perl script for methylation base calling to C/C++ style, for easier integration via Rcpp. Contributed by Alexander Gosdschan.
+
+
 methylKit 0.9.4.3
 --------------
 NEW FUNCTIONS AND FEATURES

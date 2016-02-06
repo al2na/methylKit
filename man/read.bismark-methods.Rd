@@ -5,7 +5,7 @@
 \alias{read.bismark}
 \alias{read.bismark,character,character,character-method}
 \alias{read.bismark,list,list,character-method}
-\title{Read from sorted Bismark SAM files}
+\title{Read from sorted Bismark SAM or BAM files}
 \usage{
 read.bismark(location, sample.id, assembly, save.folder = NULL,
   save.context = c("CpG"), read.context = "CpG", nolap = FALSE,
@@ -22,7 +22,7 @@ read.bismark(location, sample.id, assembly, save.folder = NULL,
   save.db = FALSE)
 }
 \arguments{
-\item{location}{location of sam file(s). If multiple files are given this 
+\item{location}{location of sam or bam file(s). If multiple files are given this 
 argument must be a list.}
 
 \item{sample.id}{the id(s) of samples in the same order as file.
@@ -72,7 +72,7 @@ named after this scheme: "methylDB <Date> <3randomlettersornumbers>"}
 \code{methylRaw} or \code{methylRawList} object
 }
 \description{
-The function calls methylation percentage per base from sorted Bismark SAM 
+The function calls methylation percentage per base from sorted Bismark SAM or BAM 
 files and reads methylation information as \code{methylRaw} or \code{methylRawList}
 object. Bismark is a popular aligner for 
 high-throughput bisulfite sequencing experiments and it outputs its results in 
