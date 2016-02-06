@@ -4,3 +4,4 @@ PKG_LIBS=$(RHTSLIB_LIBS)
 CXX?=g++-4.8		
 CC?=gcc-4.8
 PKG_CXXFLAGS=-std=c++0x
+
