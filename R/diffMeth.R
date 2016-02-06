@@ -669,7 +669,8 @@ setMethod("select", "methylDiff",
 
 
 #' @rdname extract-methods
-#' @aliases [,methylDiff-method
+# @aliases [,methylDiff-method
+#' @aliases extract,methylDiff-method
 setMethod("[","methylDiff", 
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))

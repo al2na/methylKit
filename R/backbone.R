@@ -1695,8 +1695,11 @@ setMethod("select", "methylRaw",
 #' 
 #' 
 #' @docType methods
+#' @rdname extract-methods
+NULL
+
+# @aliases [,methylRaw-method
 #' @aliases extract,methylRaw-method
-#' @aliases [,methylRaw-method
 #' @rdname extract-methods
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
           function(x,i,j){
@@ -1711,11 +1714,11 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
           }
               )
 
-#' @aliases extract,methylBase-method
-#' @aliases [,methylBase-method
+# @aliases [,methylBase-method
+# @aliases extract,methylBase-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
-          function(x,i,j,drop){
+          function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
             if(!missing(j)){
               stop(paste("subsetting on columns is not allowed for",class(x),
