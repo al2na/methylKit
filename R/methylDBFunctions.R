@@ -1120,6 +1120,8 @@ setMethod("pool", "methylBaseDB",
 
 # MethylDiffDB ------------------------------------------------------------
 
+#' @aliases calculateDiffMeth,methylBaseDB-method
+#' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBaseDB",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
                    adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),

@@ -55,6 +55,8 @@
 #'  methSeg2bed(res,filename="H1.chr21.chr22.trial.seg.bed")
 #' }
 #' 
+#' unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
+#' 
 #' @author Altuna Akalin, contributions by Arsene Wabo
 #' 
 #' @seealso \code{\link{methSeg2bed}}
@@ -66,12 +68,16 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   dots <- list(...)  
   
-  if( (class(obj)=="methylRaw" | class(obj)=="methylRawDB") & obj@resolution=="region" ){
-    obj= as(obj,"GRanges")
-    mcols(obj)=100*obj$numCs/obj$coverage
-  }else if( (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") & obj@resolution=="region" ){
-    obj = as(obj,"GRanges")
-    obj = sort(obj[,-1])
+  if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
+    if(obj@resolution=="region" ){
+      obj= as(obj,"GRanges")
+      mcols(obj)=100*obj$numCs/obj$coverage
+    }
+  }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
+    if( obj@resolution=="region" ){
+      obj = as(obj,"GRanges")
+      obj = sort(obj[,-1])
+    }
   }else if (class(obj) != "GRanges"){
     stop("only methylRaw or methylDiff with resolution=='region' or GRanges objects can be used in this function")
   }

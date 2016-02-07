@@ -9,8 +9,17 @@
                          nrows = 100,stringsAsFactors=FALSE)
   classes  <- sapply(tab5rows, class)
   classes[classes=="logical"]="character"
-  return( read.table(filename, header = header,skip=skip,sep=sep, 
-                     colClasses = classes)  )
+  lines2keep <- 100
+  nL <- R.utils::countLines(filename)
+  lastrows <- read.table(filename, header = header,skip=nL-lines2keep,sep=sep, 
+                         stringsAsFactors=FALSE)
+  lastclasses  <- sapply(lastrows, class)
+  if(any(classes!=lastclasses)) {
+    classes[which(classes!=lastclasses)] = lastclasses[which(classes!=lastclasses)]
+  }
+
+  return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
+                     )  )
 }
 
 # reformats a data.frame to a standard methylraw data.frame
@@ -1383,6 +1392,8 @@ setMethod("getMethylationStats", "methylRaw",
 #' The show method works for \code{methylRaw},\code{methylRawDB},\code{methylRawList},\code{methylRawListDB},
 #' \code{methylBase},\code{methylBaseDB} and \code{methylDiff} objects
 #' 
+#' @param object any methylKit object
+#' 
 #' @examples
 #' data(methylKit)
 #' methylDiff.obj
@@ -1683,11 +1694,13 @@ setMethod("select", "methylRaw",
 #' chrs=methylDiff.obj[[2]]
 #' 
 #' 
-#' @aliases [
 #' @docType methods
 #' @rdname extract-methods
+NULL
+
+# @aliases [,methylRaw-method
 #' @aliases extract,methylRaw-method
-#' @aliases [,methylRaw-method
+#' @rdname extract-methods
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
@@ -1701,11 +1714,11 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
           }
               )
 
+# @aliases [,methylBase-method
 #' @aliases extract,methylBase-method
-#' @aliases [,methylBase-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
-          function(x,i,j,drop){
+          function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
             if(!missing(j)){
               stop(paste("subsetting on columns is not allowed for",class(x),
@@ -1850,6 +1863,7 @@ setMethod("selectByOverlap", "methylBase",
 #' @docType methods
 #' @rdname getTreatment-methods
 setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
+#' @export 
 #' @rdname getTreatment-methods
 setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
 
@@ -1922,8 +1936,11 @@ setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
 #' @docType methods
 #' @rdname getSampleID-methods
 setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
+
+#' @export
 #' @rdname getSampleID-methods
-setGeneric("getSampleID<-", def=function(x, value="character") {standardGeneric("getSampleID<-")})
+setGeneric("getSampleID<-", def=function(x, value) {standardGeneric("getSampleID<-")})
+
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylRawList-method
 setMethod("getSampleID", signature = "methylRawList", function(x) {

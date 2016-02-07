@@ -42,6 +42,9 @@
 
 \S4method{show}{methylDiffDB}(object)
 }
+\arguments{
+\item{object}{any methylKit object}
+}
 \description{
 The show method works for \code{methylRaw},\code{methylRawDB},\code{methylRawList},\code{methylRawListDB},
 \code{methylBase},\code{methylBaseDB} and \code{methylDiff} objects
