@@ -73,7 +73,7 @@
 setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
                                     save.context=c("CpG"),read.context="CpG",
                                     nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
-                                    ,treatment) standardGeneric("read.bismark"))
+                                    ,treatment, type="paired_sam") standardGeneric("read.bismark"))
 
 #' @aliases read.bismark,character,character,character-method
 #' @rdname read.bismark-methods
@@ -81,7 +81,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                                     assembly= "character"),
                     function(location,sample.id,assembly,save.folder,save.context
                              ,read.context,
-                             nolap,mincov,minqual,phred64){
+                             nolap,mincov,minqual,phred64, type){
                       
                       # check if file exists
                       if(! file.exists(location) ){
@@ -122,7 +122,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                       }
                       
                       # create the system command accordingly
-                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
+                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type", type)
                       if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
                       
                       if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}
@@ -163,7 +163,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
 #' @aliases read.bismark,list,list,character-method
 setMethod("read.bismark", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,save.folder,save.context,read.context,
-                             nolap,mincov,minqual,phred64,treatment){
+                             nolap,mincov,minqual,phred64,treatment, type){
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
@@ -178,7 +178,7 @@ setMethod("read.bismark", signature(location = "list",sample.id="list",assembly=
             {
               data=read.bismark(location[[i]],sample.id[[i]],assembly,
                                 save.folder,save.context,read.context,
-                                nolap,mincov,minqual,phred64)# read data
+                                nolap,mincov,minqual,phred64, type)# read data
               outList[[i]]=data  
             }
             myobj=new("methylRawList",outList,treatment=treatment)
