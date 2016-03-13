@@ -29,7 +29,7 @@ known and ubiquitous in many R packages.
 
 \section{Subsetting}{
 
- In the following code snippets, \code{x} is a \code{methylDiff}.
+ In the following code snippets, \code{x} is a \code{methylRaw}.
  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
  rows. Column subsetting is not directly allowed to prevent errors in the 
  downstream analysis. see ?methylKit[ .
@@ -37,7 +37,7 @@ known and ubiquitous in many R packages.
 
 \section{Accessors}{
 
-The following functions provides access to data slots of methylDiff:
+The following functions provides access to data slots of methylRaw:
 \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 \code{\link[methylKit]{getContext}}
 }

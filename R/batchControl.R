@@ -2,7 +2,7 @@
 
 
 
-#' Reconstruct methylBase object based on a new methylation percentage matrix
+#' Reconstruct methylBase or methylBaseDB object based on a new methylation percentage matrix
 #' 
 #' The function reconstructs a new methylBase object from an input methylBase object
 #' and percent methylation matrix. Basically, it uses the read coverages in the input
@@ -16,9 +16,28 @@
 #' 
 #' @param methMat percent methylation matrix, row order and order of the samples
 #'  same as the methylBase object
-#' @param mBase \code{\link{methylBase}} object to be reconstructed 
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to be reconstructed 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
+#'
+#' @usage reconstruct(methMat,mBase,chunk.size,save.db,...)
 #' 
-#' @return new \code{\link{methylBase}} object where methylation percentage matches
+#' @return new \code{\link{methylBase}} or \code{\link{methylBase}} object where methylation percentage matches
 #'         input \code{methMat} and coverages matches input \code{mBase}
 #' 
 #' @author Altuna Akalin
@@ -44,10 +63,25 @@
 #' # reconstruct the methylBase from the corrected matrix
 #' newobj=reconstruct(mat,methylBase.obj)
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
+#' 
 #' @export
 #' @docType methods
 #' @rdname reconstruct-methods
-reconstruct<-function(methMat,mBase){
+setGeneric("reconstruct", function(methMat,mBase,chunk.size=1e6,save.db=FALSE,...) standardGeneric("reconstruct"))
+
+#' @rdname reconstruct-methods
+#' @aliases reconstruct,methylBase-method
+setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase,save.db=FALSE,...){
   
   # check if indeed methMat is percent methylation matrix
   if(max(methMat)<=1){
@@ -70,13 +104,41 @@ reconstruct<-function(methMat,mBase){
   df[,mBase@numCs.index]=numCs
   df[,mBase@numTs.index]=numTs
   
-  new("methylBase",df,sample.ids=mBase@sample.ids,
-      assembly=mBase@assembly,context=mBase@context,
-      treatment=mBase@treatment,coverage.index=mBase@coverage.index,
-      numCs.index=mBase@numCs.index,numTs.index=mBase@numTs.index,
-      destranded=mBase@destranded,resolution=mBase@resolution )
+  if(!save.db) {
+    new("methylBase",df,sample.ids=mBase@sample.ids,
+        assembly=mBase@assembly,context=mBase@context,
+        treatment=mBase@treatment,coverage.index=mBase@coverage.index,
+        numCs.index=mBase@numCs.index,numTs.index=mBase@numTs.index,
+        destranded=mBase@destranded,resolution=mBase@resolution )
+  
+  } else {
+    
+    # catch additional args 
+    args <- list(...)
+    
+    if( !( "dbdir" %in% names(args)) ){
+      dbdir <- .check.dbdir(getwd())
+    } else { dbdir <- .check.dbdir(args$dbdir) }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- "_reconstructed"
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    # create methylRawDB
+    makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",sample.ids=mBase@sample.ids,
+                     assembly=mBase@assembly,context=mBase@context,
+                     treatment=mBase@treatment,coverage.index=mBase@coverage.index,
+                     numCs.index=mBase@numCs.index,numTs.index=mBase@numTs.index,
+                     destranded=mBase@destranded, resolution=mBase@resolution,
+                     suffix=suffix )
+    
+    
+  }
+    
   
 }
+)
 
 #' Associate principal components with sample annotations
 #' 
@@ -84,7 +146,7 @@ reconstruct<-function(methMat,mBase){
 #' such as age, gender, batch_id. Can be used to detect which batch effects
 #' are associated with the variation in the methylation values.
 #' 
-#' @param mBase \code{\link{methylBase}} object with no NA values in the data part.
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values in the data part.
 #' @param sampleAnnotation a data frame where columns are different annotations and 
 #'                        rows are the samples, in the same order as in the methylBase object.
 #' 
@@ -105,7 +167,7 @@ reconstruct<-function(methMat,mBase){
 #' @export
 #' @docType methods
 #' @rdname assocComp-methods
-assocComp<-function(mBase,sampleAnnotation){
+assocComp <- function(mBase,sampleAnnotation){
   scale=TRUE
   center=TRUE
   mat=percMethylation(mBase) # get matrix
@@ -140,6 +202,7 @@ assocComp<-function(mBase,sampleAnnotation){
   list(pcs=pr$rotation,vars=vars,association=do.call("rbind",res))
 }
 
+
 #' Remove principal components from a methylBase object
 #' 
 #' This function can remove a given principal componet from a given 
@@ -149,11 +212,29 @@ assocComp<-function(mBase,sampleAnnotation){
 #' position based on the reconstructed percent methylation matrix, and finally returns
 #' a new \code{\link{methylBase}} object.
 #' 
-#' @param mBase \code{\link{methylBase}} object with no NA values, that means
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values, that means
 #'               all bases should be covered in all samples.
 #' @param comp vector of component numbers to be removed
+#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat file database, 
+#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#            \code{dbtype}
+#                  The type of the flat file database, currently only option is "tabix"
+#                  (only used for newly stored databases)
+#'
 #' 
-#' @return new \code{\link{methylBase}} object
+#' @return new \code{\link{methylBase}} or \code{\link{methylBaseDB}} object
 #' 
 #' @examples
 #' 
@@ -165,11 +246,26 @@ assocComp<-function(mBase,sampleAnnotation){
 #' # remove 3rd and 4th  principal components
 #' newObj=removeComp(methylBase.obj,comp=c(3,4))
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
+#' 
 #' @export
 #' @docType methods
-#' @rdname removeComp-methods 
-removeComp<-function(mBase,comp=NULL){
-  if(is.na(comp) | is.null(comp)){
+#' @rdname removeComp-methods
+setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...) standardGeneric("removeComp"))
+
+#' @rdname removeComp-methods
+#' @aliases removeComp,methylBase-method
+setMethod("removeComp",signature(mBase="methylBase"), function(mBase,comp,save.db,...){
+  if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
   
@@ -193,6 +289,6 @@ removeComp<-function(mBase,comp=NULL){
   attr(res,"scaled:scale")<-NULL 
   res[res>100]=100
   res[res<0]=0
-  reconstruct(res,mBase)
+  reconstruct(res,mBase,save.db = save.db, ...=...)
 }
-  
+)

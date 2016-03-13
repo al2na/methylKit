@@ -1,5 +1,6 @@
-methylKit
+methylKit 
 ========
+Build Status [![Build Status](https://travis-ci.org/alexg9010/methylKit.svg?branch=development)](https://travis-ci.org/alexg9010/methylKit)
 
 This is where methylKit project will be developed from 2014. The [google code homepage](https://code.google.com/p/methylkit/) 
 will be active for the foreseeable future.  
@@ -11,6 +12,7 @@ Installation
 install.packages( c("data.table","devtools"))
 source("http://bioconductor.org/biocLite.R")
 biocLite(c("GenomicRanges"))
+biocLite(c("fastseg","rtracklayer"))
 
 # install the package from github
 library(devtools)

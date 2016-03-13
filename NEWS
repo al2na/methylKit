@@ -1,3 +1,28 @@
+methylKit 0.9.4.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Ported the Perl script for methylation base calling to C/C++ style, for easier integration via Rcpp. Contributed by Alexander Gosdschan.
+
+
+methylKit 0.9.4.3
+--------------
+NEW FUNCTIONS AND FEATURES
+
+* new function methSeg() can segment methylation (methylRaw objects) and 
+  differential methylation (methylDiff objects) profiles to segments.
+  Associated function methSeg2bed() creates BED files from segments.
+  see ?methSeg. A test is added to check this in R CMD check. 
+  Contributed by Arsene Wabo and Alexander Gosdschan.
+
+
+methylKit 0.9.4.2
+--------------
+NEW FUNCTIONS AND FEATURES
+
+* new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, methylDiffDB and respective methods implemented. Tests are updated to check proper function in R CMD check. Contributed by Alexander Gosdschan.
+
+
 methylKit 0.9.4.1
 --------------
 NEW FUNCTIONS AND FEATURES
@@ -12,7 +37,8 @@ methylKit 0.9.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade. A test is added to check this in R CMD check.
+* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade. 
+  A test is added to check this in R CMD check.
 
 
 methylKit 0.9.3

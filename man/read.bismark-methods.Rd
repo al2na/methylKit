@@ -5,22 +5,24 @@
 \alias{read.bismark}
 \alias{read.bismark,character,character,character-method}
 \alias{read.bismark,list,list,character-method}
-\title{Read from sorted Bismark SAM files}
+\title{Read from sorted Bismark SAM or BAM files}
 \usage{
 read.bismark(location, sample.id, assembly, save.folder = NULL,
   save.context = c("CpG"), read.context = "CpG", nolap = FALSE,
-  mincov = 10, minqual = 20, phred64 = FALSE, treatment)
+  mincov = 10, minqual = 20, phred64 = FALSE, treatment,
+  save.db = FALSE)
 
 \S4method{read.bismark}{character,character,character}(location, sample.id,
   assembly, save.folder, save.context, read.context, nolap, mincov, minqual,
-  phred64)
+  phred64, save.db = FALSE)
 
 \S4method{read.bismark}{list,list,character}(location, sample.id, assembly,
   save.folder = NULL, save.context = c("CpG"), read.context = "CpG",
-  nolap = FALSE, mincov = 10, minqual = 20, phred64 = FALSE, treatment)
+  nolap = FALSE, mincov = 10, minqual = 20, phred64 = FALSE, treatment,
+  save.db = FALSE)
 }
 \arguments{
-\item{location}{location of sam file(s). If multiple files are given this 
+\item{location}{location of sam or bam file(s). If multiple files are given this 
 argument must be a list.}
 
 \item{sample.id}{the id(s) of samples in the same order as file.
@@ -59,12 +61,18 @@ Currently bismark gives only phred33 scale}
 parameters are \code{list}s and you are trying to read-in 
 multiple samples that are related to eachother in down-stream 
 analysis.}
+
+\item{save.db}{A Logical to decide whether the resulting object should be saved 
+as flat file database or not ( default: FALSE). 
+If TRUE, database will either be saved to location \code{save.folder} or 
+if this is NULL, to a new folder in the current working directory 
+named after this scheme: "methylDB <Date> <3randomlettersornumbers>"}
 }
 \value{
 \code{methylRaw} or \code{methylRawList} object
 }
 \description{
-The function calls methylation percentage per base from sorted Bismark SAM 
+The function calls methylation percentage per base from sorted Bismark SAM or BAM 
 files and reads methylation information as \code{methylRaw} or \code{methylRawList}
 object. Bismark is a popular aligner for 
 high-throughput bisulfite sequencing experiments and it outputs its results in 

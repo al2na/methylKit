@@ -1,8 +1,8 @@
 
 
-#' Read from sorted Bismark SAM files
+#' Read from sorted Bismark SAM or BAM files
 #'
-#' The function calls methylation percentage per base from sorted Bismark SAM 
+#' The function calls methylation percentage per base from sorted Bismark SAM or BAM 
 #' files and reads methylation information as \code{methylRaw} or \code{methylRawList}
 #' object. Bismark is a popular aligner for 
 #' high-throughput bisulfite sequencing experiments and it outputs its results in 
@@ -10,7 +10,7 @@
 #' aligner specific tags which are absolutely necessary for methylation 
 #' percentage calling. SAM files from other aligners will not work with this function.
 #'
-#' @param location location of sam file(s). If multiple files are given this 
+#' @param location location of sam or bam file(s). If multiple files are given this 
 #'                  argument must be a list.
 #' @param sample.id the id(s) of samples in the same order as file.  
 #'                  If multiple sam files are given this arugment must be a list.
@@ -39,6 +39,11 @@
 #'                  parameters are \code{list}s and you are trying to read-in 
 #'                  multiple samples that are related to eachother in down-stream 
 #'                  analysis. 
+#' @param save.db A Logical to decide whether the resulting object should be saved 
+#'                as flat file database or not ( default: FALSE). 
+#'                If TRUE, database will either be saved to location \code{save.folder} or 
+#'                if this is NULL, to a new folder in the current working directory 
+#'                named after this scheme: "methylDB <Date> <3randomlettersornumbers>"
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'
@@ -73,7 +78,7 @@
 setGeneric("read.bismark", function(location,sample.id,assembly,save.folder=NULL,
                                     save.context=c("CpG"),read.context="CpG",
                                     nolap=FALSE,mincov=10,minqual=20,phred64=FALSE
-                                    ,treatment) standardGeneric("read.bismark"))
+                                    ,treatment,save.db=FALSE) standardGeneric("read.bismark"))
 
 #' @aliases read.bismark,character,character,character-method
 #' @rdname read.bismark-methods
@@ -81,7 +86,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                                     assembly= "character"),
                     function(location,sample.id,assembly,save.folder,save.context
                              ,read.context,
-                             nolap,mincov,minqual,phred64){
+                             nolap,mincov,minqual,phred64,save.db=FALSE){
                       
                       # check if file exists
                       if(! file.exists(location) ){
@@ -100,7 +105,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                           
                       # if output.folder NULL create temp
                       # check output folder if not create
-                      out.files=list() # list of output files            
+                      out.files=list("CpG"="","CHG"="","CHH"="") # list of output files            
                       temp.files=FALSE
                       if(is.null(save.folder)){
                     
@@ -114,42 +119,30 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
                           dir.create(save.folder, showWarnings = TRUE, recursive = TRUE, mode = "0777")
                           )
 
-                        out.files=list()                        
+                                              
                         for(mytype in unique(c(save.context,read.context)) ){
                           out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
                         }
                         
                       }
                       
-                      # create the system command accordingly
-                      my.opt.str=paste("--read1",location,"--minqual",minqual,"--mincov",mincov,"--type paired_sam")
-                      if(phred64){ my.opt.str=paste(my.opt.str,"--phred64") }
+                      # call the Rcpp function 
+                      methCall(read1 = location, type = "bam", nolap = nolap, minqual = minqual, 
+                               mincov = mincov, phred64 = phred64, CpGfile = out.files[["CpG"]], 
+                               CHHfile = out.files[["CHH"]], CHGfile = out.files[["CHG"]] ) 
                       
-                      if("CpG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CpG",out.files[["CpG"]] )}
-                      if("CHG" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHG",out.files[["CHG"]] )}
-                      if("CHH" %in% names(out.files)){my.opt.str=paste(my.opt.str,"--CHH",out.files[["CHH"]] )}                     
-                      if(nolap){my.opt.str=paste(my.opt.str,"--nolap" )}
-                    
-                      # get location of the perl script
-                      ex.loc=(system.file("exec","methCall.pl", package="methylKit"))
-                      if(ex.loc == ""){
-                        cmd=paste("perl","/Users/ala2027/Dropbox/PAPERS/R-devel/methylkit/exec/methCall.pl",my.opt.str)
-                      }else{
-                        cmd=paste("perl",ex.loc,my.opt.str)
-                      }
-                      #cmd=paste("perl","~/Dropbox\\ Encore/Dropbox/temp/data/methCall.pl",my.opt.str)
-                      
-                      # then call perl to process the file
-                      cat("calling for metylation percentage per base for sample:",sample.id," \n")
-                      #cat(cmd)
-                      status=try( system(cmd) )
-                      
-                      if(status != 0){stop("\nError in methylation calling...\nMake sure the file is sorted correctly and it is a legitimate Bismark SAM file\n")}
-                      
+
                       # read the result
                       if(read.context != "none"){
                         cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
-                        obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
+                        if(save.db) { dbtype="tabix"; 
+                          if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
+                          obj=read(location=out.files[[read.context]],sample.id=paste(sample.id,tolower(read.context),sep = "_"),assembly=assembly,dbtype=dbtype,pipeline="bismark",header=T, context=read.context,dbdir = dbdir)
+                          obj@sample.id <- sample.id
+                        }
+                        else {
+                          obj=read(location=out.files[[read.context]],sample.id=sample.id,assembly=assembly,pipeline="bismark",header=T, context=read.context)
+                        }
                         if(temp.files ){dummy=lapply(out.files,unlink)}
                         
                         return(obj)
@@ -163,7 +156,7 @@ setMethod("read.bismark", signature(location = "character",sample.id= "character
 #' @aliases read.bismark,list,list,character-method
 setMethod("read.bismark", signature(location = "list",sample.id="list",assembly="character"),
           function(location,sample.id,assembly,save.folder,save.context,read.context,
-                             nolap,mincov,minqual,phred64,treatment){
+                             nolap,mincov,minqual,phred64,treatment,save.db=FALSE){
             #check if the given arugments makes sense
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
@@ -171,17 +164,31 @@ setMethod("read.bismark", signature(location = "list",sample.id="list",assembly=
             if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
               stop("length of 'treatment', 'name' and 'location' should be same\n")
             }
-            
-            # read each given location and record it as methylraw object
-            outList=list()
-            for(i in 1:length(location))
-            {
-              data=read.bismark(location[[i]],sample.id[[i]],assembly,
-                                save.folder,save.context,read.context,
-                                nolap,mincov,minqual,phred64)# read data
-              outList[[i]]=data  
+            if(!save.db) { 
+              # read each given location and record it as methylraw object
+              outList=list()
+              for(i in 1:length(location))
+              {
+                data=read.bismark(location[[i]],sample.id[[i]],assembly,
+                                  save.folder,save.context,read.context,
+                                  nolap,mincov,minqual,phred64)# read data
+                outList[[i]]=data  
+              }
+              myobj=new("methylRawList",outList,treatment=treatment)
+              
+              myobj
             }
-            myobj=new("methylRawList",outList,treatment=treatment)
-            
-            myobj
+            else {
+              if(is.null(save.folder)) save.folder=getwd() 
+              # read each given location and record it as methylrawDB object
+              outList=list()
+              for(i in 1:length(location))
+              {
+                data=read.bismark(location[[i]],sample.id[[i]],assembly,
+                                  save.folder,save.context,read.context,
+                                  nolap,mincov,minqual,phred64)# read data
+                outList[[i]]=data  
+              }
+              return(new("methylRawListDB",outList,treatment=treatment))
+            }
           })
