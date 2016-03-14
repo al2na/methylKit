@@ -1,3 +1,9 @@
+methylKit 0.9.4.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Merged new tests and simulation functions with 0.9.4.4
+
 methylKit 0.9.4.4
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -9,10 +15,10 @@ methylKit 0.9.4.3
 --------------
 NEW FUNCTIONS AND FEATURES
 
-* new function methSeg() can segment methylation (methylRaw objects) and 
+* new function methSeg() can segment methylation (methylRaw objects) and
   differential methylation (methylDiff objects) profiles to segments.
   Associated function methSeg2bed() creates BED files from segments.
-  see ?methSeg. A test is added to check this in R CMD check. 
+  see ?methSeg. A test is added to check this in R CMD check.
   Contributed by Arsene Wabo and Alexander Gosdschan.
 
 
@@ -37,7 +43,7 @@ methylKit 0.9.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade. 
+* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade.
   A test is added to check this in R CMD check.
 
 
@@ -45,9 +51,9 @@ methylKit 0.9.3
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* compatibility with BioC 3.0. Multiple BioC functions moved to other packages within BioC, 
+* compatibility with BioC 3.0. Multiple BioC functions moved to other packages within BioC,
   which broke some code and caused installation issues. Now this is fixed.
-* data.table::merge is now stable when all=TRUE. Removed my(altuna) version of data.table::merge 
+* data.table::merge is now stable when all=TRUE. Removed my(altuna) version of data.table::merge
   the code base.
 
 
@@ -55,15 +61,15 @@ methylKit 0.9.2.5
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* calculateDiffMeth slim=FALSE argument works correctly when there are multiple 
-  samples per group. 
+* calculateDiffMeth slim=FALSE argument works correctly when there are multiple
+  samples per group.
 
 
 methylKit 0.9.2.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* install_github() now works correctly. Removed blank lines at the end of 
+* install_github() now works correctly. Removed blank lines at the end of
   DESCRIPTION file.
 
 * calculateDiffMeth and tileMethylCounts now works correctly,
@@ -91,8 +97,8 @@ IMPROVEMENTS AND BUG FIXES
 * regionCounts() strand.aware argument now works correctly. This bug had no effect
   on tileMethylCounts. With the default arguments, strand aware setting was not
   in effect at all, so every region was treated as strandless.
-* Conversion to GRanges objects now removes seqlevels(chromosome names) 
-  that are not used. Not removing these could cause problems in regionCounts() 
+* Conversion to GRanges objects now removes seqlevels(chromosome names)
+  that are not used. Not removing these could cause problems in regionCounts()
   function and functions depending on regionCounts().
 * read() function in some cases was treating strand columns of the flat CpG
   files as logical if strand had F or R letters and most of the first CpGs were
@@ -102,14 +108,14 @@ methylKit 0.9.2.1
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* Fixes a bug in getMethylationStats() function that generates incorrect label numbers when the user overrides the default number 
+* Fixes a bug in getMethylationStats() function that generates incorrect label numbers when the user overrides the default number
   of breaks for the histogram. Contributed by Bonnie Barrilleaux.
 
 methylKit 0.9.2
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* A bug introduced with 0.9.1 is fixed. The bug occured when unite() function  
+* A bug introduced with 0.9.1 is fixed. The bug occured when unite() function
 is used with destrand=TRUE argument. It returned less number of CpGs then it was
 supposed to, although returned CpGs had correct methylation and coverage values.
 
@@ -119,12 +125,12 @@ methylKit 0.9.1
 
 NEW FUNCTIONS AND FEATURES
 
-* objects takes less memory and they are reorganized. updateMethObject() updates 
+* objects takes less memory and they are reorganized. updateMethObject() updates
   the objects from previous versions the latest version.
 
-* New batch effect control functions are implemented. You can control if certain principal 
+* New batch effect control functions are implemented. You can control if certain principal
   components are associated with batch effects and remove those components from your
-  data. see ?assocComp amd ?removeComp. In addition, if you have corrected for the 
+  data. see ?assocComp amd ?removeComp. In addition, if you have corrected for the
   batch effects via other methods, you can reconstruct a corrected methylBase object (
   see ?reconstruct). Check the "batch effects" section in the vignette.
 
@@ -159,37 +165,37 @@ methylKit 0.5.6
 
 NEW FUNCTIONS AND FEATURES
 
-* new arguments for clusterSamples() and PCASamples() functions are added. With 
-  the new options "sd.filter","sd.threshold","filterByQuantile" are added. These 
-  options help finetune how low variation bases/regions are discarded prior to 
-  clustering or PCA. See ?PCASamples and ?clusterSamples() for details on the 
+* new arguments for clusterSamples() and PCASamples() functions are added. With
+  the new options "sd.filter","sd.threshold","filterByQuantile" are added. These
+  options help finetune how low variation bases/regions are discarded prior to
+  clustering or PCA. See ?PCASamples and ?clusterSamples() for details on the
   new options
 
-* FAQ section added to the vignette 
+* FAQ section added to the vignette
 
 * show methods added for each class. Now, typing the variable name containing the
   object will display concise information about the contents of the object.
 
-* Subsetting objects via "[" notation is now enabled. You can subset rows of the 
+* Subsetting objects via "[" notation is now enabled. You can subset rows of the
   objects and it will return a new object rather than just a data frame.
 
 
 IMPROVEMENTS AND BUG FIXES
 
-* tileMethylCounts() error  is fixed. Error occurred when tilling sparsely 
+* tileMethylCounts() error  is fixed. Error occurred when tilling sparsely
   covered small chromosomes like chrM in human RRBS data.
 
-* read.bismark() can deal with Bismark output with Bowtie2. Bowtie2 can put gaps 
-  in the alignment, now read.bismark() can deal with those gaps when parsing the 
+* read.bismark() can deal with Bismark output with Bowtie2. Bowtie2 can put gaps
+  in the alignment, now read.bismark() can deal with those gaps when parsing the
   SAM file.
 
-* Coverage columns are coerced to integer when reading generic methylation per 
-  base files. BSMAP scripts can produce a methylation ratio file where coverages 
-  (or "effective CT counts" as they are called)  are not always integers, which 
-  causes a problem in the downstream analysis. Now, these non-integer columns 
-  are rounded to nearest integer while reading. 
-  See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html 
-  for example usage of this functionality. 
+* Coverage columns are coerced to integer when reading generic methylation per
+  base files. BSMAP scripts can produce a methylation ratio file where coverages
+  (or "effective CT counts" as they are called)  are not always integers, which
+  causes a problem in the downstream analysis. Now, these non-integer columns
+  are rounded to nearest integer while reading.
+  See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html
+  for example usage of this functionality.
 
 
 
@@ -315,7 +321,7 @@ IMPROVEMENTS AND BUG FIXES
 * methylRaw,methylBase and methylDiff objects have a new slot 'resolution', which designates
   whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'
 
-* getCoverageStats() & getMethylationStats() now print the sample ids and methylation context automatically in the 
+* getCoverageStats() & getMethylationStats() now print the sample ids and methylation context automatically in the
   title when plotting
 
 * getCoverageStats() & getMethylationStats() takes extra options to be passed to hist() function

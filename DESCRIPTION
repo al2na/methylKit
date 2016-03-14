@@ -42,7 +42,7 @@ Imports:
     rtracklayer,
     mclust,
     Rcpp,
-    R.utils
+    R.utils,
     emdbook,
     limma
 Suggests:
@@ -70,6 +70,4 @@ Collate:
     'methylDBFunctions.R'
     'tabix.functions.R'
     'methSeg.R'
-RoxygenNote: 5.0.1
     'diffMethDSS.R'
-RoxygenNote: 5.0.1
