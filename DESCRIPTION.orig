@@ -1,0 +1,75 @@
+Package: methylKit
+Type: Package
+Title: DNA methylation analysis from high-throughput
+    bisulfite sequencing results
+Version: 0.9.4.4
+Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
+  	     email = "altuna.akalin@mdc-berlin.de"),
+	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
+	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"),
+	      person("Arsene", "Wabo", role = "ctb",comment="wrapping Altuna's segmentation functions"),
+	      person("Adrian", "Bierling", role= "aut", comment="providing basic overdispersion correction and data simulation"),
+	      person("Alexander","Gosdschan", role="aut", comment="providing new tabix based classes"))
+Description: methylKit is an R package for DNA methylation analysis and
+    annotation from high-throughput bisulfite sequencing. The package is
+    designed to deal with sequencing data from RRBS and its variants, but also
+    target-capture methods and whole genome bisulfite sequencing. It also has
+    functions to analyze base-pair resolution 5hmC data from experimental
+    protocols such as oxBS-Seq and TAB-Seq. Perl is needed to read SAM files
+    only.
+License: Artistic-2.0
+URL: http://code.google.com/p/methylkit/
+LazyLoad: yes
+SystemRequirements: Perl
+LinkingTo: Rcpp, Rhtslib, zlibbioc
+biocViews: DNAMethylation
+Depends:
+    R (>= 2.15.0),
+    GenomicRanges (>= 1.18.1),
+    methods
+Imports:
+    IRanges,
+    data.table (>= 1.9.6),
+    parallel,
+    S4Vectors,
+    GenomeInfoDb,
+    KernSmooth,
+    qvalue,
+    emdbook,
+    Rsamtools,
+    gtools,
+    fastseg,
+    rtracklayer,
+    mclust,
+    Rcpp,
+    R.utils
+    emdbook,
+    limma
+Suggests:
+    testthat
+Collate:
+    'methylKit.R'
+    'backbone.R'
+    'diffMeth.R'
+    'annotate.R'
+    'clusterSamples.R'
+    'regionalize.R'
+    'read.bismark.R'
+    'RcppExports.R'
+    'document_data.R'
+    'bedgraph.R'
+    'reorganize.R'
+    'percMethylation.R'
+    'normalizeCoverage.R'
+    'pool.R'
+    'adjust.methylC.R'
+    'updateMethObject.R'
+    'batchControl.R'
+    'dataSim.R'
+    'methylDBClasses.R'
+    'methylDBFunctions.R'
+    'tabix.functions.R'
+    'methSeg.R'
+RoxygenNote: 5.0.1
+    'diffMethDSS.R'
+RoxygenNote: 5.0.1
