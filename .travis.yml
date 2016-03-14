@@ -21,7 +21,7 @@ warnings_are_errors: false
 #  - ./travis-tool.sh install_bioc_deps
 #  - sudo apt-get install -qq g++-4.8
 #  - export CXX="g++-4.8"
-  
+
 #script: ./travis-tool.sh run_tests
 
 #after_failure:
@@ -31,14 +31,14 @@ warnings_are_errors: false
 #  - ./travis-tool.sh dump_logs_by_extension "timings"
 #  - ./travis-tool.sh dump_sysinfo
 
-addons:
-  apt:
-     sources:
-     - ubuntu-toolchain-r-test
-     packages:
-     - gcc-4.8
-     - g++-4.8
-  
+#addons:
+#  apt:
+#     sources:
+#     - ubuntu-toolchain-r-test
+#     packages:
+#     - gcc-4.8
+#     - g++-4.8
+
 notifications:
   email:
     on_success: change
@@ -53,4 +53,3 @@ env:
     - _R_CHECK_TIMINGS_="0"
     - CXX="g++-4.8"
     - CC="gcc-4.8"
-
