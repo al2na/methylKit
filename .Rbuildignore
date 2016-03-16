@@ -17,3 +17,5 @@
 ^man/makeMethTabix\.Rd$
 ^man/mergeTabix\.Rd$
 ^man/mergeTbxByChr\.Rd$
+^\.travis\.c\.yml$
+^\.travis\.r\.yml$
