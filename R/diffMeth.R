@@ -527,21 +527,20 @@ setClass("methylDiff",representation(
 
 setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                          overdispersion=c("none","MN","shrinkMN"),
-                                         adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                                         effect=c("wmean","mean","predicted"),parShrinkNM=list(),
-                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
-                                         chunk.size=1e6,save.db=FALSE,...) standardGeneric("calculateDiffMeth"))
-                                         effect=c("wmean","mean","predicted"),parShrinkMN=list(),
-                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE) standardGeneric("calculateDiffMeth"))
+                                         adjust=c("SLIM","holm","hochberg","hommel",
+                                                  "bonferroni","BH","BY","fdr",
+                                                  "none","qvalue"),
+                                         effect=c("wmean","mean","predicted"),
+                                         parShrinkNM=list(),
+                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,
+                                         weighted.mean=TRUE,
+                                         chunk.size=1e6,save.db=FALSE,...) 
+  standardGeneric("calculateDiffMeth"))
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion,
                    adjust,effect,parShrinkNM,
                    test,mc.cores,slim,weighted.mean,save.db=FALSE,...){
-          function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-                   adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                   effect=c("wmean","mean","predicted"),parShrinkMN=list(),
-                   test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE){
             
             # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
