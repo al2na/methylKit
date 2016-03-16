@@ -13,6 +13,7 @@
 \alias{getTreatment<-}
 \alias{getTreatment<-,methylBase-method}
 \alias{getTreatment<-,methylBaseDB-method}
+\alias{getTreatment<-,methylDiff-method}
 \alias{getTreatment<-,methylDiffDB-method}
 \alias{getTreatment<-,methylRawList-method}
 \alias{getTreatment<-,methylRawListDB-method}
@@ -32,6 +33,8 @@ getTreatment(x) <- value
 \S4method{getTreatment}{methylBase}(x) <- value
 
 \S4method{getTreatment}{methylDiff}(x)
+
+\S4method{getTreatment}{methylDiff}(x) <- value
 
 \S4method{getTreatment}{methylRawListDB}(x)
 

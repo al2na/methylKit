@@ -790,9 +790,9 @@ setMethod("select", "methylDiffDB",
 )
 
 
-#' @aliases [,methylRawDB-method
-#' @aliases extract,methylRawDB-method
+# @aliases [,methylRawDB-method
 #' @rdname extract-methods
+#' @aliases extract,methylRawDB-method
 setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),  
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
@@ -806,11 +806,11 @@ setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),
           }
 )
 
-#' @aliases [,methylBaseDB-method
+# @aliases [,methylBaseDB-method
 #' @aliases extract,methylBaseDB-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"), 
-          function(x,i,j,drop){
+          function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
             if(!missing(j)){
               stop(paste("subsetting on columns is not allowed for",class(x),
@@ -824,8 +824,8 @@ setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"),
 
 #' @rdname extract-methods
 #' @aliases extract,methylDiffDB-method
-#' @aliases [,methylDiffDB-method
-setMethod("[","methylDiffDB", 
+# @aliases [,methylDiffDB-method
+setMethod("[",signature(x="methylDiffDB", i="ANY", j="ANY"),
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
             if(!missing(j)){
