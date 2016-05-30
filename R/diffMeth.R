@@ -5,15 +5,19 @@
 ##############################################################################
 
 # wrapper function for SLIM, p.adjust, qvalue-package
-p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
-                       n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE){
+p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
+                                      "bonferroni","BH","BY","fdr","none",
+                                      "qvalue"),
+                       n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,Divi=10,
+                       Pz=0.05,B=100,Bplot=FALSE){
   
   method <- match.arg(method)
   
   qvals=switch(method,
                # SLIM function
                SLIM={QValuesfun(pvals,
-                                SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,B=B,Bplot=Bplot)$pi0_Est)
+                                SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,B=B,
+                                         Bplot=Bplot)$pi0_Est)
                },
                # r-base/p-adjust functions
                holm={p.adjust(pvals,method=method,n)},
@@ -33,7 +37,8 @@ p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel","bonferr
 ######################################
 #####SLIM pi0 Estimation function
 #####Copyright by Tsai Lab of UGA, US, and Hong-Qiang Wang, IIM, CAS, China
-#####Reference: SLIM: A Sliding Linear Model for Estimating the Proportion of True Null Hypotheses in Datasets With Dependence Structures
+#####Reference: SLIM: A Sliding Linear Model for Estimating the Proportion of 
+##### True Null Hypotheses in Datasets With Dependence Structures
 #####usage:
 #####inputs: 
 #####rawp:p-values, required
@@ -102,7 +107,8 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
   {
     qua_point=quapoint_mtx[k];
     
-    pi0_combLR=min(quantile(pi0_mtx,qua_point),1);#mean(pi0_mtx);#median();# qua_point=0.78 for desreasing distribution;
+    pi0_combLR=min(quantile(pi0_mtx,qua_point),1);#mean(pi0_mtx);#median();
+    # qua_point=0.78 for desreasing distribution;
     ##0.4 for uniform or normal distribution;
     pi0_est=pi0_combLR;
     
@@ -149,7 +155,10 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
     par(mfrow=c(1,2));
     hist(rawp,main="Histogram of p-value");
     gamma_ga=sapply(lambda_ga,f1,rawp=rawp);
-    plot(lambda_ga,gamma_ga,type="l",main="Relationship of p- and q value",xlab=expression(lambda),ylab=expression(gamma),cex.lab=1.45,cex.axis=1.42)
+    plot(lambda_ga,gamma_ga,type="l",
+         main="Relationship of p- and q value",
+         xlab=expression(lambda),ylab=expression(gamma),
+         cex.lab=1.45,cex.axis=1.42)
     #par(xaxp=c(0,1,10));
     #axis(1);
     ##qvalues
@@ -159,8 +168,11 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
     abline(v=Pz,col="black",lwd=2,lty="dotdash")
     abline(v=maxFDR.Pz,col="blue",lwd=2,lty="dotdash")
     text(0.75,0.6,labels=paste("L=",round(abs(Diff.loc),4),sep=""));
-    leg=list(bquote("CPD of p-value"),bquote("CPD of q-value"),bquote("Pmax"==.(Pz)),bquote("FDRmax"==.(round(maxFDR.Pz,2))));
-    legend("bottomright",legend=as.expression(leg),lwd=2,lty=c("solid","dashed","dotdash","dotdash"),col=c("black","blue","black","blue"));
+    leg=list(bquote("CPD of p-value"),bquote("CPD of q-value"),
+             bquote("Pmax"==.(Pz)),bquote("FDRmax"==.(round(maxFDR.Pz,2))));
+    legend("bottomright",legend=as.expression(leg),lwd=2,
+           lty=c("solid","dashed","dotdash","dotdash"),
+           col=c("black","blue","black","blue"));
   }
   
   return(list(pi0_Est=pi0_Est,selQuantile=selQuantile));
@@ -183,8 +195,10 @@ QValuesfun<-function(rawp,pi0)
 
 # New calulateDiffMeth-part
 
-logReg<-function(counts, formula, vars, treatment, overdispersion=c("none","MN","shrinkMN"),
-                 effect=c("wmean","mean","predicted"), parShrinkNM=list(), test=c("F","Chisq")){
+logReg<-function(counts, formula, vars, treatment, 
+                 overdispersion=c("none","MN","shrinkMN"),
+                 effect=c("wmean","mean","predicted"), parShrinkMN=list(), 
+                 test=c("F","Chisq")){
   
   # correct counts and treatment factor for NAs in counts
   treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
@@ -385,11 +399,13 @@ estimatePhi<-function(counts,modelMat,treatment){
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
-#'   \code{methylDiff} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{methylDiff} object can be coerced to 
+#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' @section Accessors: 
 #' The following functions provides access to data slots of methylDiff:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+#' \code{\link[methylKit]{getContext}}
 #' 
 #' @examples
 #' data(methylKit)
@@ -402,7 +418,9 @@ estimatePhi<-function(counts,modelMat,treatment){
 #' @export
 #' @docType class
 setClass("methylDiff",representation(
-  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical",resolution="character"),contains="data.frame")
+  sample.ids = "character", assembly = "character",context = "character",
+  treatment="numeric",destranded="logical",resolution="character"),
+  contains="data.frame")
 
 
 ##############################################################################
@@ -417,17 +435,23 @@ setClass("methylDiff",representation(
 #' or Fisher's Exact test to calculate differential methylation. 
 #' See references for detailed explanation on statistics.
 #' 
-#' @param .Object a methylBase or methylBaseDB object to calculate differential methylation                    
-#' @param covariates a data.frame containing covariates, which should be included in the test.                   
-#' @param overdispersion If set to "none"(default), no overdispersion correction will be attempted.
+#' @param .Object a methylBase or methylBaseDB object to calculate differential
+#'  methylation                    
+#' @param covariates a data.frame containing covariates, which should be 
+#' included in the test.                   
+#' @param overdispersion If set to "none"(default), no overdispersion correction 
+#' will be attempted.
 #'              If set to "MN", basic overdispersion correction will be applied.
-#'              (EXPERIMENTAL: If set to "shrinkMN", overdisperison correction with squeezeVar() 
+#'              (EXPERIMENTAL: If set to "shrinkMN", overdisperison correction 
+#'              with squeezeVar() 
 #'              from the limma-package will be applied (not thoroughly tested as of yet).
 #' @param adjust different methods to correct the p-values for multiple testing. 
-#'              Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}} 
+#'              Default is "SLIM" from methylKit. For "qvalue" please see 
+#'              \code{\link[qvalue]{qvalue}} 
 #'              and for all other methods see \code{\link[stats]{p.adjust}}.
 #' @param effect method to calculate the mean methylation different between groups 
-#'              using read coverage as weights (default). When set to "mean", the generic mean is applied
+#'              using read coverage as weights (default). When set to "mean", 
+#'              the generic mean is applied
 #'              and when set to "predicted", a logistic model is used instead.
 #' @param parShrinkMN a list for squeezeVar(). (NOT IMPLEMENTED)
 #' @param test the statistical test used to determine the methylation differences. 
@@ -436,40 +460,45 @@ setClass("methylDiff",representation(
 #' @param mc.cores integer denoting how many cores should be used for parallel
 #'              differential methylation calculations (can only be used in
 #'              machines with multiple cores).
-#' @param slim If set to FALSE, \code{adjust} will be set to "BH" (default behaviour of earlier versions)
-#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" (default behaviour of earlier versions)  
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param slim If set to FALSE, \code{adjust} will be set to "BH" (default 
+#'              behaviour of earlier versions)
+#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" 
+#'                      (default behaviour of earlier versions)  
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#'                    \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#'                saved as flat file database or not, default: explained in 
+#'                Details section.
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output 
+#'                  flat file database, 
+#'                  only used if save.db is true, default actions: append 
+#'                  \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
+#'                  The directory where flat file database(s) should be stored, 
+#'                  defaults
 #'                  to getwd(), working directory for newly stored databases
 #'                  and to same directory for already existing database
 #'                  
-#            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
-#                  (only used for newly stored databases)             
+#'           \code{dbtype}
+#'                  The type of the flat file database, currently only option 
+#'                  is "tabix"
+#'                  (only used for newly stored databases)             
 #'                    
-#' @usage calculateDiffMeth(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-#'                          adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH",
-#'                          "BY","fdr","none","qvalue"),effect=c("wmean","mean","predicted"), 
-#'                          parShrinkNM=list(),test=c("F","Chisq"),mc.cores=1,slim=TRUE, 
-#'                          weighted.mean=TRUE, chunk.size, save.db,...)
 #' 
 #' @examples
 #' 
 #' data(methylKit)
 #' 
 #' # The Chisq-test will be applied when no overdispersion control is chosen.
-#' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,overdispersion=c("none"),
-#'                               adjust=c("SLIM"),effect=c("wmean"),parShrinkMN=list(),
-#'                               test=c("Chisq"),mc.cores=1)
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,
+#'                               overdispersion=c("none"),
+#'                               adjust=c("SLIM"))
 #' 
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
@@ -495,21 +524,30 @@ setClass("methylDiff",representation(
 #' @return a methylDiff object containing the differential methylation 
 #'                      statistics and locations
 #' @section Details:
-#' Covariates can be included in the analysis. The function will then try to separate the 
+#' Covariates can be included in the analysis. The function will then try to 
+#' separate the 
 #' influence of the covariates from the treatment effect via a linear model.\cr
-#' The Chisq-test is used per default only when no overdispersion correction is applied.
-#' If overdispersion correction is applied, the function automatically switches to the 
-#' F-test. The Chisq-test can be manually chosen in this case as well, but the F-test only 
+#' The Chisq-test is used per default only when no overdispersion correction is
+#'  applied.
+#' If overdispersion correction is applied, the function automatically switches 
+#' to the 
+#' F-test. The Chisq-test can be manually chosen in this case as well, but the 
+#' F-test only 
 #' works with overdispersion correction switched on.
 #' 
-#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylBaseDB} objects, as they are read in chunk by chunk to enable 
+#' processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. 
+#' If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
-#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for 
+#' methylDB objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. 
+#' If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
@@ -531,7 +569,7 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                                   "bonferroni","BH","BY","fdr",
                                                   "none","qvalue"),
                                          effect=c("wmean","mean","predicted"),
-                                         parShrinkNM=list(),
+                                         parShrinkMN=list(),
                                          test=c("F","Chisq"),mc.cores=1,slim=TRUE,
                                          weighted.mean=TRUE,
                                          chunk.size=1e6,save.db=FALSE,...) 
@@ -539,23 +577,27 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
 
 setMethod("calculateDiffMeth", "methylBase",
           function(.Object,covariates,overdispersion,
-                   adjust,effect,parShrinkNM,
+                   adjust,effect,parShrinkMN,
                    test,mc.cores,slim,weighted.mean,save.db=FALSE,...){
             
             # extract data.frame from methylBase
             subst=S3Part(.Object,strictS3 = TRUE)        
             
             if(length(.Object@treatment)<2 ){
-              stop("can not do differential methylation calculation with less than two samples")
+              stop("can not do differential methylation calculation with less ",
+                   "than two samples")
             }
             
             if(length(unique(.Object@treatment))<2 ){
-              stop("can not do differential methylation calculation when there is no control\n
-                   treatment option should have 0 and 1 designating treatment and control samples")
+              stop("can not do differential methylation calculation when there ",
+                   "is no control\n",
+                   "treatment option should have 0 and 1 designating treatment ",
+                    "and control samples")
             }
             
             if(length(unique(.Object@treatment))>2 ){
-              stop("can not do differential methylation calculation when there are more than\n
+              stop("can not do differential methylation calculation when there ",
+                   "are more than\n
                    two groups, treatment vector indicates more than two groups")
             }
             
@@ -569,31 +611,40 @@ setMethod("calculateDiffMeth", "methylBase",
             Tcols=seq(7,ncol(subst),by=3)
             Ccols=Tcols-1
             
-            #### check if covariates+intercept+treatment more than replicates ####
-            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){stop("Too many covariates/too few replicates.")}}
+            #### check if covariates+intercept+treatment more than replicates 
+            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){
+              stop("Too many covariates/too few replicates.")}}
             
             # get count matrix and make list
             cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
             
             # call estimate shrinkage before logReg
             if(overdispersion=="shrinkMN"){
-              parShrinkMN<-estimateShrinkageMN(cntlist,treatment=.Object@treatment,covariates=vars,
-                                               sample.size=100000,mc.cores=mc.cores)
+              parShrinkMN<-estimateShrinkageMN(cntlist,
+                                               treatment=.Object@treatment,
+                                               covariates=vars,
+                                               sample.size=100000,
+                                               mc.cores=mc.cores)
             }
             
             # get the result of tests
             tmp=simplify2array(
-              mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
+              mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,
+                       overdispersion=overdispersion,effect=effect,
                        parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
             
             # return the data frame part of methylDiff
             tmp <- as.data.frame(t(tmp))
-            x=data.frame(subst[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+            x=data.frame(subst[,1:4],tmp$p.value,
+                         p.adjusted(tmp$q.value,method=adjust),
+                         meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
             colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
             
             if(!save.db) {
-              obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                      destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
+              obj=new("methylDiff",x,sample.ids=.Object@sample.ids,
+                      assembly=.Object@assembly,context=.Object@context,
+                      destranded=.Object@destranded,treatment=.Object@treatment,
+                      resolution=.Object@resolution)
               obj
             } else {
               
@@ -613,9 +664,11 @@ setMethod("calculateDiffMeth", "methylBase",
               }
               
               # create methylDiffDB
-              makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+              makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
+                               sample.ids=.Object@sample.ids,
                                assembly=.Object@assembly,context=.Object@context,
-                               destranded=.Object@destranded,treatment=.Object@treatment,
+                               destranded=.Object@destranded,
+                               treatment=.Object@treatment,
                                resolution=.Object@resolution,suffix=suffix )
             }
 
@@ -714,7 +767,8 @@ setReplaceMethod("getSampleID", signature = "methylDiff", function(x, value) {
 setAs("methylDiff", "GRanges", function(from)
 {
   
-  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
+  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, 
+                                                         end=from$end),
           strand=from$strand, 
           qvalue=from$qvalue,
           meth.diff=from$meth.diff
@@ -765,7 +819,8 @@ setMethod("selectByOverlap", "methylDiff",
           function(object, ranges){
             
             if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+              stop("No ranges specified or given ranges object not of class ",
+                   "GRanges, please check your input!")
             }
             hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
             
@@ -776,36 +831,48 @@ setMethod("selectByOverlap", "methylDiff",
 
 #' get differentially methylated regions/bases based on cutoffs 
 #' 
-#' The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object in order to get 
+#' The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} 
+#' object in order to get 
 #' differentially methylated bases/regions
 #' satisfying thresholds.
 #' 
 #' @param .Object  a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object
-#' @param difference  cutoff for absolute value of methylation percentage change between test and control (default:25)
-#' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
-#' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
-#'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylDiffDB} objects (default: 1e6)
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: see Details  
+#' @param difference  cutoff for absolute value of methylation percentage change 
+#'                    between test and control (default:25)
+#' @param qvalue  cutoff for qvalue of differential methylation statistic 
+#'                (default:0.01) 
+#' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type 
+#'              of differentially menthylated bases/regions should be returned.
+#'              For retrieving Hyper-methylated regions/bases type="hyper", 
+#'              for hypo-methylated type="hypo" (default:"all") 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#'                   \code{methylDiffDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#'                saved as flat file database or not, default: see Details  
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output flat 
+#'                  file database, 
+#'                  only used if save.db is true, default actions: append 
+#'                  \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
+#'                  The directory where flat file database(s) should be stored, 
+#'                  defaults
 #'                  to getwd(), working directory for newly stored databases
 #'                  and to same directory for already existing database
 #'                  
-#            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
-#                  (only used for newly stored databases)
+#'            \code{dbtype}
+#'                 The type of the flat file database, currently only 
+#'                  option is "tabix"
+#'                  (only used for newly stored databases)
 #' 
-#' @return a methylDiff or methylDiffDB object containing the differential methylated locations satisfying the criteria 
+#' @return a methylDiff or methylDiffDB object containing the differential 
+#' methylated locations satisfying the criteria 
 #' 
-#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all",chunk.size,save.db,...)
 #' @examples
 #' 
 #' data(methylKit)
@@ -820,89 +887,107 @@ setMethod("selectByOverlap", "methylDiff",
 #' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 #' 
 #' @section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylDiffDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylDiffDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects 
+#' which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most 
+#' systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylDiffDB}, 
-#' while being per default FALSE for \code{methylDiff}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as 
+#' \code{methylDiffDB}, 
+#' while being per default FALSE for \code{methylDiff}. If you wish to save 
+#' the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #'
 #' @export
 #' @docType methods
 #' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all",chunk.size=1e6,save.db=FALSE,...) standardGeneric("get.methylDiff"))
+setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,
+                                               type="all",chunk.size=1e6,
+                                               save.db=FALSE,...) 
+  standardGeneric("get.methylDiff"))
 
 #' @aliases get.methylDiff,methylDiff-method
 #' @rdname get.methylDiff-methods
 setMethod(f="get.methylDiff", signature="methylDiff", 
-          definition=function(.Object,difference,qvalue,type,save.db=FALSE,...) {
+          definition=function(.Object,difference,qvalue,type,save.db=FALSE,...){
             
-            if(!save.db) {
-            
-              if(type=="all"){
-                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                return(new.obj)
-              }else if(type=="hyper"){
-                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                return(new.obj)
-              }else if(type=="hypo"){
-                new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                            sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
-                return(new.obj)
-              }else{
-                stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
-              }
-            
-            } else {
-              
-              # catch additional args 
-              args <- list(...)
-              
-              if( !( "dbdir" %in% names(args)) ){
-                dbdir <- .check.dbdir(getwd())
-              } else { dbdir <- .check.dbdir(args$dbdir) }
-              #                         if(!( "dbtype" %in% names(args) ) ){
-              #                           dbtype <- "tabix"
-              #                         } else { dbtype <- args$dbtype }
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_",type)
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              # create methylBaseDB
-              if(type=="all"){
-                new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                                   assembly=.Object@assembly,context=.Object@context,
-                                   destranded=.Object@destranded,treatment=.Object@treatment,
-                                   resolution=.Object@resolution,suffix=suffix )
-              }else if(type=="hyper"){
-              new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                                   assembly=.Object@assembly,context=.Object@context,
-                                   destranded=.Object@destranded,treatment=.Object@treatment,
-                                   resolution=.Object@resolution,suffix=suffix )
-              }else if(type=="hypo"){
-                new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                                   dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                                   assembly=.Object@assembly,context=.Object@context,
-                                   destranded=.Object@destranded,treatment=.Object@treatment,
-                                   resolution=.Object@resolution,suffix=suffix )
-              }else{
-                stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
-              }
-              return(new.obj) 
-            }
-          }) 
+  if(!save.db) {
+  
+    if(type=="all"){
+      new.obj=new("methylDiff",
+                  .Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution)
+      return(new.obj)
+    }else if(type=="hyper"){
+      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution)
+      return(new.obj)
+    }else if(type=="hypo"){
+      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution) 
+      return(new.obj)
+    }else{
+      stop("Wrong 'type' argument supplied for the function, it can be ",
+           "'hypo', 'hyper' or 'all' ")
+    }
+  
+  } else {
+    
+    # catch additional args 
+    args <- list(...)
+    
+    if( !( "dbdir" %in% names(args)) ){
+      dbdir <- .check.dbdir(getwd())
+    } else { dbdir <- .check.dbdir(args$dbdir) }
+    #                         if(!( "dbtype" %in% names(args) ) ){
+    #                           dbtype <- "tabix"
+    #                         } else { dbtype <- args$dbtype }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_",type)
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    # create methylBaseDB
+    if(type=="all"){
+      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else if(type=="hyper"){
+    new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else if(type=="hypo"){
+      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else{
+      stop("Wrong 'type' argument supplied for the function, it can be ",
+           "'hypo', 'hyper' or 'all' ")
+    }
+    return(new.obj) 
+  }
+}) 
 
 ##############################################################################
 ## PLOTTING FUNCTIONS FOR methylDiff OBJECT
@@ -910,17 +995,21 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 
 #' Get and plot the number of hyper/hypo methylated regions/bases per chromosome
 #'
-#' This function gets number of  hyper/hypo methylated regions/bases from \code{\link{methylDiff}} object. 
+#' This function gets number of  hyper/hypo methylated regions/bases from 
+#' \code{\link{methylDiff}} object. 
 #' It can also plot percentages of differentially methylated bases per chromosome.
 #'
 #' @param x a \code{\link{methylDiff}}  object
-#' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of hypo/hyper methylated bases/regions
+#' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of
+#'             hypo/hyper methylated bases/regions
 #' @param qvalue.cutoff  cutoff for q-value
 #' @param meth.cutoff cutoff for percent methylation difference
 #' @param exclude names of chromosomes to be excluded
-#' @param ... extra graphical parameters to be passed to \code{\link{barplot}} function
+#' @param ... extra graphical parameters to be passed to \code{\link{barplot}} 
+#'                  function
 #' 
-#' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
+#' @return plots a piechart or a barplot for percentage of the target 
+#' features overlapping with annotation
 #' 
 #' @usage diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)
 #' @examples
@@ -928,12 +1017,15 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 #' data(methylKit)
 #'  
 #' # get a list of differentially methylated bases/regions per chromosome and overall
-#' diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL)
+#' diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01, 
+#'                meth.cutoff=25,exclude=NULL)
 #'
 #' @export
 #' @docType methods
 #' @rdname diffMethPerChr-methods
-setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...) standardGeneric("diffMethPerChr"))
+setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, 
+                                          meth.cutoff=25,exclude=NULL,...) 
+  standardGeneric("diffMethPerChr"))
 
 #' @aliases diffMethPerChr,methylDiff-method
 #' @rdname  diffMethPerChr-methods
@@ -952,25 +1044,42 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                                       percentage.of.hypomethylated=dmc.hypo)
             
             # plot barplot for percentage of DMCs per chr
-            dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), as.data.frame(table(x$chr)),by="Var1")
-            dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
+            dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), 
+                                as.data.frame(table(x$chr)),by="Var1")
+            dmc.hyper.chr=cbind(dmc.hyper.chr,
+                                perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
             
-            dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), as.data.frame(table(x$chr)),by="Var1")
-            dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
+            dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)),
+                               as.data.frame(table(x$chr)),by="Var1")
+            dmc.hypo.chr=cbind(dmc.hypo.chr,
+                               perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
             
-            dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],dmc.hypo.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome
+            # merge hyper hypo per chromosome
+            dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],
+                                 dmc.hypo.chr[,c(1,2,4)],by="Var1") 
             dmc.hyper.hypo=dmc.hyper.hypo[order(as.numeric(sub("chr","",dmc.hyper.hypo$Var1))),] # order the chromosomes
             
-            names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated","percentage.of.hypermethylated","number.of.hypomethylated","percentage.of.hypomethylated")
+            names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
+                                    "percentage.of.hypermethylated",
+                                    "number.of.hypomethylated",
+                                    "percentage.of.hypomethylated")
             if(plot){
               
               if(!is.null(exclude)){dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
               
               barplot(
-                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],hypo=dmc.hyper.hypo[,5],row.names=dmc.hyper.hypo[,1]) ))
-                ,las=2,horiz=T,col=c("magenta","aquamarine4"),main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),xlab="% (percentage)",...)
-              mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",meth.cutoff," %",sep="") )
-              legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
+                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
+                                       hypo=dmc.hyper.hypo[,5],
+                                       row.names=dmc.hyper.hypo[,1]) ))
+                ,las=2,horiz=T,col=c("magenta","aquamarine4"),
+                main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),
+                xlab="% (percentage)",...)
+              mtext(side=3,paste("qvalue<",qvalue.cutoff,
+                                 " & methylation diff. >=",meth.cutoff,
+                                 " %",sep="") )
+              legend("topright",
+                     legend=c("hyper","hypo"),
+                     fill=c("magenta","aquamarine4"))
             }else{
               
               list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)

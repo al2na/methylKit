@@ -3,16 +3,22 @@
 \docType{methods}
 \name{calculateDiffMethDSS}
 \alias{calculateDiffMethDSS}
+\alias{calculateDiffMethDSS,methylBase-method}
 \title{calculate Differential Methylation with DSS}
 \usage{
-calculateDiffMethDSS(meth, adjust=c("SLIM","holm","hochberg","hommel",
-                            "bonferroni","BH","BY","fdr","none","qvalue"), mc.cores=1)
+calculateDiffMethDSS(meth, adjust = c("SLIM", "holm", "hochberg", "hommel",
+  "bonferroni", "BH", "BY", "fdr", "none", "qvalue"), mc.cores = 1)
+
+\S4method{calculateDiffMethDSS}{methylBase}(meth, adjust = c("SLIM", "holm",
+  "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none", "qvalue"),
+  mc.cores = 1)
 }
 \arguments{
 \item{meth}{a methylBase object}
 
 \item{adjust}{different methods to correct the p-values for multiple testing. 
-Default is "SLIM" from methylKit. For "qvalue" please see \code{\link[qvalue]{qvalue}} 
+Default is "SLIM" from methylKit. For "qvalue" please see 
+\code{\link[qvalue]{qvalue}} 
 and for all other methods see \code{\link[stats]{p.adjust}}.}
 
 \item{mc.cores}{integer denoting how many cores should be used for parallel
@@ -23,7 +29,9 @@ machines with multiple cores).}
 a methylDiff object
 }
 \description{
-This function provides an interface to the DSS package by Hao Wo at Emory University.
+This function provides an interface to the DSS method by Hao Wo at 
+Emory University. It calculates the differential methylation statistics
+using a beta-binomial model with parameter shrinkage.
 }
 \section{Details}{
 

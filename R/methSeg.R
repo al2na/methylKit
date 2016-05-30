@@ -9,7 +9,8 @@
 #' component ideally indicates quantitative classification of segments, such
 #' as high or low methylated regions.
 #' 
-#' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}},
+#' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
+#' \code{\link{methylDiffDB}},
 #'            \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
 #'            \code{\link[GenomicRanges]{GRanges}}
 #'             it should have one meta column with methylation scores
@@ -79,7 +80,8 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
       obj = sort(obj[,-1])
     }
   }else if (class(obj) != "GRanges"){
-    stop("only methylRaw or methylDiff with resolution=='region' or GRanges objects can be used in this function")
+    stop("only methylRaw or methylDiff with resolution=='region' ", 
+         "or GRanges objects can be used in this function")
   }
   
   # match argument names to fastseg arguments
@@ -129,8 +131,7 @@ densityFind<-function(score.gr,diagnostic.plot=T,...){
   dens
 }
 
-
-# diagnostic plot, useful for parameter trials
+# Plot diagnostic graphs for segmentation results
 diagPlot<-function(dens,score.gr){
   
   scores=score.gr$seg.mean
@@ -180,9 +181,9 @@ diagPlot<-function(dens,score.gr){
 #' @docType methods
 #' @rdname methSeg2bed
 methSeg2bed<-function(segments,
-                      trackLine="track name='meth segments' description='meth segments' itemRgb=On",
-                      filename="data/H1.chr21.chr22.trial.seg.bed",
-                      colramp=colorRamp(c("gray","green", "darkgreen"))
+trackLine="track name='meth segments' description='meth segments' itemRgb=On",
+filename="data/H1.chr21.chr22.trial.seg.bed",
+colramp=colorRamp(c("gray","green", "darkgreen"))
                         ){
   if(class(segments)!="GRanges"){
     stop("segments object has to be of class GRanges")
@@ -193,9 +194,10 @@ methSeg2bed<-function(segments,
   mcols(segments)$name=as.character(segments$seg.group)
   
   #scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean))-(min(segments$seg.mean))
-  scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean)-min(segments$seg.mean))
+  scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean)-
+                                                       min(segments$seg.mean))
   
-  mcols(segments)$itemRgb= rgb(ramp(scores), max = 255) 
+  mcols(segments)$itemRgb= rgb(ramp(scores), maxColorValue = 255) 
   #strand(segments)="."
   score(segments)=segments$seg.mean
   
@@ -211,39 +213,42 @@ methSeg2bed<-function(segments,
 # this could be used to avoid total dependece on GenomicRanges
 # currently it has to be listed on depends section of DESCRIPTION
 # but doing the depend thing is cleaner
-fastseg2<-function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
-eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10){
-  
-  y <- split(x, as.character(seqnames(x)))
-  nbrOfSeq <- length(y)
-  res02 <- list()
-  for (seq in seq_len(nbrOfSeq)) {
-    x <- y[[seq]]
-    res <- list()
-    for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
-      z01 <- elementMetadata(x)[[sampleIdx]]
-      sample <- names(elementMetadata(x))[sampleIdx]
-      resTmp <- fastseg:::segmentGeneral(z01, type, alpha, segMedianT, 
-                               minSeg, eps, delta, maxInt, squashing, cyberWeight)$finalSegments
-      resTmp$sample <- sample
-      res[[sampleIdx]] <- resTmp
-    }
-    res <- do.call("rbind", res)
-    res$num.mark <- res$end - res$start
-    chrom <- as.character(seqnames(x)[1])
-    start <- start(x)[res$start]
-    end <- start(x)[res$end] + width(x)[res$end] - 1
-    resX <- data.frame(ID = res$sample, chrom = chrom, 
-                       loc.start = start, loc.end = end, num.mark = res$num.mark, 
-                       seg.mean = res$mean, startRow = res$start, endRow = res$end, 
-                       stringsAsFactors = FALSE)
-    resX <- resX[order(resX$chrom, resX$loc.start), ]
-    res02[[seq]] <- resX
-  }
-  res03 <- do.call("rbind", res02)
-  finalRes <- GRanges(seqnames = Rle(res03$chrom), ranges = IRanges(start = res03$loc.start, 
-                                                                    end = res03$loc.end), ID = res03$ID, num.mark = res03$num.mark, 
-                      seg.mean = res03$seg.mean, startRow = res03$startRow, 
-                      endRow = res03$endRow)
-  return(finalRes)
-}
+#fastseg2<-function(x, type = 1, alpha = 0.05, segMedianT, minSeg = 4, 
+#eps = 0, delta = 5, maxInt = 40, squashing = 0, cyberWeight = 10){
+#  
+#  y <- split(x, as.character(seqnames(x)))
+#  nbrOfSeq <- length(y)
+#  res02 <- list()
+#  for (seq in seq_len(nbrOfSeq)) {
+#    x <- y[[seq]]
+#    res <- list()
+#    for (sampleIdx in seq_len(ncol(elementMetadata(x)))) {
+#      z01 <- elementMetadata(x)[[sampleIdx]]
+#      sample <- names(elementMetadata(x))[sampleIdx]
+#      resTmp <- fastseg:::segmentGeneral(z01, type, alpha, segMedianT, 
+#                               minSeg, eps, delta, maxInt, squashing, 
+#                               cyberWeight)$finalSegments
+#      resTmp$sample <- sample
+#      res[[sampleIdx]] <- resTmp
+#    }
+#    res <- do.call("rbind", res)
+#    res$num.mark <- res$end - res$start
+#    chrom <- as.character(seqnames(x)[1])
+#    start <- start(x)[res$start]
+#    end <- start(x)[res$end] + width(x)[res$end] - 1
+#    resX <- data.frame(ID = res$sample, chrom = chrom, 
+#                   loc.start = start, loc.end = end, num.mark = res$num.mark, 
+#                   seg.mean = res$mean, startRow = res$start, endRow = res$end, 
+#                   stringsAsFactors = FALSE)
+#    resX <- resX[order(resX$chrom, resX$loc.start), ]
+#    res02[[seq]] <- resX
+#  }
+#  res03 <- do.call("rbind", res02)
+#  finalRes <- GRanges(seqnames = Rle(res03$chrom),
+#                      ranges = IRanges(start = res03$loc.start, 
+#                                      end = res03$loc.end), 
+#                      ID = res03$ID, num.mark = res03$num.mark, 
+#                      seg.mean = res03$seg.mean, startRow = res03$startRow, 
+#                      endRow = res03$endRow)
+#  return(finalRes)
+#}

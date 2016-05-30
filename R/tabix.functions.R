@@ -171,6 +171,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   }
   
   # order rows
+  V1=V2=V3=NULL
   data.table::setorder(res, V1,V2,V3)
   
   if(!parallel){
@@ -198,7 +199,8 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
 # @example
 # tbxFile=system.file("extdata", "ctrl1.txt", package = "methylKit")
 #  getTabixByChr(chr="chr21",tbxFile)
-getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.frame","GRanges")){
+getTabixByChr<-function(tbxFile,chr="chr10",
+                        return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
   
@@ -393,7 +395,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,tbxFile,dir,filename,FUN,...){
+    myFunc2<-function(chunk.num,tbxFile,dir,filename,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
       res=FUN(data,...)  
       
@@ -408,7 +410,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     filename2=paste(rndFile,filename,sep="_")
     
     # apply function to chunks
-    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,tbxFile,dir,filename2,FUN,...)
     
     
     outfile= file.path(path.expand(dir),filename) # get file name 
@@ -430,23 +432,23 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,tbxFile,FUN,...){
+    myFunc3<-function(chunk.num,tbxFile,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chunk.num,tbxFile,FUN,...){
+    myFunc4<-function(chunk.num,tbxFile,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.table")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc4,tbxFile,FUN,...)
   
     
     # collect and return
@@ -514,23 +516,23 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chr,tbxFile,FUN,...){
+    myFunc2<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
+    res=mclapply(chrs,myFunc2,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chr,tbxFile,FUN,...){
+    myFunc3<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.table")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
+    res=mclapply(chrs,myFunc3,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     rbindlist(res)
@@ -627,7 +629,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
+    myFunc2<-function(chunk.num,region.split,tbxFile,FUN,...){
       data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
@@ -635,13 +637,13 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
       }
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,tbxFile,FUN,...)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
+    myFunc3<-function(chunk.num,region.split,tbxFile,FUN,...){
       data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.table"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
@@ -649,7 +651,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
       }
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
     
     
     # collect and return

@@ -7,7 +7,8 @@
 \alias{get.methylDiff,methylDiffDB-method}
 \title{get differentially methylated regions/bases based on cutoffs}
 \usage{
-get.methylDiff(.Object,difference=25,qvalue=0.01,type="all",chunk.size,save.db,...)
+get.methylDiff(.Object, difference = 25, qvalue = 0.01, type = "all",
+  chunk.size = 1e+06, save.db = FALSE, ...)
 
 \S4method{get.methylDiff}{methylDiff}(.Object, difference = 25,
   qvalue = 0.01, type = "all", chunk.size = 1e+06, save.db = FALSE, ...)
@@ -18,47 +19,70 @@ get.methylDiff(.Object,difference=25,qvalue=0.01,type="all",chunk.size,save.db,.
 \arguments{
 \item{.Object}{a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object}
 
-\item{difference}{cutoff for absolute value of methylation percentage change between test and control (default:25)}
+\item{difference}{cutoff for absolute value of methylation percentage change 
+between test and control (default:25)}
 
-\item{qvalue}{cutoff for qvalue of differential methylation statistic (default:0.01)}
+\item{qvalue}{cutoff for qvalue of differential methylation statistic 
+(default:0.01)}
 
-\item{type}{one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
-For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all")}
+\item{type}{one of the "hyper","hypo" or "all" strings. Specifies what type 
+of differentially menthylated bases/regions should be returned.
+For retrieving Hyper-methylated regions/bases type="hyper", 
+for hypo-methylated type="hypo" (default:"all")}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylDiffDB} objects (default: 1e6)}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylDiffDB} objects (default: 1e6)}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: see Details}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: see Details}
 
 \item{...}{optional Arguments used when save.db is TRUE
 
 \code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+      A character string to append to the name of the output flat 
+      file database, 
+      only used if save.db is true, default actions: append 
+      \dQuote{_filtered} to current filename 
+      if database already exists or generate new file with 
+      filename \dQuote{sampleID_filtered}
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
+      The directory where flat file database(s) should be stored, 
+      defaults
       to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+      and to same directory for already existing database
+      
+\code{dbtype}
+     The type of the flat file database, currently only 
+      option is "tabix"
+      (only used for newly stored databases)}
 }
 \value{
-a methylDiff or methylDiffDB object containing the differential methylated locations satisfying the criteria
+a methylDiff or methylDiffDB object containing the differential 
+methylated locations satisfying the criteria
 }
 \description{
-The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object in order to get 
+The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} 
+object in order to get 
 differentially methylated bases/regions
 satisfying thresholds.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylDiffDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+The parameter \code{chunk.size} is only used when working with 
+\code{methylDiffDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects 
+which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most 
+systems. If you encounter memory problems or 
 have a high amount of memory available feel free to adjust the \code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylDiffDB}, 
-while being per default FALSE for \code{methylDiff}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylDiffDB}, 
+while being per default FALSE for \code{methylDiff}. If you wish to save 
+the result of an 
+in-memory-calculation as flat file database or if the size of the database 
+allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
 \examples{

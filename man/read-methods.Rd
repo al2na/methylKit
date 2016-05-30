@@ -27,29 +27,45 @@ read(location, sample.id, assembly, dbtype = NULL, pipeline = "amp",
   context = "CpG", resolution = "base", treatment, dbdir = getwd())
 }
 \arguments{
-\item{location}{file location(s), either a list of locations (each a character string) or one location string}
+\item{location}{file location(s), either a list of locations (each a 
+character string) or one location string}
 
 \item{sample.id}{sample.id(s)}
 
 \item{assembly}{a string that defines the genome assembly such as hg18, mm9}
 
-\item{dbtype}{type of the flat file database, currently only option is "tabix"
-defaults to NULL, in which case the objects are stored in memory.}
+\item{dbtype}{type of the flat file database, currently only option 
+other than NULL is "tabix". When "tabix" is given the objects are 
+stored in tabix files, which are compressed and indexed. 
+The default value is NULL, in which case the objects are stored in 
+memory.}
 
-\item{pipeline}{name of the alignment pipeline, it can be either "amp" or "bismark". The methylation text files generated from other pipelines can be read as generic methylation text files by supplying a named \code{\link[base]{list}} argument as "pipeline" argument.
-The named \code{list} should containt column numbers which denotes which column of the text file corresponds to values and genomic location of the methylation events. See Details for more.}
+\item{pipeline}{name of the alignment pipeline, it can be either "amp", 
+"bismark","bismarkCoverage", "bismarkCytosineReport" or a list (default:'amp'). 
+The methylation text files generated from other pipelines can be 
+read as generic methylation text files by supplying a named 
+\code{\link[base]{list}} argument as "pipeline" argument.
+The named \code{list} should containt column numbers which denotes which 
+column of the text file corresponds to values and genomic location of the 
+methylation events. See Details for more on possible values for this 
+argument.}
 
 \item{header}{if the input file has a header or not (default: TRUE)}
 
-\item{skip}{number of lines to skip when reading. Can be set to 1 for bed files with track line (default: 0)}
+\item{skip}{number of lines to skip when reading. Can be set to 1 for bed 
+files with track line (default: 0)}
 
-\item{sep}{seperator between fields, same as \code{\link{read.table}} argument (default: "\\t")}
+\item{sep}{seperator between fields, same as \code{\link{read.table}} argument 
+(default: "\\t")}
 
 \item{context}{methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)}
 
-\item{resolution}{designates whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'. Default 'base'}
+\item{resolution}{designates whether methylation information is base-pair 
+resolution or regional resolution. allowed values 'base' or 'region'. 
+Default 'base'}
 
-\item{treatment}{a vector contatining 0 and 1 denoting which samples are control which samples are test}
+\item{treatment}{a vector contatining 0 and 1 denoting which samples are 
+control which samples are test}
 
 \item{dbdir}{directory where flat file database(s) should be stored, defaults
 to getwd(), working directory.}
@@ -58,36 +74,73 @@ to getwd(), working directory.}
 returns methylRaw, methylRawList, methylRawDB, methylRawListDB object
 }
 \description{
-The function reads a list of files or single files with methylation information for bases/region in the genome and creates a methylrawList or methylraw object. 
-The information can be stored as flat file database by creating a methylrawlistDB or methylrawDB object.
+The function reads a list of files or single files with methylation 
+information for bases/region in the genome and creates a methylrawList or 
+methylraw object. 
+The information can be stored as flat file database by creating a 
+methylrawlistDB or methylrawDB object.
 }
 \section{Details}{
 
- The output of \code{read} is determined by specific input arguments,as there are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
- The first three are obligatory, while if the last argument is given database features are enabled. 
- If then \code{location} refers to an uncompressed file the function will create a flat file database and 
+ The output of \code{read} is determined by specific input arguments,as there
+  are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
+ The first three are obligatory, while if the last argument is given database 
+ features are enabled. 
+ If then \code{location} refers to an uncompressed file the function will 
+ create a flat file database and 
  the associated methylRawDB object will link to this database. 
- If then \code{location} refers to an earlier created database file then the object will directly link to this database, 
+ If then \code{location} refers to an earlier created database file then the 
+ object will directly link to this database, 
  skipping the preprocessing steps. 
  
- When \code{pipeline} argument is a list, it is exptected to provide a named list with following names.
- 'fraction' is a logical value, denoting if the column frequency of Cs has a range from [0-1] or [0-100]. If true it assumes range is [0-1].
+ When \code{pipeline} argument is a list, it is exptected to provide a named 
+ list with following names.
+ 'fraction' is a logical value, denoting if the column frequency of Cs has a 
+ range from [0-1] or [0-100]. If true it assumes range is [0-1].
  'chr.col" is the number of the column that has chrosome string.   
- 'start.col' is the number of the column that has start coordinate of the base/region of the methylation event.
- 'end.col'  is the number of the column that has end coordinate of the base/region of the methylation event.
+ 'start.col' is the number of the column that has start coordinate of the 
+  base/region of the methylation event.
+ 'end.col'  is the number of the column that has end coordinate of the 
+  base/region of the methylation event.
  'coverage.col' is the number of the column that has read coverage values. 
- 'strand.col' is the number of the column that has strand information, the strand information in the file has to be in the form of '+' or '-', 
- 'freqC.col' is the number of the column that has the frequency of Cs. See examples to see how to read a generic methylation text file.
+ 'strand.col' is the number of the column that has strand information, the 
+ strand information in the file has to be in the form of '+' or '-', 
+ 'freqC.col' is the number of the column that has the frequency of Cs. 
+  See examples to see how to read a generic methylation text file.
+  
+  Other possible values for  \code{pipeline} argument are 'amp','bismark',
+  'bismarkCoverage' and 'bismarkCytosineReport'. For 'amp' and 'bismark' 
+   the function expects a tabular format shown in the webpage 
+   (http://github.com/al2na/methylKit). 
+   "amp" and "bismark" expect identical input and are kept for historical 
+   reasons. 'amp' was a pipeline used in Akalin et al. 2012 Plos Genetics 
+   paper, publicly available in googlecode. 
+   
+   Bismark aligner can output methylation information per
+   base in
+   multiple different formats. With \code{pipeline='bismarkCoverage'}  
+   The function reads coverage files,
+   which have chr,start,end, number of cytosines (methylated bases) 
+   and number of thymines (unmethylated bases) format output by bismark 
+   scripts. If bismark coverage files are used the function will not have 
+   the strand information,so beware.
+   With \code{pipeline='bismarkCytosineReport'}, the function expects 
+   cytosine report files from Bismark,
+   which have chr,start, strand, number of cytosines (methylated bases) 
+   and number of thymines (unmethylated bases),context, trinucletide context
+   format.
 }
 \examples{
 
 # this is a list of example files, ships with the package
 # for your own analysis you will just need to provide set of paths to files
 # you will not need the "system.file(..."  part
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+file.list=list(
+         system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+         system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+         system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+         system.file("extdata", "control2.myCpG.txt", package = "methylKit") 
+         )
 
 # read the files to a methylRawList object: myobj
 myobj=read( file.list,
@@ -100,7 +153,7 @@ myobj=read( file.list[[1]],
             
 # read a generic text file containing CpG methylation values
 # let's first look at the content of the file
-generic.file=system.file("extdata", "generic1.CpG.txt", package = "methylKit")
+generic.file=system.file("extdata", "generic1.CpG.txt",package = "methylKit")
 read.table(generic.file,header=TRUE)
 
 # And this is how you can read that generic file as a methylKit object            
@@ -110,8 +163,10 @@ read.table(generic.file,header=TRUE)
              sample.id="test1",assembly="hg18")
             
 # This creates tabix files that save methylation data
-# Without specified dbdir first creates a folder named the following in working directory:
-# paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+# Without specified dbdir first creates a folder named the following 
+# in working directory:
+# paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3,
+# replace=TRUE),collapse=""))
 #
 # Then, saves tabix files from methylKit objects there
  myobj=read( file.list,

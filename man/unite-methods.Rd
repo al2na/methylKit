@@ -7,7 +7,8 @@
 \alias{unite,methylRawListDB-method}
 \title{unite methylRawList to a single table}
 \usage{
-unite(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1,save.db,...)
+unite(object, destrand = FALSE, min.per.group = NULL, chunk.size = 1e+06,
+  mc.cores = 1, save.db = FALSE, ...)
 
 \S4method{unite}{methylRawList}(object, destrand = FALSE,
   min.per.group = NULL, chunk.size = 1e+06, mc.cores = 1,
@@ -18,47 +19,80 @@ unite(object,destrand=FALSE,min.per.group=NULL,chunk.size=1e6,mc.cores=1,save.db
   save.db = TRUE, ...)
 }
 \arguments{
-\item{object}{a methylRawList or methylRawListDB object to be merged by common locations covered by reads}
+\item{object}{a methylRawList or methylRawListDB object to be merged by 
+common locations covered by reads}
 
-\item{destrand}{if TRUE, reads covering both strands of a CpG dinucleotide will be merged, 
-do not set to TRUE if not only interested in CpGs (default: FALSE). If the methylRawList object
-contains regions rather than bases setting destrand to TRUE will have no effect.}
+\item{destrand}{if TRUE, reads covering both strands of a CpG dinucleotide 
+will be merged, 
+  do not set to TRUE if not only interested in CpGs (default: FALSE). 
+  If the methylRawList object
+  contains regions rather than bases setting destrand to TRUE will have no
+   effect.}
 
-\item{min.per.group}{an integer denoting minimum number of samples per replicate needed to cover a region/base. By default only regions/bases that are covered in all samples
- are united as methylBase object, however by supplying an integer for this argument users can control how many samples needed to cover region/base to be united as methylBase object.
-For example, if min.per.group set to 2 and there are 3 replicates per condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.}
+\item{min.per.group}{an integer denoting minimum number of samples per 
+replicate needed to cover a region/base. By default only regions/bases that 
+are covered in all samples
+       are united as methylBase object, however by supplying an integer for 
+       this argument users can control how many samples needed to cover region/base to be united as methylBase object.
+      For example, if min.per.group set to 2 and there are 3 replicates per 
+      condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawListDB} objects, default: 1e6}
 
-\item{mc.cores}{number of cores to use when processing \code{methylRawListDB} objects, default: 1, but always 1 for Windows)}
+\item{mc.cores}{number of cores to use when processing \code{methylRawListDB}
+objects, default: 1, but always 1 for Windows)}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
 
+\code{suffix}
+      A character string to append to the name of the output 
+      flat file database, 
+      only used if save.db is true, default actions: append 
+      \dQuote{_filtered} to current filename 
+      if database already exists or generate new file with 
+      filename \dQuote{sampleID_filtered}
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
+      The directory where flat file database(s) should be stored, 
+      defaults
       to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+      and to same directory for already existing database
+      
+\code{dbtype}
+      The type of the flat file database, currently only 
+      option is "tabix"
+      (only used for newly stored databases)}
 }
 \value{
 a methylBase or methylBaseDB object depending on input
 }
 \description{
-This functions unites \code{methylRawList} and \code{methylRawListDB} objects that only bases with coverage from all samples are retained.
-The resulting object is either of class \code{methylBase} or \code{methylBaseDB} depending on input.
+This functions unites \code{methylRawList} and \code{methylRawListDB}
+ objects that only bases with coverage from all samples are retained.
+The resulting object is either of class \code{methylBase} or 
+\code{methylBaseDB} depending on input.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylRawDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work 
+for most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawListDB}, 
-while being per default FALSE for \code{methylRawList}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylRawListDB}, 
+while being per default FALSE for \code{methylRawList}. 
+If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the database 
+allows the calculation in-memory, 
 then you might change the value of this parameter.
 }
 \examples{

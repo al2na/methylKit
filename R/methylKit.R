@@ -17,6 +17,19 @@
 #' 
 #' @importFrom rtracklayer export.bed
 #' 
+#' @importFrom limma squeezeVar
+#' @importFrom grDevices colorRamp colorRampPalette densCols rainbow rgb topo.colors 
+#' @importFrom graphics abline barplot boxplot hist legend lines mtext pairs par pie plot 
+#'            points rect smoothScatter strwidth text 
+#' @importFrom stats IQR as.dendrogram as.formula binomial 
+#'            coefficients cor cor.test dendrapply dist 
+#'            dnorm fitted formula glm.fit hclust 
+#'            is.leaf kruskal.test lm median model.matrix 
+#'            optimize p.adjust pchisq pf pnorm prcomp 
+#'            quantile rbeta rnbinom wilcox.test
+#' @importFrom utils head read.table write.table 
+#' 
+#' 
 ## http://stackoverflow.com/questions/8637993/better-explanation-of-when-to-use-imports-depends
 ## fastseg depends on GenomicRanges, we need to depend on that too in Description
 #' @importFrom fastseg fastseg

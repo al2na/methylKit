@@ -1,30 +1,31 @@
 ---
-title: "methylKit: User Guide V.2"
+title: "methylKit: User Guide"
 author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.] 
 
 altuna.akalin@mdc-berlin.de"
-date: "`r doc_date()`"
+date: "`r Sys.Date()`"
 output: 
-    BiocStyle::html_document:
-      toc: true
-      number_sections: false
-      toc_depth: 2
-      highlight: haddock
+      html_document:
+        toc: true
+        toc_float: true
+        number_sections: true
+        toc_depth: 2
+
       
 bibliography: Vignette_methylKit.bib
 vignette: >
-  %\VignetteIndexEntry{methylKit: User Guide V.2}
+  %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(dpi = 300)
+knitr::opts_chunk$set(dpi = 75)
 knitr::opts_chunk$set(cache = FALSE)
 ```
 
 ```{r ,eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
-devtools::load_all(".")
+#devtools::load_all(".")
 ```
 
 # Introduction
@@ -396,7 +397,7 @@ getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
 
 # methylKit convenience functions
 
-## Coercion
+## Coercing methylKit objects to GRanges
 
 Most `methylKit` objects (methylRaw,methylBase and methylDiff), including methylDB objects (methylRawDB,methylBaseDB and methylDiffDB) can be coerced to `GRanges` objects from `GenomicRanges` package. Coercing methylKit objects to `GRanges` will give users additional flexibility when customizing their analyses.
 
@@ -414,7 +415,7 @@ class(myobjDB[[1]])
 as(myobjDB[[1]],"methylRaw")
 ```
 
-## Selection
+## Selection: subsetting methylKit Objects
 
 We can also select rows from `methylRaw`, `methylBase` and `methylDiff` objects and methylDB pendants with `select` function. An appropriate methylKit object will be returned as a result of `select` function. Or you can use the `'['` notation to subset the
 methylKit objects.
@@ -431,7 +432,7 @@ myDiff[21:25,] # get 5 rows of a methylDiff object
 We can select rows from any methylKit object, that lie inside the ranges of a `GRanges` object from `GenomicRanges` package with `selectByOverlap`
  function. An appropriate methylKit object will be returned as a result of `selectByOverlap` function.
  
-```{r,message=FALSE,warning=FALSE}
+```{r,message=FALSE,warning=FALSE,eval=FALSE}
 library(GenomicRanges)
 my.win=GRanges(seqnames="chr21",
                ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
@@ -442,7 +443,7 @@ selectByOverlap(myobj[[1]],my.win)
 
 **Important:** Using `selectByOverlap` on methylDB objects will return its normal `methylKit` pendant, to avoid overhead of database operations.
 
-## reorganize
+## reorganize: reorganizing samples and treatment vector within methylKit objects
 
 The `methylBase` and `methylRawList`, aswell as methylDB pendants can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
 
@@ -454,7 +455,7 @@ meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 ```
 
 
-## percMethylation
+## percMethylation: Getting percent methylation matrix from methylBase objects
 
 Percent methylation values can be extracted from `methylBase` object by using `percMethylation` function.
 
@@ -532,20 +533,22 @@ For example see `?unite` and also check the `...` argument section for further d
 
 # Acknowledgements
 
-This package is developed at Weill Cornell Medical College by Altuna Akalin 
-with important code contributions from Matthias Kormaksson (mk375@cornell.edu) 
+This package is initially developed at Weill Cornell Medical College by 
+Altuna Akalin with important code contributions from Matthias Kormaksson(mk375@cornell.edu) 
 and Sheng Li (shl2018@med.cornell.edu). 
 We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
 Christopher Mason and Ari Melnick for their contribution of ideas, data and 
 support. Their support and discussions lead to development of methylKit.
 
-## Contributers
+## Full list of contributors
 
 Recent contributions to the package came from: 
-
-*  Adrian Bierling (add email)
-*  Alexander Gosdschan (alexgos@zedat.fu-berlin.de)
-
+* Altuna Akalin (main design and development,)
+* Matthias Kormaksson (initial differential methylation tests)
+* Sheng Li (adding PCA and clustering)
+* Adrian Bierling (methylation simulation, covariate and over-dispersion correction)
+* Alexander Gosdschan (C++ based BAM parsing and tabix based classes )
+* Arsene Webo (methylation segmentation)
 
 # R session info
 

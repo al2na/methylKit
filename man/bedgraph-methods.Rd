@@ -11,7 +11,9 @@
 \alias{bedgraph,methylRawListDB-method}
 \title{Get bedgraph from methylRaw, methylRawList and methylDiff objects}
 \usage{
-bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="",chunk.size=1e6)
+bedgraph(methylObj, file.name = NULL, col.name, unmeth = FALSE,
+  log.transform = FALSE, negative = FALSE, add.on = "",
+  chunk.size = 1e+06)
 
 \S4method{bedgraph}{methylDiff}(methylObj, file.name, col.name, unmeth,
   log.transform, negative, add.on)
@@ -34,53 +36,82 @@ bedgraph(methylObj,file.name=NULL,col.name,unmeth=FALSE,log.transform=FALSE,nega
   negative, add.on, chunk.size)
 }
 \arguments{
-\item{methylObj}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object}
+\item{methylObj}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 
+\code{\link{methylRawList}}, 
+                 \code{\link{methylRawListDB}}, \code{\link{methylDiff}} 
+                 or \code{\link{methylDiffDB}} object}
 
-\item{file.name}{Default: NULL. if a string is given a bedgraph file will be written, if NULL a data.frame or a list of data frames will be returned}
+\item{file.name}{Default: NULL. if a string is given a bedgraph file will
+be written, if NULL a data.frame or a list of data frames will be returned}
 
-\item{col.name}{name of the column in \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} objects to be used as a score for the bedgraph.
- For \code{methylDiff} or \code{methylDiffDB}, \code{col.name} must be one of the following 'pvalue','qvalue', 'meth.diff'. For \code{methylRaw}, 
- \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} it must be one of the following 'coverage', 'numCs','numTs', 'perc.meth'}
+\item{col.name}{name of the column in \code{\link{methylRaw}}, 
+\code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
+                 \code{\link{methylRawListDB}}, \code{\link{methylDiff}} 
+                 or \code{\link{methylDiffDB}} objects to be used as a score
+                  for the bedgraph.
+                  For \code{methylDiff} or \code{methylDiffDB}, \code{col.name}
+                   must be one of the following 'pvalue','qvalue', 
+                   'meth.diff'. For \code{methylRaw}, 
+                  \code{methylRawDB}, \code{methylRawList} and 
+                  \code{methylRawListDB} it must be one of the following 
+                  'coverage', 'numCs','numTs', 'perc.meth'}
 
-\item{unmeth}{when working with \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} objects should you output unmethylated C percentage
-this makes it easier to see the unmethylated bases because their methylation percentage values will be zero. Only invoked when file.name is not NULL.}
+\item{unmeth}{when working with \code{methylRaw}, \code{methylRawDB}, 
+\code{methylRawList} and \code{methylRawListDB} objects should you output 
+unmethylated C percentage
+                  this makes it easier to see the unmethylated bases because 
+                  their methylation percentage values will be zero. Only 
+                  invoked when file.name is not NULL.}
 
-\item{log.transform}{Default FALSE, If TRUE the score column of the bedgraph wil be in log10 scale. Ignored when col.name='perc.meth'}
+\item{log.transform}{Default FALSE, If TRUE the score column of the bedgraph 
+wil be in log10 scale. Ignored when col.name='perc.meth'}
 
-\item{negative}{Default FALSE, If TRUE, the score column of the bedgraph will be multiplied by -1. Ignored when col.name='perc.meth'}
+\item{negative}{Default FALSE, If TRUE, the score column of the bedgraph will
+be multiplied by -1. Ignored when col.name='perc.meth'}
 
-\item{add.on}{additional string to be add on the track line of bedgraph. can be viewlimits,priority etc. Check bedgraph track line options at UCSC browser}
+\item{add.on}{additional string to be add on the track line of bedgraph. 
+can be viewlimits,priority etc. Check bedgraph track line options at UCSC browser}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, 
+default: 1e6}
 }
 \value{
-Returns a \code{data.frame} or list of data.frames if \code{file.name=NULL}, if a file.name given appropriate bed file will be written to that file
+Returns a \code{data.frame} or list of data.frames if
+ \code{file.name=NULL}, if a file.name given appropriate bed file 
+ will be written to that file
 }
 \description{
-The function converts \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object 
+The function converts \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 
+\code{\link{methylRawList}}, 
+\code{\link{methylRawListDB}}, \code{\link{methylDiff}} or 
+\code{\link{methylDiffDB}} object 
 into a bedgraph format. It either writes as a file or returns a \code{data.frame}
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylRawDB}, \code{methylRawListDB} or \code{methylDiffDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects
+ which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for
+ most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 }
 \examples{
 data(methylKit)
 
-# getting a bedgraph file from a methylDiff object containing differential methylation percentages
+# getting a bedgraph file from a methylDiff object containing differential 
+# methylation percentages
 bedgraph(methylDiff.obj, file.name="test.bed", col.name="meth.diff", 
          unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 
 # remove the file
 unlink("test.bed")
 
-# getting a bedgraph file from a methylBase object containing percent methylation values
+# getting a bedgraph file from a methylBase object containing percent 
+#methylation values
 bedgraph(methylRawList.obj[[1]], file.name="test2.bed", col.name="perc.meth", 
          unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 

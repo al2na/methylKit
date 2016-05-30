@@ -5,8 +5,10 @@
 \alias{dataSim}
 \title{Simulate DNA methylation data}
 \usage{
-dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
-        theta=10,covariates=NULL,sample.ids=NULL,assembly="hg18",context="CpG",add.info=FALSE)
+dataSim(replicates, sites, treatment, percentage = 10, effect = 25,
+  alpha = 0.4, beta = 0.5, theta = 10, covariates = NULL,
+  sample.ids = NULL, assembly = "hg18", context = "CpG",
+  add.info = FALSE)
 }
 \arguments{
 \item{replicates}{the number of samples that should be simulated.}
@@ -15,33 +17,42 @@ dataSim(replicates,sites,treatment,percentage=10,effect=25,alpha=0.4,beta=0.5,
 
 \item{treatment}{a vector containing treatment information.}
 
-\item{percentage}{the proportion of sites which should be affected by the treatment.}
+\item{percentage}{the proportion of sites which should be affected by the 
+treatment.}
 
-\item{effect}{a number or vector specifying the effect size of the treatment.
-See `Examples'.}
+\item{effect}{a number or vector specifying the effect size of the 
+treatment.
+                   See `Examples'.}
 
-\item{alpha}{shape1 parameter for beta distribution (used for substitution probabilites)}
+\item{alpha}{shape1 parameter for beta distribution (used for 
+substitution probabilites)}
 
-\item{beta}{shape2 parameter for beta distribution (used for substitution probabilites)}
+\item{beta}{shape2 parameter for beta distribution (used for 
+substitution probabilites)}
 
-\item{theta}{dispersion parameter for beta distribution (used for substitution probabilites)}
+\item{theta}{dispersion parameter for beta distribution (used for 
+substitution probabilites)}
 
 \item{covariates}{a data.frame containing covariates (optional)}
 
-\item{sample.ids}{will be generated automatically from \code{treatment}, but can be 
+\item{sample.ids}{will be generated automatically from \code{treatment}, 
+but can be 
 overwritten by a character vector containing sample names.}
 
 \item{assembly}{the assembly description (e.g. "hg18")}
 
 \item{context}{the experimanteal context of the data (e.g. "CpG")}
 
-\item{add.info}{if set to TRUE, the output will be a list with the first element being 
-the methylbase object and a vector containing the treatment effect sizes 
+\item{add.info}{if set to TRUE, the output will be a list with the first 
+element being 
+the methylbase object and a vector containing the 
+treatment effect sizes 
 of all sites as the second element.}
 }
 \value{
 a methylBase object containing simulated methylation data, 
-or a list containing the methylbase object and the indices of all treated sites as the second element.
+or a list containing the methylbase object and the indices of all treated
+ sites as the second element.
 }
 \description{
 The function simulates DNA methylation data from multiple samples.
@@ -51,11 +62,14 @@ See references for detailed explanation on statistics.
 
 While the coverage is modeled with a binomial distribution, the function uses 
 a Beta distribution to simulate the methylation background across all samples.\cr
-The parameters \code{alpha}, \code{beta} and \code{theta} determine this beta distribution and 
+The parameters \code{alpha}, \code{beta} and \code{theta} determine this beta
+ distribution and 
 thereby the methylation values.\cr
-The parameters \code{percentage} and \code{effect} determine the proportion of sites that are 
+The parameters \code{percentage} and \code{effect} determine the proportion 
+of sites that are 
 affected by the treatment and the strength of this influence, respectively.\cr
-The additional information needed for a valid methylBase.obj is generated as "dummy
+The additional information needed for a valid methylBase.obj is generated as 
+"dummy
 values", but can be overwritten as needed.
 }
 \examples{

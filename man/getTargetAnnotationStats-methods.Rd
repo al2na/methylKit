@@ -4,33 +4,45 @@
 \name{getTargetAnnotationStats}
 \alias{getTargetAnnotationStats}
 \alias{getTargetAnnotationStats,annotationByFeature-method}
-\title{Get the percentage of target features overlapping with annotation from annotationByFeature}
+\title{Get the percentage of target features overlapping with annotation from 
+annotationByFeature}
 \usage{
-getTargetAnnotationStats(x,percentage=TRUE,precedence=TRUE)
+getTargetAnnotationStats(x, percentage = TRUE, precedence = TRUE)
 
 \S4method{getTargetAnnotationStats}{annotationByFeature}(x, percentage = TRUE,
   precedence = TRUE)
 }
 \arguments{
-\item{x}{an \code{\link[methylKit]{annotationByFeature}} or an \code{\link[methylKit]{annotationByGenicParts}} object}
+\item{x}{an \code{\link[methylKit]{annotationByFeature}} or an 
+\code{\link[methylKit]{annotationByGenicParts}} object}
 
-\item{percentage}{TRUE|FALSE. If TRUE percentage of target features will be returned. If FALSE, number of target features will be returned}
+\item{percentage}{TRUE|FALSE. If TRUE percentage of target features will be 
+returned. If FALSE, number of target features will be returned}
 
-\item{precedence}{TRUE|FALSE. If TRUE there will be a hierachy of annotation features when calculating numbers (with promoter>exon>intron precedence)
-That means if a feature overlaps with a promoter it will be counted as promoter overlapping only, or if it is overlapping with a an exon but not a promoter, 
-it will be counted as exon overlapping only whether or not it overlaps with an intron.}
+\item{precedence}{TRUE|FALSE. If TRUE there will be a hierachy of annotation 
+features when calculating numbers (with promoter>exon>intron precedence)
+That means if a feature overlaps with a promoter it will be counted as 
+promoter overlapping only, or if it is overlapping with a an exon but not 
+a promoter, 
+it will be counted as exon overlapping only whether or not it overlaps with 
+an intron.}
 }
 \value{
-a \code{vector} of percentages or counts showing quantity of target features overlapping with annotation
+a \code{vector} of percentages or counts showing quantity of 
+target features overlapping with annotation
 }
 \description{
-This function retrieves percentage/number of target features overlapping with annotation
+This function retrieves percentage/number of target features overlapping 
+with annotation
 }
 \examples{
 data(methylKit)
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+cpg.obj=read.feature.flank(system.file("extdata", 
+"cpgi.hg18.bed.txt", package = "methylKit"),
+feature.flank.name=c("CpGi","shores"))
 
-ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+feature.name="CpGi",flank.name="Shores")
 getTargetAnnotationStats(ann,percentage=TRUE,precedence=TRUE)
 
 }

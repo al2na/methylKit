@@ -43,10 +43,10 @@ Imports:
     mclust,
     Rcpp,
     R.utils,
-    emdbook,
     limma
 Suggests:
-    testthat
+    testthat,knitr, rmarkdown
+VignetteBuilder: knitr
 Collate:
     'methylKit.R'
     'backbone.R'
@@ -71,3 +71,4 @@ Collate:
     'tabix.functions.R'
     'methSeg.R'
     'diffMethDSS.R'
+RoxygenNote: 5.0.1

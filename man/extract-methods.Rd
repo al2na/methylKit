@@ -17,7 +17,7 @@
 \alias{extract,methylRawDB-method}
 \title{extract parts of methylRaw,methylRawDB,methylBase,methylBaseDB and methylDiff data}
 \usage{
-\S4method{[}{methylRaw,ANY}(x, i, j)
+\S4method{[}{methylRaw,ANY,ANY}(x, i, j)
 
 \S4method{[}{methylBase,ANY,ANY}(x, i, j)
 

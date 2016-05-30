@@ -8,7 +8,8 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 file.list
 
 myobj=read( file.list,
-                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
+                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",
+            pipeline="amp",treatment=c(1,1,0,0))
 
 # unite function
 methidh=unite(myobj)
@@ -36,7 +37,8 @@ test_that("check if calculateDiffMeth output is a methylDiff object", {
 
 
 
-test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiff object", {
+test_that(paste("check if calculateDiffMeth output from", 
+          "unite(...,min.per.group=1) is a methylDiff object"), {
     expect_that(myDiff2, 
         is_a('methylDiff'))
 })
