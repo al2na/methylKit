@@ -2,14 +2,14 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.4.4
+Version: 0.9.5
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "altuna.akalin@mdc-berlin.de"),
-	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
-	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"),
-	      person("Arsene", "Wabo", role = "ctb",comment="wrapping Altuna's segmentation functions"),
-	      person("Adrian", "Bierling", role= "aut", comment="providing basic overdispersion correction and data simulation"),
-	      person("Alexander","Gosdschan", role="aut", comment="providing new tabix based classes"))
+	      person("Matthias","Kormaksson", role = "aut"),
+	      person("Sheng","Li", role = "aut"),
+	      person("Arsene", "Wabo", role = "ctb"),
+	      person("Adrian", "Bierling", role= "aut"),
+	      person("Alexander","Gosdschan", role="aut"))
 Description: methylKit is an R package for DNA methylation analysis and
     annotation from high-throughput bisulfite sequencing. The package is
     designed to deal with sequencing data from RRBS and its variants, but also
@@ -54,7 +54,7 @@ Collate:
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
-    'read.bismark.R'
+    'processBismarkBam.R'
     'RcppExports.R'
     'document_data.R'
     'bedgraph.R'
@@ -71,4 +71,5 @@ Collate:
     'tabix.functions.R'
     'methSeg.R'
     'diffMethDSS.R'
+    'deprecated_defunct.R'
 RoxygenNote: 5.0.1

@@ -15,7 +15,8 @@ by \code{\link[methylKit]{read}} function.
 \describe{
                  \item{\code{treatment}}{numeric vector denoting control 
                  and test samples}
-                 \item{\code{.Data}}{a list of \code{\link{methylRaw}} objects  } 
+                 \item{\code{.Data}}{a list of 
+                 \code{\link{methylRaw}} objects  } 
                }
 }
 \examples{

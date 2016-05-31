@@ -1,18 +1,16 @@
-methylKit 0.9.4.5
+methylKit 0.9.5
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* Merged new tests and simulation functions with 0.9.4.4
+* changed function name read() to methRead()
+* changed function name read.bismark to processBismarkAln()
+* Improved documentation for methRead() (old read())
+* Now, bismark cytosine report and coverage files can be read using methRead()
+  pipeline argument. see ?methRead
+* Ported the Perl script for methylation base calling to C/C++ style, 
+  for easier integration via Rcpp. Contributed by Alexander Gosdschan.
+* methRead() uses data.table::fread() to read files faster.
 
-methylKit 0.9.4.4
---------------
-IMPROVEMENTS AND BUG FIXES
-
-* Ported the Perl script for methylation base calling to C/C++ style, for easier integration via Rcpp. Contributed by Alexander Gosdschan.
-
-
-methylKit 0.9.4.3
---------------
 NEW FUNCTIONS AND FEATURES
 
 * new function methSeg() can segment methylation (methylRaw objects) and
@@ -21,17 +19,7 @@ NEW FUNCTIONS AND FEATURES
   see ?methSeg. A test is added to check this in R CMD check.
   Contributed by Arsene Wabo and Alexander Gosdschan.
 
-
-methylKit 0.9.4.2
---------------
-NEW FUNCTIONS AND FEATURES
-
 * new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, methylDiffDB and respective methods implemented. Tests are updated to check proper function in R CMD check. Contributed by Alexander Gosdschan.
-
-
-methylKit 0.9.4.1
---------------
-NEW FUNCTIONS AND FEATURES
 
 * calculateMethDiff now supports basic overdispersion correction and multiple methods for pvalue-correction.
 A test is added to check this in R CMD check. Contributed by Adrian Bierling.

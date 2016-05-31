@@ -69,7 +69,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 
 
 # read the files to a methylRawList object: myobj
-myobj=read(file.list,
+myobj=methRead(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
            treatment=c(1,1,0,0),
@@ -95,7 +95,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 
 # read the files to a methylRawListDB object: myobjDB 
 # and save in databases in folder methylDB
-myobjDB=read(file.list,
+myobjDB=methRead(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
            treatment=c(1,1,0,0),
@@ -109,7 +109,7 @@ print(myobjDB[[1]]@dbpath)
 
 ```
 
-Every function in this package will work with methylDB objects the same way as it does with normal methylKit objects. 
+Most if not all functions in this package will work with methylDB objects the same way as it does with normal methylKit objects. 
 Functions that return methylKit objects, will return a methylDB object if provided, 
 but there are a few exceptions such as the `select`, the `[` and the `selectByOverlap` functions.
 
@@ -119,12 +119,12 @@ but there are a few exceptions such as the `select`, the `[` and the `selectByOv
 
 Alternatively, methylation percentage calls can be calculated from
 sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
-popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `read.bismark` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `processBismarkAln` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
 
 The following command reads a sorted SAM file and creates a `methylRaw` object for CpG methylation.The user has the option to save the methylation call files to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
 
 ```{r, eval=FALSE}
-my.methRaw=read.bismark( location = system.file("extdata",
+my.methRaw=processBismarkAln( location = system.file("extdata",
                                                 "test.fastq_bismark.sorted.min.sam", 
 	                                              package = "methylKit"),
                          sample.id="test1", assembly="hg18", 
@@ -132,7 +132,8 @@ my.methRaw=read.bismark( location = system.file("extdata",
 ```
 
 
-It is also possible to read multiple SAM files at the same time, check `read.bismark` documentation.
+It is also possible to read multiple SAM files at the same time, 
+check `processBismarkAln` documentation.
 
 ## Descriptive statistics on samples
 
@@ -443,7 +444,7 @@ selectByOverlap(myobj[[1]],my.win)
 
 **Important:** Using `selectByOverlap` on methylDB objects will return its normal `methylKit` pendant, to avoid overhead of database operations.
 
-## reorganize: reorganizing samples and treatment vector within methylKit objects
+## reorganize(): reorganizing samples and treatment vector within methylKit objects
 
 The `methylBase` and `methylRawList`, aswell as methylDB pendants can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
 
@@ -455,7 +456,7 @@ meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 ```
 
 
-## percMethylation: Getting percent methylation matrix from methylBase objects
+## percMethylation(): Getting percent methylation matrix from methylBase objects
 
 Percent methylation values can be extracted from `methylBase` object by using `percMethylation` function.
 
@@ -464,6 +465,31 @@ Percent methylation values can be extracted from `methylBase` object by using `p
 perc.meth=percMethylation(meth)
 ```
 
+## methSeg(): segmentation of methylation or differential methylation profiles
+Methylation or differential methylation profiles can be segmented to sections
+that contain similar CpGs with respect to their methylation profiles. This 
+kind of segmentation could help us find interesting regions. For example, 
+segmentation analysis will usually reveal high or low methylated regions, where
+low methylated regions could be interesting for gene regulation. See more at
+http://zvfak.blogspot.de/2015/06/segmentation-of-methylation-profiles.html
+
+```{r, eval=FALSE}
+ download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
+               destfile="H1.chr21.chr22.rds",method="curl")
+
+ mbw=readRDS("H1.chr21.chr22.rds")
+
+ # it finds the optimal number of componets as 6
+ res=methSeg(mbw,diagnostic.plot=TRUE,maxInt=100,minSeg=10)
+
+ # however the BIC stabilizes after 4, we can also try 4 componets
+ res=methSeg(mbw,diagnostic.plot=TRUE,maxInt=100,minSeg=10,G=1:4)
+
+ # get segments to BED file
+ methSeg2bed(res,filename="H1.chr21.chr22.trial.seg.bed")
+
+
+```
 
 # Frequently Asked Questions
 
@@ -495,7 +521,7 @@ But you can change that as well.
 ### What does Bismark SAM output look like, where can I get more info ?
 
 Check the Bismark [@Krueger2011] [website](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) and there are  also example files that ship with the package. Look at their formats and try to run different variations of 
-`read.bismark()` command on the example files.
+`processBismarkAln()` command on the example files.
 
 ### How can I reorder or remove samples at/from  `methylRawList` or `methylBase` objects ?
 
@@ -542,8 +568,7 @@ support. Their support and discussions lead to development of methylKit.
 
 ## Full list of contributors
 
-Recent contributions to the package came from: 
-* Altuna Akalin (main design and development,)
+* Altuna Akalin (main design and development)
 * Matthias Kormaksson (initial differential methylation tests)
 * Sheng Li (adding PCA and clustering)
 * Adrian Bierling (methylation simulation, covariate and over-dispersion correction)

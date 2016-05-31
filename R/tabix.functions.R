@@ -35,7 +35,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
     # random file string
     rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
     filename2=paste(rndFile,filename,sep="_")
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,mc.cores=mc.cores,all=all)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,
+                     mc.cores=mc.cores,all=all)
     
     #concat subfiles
 
@@ -60,7 +61,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       unlink(outfile)
     }
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,all=all,mc.cores=mc.cores)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,
+                     parallel=FALSE,all=all,mc.cores=mc.cores)
     outfile= file.path(path.expand(dir),filename) 
   }
   
@@ -186,7 +188,8 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
     # when parallel, we have to write seperate files for each chr
     # then merge them outside this function
     outfile= file.path(path.expand( dir),paste(chr,filename,sep="_")) 
-    write.table(res,outfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+    write.table(res,outfile,quote=FALSE,sep="\t",
+                col.names=FALSE,row.names=FALSE,append=TRUE)
     
   }
   return(outfile)
@@ -297,7 +300,8 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","dat
 # assuming you get a list length 1
 tabix2dt<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE)
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                       stringsAsFactors=TRUE)
   
 }
 
@@ -305,7 +309,8 @@ tabix2dt<-function(tabixRes){
 # assuming you get a list length 1
 tabix2df<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE,data.table = FALSE)
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                       stringsAsFactors=TRUE,data.table = FALSE)
     
 }
 
@@ -317,7 +322,8 @@ tabix2gr<-function(tabixRes){
     from <- data.table::fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                               stringsAsFactors=TRUE, data.table = FALSE)
     
-  GRanges(seqnames=as.character(from$V1),ranges=IRanges(start=from$V2, end=from$V3),
+  GRanges(seqnames=as.character(from$V1),
+          ranges=IRanges(start=from$V2, end=from$V3),
           strand=from$V4, from[,5:ncol(from)])
 
 }
@@ -326,8 +332,10 @@ tabix2gr<-function(tabixRes){
 #' Serially apply a function on chunks of tabix files
 #' 
 #' The function reads chunks of a tabix file and applies a function on them. 
-#' The function (FUN argument) should apply on data.frames and return a data frame
-#' as a result. The function is serially applied to chunks (means no parallelization). 
+#' The function (FUN argument) should apply on data.frames and 
+#' return a data frame
+#' as a result. The function is serially applied to chunks 
+#' (means no parallelization). 
 #' However, the function FUN itself can be a parallelized function
 #' and related arguments could be passed on to the function via ... argument.
 #' 
@@ -419,7 +427,8 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       unlink(outfile)
     }
     con=file(outfile, open = "a", blocking = TRUE) # open connection  
-    for(file in gtools::mixedsort(list.files(path = dir, pattern = filename2,full.names=TRUE))){
+    for(file in gtools::mixedsort(
+      list.files(path = dir, pattern = filename2,full.names=TRUE))){
       file.append(outfile,file) # append files
     }
     close(con)

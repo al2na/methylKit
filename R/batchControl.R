@@ -2,11 +2,15 @@
 
 
 
-#' Reconstruct methylBase or methylBaseDB object based on a new methylation percentage matrix
+#' Reconstruct methylBase or methylBaseDB object based on a new methylation
+#'  percentage matrix
 #' 
-#' The function reconstructs a new methylBase object from an input methylBase object
-#' and percent methylation matrix. Basically, it uses the read coverages in the input
-#' methylBase object and deduces new number of methylated Cs and unmethylated Cs based
+#' The function reconstructs a new methylBase object from an input methylBase 
+#' object
+#' and percent methylation matrix. Basically, it uses the read coverages in the
+#'  input
+#' methylBase object and deduces new number of methylated Cs and unmethylated 
+#' Cs based
 #' on the input percent methylation matrix. It is ideally to be used to 
 #' reconstruct methylBase objects
 #' after batch correction on percent methylation values. The percent methylation 
@@ -16,28 +20,36 @@
 #' 
 #' @param methMat percent methylation matrix, row order and order of the samples
 #'  same as the methylBase object
-#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to be reconstructed 
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object 
+#' to be reconstructed 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#' \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#' saved as flat file database or not, default: explained in Details sections  
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output 
+#'                  flat file database, 
+#'                  only used if save.db is true, default actions:
+#'                   append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
+#'                  The directory where flat file database(s) should 
+#'                  be stored, defaults
 #'                  to getwd(), working directory for newly stored databases
 #'                  and to same directory for already existing database
 #'                  
-#            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
-#                  (only used for newly stored databases)
+#'              \code{dbtype}
+#'                   The type of the flat file database, 
+#'                   currently only option is "tabix"
+#'                    (only used for newly stored databases)
 #'
-#' @usage reconstruct(methMat,mBase,chunk.size,save.db,...)
 #' 
-#' @return new \code{\link{methylBase}} or \code{\link{methylBase}} object where methylation percentage matches
+#' @return new \code{\link{methylBase}} or \code{\link{methylBase}} 
+#' object where methylation percentage matches
 #'         input \code{methMat} and coverages matches input \code{mBase}
 #' 
 #' @author Altuna Akalin
@@ -45,8 +57,10 @@
 #' @note Batch effect correction (if any batch effect exists) is a tricky issue. 
 #' We provide some simple ways to deal with it 
 #' (see \code{\link{assocComp}} and \code{\link{removeComp}} ), 
-#' But if you can find other ways to correct for batch effects and want to create 
-#' a methylBase object with the corrected percent methylation values, you can use this function.
+#' But if you can find other ways to correct for batch effects and want 
+#' to create 
+#' a methylBase object with the corrected percent methylation values, 
+#' you can use this function.
 #' 
 #' @examples 
 #' data(methylKit)
@@ -64,28 +78,38 @@
 #' newobj=reconstruct(mat,methylBase.obj)
 #' 
 #' @section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing 
+#' large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work 
+#' for most systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
-#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for methylDB 
+#' objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. If you wish 
+#' to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the 
+#' database allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #' 
 #' @export
 #' @docType methods
 #' @rdname reconstruct-methods
-setGeneric("reconstruct", function(methMat,mBase,chunk.size=1e6,save.db=FALSE,...) standardGeneric("reconstruct"))
+setGeneric("reconstruct", 
+           function(methMat,mBase,chunk.size=1e6,save.db=FALSE,...) 
+             standardGeneric("reconstruct"))
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBase-method
-setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase,save.db=FALSE,...){
+setMethod("reconstruct",signature(mBase="methylBase"), 
+          function(methMat,mBase,save.db=FALSE,...){
   
   # check if indeed methMat is percent methylation matrix
   if(max(methMat)<=1){
-    warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+    warning("\nmake sure 'methMat' is percent methylation " ,
+            "matrix (values between 0-100) \n")
   }
 
   # check if indeed methMat is percent methylation matrix  
@@ -146,13 +170,19 @@ setMethod("reconstruct",signature(mBase="methylBase"), function(methMat,mBase,sa
 #' such as age, gender, batch_id. Can be used to detect which batch effects
 #' are associated with the variation in the methylation values.
 #' 
-#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values in the data part.
-#' @param sampleAnnotation a data frame where columns are different annotations and 
-#'                        rows are the samples, in the same order as in the methylBase object.
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} 
+#' object with no NA values in the data part.
+#' @param sampleAnnotation a data frame where columns are different 
+#' annotations and 
+#'                        rows are the samples, in the same order as 
+#'                        in the methylBase object.
 #' 
-#' @return a named list of principal component matrix (named 'pcs'),% variation explained
-#'         by principal compopents (named 'vars') and a p-value matrix showing association
-#'         p-values between sample annotations and principal components (named 'association').
+#' @return a named list of principal component matrix (named 'pcs'),
+#' % variation explained
+#'         by principal compopents (named 'vars') and a p-value matrix 
+#'         showing association
+#'         p-values between sample annotations and principal components 
+#'         (named 'association').
 #'         
 #' 
 #' @author Altuna Akalin
@@ -179,13 +209,16 @@ assocComp <- function(mBase,sampleAnnotation){
   for(i in 1:ncol(sampleAnnotation)){
     
     # for factors do kruskal.wallis or wilcox test
-    if(is.factor(sampleAnnotation[,i]) | is.character(sampleAnnotation[,i]) | is.logical(sampleAnnotation[,i])){
+    if(is.factor(sampleAnnotation[,i]) | is.character(sampleAnnotation[,i]) | 
+       is.logical(sampleAnnotation[,i])){
       annot=as.factor(sampleAnnotation[,i])
-      res[[names(sampleAnnotation)[i]]]=apply(pr$rotation,2,function(x){ # cat(x)
+      res[[names(sampleAnnotation)[i]]]=apply(pr$rotation,2,
+                                              function(x){ # cat(x)
                                       if(length(unique(annot))>2 ){
                                         kruskal.test(split(x,annot)  )$p.value
                                         }else{
-                                        wilcox.test(split(x,annot)[[1]],split(x,annot)[[2]]  )$p.value 
+                                        wilcox.test(split(x,annot)[[1]],
+                                                    split(x,annot)[[2]]  )$p.value 
                                         }
             })
       
@@ -212,25 +245,33 @@ assocComp <- function(mBase,sampleAnnotation){
 #' position based on the reconstructed percent methylation matrix, and finally returns
 #' a new \code{\link{methylBase}} object.
 #' 
-#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values, that means
+#' @param mBase \code{\link{methylBase}} or \code{\link{methylBaseDB}} 
+#' object with no NA values, that means
 #'               all bases should be covered in all samples.
 #' @param comp vector of component numbers to be removed
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param chunk.size Number of rows to be taken as a chunk for processing 
+#' the \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should 
+#' be saved as flat file database or not, default: explained in Details sections  
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output 
+#'                  flat file database, 
+#'                  only used if save.db is true, default actions: 
+#'                  append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
+#'                  The directory where flat file database(s) should be 
+#'                  stored, defaults
 #'                  to getwd(), working directory for newly stored databases
 #'                  and to same directory for already existing database
 #'                  
-#            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
+#'           \code{dbtype}
+#'                  The type of the flat file database, currently only option 
+#'  "tabix"
 #                  (only used for newly stored databases)
 #'
 #' 
@@ -247,24 +288,33 @@ assocComp <- function(mBase,sampleAnnotation){
 #' newObj=removeComp(methylBase.obj,comp=c(3,4))
 #' 
 #' @section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylBaseDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized 
+#' objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for 
+#' most systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the 
+#' \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
-#' while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as
+#' \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. If you wish to save 
+#' the result of an 
+#' in-memory-calculation as flat file database or if the size of the 
+#' database allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #' 
 #' @export
 #' @docType methods
 #' @rdname removeComp-methods
-setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...) standardGeneric("removeComp"))
+setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...) 
+  standardGeneric("removeComp"))
 
 #' @rdname removeComp-methods
 #' @aliases removeComp,methylBase-method
-setMethod("removeComp",signature(mBase="methylBase"), function(mBase,comp,save.db,...){
+setMethod("removeComp",signature(mBase="methylBase"), 
+          function(mBase,comp,save.db,...){
   if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }

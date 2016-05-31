@@ -26,7 +26,9 @@ getContext(x)
 \S4method{getContext}{methylDiffDB}(x)
 }
 \arguments{
-\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or an \code{\link{methylDiff}} object}
+\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+\code{\link{methylRaw}},\code{\link{methylRawDB}} or an 
+\code{\link{methylDiff}} object}
 }
 \value{
 a string for the context methylation

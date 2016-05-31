@@ -4,9 +4,12 @@
 \name{methylBase.obj}
 \alias{methylBase.obj}
 \title{Example methylBase object.}
-\format{methylBase.obj object stores the location and methylation information for bases that
-  are covered in all samples. \code{methylBase} partially extends \code{data.frame} S3 class.}
+\format{methylBase.obj object stores the location and methylation 
+information for bases that
+  are covered in all samples. \code{methylBase} partially extends 
+  \code{data.frame} S3 class.}
 \description{
-\code{methylBase}, \code{methylDiff} and \code{methylRawList}. You can load the data using \code{data(methylKit)}
+\code{methylBase}, \code{methylDiff} and \code{methylRawList}. 
+ You can load the data using \code{data(methylKit)}
 }
 

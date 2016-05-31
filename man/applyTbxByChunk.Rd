@@ -29,8 +29,10 @@ either a path to a tabix or text file, or a data frame or data.table
 }
 \description{
 The function reads chunks of a tabix file and applies a function on them. 
-The function (FUN argument) should apply on data.frames and return a data frame
-as a result. The function is serially applied to chunks (means no parallelization). 
+The function (FUN argument) should apply on data.frames and 
+return a data frame
+as a result. The function is serially applied to chunks 
+(means no parallelization). 
 However, the function FUN itself can be a parallelized function
 and related arguments could be passed on to the function via ... argument.
 }

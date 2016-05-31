@@ -32,10 +32,13 @@ will be merged,
 \item{min.per.group}{an integer denoting minimum number of samples per 
 replicate needed to cover a region/base. By default only regions/bases that 
 are covered in all samples
-       are united as methylBase object, however by supplying an integer for 
-       this argument users can control how many samples needed to cover region/base to be united as methylBase object.
-      For example, if min.per.group set to 2 and there are 3 replicates per 
-      condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.}
+are united as methylBase object, however by supplying an integer for 
+this argument users can control how many samples needed to cover 
+region/base to be united as methylBase object.
+For example, if min.per.group set to 2 and there are 3 replicates per 
+condition, the bases/regions that are covered in at least 2 replicates 
+will be united and missing data for uncovered bases/regions will appear 
+as NAs.}
 
 \item{chunk.size}{Number of rows to be taken as a chunk for processing the 
 \code{methylRawListDB} objects, default: 1e6}

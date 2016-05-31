@@ -54,7 +54,8 @@ getTreatment(x) <- value
 \item{value}{a valid replacement for the treatment vector of the object}
 }
 \description{
-The function returns or replaces the treatment vector stored in any of the following methylKit objects:
+The function returns or replaces the treatment vector stored in any of the 
+following methylKit objects:
 \code{\link{methylBase}},\code{\link{methylRawList}},\code{\link{methylBaseDB}},
 \code{\link{methylRawListDB}},\code{\link{methylDiff}},\code{\link{methylDiffDB}}.
 }

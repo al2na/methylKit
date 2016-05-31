@@ -4,8 +4,8 @@
 
 # reads gzipped files with data.table::fread
 fread.gzipped<-function(filepath,...){
-  require(R.utils)
-  require(data.table)
+  #require(R.utils)
+  #require(data.table)
   
   
   
@@ -27,7 +27,7 @@ fread.gzipped<-function(filepath,...){
   
 }
 # reads a table in a fast way to a dataframe
-.readTableFast<-function(filename,header=T,skip=0,sep="")
+.readTableFast<-function(filename,header=T,skip=0,sep="auto")
 {
   #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
   #                       nrows = 100,stringsAsFactors=FALSE)
@@ -45,17 +45,21 @@ fread.gzipped<-function(filepath,...){
   #return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
   #                   )  )
   
-  
+  fread.gzipped(filename,header=header,skip=skip,sep=sep,data.table=FALSE)
 }
 
 # reformats a data.frame to a standard methylraw data.frame
 # no matter what the alignment pipeline
-.structureAMPoutput<-function(data)
+.structureAMPoutput<-function(data,mincov)
 {  
   strand=rep("+",nrow(data))
   strand[data[,4]=="R"]="-"
   numCs=round(data[,5]*data[,6]/100)
   numTs=round(data[,5]*data[,7]/100)
+  
+  # remove data beyond mincoverage
+  data = data[data[,5] >= mincov,]
+  
   
   data.frame(chr=data[,2],start=data[,3],end=data[,3]
              ,strand=strand,coverage=data[,5],numCs=numCs,numTs=numTs)
@@ -63,7 +67,7 @@ fread.gzipped<-function(filepath,...){
 
 # reformats a generic structure data.frame to a standard methylraw data.frame
 # based on the column number assignment and if freqC is fraction or not.
-.structureGeneric<-function(data, pipeline)
+.structureGeneric<-function(data, pipeline,mincov)
 {
     fraction=pipeline$fraction
     chr.col=pipeline$chr.col
@@ -75,6 +79,9 @@ fread.gzipped<-function(filepath,...){
     
     #coerce coverage column to integer
     data[,coverage.col]=round(data[,coverage.col])
+    
+    # remove data beyond mincoverage
+    data = data[data[,coverage.col] >= mincov,]
     
     strand=rep("+",nrow(data))
     strand[data[,strand.col]=="R" | data[,strand.col]=="-"]="-"
@@ -108,7 +115,9 @@ fread.gzipped<-function(filepath,...){
 .check.dbdir <- function(dir){
   
   if(dir==getwd() ){
-    tabixDir <- paste("methylDB",Sys.Date(),paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),collapse=""))
+    tabixDir <- paste("methylDB",Sys.Date(),
+                      paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),
+                            collapse=""))
     dir.create(tabixDir)
     dir <- paste(dir,"/",tabixDir,collapse = "",sep = "")
     message(paste("creating directory ",getwd(),"/",tabixDir,sep = ""))
@@ -189,6 +198,67 @@ fread.gzipped<-function(filepath,...){
   return(res)
 }
 
+#' Read bismark coverage file as a methylKit object
+#' 
+#' Bismark aligner can output methylation information per base in
+#' multiple different formats. This function reads coverage files,
+#' which have chr,start,end, number of cytosines (methylated bases) 
+#' and number of thymines (unmethylated bases).
+#' 
+#' @param location a list or vector of file paths to coverage files
+#'     
+#' @param mincov a numeric value for minimum coverage. Bases that have coverage
+#' below this value will be removed.
+#' 
+#' @return data.frame
+.procBismarkCoverage<-function( df,mincov=10)
+{
+
+    # remove low coverage stuff
+    df=df[ (df[,5]+df[,6]) >= mincov ,]
+    
+    
+    
+    
+    # make the object (arrange columns of df), put it in a list
+     data.frame(chr=df[,1],start=df[,2],end=df[,3],
+                strand="*",
+                coverage=(df[,5]+df[,6]),numCs=df[,5],
+                numTs=df[,6],
+                stringsAsFactors = F)
+  
+}
+  
+
+  
+
+
+#' Read bismark cytosine report file as a methylKit object
+#' 
+#' Bismark aligner can output methylation information per base in
+#' multiple different formats. This function reads cytosine report files,
+#' which have chr,start, strand, number of cytosines (methylated bases) 
+#' and number of thymines (unmethylated bases),context, trinucletide context.
+#' 
+#' @param location file path to coverage files
+#'     
+#' @param mincov a numeric value for minimum coverage. Bases that have coverage
+#' below this value will be removed.
+#' 
+#' @return data.frame
+.procBismarkCytosineReport<-function(df,mincov=10){
+
+    # remove low coverage stuff
+    df=df[ (df[,4]+df[,5]) >= mincov ,]
+    
+    
+    
+    
+    # make the object (arrange columns of df), put it in a list
+    data.frame(chr=df[,1],start=df[,2],end=df[,2],
+                                strand=df[,3],coverage=(df[,4]+df[,5]),
+                                numCs=df[,4],numTs=df[,5],stringsAsFactors = F)
+}
 
 # end of regular functions to be used in S4 functions
 #---------------------------------------------------------------------------------------
@@ -209,7 +279,8 @@ valid.methylRawObj <- function(object) {
               "other values not allowed")
     }
     else if(! check2){
-        cat("data part of methylRaw have",ncol(data),"columns, expected 7 columns")
+        cat("data part of methylRaw have",ncol(data),
+            "columns, expected 7 columns")
     }
 
 }
@@ -313,11 +384,14 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param location file location(s), either a list of locations (each a 
 #' character string) or one location string
 #' @param sample.id sample.id(s)
-#' @param assembly a string that defines the genome assembly such as hg18, mm9
+#' @param assembly a string that defines the genome assembly such as hg18, mm9. 
+#' this is just a string for book keeping. It can be any string. Although,
+#' when using multiple files from the same assembly, this string should be 
+#' consistent in each object.
 #' @param dbtype type of the flat file database, currently only option 
-#'        other than NULL is "tabix". When "tabix" is given the objects are 
+#'        other than NA is "tabix". When "tabix" is given the objects are 
 #'        stored in tabix files, which are compressed and indexed. 
-#'        The default value is NULL, in which case the objects are stored in 
+#'        The default value is NA, in which case the objects are stored in 
 #'        memory.
 #' @param header if the input file has a header or not (default: TRUE)
 #' @param skip number of lines to skip when reading. Can be set to 1 for bed 
@@ -341,6 +415,10 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
 #' @param dbdir directory where flat file database(s) should be stored, defaults
 #'       to getwd(), working directory.
+#' @param mincov minimum read coverage to be included in the methylKit objects.
+#'               defaults to 10. Any methylated base/region in the text files
+#'               below the mincov value will be ignored.
+
 #' @examples
 #' 
 #' # this is a list of example files, ships with the package
@@ -354,12 +432,12 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'          )
 #'
 #' # read the files to a methylRawList object: myobj
-#' myobj=read( file.list,
+#' myobj=methRead(file.list,
 #'             sample.id=list("test1","test2","ctrl1","ctrl2"),
 #'             assembly="hg18",treatment=c(1,1,0,0))
 #'             
 #' # read one file as methylRaw object
-#' myobj=read( file.list[[1]],
+#' myobj=methRead( file.list[[1]],
 #'             sample.id="test1",assembly="hg18")
 #'             
 #' # read a generic text file containing CpG methylation values
@@ -368,7 +446,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' read.table(generic.file,header=TRUE)
 #' 
 #' # And this is how you can read that generic file as a methylKit object            
-#'  myobj=read( generic.file,
+#'  myobj=methRead( generic.file,
 #'              pipeline=list(fraction=FALSE,chr.col=1,start.col=2,end.col=2,
 #'                            coverage.col=4,strand.col=3,freqC.col=5),
 #'              sample.id="test1",assembly="hg18")
@@ -380,7 +458,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' # replace=TRUE),collapse=""))
 #' #
 #' # Then, saves tabix files from methylKit objects there
-#'  myobj=read( file.list,
+#'  myobj=methRead( file.list,
 #'                sample.id=list("test1","test2","ctrl1","ctrl2"),
 #'                assembly="hg18",treatment=c(1,1,0,0),
 #'                dbtype="tabix") 
@@ -388,7 +466,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' # This creates a single tabix files that saves methylation data
 #' # first creates a "methylDB_objects" directory
 #' # Then, saves tabix file from methylKit objects there
-#'  myobj=read( file.list[[1]],
+#'  myobj=methRead(file.list[[1]],
 #'                sample.id="test1",
 #'                assembly="hg18",
 #'                dbtype="tabix",dbdir="methylDB_objects")
@@ -401,7 +479,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'  
 #'                
 #' @section Details:
-#'  The output of \code{read} is determined by specific input arguments,as there
+#'  The output of \code{methRead} is determined by specific input arguments,as there
 #'   are \code{location}, \code{sample.id}, \code{assembly} and \code{dbtype}. 
 #'  The first three are obligatory, while if the last argument is given database 
 #'  features are enabled. 
@@ -449,211 +527,174 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #'    , number of thymines (unmethylated bases),context and trinucletide context
 #'    format. 
 #'    
+#'    The function can also read gzipped files. On unix systems, this is achieved
+#'    by using \code{zcat filename} and feeding that into \code{data.table::fread}
+#'    . On Windows, the file is first uncompressed then read into R using 
+#'    \code{data.table::fread}.
+#'    
 #' @return returns methylRaw, methylRawList, methylRawDB, methylRawListDB object
 #' 
 #' @export
 #' @docType methods
-#' @rdname read-methods
-setGeneric("read", function(location,sample.id,assembly,dbtype=NULL,
+#' @rdname methRead-methods
+setGeneric("methRead", function(location,sample.id,assembly,dbtype=NA,
                             pipeline="amp",header=T,skip=0,sep="\t",
                             context="CpG",resolution="base",
-                            treatment,dbdir=getwd()) standardGeneric("read"))
+                            treatment,dbdir=getwd(),mincov=10) 
+  standardGeneric("methRead"))
 
-
-
-#' @rdname read-methods
-#' @aliases read,character,character,character,missing-method
-setMethod("read", signature(location = "character",sample.id="character",
-                            assembly="character",dbtype="missing"),
+#' @rdname methRead-methods
+#' @aliases methRead,character,character,character-method
+setMethod("methRead", signature(location = "character",sample.id="character",
+                            assembly="character"),
           
-  function(location,sample.id,assembly,pipeline,header,skip,sep,
-           context,resolution){ 
-    if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-    data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data
-    if(length(pipeline)==1 ){
-      
-      if(pipeline %in% c("amp","bismark") )
-      {
-        data<- .structureAMPoutput(data)
-      }
-      else{stop("unknown 'pipeline' argument, supported alignment " ,
-                "pipelines: 'amp' or 'bismark' " )
-      }
-      
-    }
-    else{
-      .check.pipeline.list(pipeline)
-      data<- .structureGeneric(data, pipeline)
-    }
+          function(location,sample.id,assembly,dbtype,pipeline,header,skip,
+                   sep,context,resolution,dbdir,mincov){ 
+    if(! file.exists(location)){
+      stop(location,", That file doesn't exist !!!")}
     
-    obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,
-            context=context,resolution="base")
-    obj         
-  }
-)
-
-
-# @return returns a methylRawList object
-#' @rdname read-methods
-#' @aliases read,list,list,character,missing-method
-setMethod("read", signature(location = "list",sample.id="list",assembly="character",dbtype="missing"),
-          
-          function(location,sample.id,assembly,pipeline,header,skip,sep,
-                   context,resolution,treatment){ 
-            
-    #check if the given arugments makes sense
-    if(length(location) != length(sample.id)){
-      stop("length of 'location'  and 'name' should be same\n")
-    }
-    if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
-      stop("length of 'treatment', 'name' and 'location' should be same\n")
-    }
     
-    # read each given location and record it as methylraw object
-    outList=list()
-    for(i in 1:length(location))
-    {
-      data<- .readTableFast(location[[i]],header=header,skip=skip,sep=sep)# read data  
+    if(dbtype=="tabix" & tools::file_ext(location)=="bgz"){
       
-      if(length(pipeline)==1 )
-      {
-        if(pipeline %in% c("amp","bismark")){
-          data<- .structureAMPoutput(data)
-        } else {
-          stop("pipeline length is equal to 1 and is not amp or bismark. If you do not have amp or bismark format, please give a parameter list containing the format information of the data. Please refer details in the read help page")
+      obj = readMethylRawDB(dbpath = location,dbtype = dbtype, 
+                            sample.id = sample.id, 
+                            assembly = assembly, context = context, 
+                            resolution = resolution)
+      obj
+    
+    } else {
+  
+      data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
+      if(length(pipeline)==1 ){
+        
+        if(pipeline %in% c("amp","bismark") )
+        {
+          data<- .structureAMPoutput(data,mincov)
+        }else if(pipeline == "bismarkCytosineReport"){
+          data= .procBismarkCytosineReport(data,mincov)
+         
+        }else if(pipeline == "bismarkCoverage"){
+          data= .procBismarkCoverage(data,mincov)
         }
+        else{
+          stop("unknown 'pipeline' argument, supported processing pipelines are: ",
+               "'bismarkCytosineReport','bismarkCoverage','amp' or 'bismark' " )
+        }
+        
       }
       else{
-        #stop("unknown 'pipeline' argument, supported alignment pipelines: amp")
         .check.pipeline.list(pipeline)
-        data<- .structureGeneric(data, pipeline)
+        data<- .structureGeneric(data, pipeline,mincov)
       }
       
-      obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,context=context,resolution=resolution)
-      outList[[i]]=obj       
+      if(is.na(dbtype)){
+        obj=new("methylRaw",data,sample.id=sample.id,assembly=assembly,
+                context=context,resolution=resolution)
+      }else{
+        dbdir <- .check.dbdir(dir = dbdir)
+        obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,
+                            sample.id=sample.id,assembly=assembly,
+                            context=context,resolution=resolution)
+      }
     }
-    myobj=new("methylRawList",outList,treatment=treatment)
-    
-    myobj
+    obj 
   }
-)
-
-
-# @param dbdir directory where flat file database(s) should be stored, 
-# defaults to getwd(), working directory.
-# @param dbtype type of the flat file database, currently only option is 
-#"tabix" defaults to NULL, in which case the objects are stored in memory.
-# @return returns a methylRawDB object
-#' @rdname read-methods
-#' @aliases read,character,character,character,character-method
-setMethod("read", signature(location = "character",sample.id="character",assembly="character",dbtype="character"),
-          
-          function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,dbdir){ 
-            if(! file.exists(location)){stop(location,", That file doesn't exist !!!")}
-            if(dbtype=="tabix" & tools::file_ext(location)=="bgz"){
-              
-              obj = readMethylRawDB(dbpath = location,dbtype = dbtype, sample.id = sample.id, 
-                                    assembly = assembly, context = context, resolution = resolution,skip)
-            
-            } else {
-          
-              data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
-              if(length(pipeline)==1 ){
-                
-                if(pipeline %in% c("amp","bismark") )
-                {
-                  data<- .structureAMPoutput(data)
-                }
-                else{stop("unknown 'pipeline' argument, supported alignment pipelines: 'amp' or 'bismark' " )
-                }
-                
-              }
-              else{
-                .check.pipeline.list(pipeline)
-                data<- .structureGeneric(data, pipeline)
-              }
-              
-              dbdir <- .check.dbdir(dir = dbdir)
-              
-  
-              obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,sample.id=sample.id,assembly=assembly,context=context,resolution=resolution)
-              obj         
-            }
-          }
 )
 
 # @param dbtype type of the flat file database, currently only option is "tabix"
 # @param dbdir directory where flat file database(s) should be stored, defaults
 # @return returns a methylRawListDB object
-#' @rdname read-methods
-#' @aliases read,list,list,character,character-method
-setMethod("read", signature(location = "list",sample.id="list",assembly="character",dbtype="character"),
-          function(location,sample.id,assembly,dbtype,pipeline,header,skip,sep,context,resolution,treatment,dbdir){ 
+#' @rdname methRead-methods
+#' @aliases methRead,list,list,character-method read
+setMethod("methRead", signature(location = "list",sample.id="list",
+                            assembly="character"),
+          function(location,sample.id,assembly,dbtype,pipeline,header,
+                   skip,sep,context,resolution,treatment,dbdir,mincov){ 
             
-            #check if the given arugments makes sense
-            if(length(location) != length(sample.id)){
-              stop("length of 'location'  and 'name' should be same\n")
-            }
-            if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
-              stop("length of 'treatment', 'name' and 'location' should be same\n")
-            }
-            
-            if(dbtype=="tabix" & unique(tools::file_ext(location))=="bgz"){
-              
-              outList=list()
-              for(i in 1:length(location))
-              {
-             
-                obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, 
-                                      sample.id = sample.id[[i]], 
-                                      assembly = assembly, context = context, 
-                                      resolution = resolution,skip)
-                outList[[i]]=obj
-              }
-              myobj=new("methylRawListDB",outList,treatment=treatment)
-              
-              myobj
-              
-            } else {
-            
-              dbdir <- .check.dbdir(dbdir)
-              
-              # read each given location and record it as methylraw object
-              outList=list()
-              for(i in 1:length(location))
-              {
-                data<- .readTableFast(location[[i]],header=header,skip=skip,
-                                      sep=sep)# read data
-                
-                if(length(pipeline)==1 )
-                {
-                  if(pipeline %in% c("amp","bismark")){
-                    data<- .structureAMPoutput(data)
-                  } else {
-                    stop("pipeline length is equal to 1 and is not amp or bismark.",
-                         "\nIf you do not have amp or bismark format, please give",
-                         "\na parameter list containing the format information of", 
-                         "\nthe data. Please refer details in the read help page")
-                  }
-                }
-                else{
-                  #stop("unknown 'pipeline' argument, supported alignment 
-                  # pipelines: amp")
-                  .check.pipeline.list(pipeline)
-                  data<- .structureGeneric(data, pipeline)
-                }
-                
-                obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,
-                                    sample.id=sample.id[[i]],
-                                    assembly=assembly,context=context,
-                                    resolution=resolution)
-                outList[[i]]=obj       
-              }
-              myobj=new("methylRawListDB",outList,treatment=treatment)
-              
-              myobj
-            }
-          }
+  #check if the given arugments makes sense
+  if(length(location) != length(sample.id)){
+    stop("length of 'location'  and 'name' should be same\n")
+  }
+  if( (length(treatment) != length(sample.id)) & (length(treatment) !=0) ){
+    stop("length of 'treatment', 'name' and 'location' should be same\n")
+  }
+  
+  if(dbtype=="tabix" & unique(tools::file_ext(location))=="bgz"){
+    
+    outList=list()
+    for(i in 1:length(location))
+    {
+   
+      obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, 
+                            sample.id = sample.id[[i]], 
+                            assembly = assembly, context = context, 
+                            resolution = resolution)
+      outList[[i]]=obj
+    }
+    myobj=new("methylRawListDB",outList,treatment=treatment)
+    
+    myobj
+    
+  } else {
+  
+    if(!is.na(dbtype)) dbdir <- .check.dbdir(dbdir)
+    
+    # read each given location and record it as methylraw object
+    outList=list()
+    for(i in 1:length(location))
+    {
+      data<- .readTableFast(location[[i]],header=header,skip=skip,
+                            sep=sep)# read data
+      
+      if(length(pipeline)==1 )
+      {
+        if(pipeline %in% c("amp","bismark")){
+          data<- .structureAMPoutput(data,mincov)
+        }else if(pipeline == "bismarkCytosineReport"){
+          data= .procBismarkCytosineReport(data,mincov)
+          
+        }else if(pipeline == "bismarkCoverage"){
+          data= .procBismarkCoverage(data,mincov)
+        } else {
+          stop("unknown 'pipeline' argument, supported processing pipelines are: ",
+               "'bismarkCytosineReport','bismarkCoverage','amp' or 'bismark' ", 
+               "\nIf you do not have these formats, please give",
+               "\na parameter list containing the format information of", 
+               "\nthe data. Please refer details in the function help page")
+        }
+      }
+      else{
+        #stop("unknown 'pipeline' argument, supported alignment 
+        # pipelines: amp")
+        .check.pipeline.list(pipeline)
+        data<- .structureGeneric(data, pipeline,mincov)
+      }
+      
+      if(is.na(dbtype)){
+        obj=new("methylRaw",data,sample.id=sample.id[[i]],assembly=assembly,
+                context=context,resolution=resolution)
+      }else{
+        obj=makeMethylRawDB(df=data,dbpath=dbdir,dbtype=dbtype,
+                            sample.id=sample.id[[i]],
+                            assembly=assembly,context=context,
+                            resolution=resolution)
+      }
+      
+      outList[[i]]=obj
+      
+    }
+    
+    if(is.na(dbtype) ){ 
+      myobj=new("methylRawList",outList,treatment=treatment)
+    }else{
+      myobj=new("methylRawListDB",outList,treatment=treatment)
+    }
+    
+    
+    
+    myobj
+  }
+}
 )
 
 
@@ -667,13 +708,20 @@ setMethod("read", signature(location = "list",sample.id="list",assembly="charact
 #'  Higher read cutoff is usefull to eliminate PCR effects
 #' Lower read cutoff is usefull for doing better statistical tests.
 #'
-#' @param methylObj a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object
-#' @param lo.count An integer for read counts.Bases/regions having lower coverage than this count is discarded
-#' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded
-#' @param hi.count An integer for read counts. Bases/regions having higher coverage than this is count discarded
-#' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param methylObj a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} 
+#' or \code{methylRawListDB} object
+#' @param lo.count An integer for read counts.Bases/regions having lower 
+#' coverage than this count is discarded
+#' @param lo.perc  A double [0-100] for percentile of read counts. Bases/regions 
+#' having lower coverage than this percentile is discarded
+#' @param hi.count An integer for read counts. Bases/regions having higher 
+#' coverage than this is count discarded
+#' @param hi.perc A double [0-100] for percentile of read counts. Bases/regions 
+#' having higher coverage than this percentile is discarded
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#' \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6
+#' @param save.db A Logical to decide whether the resulting object should be 
+#' saved as flat file database or not, default: explained in Details sections  
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
@@ -818,7 +866,8 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
                     function(methylObj,lo.count,lo.perc,hi.count,hi.perc,
                              save.db=FALSE,...){
   
-  if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & is.null(hi.perc) ){
+  if( is.null(lo.count) & is.null(lo.perc) & is.null(hi.count) & 
+      is.null(hi.perc) ){
     return(methylObj)}
   
   if(!save.db) {
@@ -930,10 +979,13 @@ setClass("methylBase",contains="data.frame",representation(
 #' @param min.per.group an integer denoting minimum number of samples per 
 #' replicate needed to cover a region/base. By default only regions/bases that 
 #' are covered in all samples
-#'        are united as methylBase object, however by supplying an integer for 
-#'        this argument users can control how many samples needed to cover region/base to be united as methylBase object.
-#'       For example, if min.per.group set to 2 and there are 3 replicates per 
-#'       condition, the bases/regions that are covered in at least 2 replicates will be united and missing data for uncovered bases/regions will appear as NAs.
+#' are united as methylBase object, however by supplying an integer for 
+#' this argument users can control how many samples needed to cover 
+#' region/base to be united as methylBase object.
+#' For example, if min.per.group set to 2 and there are 3 replicates per 
+#' condition, the bases/regions that are covered in at least 2 replicates 
+#' will be united and missing data for uncovered bases/regions will appear 
+#' as NAs.
 #' @param chunk.size Number of rows to be taken as a chunk for processing the 
 #' \code{methylRawListDB} objects, default: 1e6
 #' @param mc.cores number of cores to use when processing \code{methylRawListDB}
@@ -1418,7 +1470,8 @@ setMethod("getCoverageStats", "methylRaw",
 
       hist(log10(plus.cov),col="chartreuse4",
            xlab=paste("log10 of read coverage per",object@resolution),
-           main=paste("Histogram of", object@context, "coverage: Forward strand"),
+           main=paste("Histogram of", object@context, 
+                      "coverage: Forward strand"),
            labels=my.labs,...)
       mtext(object@sample.id, side = 3)
 
@@ -1429,7 +1482,8 @@ setMethod("getCoverageStats", "methylRaw",
       a=hist(log10(mnus.cov),plot=F)
       hist(log10(mnus.cov),col="chartreuse4",
            xlab=paste("log10 of read coverage per",object@resolution),
-           main=paste("Histogram of", object@context, "coverage: Reverse strand"),
+           main=paste("Histogram of", object@context, 
+                      "coverage: Reverse strand"),
            labels=my.labs,...)
       mtext(object@sample.id, side = 3)
 
@@ -1456,115 +1510,125 @@ setMethod("getCoverageStats", "methylRaw",
 
 #' get Methylation stats from methylRaw or methylRawDB object
 #' 
-#' The function returns basic statistics about % methylation per base/region. It can also plot a histogram of % methylation values.
+#' The function returns basic statistics about % methylation per base/region. 
+#' It can also plot a histogram of % methylation values.
 #' 
 #' @param object a \code{methylRaw} or \code{methylRawDB} object 
 #' @param plot plot a histogram of Methylation if TRUE (deafult:FALSE) 
-#' @param both.strands do plots and stats for both strands seperately  if TRUE (deafult:FALSE)
-#' @param labels should the bars of the histrogram have labels showing the percentage of values in each bin (default:TRUE)
+#' @param both.strands do plots and stats for both strands seperately  if
+#' TRUE (deafult:FALSE)
+#' @param labels should the bars of the histrogram have labels showing the 
+#' percentage of values in each bin (default:TRUE)
 #' @param ... options to be passed to \code{\link[graphics]{hist}} function.
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylRawDB} objects (default: 1e6)
-#' @usage  getMethylationStats(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size)
+#' @param chunk.size Number of rows to be taken as a chunk for processing the
+#'  \code{methylRawDB} objects (default: 1e6)
 #' @examples
 #' data(methylKit)
 #' 
 #' # gets Methylation stats for the first sample in methylRawList.obj object
-#' getMethylationStats(methylRawList.obj[[1]],plot=TRUE,both.strands=FALSE,labels=TRUE)
+#' getMethylationStats(methylRawList.obj[[1]],plot=TRUE,
+#' both.strands=FALSE,labels=TRUE)
 #'
 #'@section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylRawDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized 
+#' objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most 
+#' systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the
+#'  \code{chunk.size}.
 #' 
 #' @return a summary of Methylation statistics or plot a histogram of coverage
 #' @export
 #' @docType methods
 #' @rdname getMethylationStats-methods
-setGeneric("getMethylationStats", function(object,plot=FALSE,both.strands=FALSE,labels=TRUE,...,chunk.size=1e6) standardGeneric("getMethylationStats"))
+setGeneric("getMethylationStats", function(object,plot=FALSE,both.strands=FALSE,
+                                           labels=TRUE,...,chunk.size=1e6) 
+  standardGeneric("getMethylationStats"))
 
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRaw-method
 setMethod("getMethylationStats", "methylRaw",
                     function(object,plot,both.strands,labels,...){
                       
-                      plus.met=100* object[object$strand=="+",]$numCs/object[object$strand=="+",]$coverage
-                      mnus.met=100* object[object$strand=="-",]$numCs/object[object$strand=="-",]$coverage
-                      all.met =100* object$numCs/object$coverage
-                      
-                      if(!plot){
-                        qts=seq(0,0.9,0.1) # get quantiles
-                        qts=c(qts,0.95,0.99,0.995,0.999,1)                          
-                        
-                        if(both.strands){       
-                          
-                          cat("methylation statistics per base\n\n")
-                          cat("FORWARD STRAND:\n")
-                          cat("summary:\n")
-                          print( summary( plus.met ) )
-                          cat("percentiles:\n")
-                          print(quantile( plus.met,p=qts ))
-                          cat("\n\n")
-                          cat("REVERSE STRAND:\n")
-                          cat("summary:\n")
-                          print( summary( mnus.met ) )
-                          cat("percentiles:\n")
-                          print(quantile( mnus.met,p=qts ))
-                          cat("\n")                          
-                        }else{
-                          
-                          
-                          cat("methylation statistics per base\n")
-                          cat("summary:\n")
-                          print( summary( all.met ) )
-                          cat("percentiles:\n")
-                          print(quantile( all.met,p=qts ))
-                          cat("\n")
-                        }
-                        
-                      }else{
-                        if(both.strands){   
-                          
-                          par(mfrow=c(1,2))
-                          if(labels){
-                            a=hist((plus.met),plot=F,...)
-                            my.labs=as.character(round(100*a$counts/length(plus.met),1))
-                          }else{my.labs=FALSE}
-                          hist((plus.met),col="cornflowerblue",
-                               xlab=paste("% methylation per",object@resolution),
-                               main=paste("Histogram of %", object@context,"methylation: Forward strand"),
-                               labels=my.labs,...)
-                          mtext(object@sample.id, side = 3)
+  plus.met=100* object[object$strand=="+",]$numCs/object[object$strand=="+",]$coverage
+  mnus.met=100* object[object$strand=="-",]$numCs/object[object$strand=="-",]$coverage
+  all.met =100* object$numCs/object$coverage
+  
+  if(!plot){
+    qts=seq(0,0.9,0.1) # get quantiles
+    qts=c(qts,0.95,0.99,0.995,0.999,1)                          
+    
+    if(both.strands){       
+      
+      cat("methylation statistics per base\n\n")
+      cat("FORWARD STRAND:\n")
+      cat("summary:\n")
+      print( summary( plus.met ) )
+      cat("percentiles:\n")
+      print(quantile( plus.met,p=qts ))
+      cat("\n\n")
+      cat("REVERSE STRAND:\n")
+      cat("summary:\n")
+      print( summary( mnus.met ) )
+      cat("percentiles:\n")
+      print(quantile( mnus.met,p=qts ))
+      cat("\n")                          
+    }else{
+      
+      
+      cat("methylation statistics per base\n")
+      cat("summary:\n")
+      print( summary( all.met ) )
+      cat("percentiles:\n")
+      print(quantile( all.met,p=qts ))
+      cat("\n")
+    }
+    
+  }else{
+    if(both.strands){   
+      
+      par(mfrow=c(1,2))
+      if(labels){
+        a=hist((plus.met),plot=F,...)
+        my.labs=as.character(round(100*a$counts/length(plus.met),1))
+      }else{my.labs=FALSE}
+      hist((plus.met),col="cornflowerblue",
+           xlab=paste("% methylation per",object@resolution),
+           main=paste("Histogram of %", object@context,"methylation: Forward strand"),
+           labels=my.labs,...)
+      mtext(object@sample.id, side = 3)
 
-                          if(labels){                          
-                            a=hist((mnus.met),plot=F,...)
-                            my.labs=as.character(round(100*a$counts/length(mnus.met),1))
-                          }
-                          else{my.labs=FALSE}
-                          
-                          hist((mnus.met),col="cornflowerblue",
-                               xlab=paste("% methylation per",object@resolution),
-                               main=paste("Histogram of %", object@context,"methylation: Reverse strand"),
-                               labels=my.labs,...)
-                          mtext(object@sample.id, side = 3)
- 
-                        }else{
-                          if(labels){                          
-                          
-                            a=hist((all.met),plot=F,...)
-                            my.labs=as.character(round(100*a$counts/length(all.met),1))
-                          }else{my.labs=FALSE}
-                          hist((all.met),col="cornflowerblue",
-                               xlab=paste("% methylation per",object@resolution),
-                               main=paste("Histogram of %", object@context,"methylation"),
-                               labels=my.labs,...)
-                          mtext(object@sample.id, side = 3)
+      if(labels){                          
+        a=hist((mnus.met),plot=F,...)
+        my.labs=as.character(round(100*a$counts/length(mnus.met),1))
+      }
+      else{my.labs=FALSE}
+      
+      hist((mnus.met),col="cornflowerblue",
+           xlab=paste("% methylation per",object@resolution),
+           main=paste("Histogram of %", object@context,"methylation: Reverse strand"),
+           labels=my.labs,...)
+      mtext(object@sample.id, side = 3)
 
-                        }
-                        
-                        
-                      }
-                        
+    }else{
+      if(labels){                          
+      
+        a=hist((all.met),plot=F,...)
+        my.labs=as.character(round(100*a$counts/length(all.met),1))
+      }else{my.labs=FALSE}
+      hist((all.met),col="cornflowerblue",
+           xlab=paste("% methylation per",object@resolution),
+           main=paste("Histogram of %", object@context,"methylation"),
+           labels=my.labs,...)
+      mtext(object@sample.id, side = 3)
+
+    }
+    
+    
+  }
+    
                       
 })
 
@@ -1599,7 +1663,8 @@ setMethod("getMethylationStats", "methylRaw",
 
 #' show method for methylKit classes
 #' 
-#' The show method works for \code{methylRaw},\code{methylRawDB},\code{methylRawList},\code{methylRawListDB},
+#' The show method works for \code{methylRaw},\code{methylRawDB},
+#' \code{methylRawList},\code{methylRawListDB},
 #' \code{methylBase},\code{methylBaseDB} and \code{methylDiff} objects
 #' 
 #' @param object any methylKit object
@@ -1653,9 +1718,12 @@ setMethod("show", "methylRawList", function(object) {
 
 #' get assembly of the genome
 #' 
-#' The function returns the genome assembly stored in any of the \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}},\code{\link{methylDiff}} objects
+#' The function returns the genome assembly stored in any of the 
+#' \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},
+#' \code{\link{methylRawDB}},\code{\link{methylDiff}} objects
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object
 #' @usage getAssembly(x)
 #' @examples
 #' 
@@ -1688,7 +1756,9 @@ setMethod("getAssembly", signature="methylRaw", definition=function(x) {
 #' 
 #' The function returns the context of methylation. For example: "CpG","CHH" or "CHG"
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or an \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRaw}},\code{\link{methylRawDB}} or an 
+#' \code{\link{methylDiff}} object
 #' @usage getContext(x)
 #' @examples 
 #' 
@@ -1720,15 +1790,21 @@ setMethod("getContext", signature="methylRaw", definition=function(x) {
 
 #' get the data slot from the methylKit objects
 #' 
-#' The functions retrieves the table containing methylation information from \code{methylKit} Objects.
-#' The data retrived from this function is of a \code{\link{data.frame}}. This is basically containing all relevant methylation information per genomic region or base.
+#' The functions retrieves the table containing methylation information from 
+#' \code{methylKit} Objects.
+#' The data retrived from this function is of a \code{\link{data.frame}}. 
+#' This is basically containing all relevant methylation information per 
+#' genomic region or base.
 #'
-#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRaw}},\code{\link{methylRawDB}} or 
+#' \code{\link{methylDiff}} object
 #' @usage getData(x)
 #' @examples
 #' data(methylKit)
 #' 
-#' # following commands show first lines of returned data.frames from getData() function
+#' # following commands show first lines of returned 
+#' # data.frames from getData() function
 #' head(
 #' getData(methylBase.obj)
 #' )
@@ -1763,7 +1839,8 @@ setMethod("getData", signature="methylRaw", definition=function(x) {
 setAs("methylRaw", "GRanges", function(from)
                       {
                         from2=getData(from)
-                        GRanges(seqnames=as.character(from2$chr),ranges=IRanges(start=from2$start, end=from2$end),
+                        GRanges(seqnames=as.character(from2$chr),
+                                ranges=IRanges(start=from2$start, end=from2$end),
                                        strand=from2$strand, 
                                        coverage=from2$coverage,
                                        numCs   =from2$numCs,
@@ -1774,11 +1851,12 @@ setAs("methylRaw", "GRanges", function(from)
 
 setAs("methylBase", "GRanges", function(from)
                       {
-                        from=getData(from)
-                        GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
-                                       strand=from$strand, 
-                                       data.frame(from[,5:ncol(from)])
-                                       )
+  from=getData(from)
+  GRanges(seqnames=as.character(from$chr),
+          ranges=IRanges(start=from$start, end=from$end),
+                 strand=from$strand, 
+                 data.frame(from[,5:ncol(from)])
+                 )
 
 })
 
@@ -1789,7 +1867,8 @@ setAs("methylBase", "GRanges", function(from)
 #' The function returns a subset of data contained in the \code{methylKit} 
 #' objects.
 #' 
-#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRaw}},\code{\link{methylRawDB}} or
 #'  \code{\link{methylDiff}} object
 #' @param i a numeric or logical vector. This vector corresponds to bases or 
 #'          regions contained in \code{methylKit} objects.The vector is used to 
@@ -1799,7 +1878,7 @@ setAs("methylBase", "GRanges", function(from)
 #' data(methylKit)
 #' 
 #' 
-#' methylRawDB.obj=read( system.file("extdata","test1.txt.bgz",package="methylKit"),
+#' methylRawDB.obj=methRead( system.file("extdata","test1.txt.bgz",package="methylKit"),
 #'                           sample.id="test1", assembly="hg18",
 #'                           dbtype = "tabix",dbdir = "methylDB")
 #'
@@ -1873,7 +1952,8 @@ setMethod("select", "methylRaw",
 #' 
 #' The function extracts part of the data and returns a new object.
 #' @name extract
-#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or 
+#' @param x an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+#' \code{\link{methylRaw}},\code{\link{methylRawDB}} or 
 #'          \code{\link{methylDiff}} object
 #' @param i a numeric or logical vector. This vector corresponds to bases or 
 #'          regions contained in \code{methylKit} objects.The vector is used to 
@@ -1942,8 +2022,10 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 
 #' selects records of methylDB objects lying inside a GRanges range
 #'
-#' The function selects records from a \code{\link{methylBaseDB}}, \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
-#' that lie inside the regions given by \code{ranges} of class \code{GRanges} and returns an object of class 
+#' The function selects records from a \code{\link{methylBaseDB}}, 
+#' \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
+#' that lie inside the regions given by \code{ranges} of class \code{GRanges} 
+#' and returns an object of class 
 #' \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}} 
 #' 
 #' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
@@ -1958,7 +2040,7 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 #'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 #'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 #' 
-#' methylRawListDB.obj=read(file.list,
+#' methylRawListDB.obj=methRead(file.list,
 #'                          sample.id=list("test1","test2","ctrl1","ctrl2"),
 #'                          assembly="hg18",treatment=c(1,1,0,0),
 #'                          dbtype = "tabix",dbdir = "methylDB")
@@ -1995,7 +2077,8 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 #' @export
 #' @docType methods
 #' @rdname selectByOverlap-methods
-setGeneric("selectByOverlap", def=function(object,ranges) standardGeneric("selectByOverlap"))
+setGeneric("selectByOverlap", def=function(object,ranges) 
+  standardGeneric("selectByOverlap"))
 
 #' @aliases selectByOverlap,methylRaw-method
 #' @rdname selectByOverlap-methods
@@ -2003,8 +2086,8 @@ setMethod("selectByOverlap", "methylRaw",
           function(object, ranges){
             
             if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
-            }
+              stop("No ranges specified or given ranges object not of class ", 
+                   "GRanges, please check your input!")            }
             hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
             
             return(object[hits])
@@ -2017,7 +2100,8 @@ setMethod("selectByOverlap", "methylRawList",
           function(object, ranges){
             
             if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+              stop("No ranges specified or given ranges object not of class ", 
+                   "GRanges, please check your input!")
             }
             
             new.list <- lapply(object,selectByOverlap,ranges)
@@ -2033,7 +2117,8 @@ setMethod("selectByOverlap", "methylBase",
           function(object, ranges){
             
             if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
+              stop("No ranges specified or given ranges object not of class",
+                   "GRanges, please check your input!")
             }
             hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
             
@@ -2046,7 +2131,8 @@ setMethod("selectByOverlap", "methylBase",
 
 #' Get or Set treatment vector of methylKit object
 #' 
-#' The function returns or replaces the treatment vector stored in any of the following methylKit objects:
+#' The function returns or replaces the treatment vector stored in any of the 
+#' following methylKit objects:
 #' \code{\link{methylBase}},\code{\link{methylRawList}},\code{\link{methylBaseDB}},
 #' \code{\link{methylRawListDB}},\code{\link{methylDiff}},\code{\link{methylDiffDB}}.
 #'  
@@ -2075,7 +2161,8 @@ setMethod("selectByOverlap", "methylBase",
 setGeneric("getTreatment", def=function(x) standardGeneric("getTreatment"))
 #' @export 
 #' @rdname getTreatment-methods
-setGeneric("getTreatment<-", def=function(x, value="numeric") {standardGeneric("getTreatment<-")})
+setGeneric("getTreatment<-", def=function(x, value="numeric") {
+  standardGeneric("getTreatment<-")})
 
 #' @rdname getTreatment-methods
 #' @aliases getTreatment,methylRawList-method
@@ -2120,11 +2207,15 @@ setReplaceMethod("getTreatment", signature = "methylBase", function(x, value) {
 
 #' Get or Set Sample-IDs of the methylKit objects
 #' 
-#' The function returns or replaces the sample-ids stored in any of the following \code{methylKit} objects:
-#' \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylBase}}, \code{\link{methylBaseDB}},
-#' \code{\link{methylRawList}}, \code{\link{methylRawListDB}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}}.
+#' The function returns or replaces the sample-ids stored in any of the 
+#' following \code{methylKit} objects:
+#' \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylBase}}, 
+#' \code{\link{methylBaseDB}},
+#' \code{\link{methylRawList}}, \code{\link{methylRawListDB}}, 
+#' \code{\link{methylDiff}}, \code{\link{methylDiffDB}}.
 #' 
-#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
+#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or 
+#' \code{\link{methylDiffDB}} object
 #' @param value a valid replacement vector for the sample-ids of the object 
 #' @usage 
 #' getSampleID(x)
@@ -2149,7 +2240,8 @@ setGeneric("getSampleID", def=function(x) standardGeneric("getSampleID"))
 
 #' @export
 #' @rdname getSampleID-methods
-setGeneric("getSampleID<-", def=function(x, value) {standardGeneric("getSampleID<-")})
+setGeneric("getSampleID<-", def=function(x, value) {
+  standardGeneric("getSampleID<-")})
 
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylRawList-method

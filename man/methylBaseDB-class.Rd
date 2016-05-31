@@ -4,44 +4,61 @@
 \name{methylBaseDB-class}
 \alias{methylBaseDB}
 \alias{methylBaseDB-class}
-\title{An S4 class for storing methylation events sampled in multiple experiments as flat file database}
+\title{An S4 class for storing methylation events sampled in multiple experiments 
+as flat file database}
 \description{
-This class is designed to contain methylation information such as coverage, number of methylated bases, etc...
-The class creates an object that holds methylation information and genomic location as flat file database.
-The object belonging to this class is produced by \code{\link{unite}} function.
+This class is designed to contain methylation information such as coverage, 
+number of methylated bases, etc...
+The class creates an object that holds methylation information and genomic 
+location as flat file database.
+The object belonging to this class is produced by \code{\link{unite}} 
+function.
 }
 \section{Slots}{
 \describe{
                  \item{\code{dbpath}:}{path to flat file database(s) }
-                 \item{\code{num.records}:}{number of records (lines) in the object}
-                 \item{\code{sample.ids}:}{character vector for ids of samples in the object}
+                 \item{\code{num.records}:}{number of records (lines) 
+                 in the object}
+                 \item{\code{sample.ids}:}{character vector for ids of 
+                 samples in the object}
                  \item{\code{assembly}:}{name of the genome assembly}
-                 \item{\code{context}:}{context of methylation. Ex: CpG,CpH,CHH, etc}
-                 \item{\code{treatment}:}{treatment vector denoting which samples are test and control}
-                 \item{\code{coverage.index}:}{vector denoting which columns in the data correspond to 
+                 \item{\code{context}:}{context of methylation. 
+                 Ex: CpG,CpH,CHH, etc}
+                 \item{\code{treatment}:}{treatment vector denoting which 
+                 samples are test and control}
+                 \item{\code{coverage.index}:}{vector denoting which 
+                 columns in the data correspond to 
                  coverage values}
-                 \item{\code{numCs.index}:}{vector denoting which columns in the data correspond to 
+                 \item{\code{numCs.index}:}{vector denoting which columns 
+                 in the data correspond to 
                  number of methylatedCs values}
-                 \item{\code{numTs.index}:}{vector denoting which columns in the data correspond to 
+                 \item{\code{numTs.index}:}{vector denoting which columns
+                  in the data correspond to 
                  number of unmethylated Cs values}
-                 \item{\code{destranded}:}{ logical value. If \code{TRUE} object is destranded, 
+                 \item{\code{destranded}:}{ logical value. 
+                 If \code{TRUE} object is destranded, 
                  if \code{FALSE} it is not.}
-                 \item{\code{resolution}:}{ resolution of methylation information, 
+                 \item{\code{resolution}:}{ resolution of methylation 
+                 information, 
                  allowed values: 'base' or 'region'}
-                 \item{\code{dbtype}:}{string for type of the flat file database, ex: tabix}
+                 \item{\code{dbtype}:}{string for type of the flat file 
+                 database, ex: tabix}
 }
 }
 
 \section{Details}{
 
-\code{methylBaseDB} class has the same functionality as \code{\link{methylBase}} class, 
-but the data is saved in a flat database file and therefore allocates less space in memory.
+\code{methylBaseDB} class has the same functionality as
+ \code{\link{methylBase}} class, 
+but the data is saved in a flat database file and therefore allocates
+ less space in memory.
 }
 
 \section{Subsetting}{
 
  In the following code snippets, \code{x} is a \code{methylBaseDB}.
- Subsetting by \code{x[i,]} will produce a new \code{methylBase} object if subsetting is done on
+ Subsetting by \code{x[i,]} will produce a new \code{methylBase} object 
+ if subsetting is done on
  rows. Column subsetting is not directly allowed to prevent errors in the 
  downstream analysis. see ?methylKit[ .
 }

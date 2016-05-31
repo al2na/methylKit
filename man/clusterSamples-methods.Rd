@@ -67,10 +67,14 @@ region for each sample.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB}  objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylBaseDB}  objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for 
+most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 }
 \examples{
 data(methylKit)

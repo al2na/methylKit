@@ -31,19 +31,26 @@ filterByCoverage(methylObj, lo.count = NULL, lo.perc = NULL,
   save.db = TRUE, ...)
 }
 \arguments{
-\item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object}
+\item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} 
+or \code{methylRawListDB} object}
 
-\item{lo.count}{An integer for read counts.Bases/regions having lower coverage than this count is discarded}
+\item{lo.count}{An integer for read counts.Bases/regions having lower 
+coverage than this count is discarded}
 
-\item{lo.perc}{A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded}
+\item{lo.perc}{A double [0-100] for percentile of read counts. Bases/regions 
+having lower coverage than this percentile is discarded}
 
-\item{hi.count}{An integer for read counts. Bases/regions having higher coverage than this is count discarded}
+\item{hi.count}{An integer for read counts. Bases/regions having higher 
+coverage than this is count discarded}
 
-\item{hi.perc}{A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded}
+\item{hi.perc}{A double [0-100] for percentile of read counts. Bases/regions 
+having higher coverage than this percentile is discarded}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
 

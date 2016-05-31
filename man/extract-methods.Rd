@@ -30,8 +30,9 @@
 \S4method{[}{methylDiffDB,ANY,ANY}(x, i, j)
 }
 \arguments{
-\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or 
-\code{\link{methylDiff}} object}
+\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+\code{\link{methylRaw}},\code{\link{methylRawDB}} or 
+         \code{\link{methylDiff}} object}
 
 \item{i}{a numeric or logical vector. This vector corresponds to bases or 
 regions contained in \code{methylKit} objects.The vector is used to 

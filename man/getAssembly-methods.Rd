@@ -26,13 +26,16 @@ getAssembly(x)
 \S4method{getAssembly}{methylDiffDB}(x)
 }
 \arguments{
-\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object}
+\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object}
 }
 \value{
 the assembly string for the object
 }
 \description{
-The function returns the genome assembly stored in any of the \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}},\code{\link{methylDiff}} objects
+The function returns the genome assembly stored in any of the 
+\code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},
+\code{\link{methylRawDB}},\code{\link{methylDiff}} objects
 }
 \examples{
 

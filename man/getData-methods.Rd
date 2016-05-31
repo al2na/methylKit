@@ -26,19 +26,25 @@ getData(x)
 \S4method{getData}{methylDiffDB}(x)
 }
 \arguments{
-\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or \code{\link{methylDiff}} object}
+\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+\code{\link{methylRaw}},\code{\link{methylRawDB}} or 
+\code{\link{methylDiff}} object}
 }
 \value{
 data frame for methylation events
 }
 \description{
-The functions retrieves the table containing methylation information from \code{methylKit} Objects.
-The data retrived from this function is of a \code{\link{data.frame}}. This is basically containing all relevant methylation information per genomic region or base.
+The functions retrieves the table containing methylation information from 
+\code{methylKit} Objects.
+The data retrived from this function is of a \code{\link{data.frame}}. 
+This is basically containing all relevant methylation information per 
+genomic region or base.
 }
 \examples{
 data(methylKit)
 
-# following commands show first lines of returned data.frames from getData() function
+# following commands show first lines of returned 
+# data.frames from getData() function
 head(
 getData(methylBase.obj)
 )
