@@ -1,4 +1,4 @@
-methylKit 0.9.5
+methylKit 0.9.6
 --------------
 IMPROVEMENTS AND BUG FIXES
 
@@ -34,6 +34,12 @@ NEW FUNCTIONS AND FEATURES
 A test is added to check this in R CMD check. Contributed by Adrian Bierling.
 
 * dataSim creates a methylBase object with simulated methylation data. A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+
+methylKit 0.9.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* travis CI build shield added
 
 
 methylKit 0.9.4

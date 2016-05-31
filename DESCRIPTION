@@ -2,7 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.5
+Version: 0.9.6
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "altuna.akalin@mdc-berlin.de"),
 	      person("Matthias","Kormaksson", role = "aut"),
