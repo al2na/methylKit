@@ -10,8 +10,10 @@ applyTbxByChr(tbxFile, chrs, dir, filename, return.type = c("tabix",
 \arguments{
 \item{tbxFile}{tabix file to read. a TabixFile object}
 
-\item{chrs}{chromosome names. Based on chromosome names the chunks of tabix file
-will be read into the memory. If missing use all chromosome names in tabix file.}
+\item{chrs}{chromosome names. Based on chromosome names the chunks of 
+tabix file
+       will be read into the memory. If missing use all chromosome names 
+       in tabix file.}
 
 \item{dir}{directory to create temporary files and the resulting tabix file}
 
@@ -31,8 +33,10 @@ data.frame. First argument of the function should be a data frame}
 either a path to a tabix or text file, or a data frame or data.table
 }
 \description{
-The function reads a tabix file chromosome by chromosome and applies a function on each. 
-The function (FUN argument) should apply on data.frames and return a data frame
+The function reads a tabix file chromosome by chromosome and applies 
+a function on each. 
+The function (FUN argument) should apply on data.frames and return a 
+data frame
 as a result. The function is parallel applied to each chromosome 
 and related arguments could be passed on to the function via ... argument.
 }

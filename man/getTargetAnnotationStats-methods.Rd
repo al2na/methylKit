@@ -37,11 +37,11 @@ with annotation
 }
 \examples{
 data(methylKit)
-cpg.obj=read.feature.flank(system.file("extdata", 
+cpg.obj=readFeatureFlank(system.file("extdata", 
 "cpgi.hg18.bed.txt", package = "methylKit"),
 feature.flank.name=c("CpGi","shores"))
 
-ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 feature.name="CpGi",flank.name="Shores")
 getTargetAnnotationStats(ann,percentage=TRUE,precedence=TRUE)
 

@@ -34,15 +34,15 @@ transcription start site (TSS).
 }
 \examples{
 data(methylKit)
-gene.obj=read.transcript.features(system.file("extdata", 
+gene.obj=readTranscriptFeatures(system.file("extdata", 
          "refseq.hg18.bed.txt", package = "methylKit"))
 
 # the following function returns an annotationByGenicParts object
-ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 
 }
 \seealso{
-see \code{\link[methylKit]{annotate.WithGenicParts}} on 
+see \code{\link[methylKit]{annotateWithGenicParts}} on 
 how to create this object, see following functions that operates on this object  
 \code{\link[methylKit]{getTargetAnnotationStats}}, 
 \code{\link[methylKit]{getMembers}}, 

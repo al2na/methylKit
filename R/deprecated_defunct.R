@@ -35,15 +35,58 @@ read.bismark <- function(location,sample.id,assembly,
 
 
 
-#export(adjust.methylC)
+
+#' @export
+adjust.methylC<-function(...){
+  .Deprecated("adjustMethylC")
+  adjustMethylC(...)
+}
+
+
 #export(get.methylDiff)
+#' @export
+get.methylDiff<-function(...){
+  .Deprecated("getMethylDiff")
+  getMethylDiff(...)
+}
 
-#export(annotate.WithFeature)
-#export(annotate.WithFeature.Flank)
-#export(annotate.WithGenicParts)
+#' @export
+annotate.WithFeature<-function(...){
+  .Deprecated("annotateWithFeature")
+  annotateWithFeature(...)
+}
 
-#export(read.bed)
-#export(read.bismark)
-#export(read.feature.flank)
-#export(read.transcript.features)
+#' @export
+annotate.WithFeature.Flank<-function(...){
+  .Deprecated("annotateWithFeatureFlank")
+  annotateWithFeatureFlank(...)
+}
+
+
+#' @export
+annotate.WithGenicParts<-function(...){
+  .Deprecated("annotateWithGenicParts")
+  annotateWithGenicParts(...)
+}
+
+
+#' @export
+read.bed<-function(...){
+  .Deprecated("readBed")
+  readBed(...)
+}
+
+#' @export
+read.feature.flank<-function(...){
+  .Deprecated("readFeatureFlank")
+  readFeatureFlank(...)
+}
+
+
+#' @export
+read.transcript.features<-function(...){
+  .Deprecated("readTranscriptFeatures")
+  readTranscriptFeatures(...)
+}
+
 

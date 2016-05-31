@@ -30,7 +30,7 @@ It is useful for getting flanking regions such as CpG island shores.
 
 # read the bed file as GRanges object
 bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
+bed.gr=readBed(location=bed.file,remove.unsual=TRUE)
 
 # get flanks on the either side
 bed.flanks=getFlanks(bed.gr,flank=2000,clean=TRUE)

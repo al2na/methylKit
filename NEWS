@@ -2,8 +2,17 @@ methylKit 0.9.5
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* changed function name read() to methRead()
-* changed function name read.bismark to processBismarkAln()
+* changes to following function names:
+  read() to methRead()  
+  read.bismark to processBismarkAln()
+  adjust.methylC() to adjustMethylC() 
+  get.methylDiff() to getMethylDiff()
+  annotate.WithFeature() to annotateWithFeature()
+  annotate.WithFeature.Flank() to annotateWithFeatureFlank()
+  annotate.WithGenicParts() to annotateWithGenicParts()
+  read.bed() to readBed()
+  read.feature.flank() to readFeatureFlank()
+  read.transcript.features() to readTranscriptFeatures()
 * Improved documentation for methRead() (old read())
 * Now, bismark cytosine report and coverage files can be read using methRead()
   pipeline argument. see ?methRead

@@ -325,12 +325,12 @@ myDiff=calculateDiffMeth(meth,num.cores=2)
 We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using `GenomicFeatures` package available from Bioconductor.org.
 
 ```{r}
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", 
+gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", 
                                            package = "methylKit"))
 #
 # annotate differentially methylated Cs with promoter/exon/intron using annotation data
 #
-annotate.WithGenicParts(myDiff25p,gene.obj)
+annotateWithGenicParts(myDiff25p,gene.obj)
 ```
 
 Similarly, we can read the CpG island annotation and annotate our differentially methylated bases/regions with them.
@@ -338,12 +338,12 @@ Similarly, we can read the CpG island annotation and annotate our differentially
 ```{r}
 # read the shores and flanking regions and name the flanks as shores 
 # and CpG islands as CpGi
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", 
+cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
                                         package = "methylKit"),
                            feature.flank.name=c("CpGi","shores"))
 #
 #
-diffCpGann=annotate.WithFeature.Flank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,
+diffCpGann=annotateWithFeatureFlank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,
                                       feature.name="CpGi",flank.name="shores")
 ```
 
@@ -362,7 +362,7 @@ head(promoters[[1]])
 After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the `getAssociationWithTSS` function.
 
 ```{r,}
-diffAnn=annotate.WithGenicParts(myDiff25p,gene.obj)
+diffAnn=annotateWithGenicParts(myDiff25p,gene.obj)
 
 # target.row is the row number in myDiff25p
 head(getAssociationWithTSS(diffAnn))
@@ -512,9 +512,9 @@ See `?getAssociationWithTSS`
 
 ### How do you define promoters and CpG island shores ? 
 
-Promoters are defined by options at `read.transcript.features` function. 
+Promoters are defined by options at `readTranscriptFeatures` function. 
 The default option is to take -1000,+1000bp around the TSS and you can change that. 
-Same goes for CpG islands when reading them in via `read.feature.flank` function. 
+Same goes for CpG islands when reading them in via `readFeatureFlank` function. 
 Default is to take 2000bp flanking regions on each side of the CpG island as shores. 
 But you can change that as well.
 

@@ -261,24 +261,24 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 #' @param remove.unsual if TRUE(default) remove the chromomesomes with unsual 
 #' names, mainly random chromsomes etc
 #'
-#' @usage read.bed(location,remove.unsual=TRUE)
+#' @usage readBed(location,remove.unsual=TRUE)
 #' @return \code{\link{GRanges}} object
 #' @examples
 #' bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-#' bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
+#' bed.gr=readBed(location=bed.file,remove.unsual=TRUE)
 #' 
 #' @note one bed track per file is only accepted, the bed files with multiple 
 #' tracks will cause an error
 #'
 #' @export
 #' @docType methods
-#' @rdname read.bed-methods
-setGeneric("read.bed", function(location,remove.unsual=TRUE) 
-  standardGeneric("read.bed"))
+#' @rdname readBed-methods
+setGeneric("readBed", function(location,remove.unsual=TRUE) 
+  standardGeneric("readBed"))
 
-#' @aliases read.bed,character-method
-#' @rdname read.bed-methods
-setMethod("read.bed", signature(location = "character"),#remove.unsual="logical" ),
+#' @aliases readBed,character-method read.bed
+#' @rdname readBed-methods
+setMethod("readBed", signature(location = "character"),#remove.unsual="logical" ),
                     function(location,remove.unsual){
         
         # find out if there is a header, skip 1st line if there is a header
@@ -308,7 +308,7 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
 #' @return a \code{\link[GenomicRanges]{GRangesList}} containing locations of 
 #' exon/intron/promoter/TSS
 #' @examples
-#' gene.obj=read.transcript.features(system.file("extdata", 
+#' gene.obj=readTranscriptFeatures(system.file("extdata", 
 #' "refseq.hg18.bed.txt", package = "methylKit"))
 #' 
 #' @note  one bed track per file is only accepted, the bed files with 
@@ -316,15 +316,15 @@ setMethod("read.bed", signature(location = "character"),#remove.unsual="logical"
 #'
 #' @export
 #' @docType methods
-#' @rdname read.transcript.features-methods
-setGeneric("read.transcript.features", function(location,remove.unsual=TRUE,
+#' @rdname readTranscriptFeatures-methods
+setGeneric("readTranscriptFeatures", function(location,remove.unsual=TRUE,
                                                 up.flank=1000,down.flank=1000,
                                                 unique.prom=TRUE) 
-  standardGeneric("read.transcript.features"))
+  standardGeneric("readTranscriptFeatures"))
 
-#' @aliases read.transcript.features,character-method
-#' @rdname read.transcript.features-methods
-setMethod("read.transcript.features", signature(location = "character"),
+#' @aliases readTranscriptFeatures,character-method read.transcript.features
+#' @rdname readTranscriptFeatures-methods
+setMethod("readTranscriptFeatures", signature(location = "character"),
                     function(location,remove.unsual,up.flank ,down.flank ,
                              unique.prom){
       
@@ -394,7 +394,7 @@ setMethod("read.transcript.features", signature(location = "character"),
 #' 
 #' # read the bed file as GRanges object
 #' bed.file=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-#' bed.gr=read.bed(location=bed.file,remove.unsual=TRUE)
+#' bed.gr=readBed(location=bed.file,remove.unsual=TRUE)
 #' 
 #' # get flanks on the either side
 #' bed.flanks=getFlanks(bed.gr,flank=2000,clean=TRUE)
@@ -436,23 +436,23 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 #' @examples
 #'  # location of the example CpG file
 #'  my.loc=system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit")
-#'  cpg.obj=read.feature.flank(location=my.loc,
+#'  cpg.obj=readFeatureFlank(location=my.loc,
 #'  feature.flank.name=c("CpGi","shores"))
 #'
 #' @export
 #' @docType methods
-#' @rdname read.feature.flank-methods
-setGeneric("read.feature.flank", function(location,remove.unsual=TRUE,
+#' @rdname readFeatureFlank-methods
+setGeneric("readFeatureFlank", function(location,remove.unsual=TRUE,
                                           flank=2000,clean=TRUE,
                                           feature.flank.name=NULL) 
-  standardGeneric("read.feature.flank") )
+  standardGeneric("readFeatureFlank") )
 
-#' @aliases read.feature.flank,character-method
-#' @rdname read.feature.flank-methods
-setMethod("read.feature.flank", signature(location = "character"),
+#' @aliases readFeatureFlank,character-method read.feature.flank
+#' @rdname readFeatureFlank-methods
+setMethod("readFeatureFlank", signature(location = "character"),
                     function(location,remove.unsual,flank ,
                              clean,feature.flank.name){
-      feat=read.bed(location,remove.unsual)
+      feat=readBed(location,remove.unsual)
       flanks=getFlanks(feat,flank=flank,clean=clean)
       x=GenomicRangesList(features=feat,flanks=flanks)
       if(!is.null(feature.flank.name) & length(feature.flank.name)==2)
@@ -495,17 +495,17 @@ setMethod("read.feature.flank", signature(location = "character"),
 #' }
 #' @examples
 #' data(methylKit)
-#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", 
+#' cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
 #'                             package = "methylKit"),
 #'                             feature.flank.name=c("CpGi","shores"))
 #' 
 #' # the following function returns annotationByFeature object
-#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+#' ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 #'                                feature.name="CpGi",flank.name="Shores")
 #' ann
 #' 
-#' @seealso see \code{\link[methylKit]{annotate.WithFeature.Flank}} and 
-#' \code{\link[methylKit]{annotate.WithFeature}} on how to create this object.
+#' @seealso see \code{\link[methylKit]{annotateWithFeatureFlank}} and 
+#' \code{\link[methylKit]{annotateWithFeature}} on how to create this object.
 #'          see following functions that operates on this object:
 #'            \code{\link[methylKit]{getMembers}}, 
 #'            \code{\link[methylKit]{getTargetAnnotationStats}},
@@ -552,13 +552,13 @@ setClass("annotationByFeature", representation(members         ="matrix",
 #' }
 #' @examples
 #' data(methylKit)
-#' gene.obj=read.transcript.features(system.file("extdata", 
+#' gene.obj=readTranscriptFeatures(system.file("extdata", 
 #'          "refseq.hg18.bed.txt", package = "methylKit"))
 #' 
 #' # the following function returns an annotationByGenicParts object
-#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 #' 
-#' @seealso see \code{\link[methylKit]{annotate.WithGenicParts}} on 
+#' @seealso see \code{\link[methylKit]{annotateWithGenicParts}} on 
 #' how to create this object, see following functions that operates on this object  
 #' \code{\link[methylKit]{getTargetAnnotationStats}}, 
 #' \code{\link[methylKit]{getMembers}}, 
@@ -745,16 +745,16 @@ distance2nearestFeature<-function(g.idh,tss)
 #' be annotated
 #' @param GRangesList.obj   A \code{\link[GenomicRanges]{GRangesList}} object 
 #' containing GRanges object for promoter,exons,introns and TSSes, or simply 
-#' output of \code{\link[methylKit]{read.transcript.features}} function
+#' output of \code{\link[methylKit]{readTranscriptFeatures}} function
 #' @param strand If set to TRUE, annotation features and target features will be 
 #' overlapped based on strand  (def:FALSE)
-#' @usage annotate.WithGenicParts(target,GRangesList.obj,strand=FALSE)
+#' @usage annotateWithGenicParts(target,GRangesList.obj,strand=FALSE)
 #' @return \code{\link[methylKit]{annotationByGenicParts}} object
 #' @examples
 #' data(methylKit)
-#' gene.obj=read.transcript.features(system.file("extdata", 
+#' gene.obj=readTranscriptFeatures(system.file("extdata", 
 #' "refseq.hg18.bed.txt", package = "methylKit"))
-#' annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' annotateWithGenicParts(methylDiff.obj, gene.obj)
 #' @seealso 
 #' \code{\link[methylKit]{getMembers}}, 
 #' \code{\link[methylKit]{getTargetAnnotationStats}},
@@ -763,14 +763,14 @@ distance2nearestFeature<-function(g.idh,tss)
 #' \code{\link[methylKit]{plotTargetAnnotation}}
 #' @export
 #' @docType methods
-#' @rdname annotate.WithGenicParts-methods
-setGeneric("annotate.WithGenicParts", 
+#' @rdname annotateWithGenicParts-methods
+setGeneric("annotateWithGenicParts", 
            function(target,GRangesList.obj,strand=FALSE) 
-             standardGeneric("annotate.WithGenicParts") )
+             standardGeneric("annotateWithGenicParts") )
 
-#' @aliases annotate.WithGenicParts,GRanges,GRangesList-method
-#' @rdname annotate.WithGenicParts-methods
-setMethod("annotate.WithGenicParts", signature(target= "GRanges",
+#' @aliases annotateWithGenicParts,GRanges,GRangesList-method annotate.WithGenicParts
+#' @rdname annotateWithGenicParts-methods
+setMethod("annotateWithGenicParts", signature(target= "GRanges",
                                                GRangesList.obj="GRangesList"),
                     function(target,GRangesList.obj,strand){
 
@@ -790,13 +790,13 @@ new("annotationByGenicParts",
       dist.to.TSS     = dist2TSS )
 })
 
-#' @aliases annotate.WithGenicParts,methylDiff,GRangesList-method
-#' @rdname annotate.WithGenicParts-methods
-setMethod("annotate.WithGenicParts", signature(target = "methylDiff",
+#' @aliases annotateWithGenicParts,methylDiff,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
+setMethod("annotateWithGenicParts", signature(target = "methylDiff",
                                                GRangesList.obj="GRangesList"),
                     function(target,GRangesList.obj,strand){
     gr=as(target,"GRanges")
-    annotate.WithGenicParts(gr,GRangesList.obj,strand)
+    annotateWithGenicParts(gr,GRangesList.obj,strand)
 })
 
 
@@ -821,10 +821,10 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",
 #' @return returns an \code{\link[methylKit]{annotationByFeature}} object
 #' @examples
 #' data(methylKit)
-#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", 
+#' cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
 #' package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
-#' annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+#' annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 #' feature.name="CpGi",flank.name="Shores")
 #'
 #' @seealso
@@ -836,16 +836,17 @@ setMethod("annotate.WithGenicParts", signature(target = "methylDiff",
 #' @export
 #' 
 #' @docType methods
-#' @rdname annotate.WithFeature.Flank-methods
-setGeneric("annotate.WithFeature.Flank", function(target,feature,flank,
+#' @rdname annotateWithFeatureFlank-methods
+setGeneric("annotateWithFeatureFlank", function(target,feature,flank,
                                                   feature.name="feat",
                                                   flank.name="flank",
                                                   strand=FALSE) 
-  standardGeneric("annotate.WithFeature.Flank") )
+  standardGeneric("annotateWithFeatureFlank") )
 
-#' @aliases annotate.WithFeature.Flank,GRanges,GRanges,GRanges-method
-#' @rdname annotate.WithFeature.Flank-methods
-setMethod( "annotate.WithFeature.Flank", signature(target = "GRanges",
+#' @aliases annotateWithFeatureFlank,GRanges,GRanges,GRanges-method 
+#'          annotate.WithFeature.Flank
+#' @rdname annotateWithFeatureFlank-methods
+setMethod( "annotateWithFeatureFlank", signature(target = "GRanges",
                                                    feature="GRanges",
                                                    flank="GRanges"),
                     function(target, feature, flank,feature.name,
@@ -893,15 +894,15 @@ setMethod( "annotate.WithFeature.Flank", signature(target = "GRanges",
     
 })
 
-#' @aliases annotate.WithFeature.Flank,methylDiff,GRanges,GRanges-method
-#' @rdname annotate.WithFeature.Flank-methods
-setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",
+#' @aliases annotateWithFeatureFlank,methylDiff,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
+setMethod("annotateWithFeatureFlank", signature(target= "methylDiff",
                                                   feature="GRanges",
                                                   flank="GRanges"),
                     function(target, feature, flank,feature.name,
                              flank.name,strand){
                       gr=as(target,"GRanges")
-                      annotate.WithFeature.Flank(gr,feature, flank,feature.name,
+                      annotateWithFeatureFlank(gr,feature, flank,feature.name,
                                                  flank.name,strand)
 })
 
@@ -926,10 +927,10 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",
 #' CpGisland etc.
 #' @examples
 #' data(methylKit)
-#' cpg.gr=read.bed(system.file("extdata", "cpgi.hg18.bed.txt", 
+#' cpg.gr=readBed(system.file("extdata", "cpgi.hg18.bed.txt", 
 #' package = "methylKit"),remove.unsual=TRUE)
 #' 
-#' annotate.WithFeature(methylDiff.obj,cpg.gr,strand=FALSE,extend=0,
+#' annotateWithFeature(methylDiff.obj,cpg.gr,strand=FALSE,extend=0,
 #' feature.name="CpGi")
 #' 
 #' @return returns an \code{\link[methylKit]{annotationByFeature}} object
@@ -942,14 +943,14 @@ setMethod("annotate.WithFeature.Flank", signature(target= "methylDiff",
 #' 
 #' @export
 #' @docType methods
-#' @rdname annotate.WithFeature-methods
-setGeneric("annotate.WithFeature", function(target,feature,strand=FALSE,
+#' @rdname annotateWithFeature-methods
+setGeneric("annotateWithFeature", function(target,feature,strand=FALSE,
                                             extend=0,feature.name="feat1") 
-  standardGeneric("annotate.WithFeature") )
+  standardGeneric("annotateWithFeature") )
 
-#' @aliases annotate.WithFeature,GRanges,GRanges-method
-#' @rdname annotate.WithFeature-methods
-setMethod("annotate.WithFeature", signature(target = "GRanges",feature="GRanges"),
+#' @aliases annotateWithFeature,GRanges,GRanges-method annotate.WithFeature
+#' @rdname annotateWithFeature-methods
+setMethod("annotateWithFeature", signature(target = "GRanges",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){
  
 
@@ -985,12 +986,12 @@ new("annotationByFeature",
 
 })
 
-#' @aliases annotate.WithFeature,methylDiff,GRanges-method
-#' @rdname annotate.WithFeature-methods
-setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRanges"),
+#' @aliases annotateWithFeature,methylDiff,GRanges-method
+#' @rdname annotateWithFeature-methods
+setMethod("annotateWithFeature", signature(target = "methylDiff",feature="GRanges"),
                     function(target, feature, strand,extend,feature.name){                      
   gr=as(target,"GRanges")
-  annotate.WithFeature(gr, feature, strand,extend,feature.name)
+  annotateWithFeature(gr, feature, strand,extend,feature.name)
 })
 
 # ACCESSOR FUNCTIONS
@@ -1010,16 +1011,16 @@ setMethod("annotate.WithFeature", signature(target = "methylDiff",feature="GRang
 #' 1 for overlap, 0 for non-overlap. 
 #' Each row in the matrix corresponds to a genomic feature that is annoted by 
 #' one of the following functions:
-#' \code{\link[methylKit]{annotate.WithFeature}},
-#' \code{\link[methylKit]{annotate.WithFeature.Flank}},
-#' \code{\link[methylKit]{annotate.WithGenicParts}}
+#' \code{\link[methylKit]{annotateWithFeature}},
+#' \code{\link[methylKit]{annotateWithFeatureFlank}},
+#' \code{\link[methylKit]{annotateWithGenicParts}}
 #' 
 #' @examples
 #' data(methylKit)
-#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", 
+#' cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
 #' package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
-#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+#' ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 #' feature.name="CpGi",flank.name="Shores")
 #' mat=getMembers(ann)
 #' head(mat)
@@ -1058,11 +1059,11 @@ setMethod("getMembers", signature(x = "annotationByFeature"),
 #'
 #' @examples
 #' data(methylKit)
-#' cpg.obj=read.feature.flank(system.file("extdata", 
+#' cpg.obj=readFeatureFlank(system.file("extdata", 
 #' "cpgi.hg18.bed.txt", package = "methylKit"),
 #' feature.flank.name=c("CpGi","shores"))
 #' 
-#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+#' ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 #' feature.name="CpGi",flank.name="Shores")
 #' getTargetAnnotationStats(ann,percentage=TRUE,precedence=TRUE)
 #' 
@@ -1109,10 +1110,10 @@ setMethod("getTargetAnnotationStats", signature(x = "annotationByFeature"),
 #' features overlapping with target features
 #' @examples
 #' data(methylKit)
-#' cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt",
+#' cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt",
 #'  package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 #' 
-#' ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+#' ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
 #' feature.name="CpGi",flank.name="Shores")
 #' getFeatsWithTargetsStats(ann,percentage=TRUE)
 #' 
@@ -1145,9 +1146,9 @@ setMethod("getFeatsWithTargetsStats", signature(x = "annotationByFeature" ),
 #' features,distance of target to nearest TSS, TSS/Gene name, TSS strand
 #' @examples
 #' data(methylKit)
-#' gene.obj=read.transcript.features(system.file("extdata", 
+#' gene.obj=readTranscriptFeatures(system.file("extdata", 
 #' "refseq.hg18.bed.txt", package = "methylKit"))
-#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 #' df=getAssociationWithTSS(ann)
 #' head(df)
 #' 
@@ -1183,9 +1184,9 @@ setMethod("getAssociationWithTSS", signature(x = "annotationByGenicParts"),
 #'
 #' @examples
 #' data(methylKit)
-#' gene.obj=read.transcript.features(system.file("extdata", 
+#' gene.obj=readTranscriptFeatures(system.file("extdata", 
 #' "refseq.hg18.bed.txt", package = "methylKit"))
-#' ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+#' ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 #' plotTargetAnnotation(ann,precedence=FALSE)
 #' 
 #'

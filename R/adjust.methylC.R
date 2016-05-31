@@ -43,7 +43,7 @@
 #' @return returns adjusted 5-methyl cytosine levels in the form of 
 #' \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} or 
 #' \code{methylRawListDB} object depending on the input object
-#' @usage adjust.methylC(mc,hmc,save.db,...,chunk.size)
+#' @usage adjustMethylC(mc,hmc,save.db,...,chunk.size)
 #' @examples
 #' 
 #' # read 5hmC and 5mC files
@@ -54,7 +54,7 @@
 #' my5mC =methRead( mc.file,sample.id="mc",assembly="hg18")
 #' 
 #' # adjusting the 5mC levels using 5hmC levels
-#' adjusted.5mC=adjust.methylC(my5mC,my5hmC)
+#' adjusted.5mC=adjustMethylC(my5mC,my5hmC)
 #' 
 #' 
 #' @section Details:
@@ -83,14 +83,14 @@
 #' 5-hydroxymethylcytosine in the Mammalian genome. Cell, 149(6), 1368-80.
 #' @export
 #' @docType methods
-#' @rdname adjust.methylC
-setGeneric("adjust.methylC", function(mc,hmc,
+#' @rdname adjustMethylC
+setGeneric("adjustMethylC", function(mc,hmc,
                                       save.db=FALSE,...,chunk.size=1e6) 
-  standardGeneric("adjust.methylC") )
+  standardGeneric("adjustMethylC") )
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRaw,methylRaw-method
-setMethod("adjust.methylC", c("methylRaw","methylRaw"),
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRaw,methylRaw-method
+setMethod("adjustMethylC", c("methylRaw","methylRaw"),
           function(mc,hmc,save.db=FALSE,...){
   
   lst=new("methylRawList",list(mc,hmc),treatment=c(1,0))
@@ -138,9 +138,9 @@ setMethod("adjust.methylC", c("methylRaw","methylRaw"),
 })
 
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawList,methylRawList-method
-setMethod("adjust.methylC", c("methylRawList","methylRawList"),
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRawList,methylRawList-method adjust.methylC
+setMethod("adjustMethylC", c("methylRawList","methylRawList"),
           function(mc,hmc,save.db=FALSE,...){
   
   # check lengths equal if not give error
@@ -149,7 +149,7 @@ setMethod("adjust.methylC", c("methylRawList","methylRawList"),
   
   my.list=list()
   for(i in 1:length(mc)){
-    my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]])
+    my.list[[i]]=adjustMethylC(mc[[i]],hmc[[i]])
   }
   
   if(!save.db) {
@@ -164,7 +164,7 @@ setMethod("adjust.methylC", c("methylRawList","methylRawList"),
     
     my.list=list()
     for(i in 1:length(mc)){
-      my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],
+      my.list[[i]]=adjustMethylC(mc[[i]],hmc[[i]],
                                   save.db=TRUE,dbdir=basename(dbdir),...)
     }
     

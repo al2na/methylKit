@@ -27,19 +27,19 @@ feature overlaps it extends \code{\link{list}} class.
 }
 \examples{
 data(methylKit)
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", 
+cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
                             package = "methylKit"),
                             feature.flank.name=c("CpGi","shores"))
 
 # the following function returns annotationByFeature object
-ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
                                feature.name="CpGi",flank.name="Shores")
 ann
 
 }
 \seealso{
-see \code{\link[methylKit]{annotate.WithFeature.Flank}} and 
-\code{\link[methylKit]{annotate.WithFeature}} on how to create this object.
+see \code{\link[methylKit]{annotateWithFeatureFlank}} and 
+\code{\link[methylKit]{annotateWithFeature}} on how to create this object.
          see following functions that operates on this object:
            \code{\link[methylKit]{getMembers}}, 
            \code{\link[methylKit]{getTargetAnnotationStats}},

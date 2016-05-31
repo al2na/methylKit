@@ -878,13 +878,13 @@ setMethod("selectByOverlap", "methylDiff",
 #' data(methylKit)
 #' 
 #' # get differentially methylated bases/regions with specific cutoffs
-#' all.diff=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
+#' all.diff=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
 #' 
 #' # get hyper-methylated
-#' hyper=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
+#' hyper=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
 #' 
 #' # get hypo-methylated
-#' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
+#' hypo=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 #' 
 #' @section Details:
 #' The parameter \code{chunk.size} is only used when working with 
@@ -905,15 +905,15 @@ setMethod("selectByOverlap", "methylDiff",
 #'
 #' @export
 #' @docType methods
-#' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,
+#' @rdname getMethylDiff-methods
+setGeneric(name="getMethylDiff", def=function(.Object,difference=25,qvalue=0.01,
                                                type="all",chunk.size=1e6,
                                                save.db=FALSE,...) 
-  standardGeneric("get.methylDiff"))
+  standardGeneric("getMethylDiff"))
 
-#' @aliases get.methylDiff,methylDiff-method
-#' @rdname get.methylDiff-methods
-setMethod(f="get.methylDiff", signature="methylDiff", 
+#' @aliases getMethylDiff,methylDiff-method get.methylDiff
+#' @rdname getMethylDiff-methods
+setMethod(f="getMethylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue,type,save.db=FALSE,...){
             
   if(!save.db) {

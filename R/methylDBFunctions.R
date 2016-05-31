@@ -283,9 +283,9 @@ setMethod("getMethylationStats", "methylRawDB",
           })
 
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawDB,methylRawDB-method
-setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRawDB,methylRawDB-method
+setMethod("adjustMethylC", c("methylRawDB","methylRawDB"),
           function(mc,hmc,save.db=TRUE,...,chunk.size){
   
   if(save.db) {
@@ -341,7 +341,7 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),
     
     mc.tmp <- mc[]
     hmc.tmp <- hmc[]
-    adjust.methylC(mc.tmp,hmc.tmp,save.db=FALSE,...)
+    adjustMethylC(mc.tmp,hmc.tmp,save.db=FALSE,...)
     
     
   }
@@ -350,9 +350,9 @@ setMethod("adjust.methylC", c("methylRawDB","methylRawDB"),
 })
 
 
-#' @rdname adjust.methylC
-#' @aliases adjust.methylC,methylRawListDB,methylRawListDB-method
-setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),
+#' @rdname adjustMethylC
+#' @aliases adjustMethylC,methylRawListDB,methylRawListDB-method
+setMethod("adjustMethylC", c("methylRawListDB","methylRawListDB"),
           function(mc,hmc,save.db=TRUE,...,chunk.size){
   
   # check lengths equal if not give error
@@ -368,7 +368,7 @@ setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),
     
     my.list=list()
     for(i in 1:length(mc)){
-      my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],save.db,
+      my.list[[i]]=adjustMethylC(mc[[i]],hmc[[i]],save.db,
                                   dbdir=basename(dbdir),...,chunk.size)
     }
     new("methylRawListDB",my.list,treatment=mc@treatment )
@@ -377,7 +377,7 @@ setMethod("adjust.methylC", c("methylRawListDB","methylRawListDB"),
     
     my.list=list()
     for(i in 1:length(mc)){
-      my.list[[i]]=adjust.methylC(mc[[i]],hmc[[i]],save.db=FALSE,...)
+      my.list[[i]]=adjustMethylC(mc[[i]],hmc[[i]],save.db=FALSE,...)
     }
     new("methylRawList",my.list,treatment=mc@treatment )
     
@@ -1266,9 +1266,9 @@ setMethod("calculateDiffMeth", "methylBaseDB",
             }
 )
 
-#' @aliases get.methylDiff,methylDiffDB-method
-#' @rdname get.methylDiff-methods
-setMethod(f="get.methylDiff", signature="methylDiffDB", 
+#' @aliases getMethylDiff,methylDiffDB-method
+#' @rdname getMethylDiff-methods
+setMethod(f="getMethylDiff", signature="methylDiffDB", 
           definition=function(.Object,difference,qvalue,type,chunk.size,save.db=TRUE,...) {
             
             if(!( type %in% c("all","hyper","hypo") )){
@@ -1325,7 +1325,7 @@ setMethod(f="get.methylDiff", signature="methylDiffDB",
             } else {
               
               tmp <- .Object[]
-              get.methylDiff(tmp,difference,qvalue,type,save.db=FALSE)
+              getMethylDiff(tmp,difference,qvalue,type,save.db=FALSE)
               
             }
             
@@ -1388,28 +1388,28 @@ setMethod("diffMethPerChr", signature(x = "methylDiffDB"),
             
 })
 
-#' @aliases annotate.WithGenicParts,methylDiffDB,GRangesList-method
-#' @rdname annotate.WithGenicParts-methods
-setMethod("annotate.WithGenicParts", signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
+#' @aliases annotateWithGenicParts,methylDiffDB,GRangesList-method
+#' @rdname annotateWithGenicParts-methods
+setMethod("annotateWithGenicParts", signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
           function(target,GRangesList.obj,strand){
             gr=as(target,"GRanges")
-            annotate.WithGenicParts(gr,GRangesList.obj,strand)
+            annotateWithGenicParts(gr,GRangesList.obj,strand)
           })
 
-#' @aliases annotate.WithFeature.Flank,methylDiffDB,GRanges,GRanges-method
-#' @rdname annotate.WithFeature.Flank-methods
-setMethod("annotate.WithFeature.Flank", signature(target= "methylDiffDB",feature="GRanges",flank="GRanges"),
+#' @aliases annotateWithFeatureFlank,methylDiffDB,GRanges,GRanges-method
+#' @rdname annotateWithFeatureFlank-methods
+setMethod("annotateWithFeatureFlank", signature(target= "methylDiffDB",feature="GRanges",flank="GRanges"),
           function(target, feature, flank,feature.name,flank.name,strand){
             gr=as(target,"GRanges")
-            annotate.WithFeature.Flank(gr,feature, flank,feature.name,flank.name,strand)
+            annotateWithFeatureFlank(gr,feature, flank,feature.name,flank.name,strand)
           })
 
-#' @aliases annotate.WithFeature,methylDiffDB,GRanges-method
-#' @rdname annotate.WithFeature-methods
-setMethod("annotate.WithFeature", signature(target = "methylDiffDB",feature="GRanges"),
+#' @aliases annotateWithFeature,methylDiffDB,GRanges-method
+#' @rdname annotateWithFeature-methods
+setMethod("annotateWithFeature", signature(target = "methylDiffDB",feature="GRanges"),
           function(target, feature, strand,extend,feature.name){                      
             gr=as(target,"GRanges")
-            annotate.WithFeature(gr, feature, strand,extend,feature.name)
+            annotateWithFeature(gr, feature, strand,extend,feature.name)
           })
 
 # Regionalize methods ----------------------------------------------------

@@ -181,7 +181,8 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   # if not parallel we can write out one file and append to it
   outfile= file.path(path.expand(dir),filename)   
   con=file(outfile, open = "a", blocking = TRUE)
-  write.table(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  write.table(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,
+              append=TRUE)
   close(con)
   }else{
     
@@ -273,7 +274,8 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 # @example
 # tbxFile=methylRawListDB[[1]]@dbpath
 #  getTabixByChunk( tbxFile,chunk.size=10)
-getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","data.frame","GRanges")){
+getTabixByChunk<-function(tbxFile,chunk.size=1e6,
+                          return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
   
@@ -470,14 +472,18 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 # applyTbxByCHr
 #' Apply a function on tabix files chromosome by chromosome 
 #' 
-#' The function reads a tabix file chromosome by chromosome and applies a function on each. 
-#' The function (FUN argument) should apply on data.frames and return a data frame
+#' The function reads a tabix file chromosome by chromosome and applies 
+#' a function on each. 
+#' The function (FUN argument) should apply on data.frames and return a 
+#' data frame
 #' as a result. The function is parallel applied to each chromosome 
 #' and related arguments could be passed on to the function via ... argument.
 #' 
 #' @param tbxFile tabix file to read. a TabixFile object
-#' @param chrs chromosome names. Based on chromosome names the chunks of tabix file
-#'        will be read into the memory. If missing use all chromosome names in tabix file.
+#' @param chrs chromosome names. Based on chromosome names the chunks of 
+#' tabix file
+#'        will be read into the memory. If missing use all chromosome names 
+#'        in tabix file.
 #' @param return.type indicates the return type for the function
 #' @param FUN function to apply to chrs, it takes a data.frame and returns a 
 #'            data.frame. First argument of the function should be a data frame
@@ -488,7 +494,9 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
 #' 
 #' @return either a path to a tabix or text file, or a data frame or data.table
-applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores=1){
+applyTbxByChr<-function(tbxFile,chrs,dir,filename,
+                        return.type=c("tabix","data.frame","data.table"),
+                        FUN,...,mc.cores=1){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -603,7 +611,9 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     # create a custom function that contains the function
     # to be applied
     myFunc<-function(chunk.num,region.split,tbxFile,dir,filename,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+      data <- try(expr = data <- getTabixByOverlap(
+        tbxFile,granges = region.split[[chunk.num]],
+        return.type="data.frame"),silent = TRUE)
       
       if( class(data)== "try-error") {
         
@@ -639,7 +649,9 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     # create a custom function that contains the function
     # to be applied
     myFunc2<-function(chunk.num,region.split,tbxFile,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+      data <- try(expr = data <- getTabixByOverlap(
+        tbxFile,granges = region.split[[chunk.num]],
+        return.type="data.frame"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
       res=FUN(data,...) 
@@ -653,7 +665,10 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
   }else{
     
     myFunc3<-function(chunk.num,region.split,tbxFile,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.table"),silent = TRUE)
+      data <- try(expr = data <- getTabixByOverlap(
+                                    tbxFile,
+                                    granges = region.split[[chunk.num]],
+                                    return.type="data.table"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
       res=FUN(data,...)  

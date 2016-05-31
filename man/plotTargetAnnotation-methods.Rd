@@ -35,9 +35,9 @@ annotated by genic parts or other query features.
 }
 \examples{
 data(methylKit)
-gene.obj=read.transcript.features(system.file("extdata", 
+gene.obj=readTranscriptFeatures(system.file("extdata", 
 "refseq.hg18.bed.txt", package = "methylKit"))
-ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 plotTargetAnnotation(ann,precedence=FALSE)
 
 
