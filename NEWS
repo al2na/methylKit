@@ -28,12 +28,16 @@ NEW FUNCTIONS AND FEATURES
   see ?methSeg. A test is added to check this in R CMD check.
   Contributed by Arsene Wabo and Alexander Gosdschan.
 
-* new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, methylDiffDB and respective methods implemented. Tests are updated to check proper function in R CMD check. Contributed by Alexander Gosdschan.
+* new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, 
+  methylDiffDB and respective methods implemented. Tests are updated to 
+  check proper function in R CMD check. Contributed by Alexander Gosdschan.
 
-* calculateMethDiff now supports basic overdispersion correction and multiple methods for pvalue-correction.
-A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+* calculateMethDiff now supports basic overdispersion correction and multiple 
+  methods for pvalue-correction.A test is added to check this in R CMD check. 
+  Contributed by Adrian Bierling.
 
-* dataSim creates a methylBase object with simulated methylation data. A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+* dataSim creates a methylBase object with simulated methylation data. 
+  A test is added to check this in R CMD check. Contributed by Adrian Bierling.
 
 methylKit 0.9.5
 --------------
@@ -54,8 +58,9 @@ methylKit 0.9.3
 --------------
 IMPROVEMENTS AND BUG FIXES
 
-* compatibility with BioC 3.0. Multiple BioC functions moved to other packages within BioC,
-  which broke some code and caused installation issues. Now this is fixed.
+* compatibility with BioC 3.0. Multiple BioC functions moved to other packages
+  within BioC,which broke some code and caused installation issues. 
+  Now this is fixed.
 * data.table::merge is now stable when all=TRUE. Removed my(altuna) version of data.table::merge
   the code base.
 
