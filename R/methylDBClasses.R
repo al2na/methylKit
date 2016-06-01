@@ -174,6 +174,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
   sample.id = sample.id, assembly = assembly,context=context,
@@ -376,6 +377,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylBaseDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
@@ -522,6 +524,7 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylDiffDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
@@ -578,6 +581,7 @@ setAs("methylDiffDB", "GRanges", function(from)
   return(gr)
 })
 
+## coerce methylDB to methyl-obj
 setAs("methylRawDB","methylRaw", function(from)
 {
   return(from[])
