@@ -583,6 +583,12 @@ setAs("methylRawDB","methylRaw", function(from)
   return(from[])
 })
 
+setAs("methylRawListDB","methylRawList", function(from)
+{
+  outList = lapply(from,as,"methylRaw")
+  new("methylRawList", outList,treatment=from@treatment)
+})
+
 setAs("methylBaseDB","methylBase", function(from)
 {
   return(from[])
