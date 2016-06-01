@@ -29,13 +29,10 @@ machines with multiple cores).}
 a methylDiff object
 }
 \description{
-This function provides an interface to the DSS method by Hao Wo at 
-Emory University. It calculates the differential methylation statistics
-using a beta-binomial model with parameter shrinkage.
-}
-\section{Details}{
-
-test
+This function provides an interface to the  beta-binomial model from DSS
+package by Hao Wu. It calculates the differential methylation statistics
+using a beta-binomial model with parameter shrinkage. See the reference
+for details.
 }
 \examples{
 
@@ -43,5 +40,11 @@ data(methylKit)
 
 dssDiffay <- calculateDiffMethDSS(methylBase.obj, adjust="SLIM", mc.cores=1)
 
+}
+\references{
+Feng H, Conneely K and Wu H (2014). A bayesian hierarchical model to 
+detect differentially
+ methylated loci from single nucleotide resolution sequencing 
+ data. Nucleic acids research
 }
 

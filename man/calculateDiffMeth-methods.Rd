@@ -30,10 +30,12 @@ included in the test.}
 
 \item{overdispersion}{If set to "none"(default), no overdispersion correction 
 will be attempted.
-             If set to "MN", basic overdispersion correction will be applied.
-             (EXPERIMENTAL: If set to "shrinkMN", overdisperison correction 
-             with squeezeVar() 
-             from the limma-package will be applied (not thoroughly tested as of yet).}
+             If set to "MN", basic overdispersion correction, 
+             proposed by McCullagh and Nelder (1989) will be applied.This
+             correction applies a scaling parameter to variance estimated
+             by the model.
+             EXPERIMENTAL: If set to "shrinkMN", scaling parameter will be
+             shrunk to a common value  (not thoroughly tested as of yet).}
 
 \item{adjust}{different methods to correct the p-values for multiple testing. 
 Default is "SLIM" from methylKit. For "qvalue" please see 
@@ -43,7 +45,8 @@ and for all other methods see \code{\link[stats]{p.adjust}}.}
 \item{effect}{method to calculate the mean methylation different between groups 
 using read coverage as weights (default). When set to "mean", 
 the generic mean is applied
-and when set to "predicted", a logistic model is used instead.}
+and when set to "predicted", predicted means from the logistic
+regression model is used for calculating the effect.}
 
 \item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 
@@ -97,7 +100,8 @@ a methylDiff object containing the differential methylation
 The function calculates differential methylation statistics between two groups 
 of samples. The function uses either logistic regression test
 or Fisher's Exact test to calculate differential methylation. 
-See references for detailed explanation on statistics.
+See the rest of the help page and 
+references for detailed explanation on statistics.
 }
 \section{Details}{
 
@@ -163,7 +167,10 @@ Altuna Akalin, Matthias Kormaksson, Sheng Li,
             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
             Christopher E. Mason. (2012). 
             "methylKit: A comprehensive R package for the analysis 
-            of genome-wide DNA methylation profiles." Genome Biology.
+            of genome-wide DNA methylation profiles." Genome Biology. 
+            
+            McCullagh and Nelder. (1989). Generalized Linear Models. Chapman
+            and Hall. London New York.
 }
 \seealso{
 \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}

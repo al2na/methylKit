@@ -51,17 +51,18 @@ You can also check out the blogposts we make on using methylKit
 
 in R console,
 ```r
-# dependencies
-install.packages( c("data.table","devtools"))
-source("http://bioconductor.org/biocLite.R")
-biocLite(c("GenomicRanges","IRanges"))
-
-# install the development version from github
 library(devtools)
-install_github("al2na/methylKit",build_vignettes=FALSE)
+install_github("al2na/methylKit", build_vignettes=FALSE, 
+  repos=BiocInstaller::biocinstallRepos(),
+  dependencies=TRUE)
 ```
-
-
+### Install development verions
+```r
+library(devtools)
+install_github("al2na/methylKit", build_vignettes=FALSE, 
+  repos=BiocInstaller::biocinstallRepos(),ref="development",
+  dependencies=TRUE)
+```
 
 
 -------
