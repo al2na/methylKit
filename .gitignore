@@ -3,5 +3,8 @@
 .RData
 methylkit_rstudio.Rproj
 *.Rproj
+.DS_Store
+.Rbuildignore~
 .travis.c.yml
 .travis.r.yml
+
