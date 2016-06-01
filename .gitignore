@@ -5,3 +5,4 @@ methylkit_rstudio.Rproj
 *.Rproj
 .travis.c.yml
 .travis.r.yml
+.DS_Store
