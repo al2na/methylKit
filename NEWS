@@ -39,8 +39,9 @@ NEW FUNCTIONS AND FEATURES
 
 * New function calculateDiffMethDSS() is using beta-binomial model from DSS 
   package to calculate differential methylation. Contributed by 
-  Dhruva Chandramohan with modifications from Altuna Akalin. Original function
-  written by Hao Wao in DSS package.
+  Dhruva Chandramohan with modifications from Altuna Akalin. This is a modified
+  version of the function from DSS package so that it can work with methylKit
+  objects.
 
 * dataSim creates a methylBase object with simulated methylation data. 
   A test is added to check this in R CMD check. Contributed by Adrian Bierling.

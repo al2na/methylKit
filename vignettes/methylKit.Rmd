@@ -1,5 +1,5 @@
 ---
-title: "methylKit: User Guide"
+title: "methylKit: User Guide v`r packageVersion('methylKit')`"
 author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.] 
 
 altuna.akalin@mdc-berlin.de"
@@ -118,8 +118,9 @@ but there are a few exceptions such as the `select`, the `[` and the `selectByOv
 ## Reading the methylation calls from sorted  Bismark alignments
 
 Alternatively, methylation percentage calls can be calculated from
-sorted SAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
-popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `processBismarkAln` function is designed to read-in Bismark SAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily.
+sorted SAM or BAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
+popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `processBismarkAln` function is designed to read-in Bismark SAM/BAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily. BAM files should be sorted and indexed. This
+could be achived with samtools (http://www.htslib.org/doc/samtools.html).
 
 The following command reads a sorted SAM file and creates a `methylRaw` object for CpG methylation.The user has the option to save the methylation call files to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
 
