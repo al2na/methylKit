@@ -20,9 +20,8 @@ Description: methylKit is an R package for DNA methylation analysis and
 License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
-SystemRequirements: Perl
 LinkingTo: Rcpp, Rhtslib, zlibbioc
-biocViews: DNAMethylation,Sequencing, MethylSeq
+biocViews: DNAMethylation, Sequencing, MethylSeq
 Depends:
     R (>= 3.3.0),
     GenomicRanges (>= 1.18.1),
@@ -54,7 +53,7 @@ Collate:
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
-    'processBismarkBam.R'
+    'processBismarkAln.R'
     'RcppExports.R'
     'document_data.R'
     'bedgraph.R'

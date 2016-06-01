@@ -32,9 +32,15 @@ NEW FUNCTIONS AND FEATURES
   methylDiffDB and respective methods implemented. Tests are updated to 
   check proper function in R CMD check. Contributed by Alexander Gosdschan.
 
-* calculateMethDiff now supports basic overdispersion correction and multiple 
-  methods for pvalue-correction.A test is added to check this in R CMD check. 
+* calculateDiffMeth() now supports basic overdispersion correction and multiple 
+  methods for pvalue correction. The function also now handles covariates 
+  such as age,sex etc. A test is added to check this in R CMD check. 
   Contributed by Adrian Bierling.
+
+* New function calculateDiffMethDSS() is using beta-binomial model from DSS 
+  package to calculate differential methylation. Contributed by 
+  Dhruva Chandramohan with modifications from Altuna Akalin. Original function
+  written by Hao Wao in DSS package.
 
 * dataSim creates a methylBase object with simulated methylation data. 
   A test is added to check this in R CMD check. Contributed by Adrian Bierling.

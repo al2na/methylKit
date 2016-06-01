@@ -2,7 +2,8 @@
 
 #' Get methylation percentage from sorted Bismark alignments
 #'
-#' The function calls methylation percentage per base from sorted Bismark SAM or BAM 
+#' The function calls methylation percentage per base from sorted Bismark 
+#' SAM or BAM 
 #' files and reads methylation information as methylKit objects.
 #'  Bismark is a popular aligner for 
 #' high-throughput bisulfite sequencing experiments and it outputs its results in 
@@ -12,13 +13,16 @@
 #' percentage calling using \code{processBismarkAln}. 
 #' SAM/BAM files from other aligners will not work with this function.
 #'
-#' @param location location of sam or bam file(s). If multiple files are given this 
+#' @param location location of sam or bam file(s). If multiple files are 
+#'                  given this 
 #'                  argument must be a list.
 #' @param sample.id the id(s) of samples in the same order as file.  
 #'                  If multiple sam files are given this arugment must be a list.
 #' @param save.folder The folder which will be used to save methylation call files,
-#'                     if set to NULL no methylation call file will be saved as a text file.
-#'                     The files saved can be read into R in less time using \code{methRead} 
+#'                     if set to NULL no methylation call file will be saved 
+#'                     as a text file.
+#'                     The files saved can be read into R in less time using 
+#'                     \code{methRead} 
 #'                     function in \code{methylKit} 
 #' @param save.context A character vector consisting following strings: 
 #' "CpG","CHG","CHH". 
@@ -42,7 +46,7 @@
 #'                for methylation calling.
 #' @param mincov  minimum read coverage to call a methylation status for a base.
 #' @param minqual minimum phred quality score to call a methylation status for a base.
-#' @param phred64 logical ( default: FALSE) you will not need to set this TRUE, 
+#' @param phred64 logical (default: FALSE) you will not need to set this TRUE, 
 #'                Currently bismark gives only phred33 scale
 #' @param treatment treatment vector only to be used when location and sample.id 
 #'                  parameters are \code{list}s and you are trying to read-in 
