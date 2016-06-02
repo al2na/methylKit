@@ -79,11 +79,11 @@ myobj=methRead(file.list,
 
 ##  Reading the methylation call files and store them as flat file database
 
-Sometimes, when dealing with multipe samples and increased sample sizes coming from genome wide bisulfite sequencing experiments, the memory of your  computer might not be sufficient enough. 
+Sometimes, when dealing with multiple samples and increased sample sizes coming from genome wide bisulfite sequencing experiments, the memory of your  computer might not be sufficient enough. 
 
-Therefore methylKit offers a new group of classes, that are basically pendants to the orignal methylKit classes with one important difference: The methylation information, which normally is internally stored as data.frame, is stored in an external bgzipped file and is indexed by tabix [@Li2011], to enable fast retrieval of records or regions. This group contains `methylRawListDB`, `methylRawDB`, `methylBaseDB` and `methylDiffDB`, let us call them  **methylDB** objects.
+Therefore methylKit offers a new group of classes, that are basically pendants to the original methylKit classes with one important difference: The methylation information, which normally is internally stored as data.frame, is stored in an external bgzipped file and is indexed by tabix [@Li2011], to enable fast retrieval of records or regions. This group contains `methylRawListDB`, `methylRawDB`, `methylBaseDB` and `methylDiffDB`, let us call them  **methylDB** objects.
 
-We can now create a `methylRawListDB` object, which stores the same content as *myobj* from above. But the single `methylRaw` objects retrieve their data from the tabix-file linked under dbpath. 
+We can now create a `methylRawListDB` object, which stores the same content as *myobj* from above. But the single `methylRaw` objects retrieve their data from the tabix-file linked under `dbpath`. 
 
 ```{r, message=FALSE}
 library(methylKit)
@@ -120,7 +120,7 @@ but there are a few exceptions such as the `select`, the `[` and the `selectByOv
 Alternatively, methylation percentage calls can be calculated from
 sorted SAM or BAM file(s) from Bismark aligner and read-in to the memory. Bismark is a
 popular aligner for bisulfite sequencing reads, available [here](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) [@Krueger2011]. `processBismarkAln` function is designed to read-in Bismark SAM/BAM files as `methylRaw` or `methylRawList` objects which store per base methylation calls. SAM files must be sorted by chromosome and read position columns, using 'sort' command in unix-like machines will accomplish such a sort easily. BAM files should be sorted and indexed. This
-could be achived with samtools (http://www.htslib.org/doc/samtools.html).
+could be achieved with samtools (http://www.htslib.org/doc/samtools.html).
 
 The following command reads a sorted SAM file and creates a `methylRaw` object for CpG methylation.The user has the option to save the methylation call files to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
 
@@ -294,20 +294,89 @@ After q-value calculation, we can select the differentially methylated regions/b
 
 ```{r}
 # get hyper methylated bases
-myDiff25p.hyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
+myDiff25p.hyper=getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 #
 # get hypo methylated bases
-myDiff25p.hypo=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
+myDiff25p.hypo=getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
 #
 #
 # get all differentially methylated bases
-myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
+myDiff25p=getMethylDiff(myDiff,difference=25,qvalue=0.01)
 ```
 
 We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The `list` shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
 
 ```{r}
 diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+```
+
+## Correcting for overdispersion
+Overdispersion occurs when there is more variablity in the data than assumed
+by the distribution. In the logistic regression model, the response variable
+methylation values for sample groups are expected to have binomial distribution:
+$meth_i ~ Bin(n_i, \pi_i)$.
+Therefore, the methylation values will have the variance $\mu_i (n_i-\mu_i)/n_i$ 
+and mean $\mu_i$. $n_i$ is the coverage for the CpG or a region and $\pi_i$ is 
+the underlying methylation proportion. Overdispersion occurs when the variance
+of $meth_i$ is greater than $\mu_i (n_i-\mu_i)/n_i$. This can be corrected by
+calculating a scaling parameter $\phi$ and adjusting the variance 
+as in $\phi \mu_i (n_i-\mu_i)/n_i$. `calculateDiffMeth` can calculate that
+scaling parameter and use it in statistical tests to correct for overdispersion.
+The parameter is calculated as proposed by [@McCullagh1989] as follows: $\hat{\phi}=X^2/(N-P)$, where $X$ is Pearson goodness-of-fit statistic, 
+$N$ is the number of samples, and $P$ is the number of parameters.
+
+By default,the overdispersion correction is not applied. 
+This can be achieved by setting
+`overdispersion="MN"`. The Chisq-test is used 
+by default only when no overdispersion correction is applied.
+If overdispersion correction is applied, the function automatically switches 
+to the F-test. The Chisq-test can be manually chosen in this case as well, 
+but the F-test only works with overdispersion correction switched on. In both
+cases, the procedure tests if the full model (the model where treatmet is 
+included as an explanatory variable)
+explains the data better than the null model (the model with no treatment,
+just intercept). If there is no effect based on samples being from different
+groups adding a treatment vector for sample groupings will be no better than
+not adding the treatment vector. Below, we simulate methylation data and use
+overdispersion correction for the logistic regression model.
+
+```{r,eval=FALSE}
+
+sim.methylBase1<-dataSim(replicates=6,sites=1000,
+                         treatment=c(rep(1,3),rep(0,3)),
+                        sample.ids=c(paste0("test",1:3),paste0("ctrl",1:3))
+                        )
+
+my.diffMeth<-calculateDiffMeth(sim.methylBase1[1:,],
+                                overdispersion="MN",test="Chisq",mc.cores=1)
+```
+
+
+## Accounting for covariates 
+Covariates can be included in the analysis. The function will then try to 
+separate the influence of the covariates from the 
+treatment effect via the logistic regression model. In this case, we will test
+if full model (model with treatment and covariates) is better than the model with
+the covariates only. If there is no effect due to the treatment (sample groups),
+the full model will not explain the data better than the model with covariates
+only. In `calculateDiffMeth`, this is achieved by
+supplying the `covariates` argument in the format of a `data.frame`.
+Below, we simulate methylation data and add make a `data.frame` for the age.
+The data frame can include more columns, and those columns can also be 
+`factor` variables. The row order of the data.frame should match the order
+of samples in the `methylBase` object.
+
+```{r,eval=FALSE}
+
+covariates=data.frame(age=c(30,80,34,30,80,40))
+sim.methylBase<-dataSim(replicates=6,sites=1000,
+                        treatment=c(rep(1,3),rep(0,3)),
+                        covariates=covariates,
+                        sample.ids=c(paste0("test",1:3),paste0("ctrl",1:3))
+                        )
+my.diffMeth3<-calculateDiffMeth(sim.methylBase,
+                                covariates=covariates,
+                                overdispersion="MN",test="Chisq",mc.cores=1)
 ```
 
 ## Finding differentially methylated bases using multiple-cores
@@ -410,12 +479,16 @@ class(myDiff)
 as(myDiff,"GRanges")
 ```
 
-Also methylDB objects (methylRawDB, methylBaseDB and methylDiffDB) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing ressources are available. 
+In addition, 
+
+## Converting methylKit objects to methylDB objects and vice versa
+methylDB objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing resources are available. This can be done via "as()" function.
 
 ```{r}
 class(myobjDB[[1]])
 as(myobjDB[[1]],"methylRaw")
 ```
+
 
 ## Selection: subsetting methylKit Objects
 
@@ -447,7 +520,7 @@ selectByOverlap(myobj[[1]],my.win)
 
 ## reorganize(): reorganizing samples and treatment vector within methylKit objects
 
-The `methylBase` and `methylRawList`, aswell as methylDB pendants can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
+The `methylBase` and `methylRawList`, as well as methylDB pendants can be reorganized by `reorganize` function. The function can subset the objects based on provided sample ids, it also creates a new treatment vector determining which samples belong to which group. Order of sample ids should match the treatment vector order.
 
 ```{r,eval=FALSE}
 # creates a new methylRawList object

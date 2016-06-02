@@ -526,7 +526,7 @@ setClass("methylDiff",representation(
 #'                                 overdispersion="MN",test="Chisq",mc.cores=1)
 #'                                
 #' @return a methylDiff object containing the differential methylation 
-#'                      statistics and locations
+#'                      statistics and locations for regions or bases
 #' @section Details:
 #' Covariates can be included in the analysis. The function will then try to 
 #' separate the 
