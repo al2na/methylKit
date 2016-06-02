@@ -16,7 +16,7 @@ readBed(location,remove.unsual=TRUE)
 such as: "/home/user/my.bed"}
 
 \item{remove.unsual}{if TRUE(default) remove the chromomesomes with unsual 
-names, mainly random chromsomes etc}
+names, mainly random chromosomes etc}
 }
 \value{
 \code{\link{GRanges}} object

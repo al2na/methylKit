@@ -259,7 +259,7 @@ setMethod("convert.bed2introns" ,signature(bed.df = "data.frame" ),
 #' @param location  location of the file, a character string 
 #' such as: "/home/user/my.bed"
 #' @param remove.unsual if TRUE(default) remove the chromomesomes with unsual 
-#' names, mainly random chromsomes etc
+#' names, mainly random chromosomes etc
 #'
 #' @usage readBed(location,remove.unsual=TRUE)
 #' @return \code{\link{GRanges}} object
@@ -299,8 +299,8 @@ setMethod("readBed", signature(location = "character"),#remove.unsual="logical" 
 #' exon, intron, TSS(transcription start site) and promoter locations
 #'
 #' @param location location of the bed file with 12 or more columns
-#' @param remove.unsual remove the chromomesomes with unsual names, mainly 
-#'        random chromsomes etc
+#' @param remove.unsual remove the chromosomes with unsual names, mainly 
+#'        random chromosomes etc
 #' @param up.flank  up-stream from TSS to detect promoter boundaries
 #' @param down.flank down-stream from TSS to detect promoter boundaries
 #' @param unique.prom     get only the unique promoters, promoter boundaries 
@@ -426,7 +426,7 @@ setMethod("getFlanks", signature(grange= "GRanges"),
 #' @param flank    number of basepairs for the flanking regions
 #' @param clean    If set to TRUE, flanks overlapping with other main features 
 #'                 will be trimmed
-#' @param remove.unsual  remove chromsomes with unsual names random, Un and 
+#' @param remove.unsual  remove chromosomes with unsual names random, Un and 
 #' antyhing with "_" character
 #' @param feature.flank.name the names for feature and flank ranges, it should 
 #' be a character vector of length 2. example: c("CpGi","shores")

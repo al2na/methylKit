@@ -17,7 +17,7 @@ readFeatureFlank(location, remove.unsual = TRUE, flank = 2000,
 \arguments{
 \item{location}{for the bed file of the feature}
 
-\item{remove.unsual}{remove chromsomes with unsual names random, Un and 
+\item{remove.unsual}{remove chromosomes with unsual names random, Un and 
 antyhing with "_" character}
 
 \item{flank}{number of basepairs for the flanking regions}

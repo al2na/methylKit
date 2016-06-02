@@ -9,7 +9,7 @@
 #' @param dir working directory
 #' @param filename the output file name
 #' @param mc.cores number of multiple cores. If mc.cores>1 temporary files for
-#'   each chromsome will be created prior to cat, zipping and indexing the
+#'   each chromosome will be created prior to cat, zipping and indexing the
 #'   single output file
 #' @param all logical parameter passed to \code{\link{merge}} function
 #'   
