@@ -64,6 +64,7 @@ install_github("al2na/methylKit", build_vignettes=FALSE,
   repos=BiocInstaller::biocinstallRepos(),
   dependencies=TRUE)
 ```
+if this doesn't work, you might need to add `type="source"` argument.
 ### Install the development version
 ```r
 library(devtools)
@@ -71,6 +72,7 @@ install_github("al2na/methylKit", build_vignettes=FALSE,
   repos=BiocInstaller::biocinstallRepos(),ref="development",
   dependencies=TRUE)
 ```
+if this doesn't work, you might need to add `type="source"` argument.
 
 
 -------
