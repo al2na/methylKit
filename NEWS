@@ -16,8 +16,8 @@ IMPROVEMENTS AND BUG FIXES
 * Improved documentation for methRead() (old read())
 * Now, bismark cytosine report and coverage files can be read using methRead()
   pipeline argument. see ?methRead
-* Ported the Perl script for methylation base calling to C/C++ style, 
-  for easier integration via Rcpp. Contributed by Alexander Gosdschan.
+* Ported the Perl script for methylation base calling to C/C++ via Rcpp. 
+  Contributed by Alexander Gosdschan.
 * methRead() uses data.table::fread() to read files faster.
 
 NEW FUNCTIONS AND FEATURES

@@ -94,7 +94,7 @@ Details section.}
 }
 \value{
 a methylDiff object containing the differential methylation 
-                     statistics and locations
+                     statistics and locations for regions or bases
 }
 \description{
 The function calculates differential methylation statistics between two groups 

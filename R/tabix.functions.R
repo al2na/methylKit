@@ -16,7 +16,7 @@
 #'   mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1)
 #'   
 #' @usage mergeTabix(tabixList,dir,filename,mc.cores=1 ,all=FALSE)
-#'   
+#' @noRd
 mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
   
   # get outfile
@@ -81,8 +81,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
 #' @param outfile name of the output file
 #' 
 #' @usage df2tabix(df,outfile)
-#' 
-df2tabix<-function(df,outfile){
+#' @noRd
+df2tabix<-function(df,outfile,rm.file=TRUE){
   
   if(file.exists(outfile)){
     message("overwriting ",outfile)
@@ -96,7 +96,7 @@ df2tabix<-function(df,outfile){
   
   #make tabix out if the file
   makeMethTabix( outfile ,skip=0)
-  
+  if(rm.file){file.remove(outfile)}
 }
 
 
@@ -107,6 +107,7 @@ df2tabix<-function(df,outfile){
 #' @param sort sort list of subfiles in alpha, numerical way
 #' 
 #' @usage catsub2tabix(dir,pattern,filename,sort=F)
+#' @noRd
 catsub2tabix<-function(dir,pattern,filename,sort=F){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
@@ -137,7 +138,7 @@ catsub2tabix<-function(dir,pattern,filename,sort=F){
 #' @param skip number of lines to skip
 #' 
 #' @usage makeMethTabix(filepath,skip=0)
-#' 
+#' @noRd
 makeMethTabix<-function(filepath,skip=0){
   message("compressing the file with bgzip...")
   zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
@@ -158,6 +159,7 @@ makeMethTabix<-function(filepath,skip=0){
 #' @param filename the output file name
 #' @param parallel logical to determine internal processing of output
 #' @param all logical parameter passed to \code{\link{merge}} function
+#' @noRd
 mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   #get first file on the list
@@ -203,6 +205,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
 # @example
 # tbxFile=system.file("extdata", "ctrl1.txt", package = "methylKit")
 #  getTabixByChr(chr="chr21",tbxFile)
+#' @noRd
 getTabixByChr<-function(tbxFile,chr="chr10",
                         return.type=c("data.table","data.frame","GRanges")){
   
@@ -231,6 +234,7 @@ getTabixByChr<-function(tbxFile,chr="chr10",
 # granges <- as(methylRawListDB[[1]],"GRanges")
 # tbxFile=methylRawListDB[[1]]@dbpath
 #  getTabixByOverlap(granges=granges[1:50],tbxFile)
+#' @noRd
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -255,9 +259,10 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 
 #' get data from meth tabix for a given number of rows
 #'
-# @example
-# tbxFile=methylRawListDB[[1]]@dbpath
-#  headTabix(tbxFile)
+#' @example
+#' tbxFile=methylRawListDB[[1]]@dbpath
+#' headTabix(tbxFile)
+#' @noRd
 headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -274,6 +279,7 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 # @example
 # tbxFile=methylRawListDB[[1]]@dbpath
 #  getTabixByChunk( tbxFile,chunk.size=10)
+#' @noRd
 getTabixByChunk<-function(tbxFile,chunk.size=1e6,
                           return.type=c("data.table","data.frame","GRanges")){
   
@@ -300,6 +306,7 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
 
 #' convert methylKit tabix to data.table
 # assuming you get a list length 1
+#' @noRd
 tabix2dt<-function(tabixRes){
 
     data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
@@ -309,6 +316,7 @@ tabix2dt<-function(tabixRes){
 
 #' convert methylKit tabix to data.frame
 # assuming you get a list length 1
+#' @noRd
 tabix2df<-function(tabixRes){
 
     data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
@@ -319,6 +327,7 @@ tabix2df<-function(tabixRes){
 #' convert methylKit tabix to GRanges without Metacolumns
 # assuming you get a list length 1
 # for GRanges object with metacolumns coerce from methylDB object
+#' @noRd
 tabix2gr<-function(tabixRes){
   
     from <- data.table::fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
@@ -352,6 +361,7 @@ tabix2gr<-function(tabixRes){
 #' a path, just a file name.
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
+#' @noRd
 applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table","text"),
                           FUN,...){
@@ -494,6 +504,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
 #' 
 #' @return either a path to a tabix or text file, or a data frame or data.table
+#' @noRd
 applyTbxByChr<-function(tbxFile,chrs,dir,filename,
                         return.type=c("tabix","data.frame","data.table"),
                         FUN,...,mc.cores=1){
@@ -577,6 +588,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
 #' a path, just a file name.
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
+#' @noRd
 applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table"),
                           FUN,...){
@@ -617,9 +629,11 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
       
       if( class(data)== "try-error") {
         
-#         warning( paste("No records found in range between", min(IRanges::end(region.split[[chunk.num]])),
+#         warning( paste("No records found in range between",
+        # min(IRanges::end(region.split[[chunk.num]])),
 #                        "and",max(IRanges::end(region.split[[chunk.num]])),
-#                        "for Chromosome",unique(as.character(region.split[[chunk.num]]@seqnames))))
+#                        "for Chromosome",
+        # unique(as.character(region.split[[chunk.num]]@seqnames))))
         
       } else {
       

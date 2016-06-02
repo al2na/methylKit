@@ -200,7 +200,8 @@ setMethod("getMethylationStats", "methylRawDB",
             numCs=coverage=strand=.=NULL
             tmp = applyTbxByChunk(object@dbpath,chunk.size = chunk.size,
                                   return.type = "data.table", 
-                                  FUN = function(x) { .setMethylDBNames(x,"methylRawDB"); 
+                                  FUN = function(x) { 
+                                    .setMethylDBNames(x,"methylRawDB"); 
                                     return(x[,.(strand,coverage,numCs)])} )
             
             
@@ -440,7 +441,8 @@ setMethod("normalizeCoverage", "methylRawListDB",
                 
                 filename <- paste0(paste(obj[[i]]@sample.id,collapse = "_"),
                                    suffix,".txt")
-                #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",obj[[i]]@dbpath)),suffix,".txt")
+                #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",
+                #obj[[i]]@dbpath)),suffix,".txt")
                 
                 newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,
                                              chunk.size = chunk.size, 
@@ -504,7 +506,8 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
           obj <- methylObj[[ col.ord[i]  ]]
           filename <- paste0(dir,"/",paste(obj@sample.ids,collapse = "_"),
                              suffix,".txt.bgz")
-          #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = "",obj@dbpath)),suffix,".txt.bgz")
+          #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = 
+          # "",obj@dbpath)),suffix,".txt.bgz")
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -520,7 +523,8 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
           obj <- methylObj[[ col.ord[i]  ]]
           filename <- paste0(paste(obj@sample.ids,collapse = "_")
                              ,suffix,".txt.bgz")
-          #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),suffix,".txt.bgz")
+          #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
+          # suffix,".txt.bgz")
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -561,113 +565,120 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
 setMethod("unite", "methylRawListDB",
           function(object,destrand,min.per.group,chunk.size,mc.cores,save.db=TRUE,...){
             
-            if(save.db) {
-              
-              #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
-              if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
-              {
-                stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
-              }
-              if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
-              {
-                stop("supplied methylRawList object have different genome assemblies")
-              }                     
-              if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
-              {
-                stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
-              } 
-              if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  )
-              {
-                stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")
-              }
-              
-              if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
-              # destrand single objects contained in methylRawListDB
-              if(destrand) { 
-                
-                destrandFun <- function(obj){
-                  
-                  if(obj@resolution == "base") {
-                    dir <- dirname(obj@dbpath)
-                    filename <- paste(basename(gsub(".txt.bgz","",obj@dbpath)),"destrand.txt",sep="_")
-                    # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-                    newdbpath <- applyTbxByChunk(obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename,return.type = "tabix", 
-                                                 FUN = function(x) { .CpG.dinuc.unifyOld(.setMethylDBNames(x,"methylRawDB") )})
-                    
-                    readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
-                                    sample.id = obj@sample.id,
-                                    assembly = obj@assembly, context = obj@context,
-                                    resolution = obj@resolution)
-                  }else {obj}
-                  
-                }
-                new.list=lapply(object,destrandFun)
-                object <- new("methylRawListDB", new.list,treatment=object@treatment)
-                
-                on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",full.names = TRUE)))    
-              }
-              #merge raw methylation calls together
-              
-              objList <- sapply(object,FUN = function(x) x@dbpath)
-              
-              args <- list(...)
-              #print(args)
-              if( ( "dbdir" %in% names(args)) )
-              { 
-                dir <- .check.dbdir(args$dbdir) 
-              } else {
-                dir <- dirname(object[[1]]@dbpath)
-              }
-              
-              filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
-              
-              if(is.null(min.per.group)) {
-                
-                dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
-                dbpath <- gsub(".tbi","",dbpath)
-                
-              } else {
-                # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
-                
-                # keep rows with no matching in all samples  
-                tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
-                tmpPath <- gsub(".tbi","",tmpPath)
-                
-                # get indices of coverage in the data frame 
-                coverage.ind=seq(5,by=3,length.out=length(object))
-                
-                filter <- function(df, coverage.ind, treatment,min.per.group){
-                  
-                  df <- as.data.table(df)
-                  for(i in unique(treatment) ){
-                    
-                    my.ind=coverage.ind[treatment==i]
-                    ldat = !is.na(df[,my.ind,with=FALSE])
-                    if(  is.null(dim(ldat))  ){  # if there is only one dimension
-                      df=df[ldat>=min.per.group,]
-                    }else{
-                      df=df[rowSums(ldat)>=min.per.group,]
-                    }
-                  }
-                  return(as.data.frame(df))
-                }
-                
-                dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
-                                          return.type = "tabix", FUN = filter,treatment=object@treatment,
-                                          coverage.ind=coverage.ind,min.per.group=min.per.group)
-                
-                unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
-              }
-              readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
-                               sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
-                               context = object[[1]]@context,resolution = object[[1]]@resolution,
-                               treatment = object@treatment,destranded = destrand)
-            } else {
-              obj <- object
-              class(obj) <- "methylRawList"
-              unite(obj,destrand,min.per.group,chunk.size,mc.cores,save.db=FALSE,...)
-            }
-          }
+if(save.db) {
+  
+  #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
+  if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
+  {
+    stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
+  }
+  if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
+  {
+    stop("supplied methylRawList object have different genome assemblies")
+  }                     
+  if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
+  {
+    stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
+  } 
+  if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  )
+  {
+    stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")
+  }
+  
+  if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
+  # destrand single objects contained in methylRawListDB
+  if(destrand) { 
+    
+    destrandFun <- function(obj){
+      
+      if(obj@resolution == "base") {
+        dir <- dirname(obj@dbpath)
+        filename <- paste(basename(gsub(".txt.bgz","",obj@dbpath)),
+                          "destrand.txt",sep="_")
+        # need to use .CpG.dinuc.unifyOld because output needs to be ordered
+        newdbpath <- applyTbxByChunk(obj@dbpath,
+                                     chunk.size = chunk.size, 
+                                     dir=dir,filename = filename,
+                                     return.type = "tabix", 
+                                     FUN = function(x) { 
+                                       .CpG.dinuc.unifyOld(.setMethylDBNames(x,
+                                                            "methylRawDB") )})
+        
+        readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                        sample.id = obj@sample.id,
+                        assembly = obj@assembly, context = obj@context,
+                        resolution = obj@resolution)
+      }else {obj}
+      
+    }
+    new.list=lapply(object,destrandFun)
+    object <- new("methylRawListDB", new.list,treatment=object@treatment)
+    
+    on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",
+                              full.names = TRUE)))    
+  }
+  #merge raw methylation calls together
+  
+  objList <- sapply(object,FUN = function(x) x@dbpath)
+  
+  args <- list(...)
+  #print(args)
+  if( ( "dbdir" %in% names(args)) )
+  { 
+    dir <- .check.dbdir(args$dbdir) 
+  } else {
+    dir <- dirname(object[[1]]@dbpath)
+  }
+  
+  filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
+  
+  if(is.null(min.per.group)) {
+    
+    dbpath <- mergeTabix(tabixList = objList ,dir = dir,filename = filename,mc.cores = mc.cores) 
+    dbpath <- gsub(".tbi","",dbpath)
+    
+  } else {
+    # if the the min.per.group argument is supplied, remove the rows that doesn't have enough coverage
+    
+    # keep rows with no matching in all samples  
+    tmpPath <- mergeTabix(tabixList = objList ,dir = dir,filename = paste0(filename,".tmp"),mc.cores = mc.cores,all=TRUE) 
+    tmpPath <- gsub(".tbi","",tmpPath)
+    
+    # get indices of coverage in the data frame 
+    coverage.ind=seq(5,by=3,length.out=length(object))
+    
+    filter <- function(df, coverage.ind, treatment,min.per.group){
+      
+      df <- as.data.table(df)
+      for(i in unique(treatment) ){
+        
+        my.ind=coverage.ind[treatment==i]
+        ldat = !is.na(df[,my.ind,with=FALSE])
+        if(  is.null(dim(ldat))  ){  # if there is only one dimension
+          df=df[ldat>=min.per.group,]
+        }else{
+          df=df[rowSums(ldat)>=min.per.group,]
+        }
+      }
+      return(as.data.frame(df))
+    }
+    
+    dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
+                              return.type = "tabix", FUN = filter,treatment=object@treatment,
+                              coverage.ind=coverage.ind,min.per.group=min.per.group)
+    
+    unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
+  }
+  readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+                   sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                   context = object[[1]]@context,resolution = object[[1]]@resolution,
+                   treatment = object@treatment,destranded = destrand)
+} else {
+  obj <- object
+  class(obj) <- "methylRawList"
+  unite(obj,destrand,min.per.group,chunk.size,mc.cores,save.db=FALSE,...)
+}
+}
 ) 
 
 #' @rdname getCorrelation-methods
@@ -675,105 +686,116 @@ setMethod("unite", "methylRawListDB",
 setMethod("getCorrelation", "methylBaseDB",
           function(object,method,plot,nrow=2e6){
             
-            if(is.null(nrow)){ 
-              
-              meth.fun <- function(data, numCs.index, numTs.index){
-                
-                data[, numCs.index]/( data[,numCs.index] + data[,numTs.index] )
-              }
-              meth.mat = applyTbxByChunk(object@dbpath,return.type = "data.frame",
-                                         FUN = meth.fun, numCs.index = object@numCs.index,
-                                         numTs.index = object@numTs.index)
-            }else{
-              data = headTabix(object@dbpath,nrow=nrow,return.type = "data.frame")
-              meth.mat = data[, object@numCs.index]/( data[,object@numCs.index] + data[,object@numTs.index] )
-            }
-            
-            names(meth.mat)=object@sample.ids
-            print( cor(meth.mat,method=method) )
-            panel.cor.pearson <- function(x, y, digits=2, prefix="", cex.cor, ...)
-            {
-              usr <- par("usr"); on.exit(par(usr))
-              par(usr = c(0, 1, 0, 1))
-              r <- abs(cor(x, y,method="pearson"))
-              txt <- format(c(r, 0.123456789), digits=digits)[1]
-              txt <- paste(prefix, txt, sep="")
-              if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-              text(0.5, 0.5, txt, cex = cex.cor * r)
-            }
-            
-            panel.cor.kendall <- function(x, y, digits=2, prefix="", cex.cor, ...)
-            {
-              usr <- par("usr"); on.exit(par(usr))
-              par(usr = c(0, 1, 0, 1))
-              r <- abs(cor(x, y,method="kendall"))
-              txt <- format(c(r, 0.123456789), digits=digits)[1]
-              txt <- paste(prefix, txt, sep="")
-              if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-              text(0.5, 0.5, txt, cex = cex.cor * r)
-            }
-            
-            panel.cor.spearman <- function(x, y, digits=2, prefix="", cex.cor, ...)
-            {
-              usr <- par("usr"); on.exit(par(usr))
-              par(usr = c(0, 1, 0, 1))
-              r <- abs(cor(x, y,method="spearman"))
-              txt <- format(c(r, 0.123456789), digits=digits)[1]
-              txt <- paste(prefix, txt, sep="")
-              if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-              text(0.5, 0.5, txt, cex = cex.cor * r)
-            }
-            
-            panel.my.smooth2<-function(x, y, col = par("col"), bg = NA, pch = par("pch"), cex = 1, col.smooth = "darkgreen", span = 2/3, iter = 3, ...) 
-            {
-              par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
-              smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
-              ok <- is.finite(x) & is.finite(y)
-              if (any(ok)) 
-                lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...)
-              abline(lm(y[ok]~x[ok]), col="red")
-            }
-            
-            panel.my.smooth<-function(x, y, col = par("col"), bg = NA, pch = par("pch"), cex = 0.3, col.smooth = "green", span = 2/3, iter = 3, ...) 
-            {
-              points(x, y, pch = 20, col = densCols(x,y,colramp=colorRampPalette(topo.colors(20))), bg = bg, cex = 0.1)
-              ok <- is.finite(x) & is.finite(y)
-              if (any(ok)){
-                lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...);
-                abline(lm(y[ok]~x[ok]), col="red")}
-            }
-            panel.hist <- function(x, ...)
-            {
-              usr <- par("usr"); on.exit(par(usr))
-              par(usr = c(usr[1:2], 0, 1.5) )
-              h <- hist(x, plot = FALSE)
-              breaks <- h$breaks; nB <- length(breaks)
-              y <- h$counts; y <- y/max(y)
-              rect(breaks[-nB], 0, breaks[-1], y, col="cyan", ...)
-            }
-            
-            if(plot)
-            {  
-              if(method=="spearman")
-              { pairs(meth.mat, 
-                      lower.panel=panel.my.smooth2, 
-                      upper.panel=panel.cor.spearman,
-                      diag.panel=panel.hist,main=paste(object@context, object@resolution ,method,"cor.") )
-              }
-              if(method=="kendall")
-              { pairs(meth.mat, 
-                      lower.panel=panel.my.smooth2, 
-                      upper.panel=panel.cor.kendall,
-                      diag.panel=panel.hist,main=paste(object@context, object@resolution ,method,"cor.") )
-              }
-              if(method=="pearson")
-              { pairs(meth.mat, 
-                      lower.panel=panel.my.smooth2, 
-                      upper.panel=panel.cor.pearson,
-                      diag.panel=panel.hist,main=paste(object@context, object@resolution ,method,"cor.") )
-              }
-            }
-          }  
+  if(is.null(nrow)){ 
+    
+    meth.fun <- function(data, numCs.index, numTs.index){
+      
+      data[, numCs.index]/( data[,numCs.index] + data[,numTs.index] )
+    }
+    meth.mat = applyTbxByChunk(object@dbpath,return.type = "data.frame",
+                               FUN = meth.fun, numCs.index = object@numCs.index,
+                               numTs.index = object@numTs.index)
+  }else{
+    data = headTabix(object@dbpath,nrow=nrow,return.type = "data.frame")
+    meth.mat = data[, object@numCs.index]/( data[,object@numCs.index] + 
+                                              data[,object@numTs.index] )
+  }
+  
+  names(meth.mat)=object@sample.ids
+  print( cor(meth.mat,method=method) )
+  panel.cor.pearson <- function(x, y, digits=2, prefix="", cex.cor, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y,method="pearson"))
+    txt <- format(c(r, 0.123456789), digits=digits)[1]
+    txt <- paste(prefix, txt, sep="")
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+  }
+  
+  panel.cor.kendall <- function(x, y, digits=2, prefix="", cex.cor, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y,method="kendall"))
+    txt <- format(c(r, 0.123456789), digits=digits)[1]
+    txt <- paste(prefix, txt, sep="")
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+  }
+  
+  panel.cor.spearman <- function(x, y, digits=2, prefix="", cex.cor, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y,method="spearman"))
+    txt <- format(c(r, 0.123456789), digits=digits)[1]
+    txt <- paste(prefix, txt, sep="")
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+  }
+  
+  panel.my.smooth2<-function(x, y, col = par("col"), 
+                             bg = NA, pch = par("pch"), cex = 1, 
+                             col.smooth = "darkgreen", span = 2/3, 
+                             iter = 3, ...) 
+  {
+    par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
+    smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok)) 
+      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...)
+    abline(lm(y[ok]~x[ok]), col="red")
+  }
+  
+  panel.my.smooth<-function(x, y, col = par("col"), bg = NA, 
+                            pch = par("pch"), cex = 0.3, 
+                            col.smooth = "green", span = 2/3, iter = 3, ...) 
+  {
+    points(x, y, pch = 20, col = densCols(x,y,
+                                          colramp=colorRampPalette(topo.colors(20))), 
+           bg = bg, cex = 0.1)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok)){
+      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...);
+      abline(lm(y[ok]~x[ok]), col="red")}
+  }
+  panel.hist <- function(x, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col="cyan", ...)
+  }
+  
+  if(plot)
+  {  
+    if(method=="spearman")
+    { pairs(meth.mat, 
+            lower.panel=panel.my.smooth2, 
+            upper.panel=panel.cor.spearman,
+            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
+                                             method,"cor.") )
+    }
+    if(method=="kendall")
+    { pairs(meth.mat, 
+            lower.panel=panel.my.smooth2, 
+            upper.panel=panel.cor.kendall,
+            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
+                                             method,"cor.") )
+    }
+    if(method=="pearson")
+    { pairs(meth.mat, 
+            lower.panel=panel.my.smooth2, 
+            upper.panel=panel.cor.pearson,
+            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
+                                             method,"cor.") )
+    }
+  }
+}  
 )
 
 #' @rdname reconstruct-methods
@@ -790,7 +812,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
       }
       
       # check if methMat is percent methylation matrix fitting to mBase  
-      if(nrow(methMat) != mBase@num.records | ncol(methMat) != length(mBase@numCs.index) ){
+      if(nrow(methMat) != mBase@num.records | ncol(methMat) != 
+         length(mBase@numCs.index) ){
         stop("\nmethMat dimensions do not match number of samples\n",
              "and number of bases in methylBase object\n")
       }
@@ -851,8 +874,11 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
     
     con <- file(methMat,open = "r") 
     
-    newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                                 return.type = "tabix", FUN = reconstr, con,chunk.size,mBase@numCs.index,mBase@numTs.index)
+    newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, 
+                                 dir=dir,filename = filename, 
+                                 return.type = "tabix", FUN = reconstr, 
+                                 con,chunk.size,mBase@numCs.index,
+                                 mBase@numTs.index)
     
     close(con)
     if(file.exists(matFile)) {unlink(matFile)}
@@ -872,7 +898,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"), function(methMat,mBase,
 
 #' @rdname removeComp-methods
 #' @aliases removeComp,methylBaseDB-method
-setMethod("removeComp",signature(mBase="methylBaseDB"), function(mBase,comp,chunk.size,save.db=TRUE,...){
+setMethod("removeComp",signature(mBase="methylBaseDB"), 
+          function(mBase,comp,chunk.size,save.db=TRUE,...){
   if(is.na(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
@@ -908,14 +935,15 @@ setMethod("percMethylation", "methylBaseDB",
             
             meth.fun <- function(data, numCs.index, numTs.index){
               
-              dat=100 * data[, numCs.index]/( data[,numCs.index] + data[,numTs.index] )
+              dat=100 * data[, numCs.index]/( data[,numCs.index] + 
+                                                data[,numTs.index] )
               rownames(dat)=paste(as.character(data[,1]),
                                   data[,2],data[,3],sep=".")
             }
             if (save.txt) {
               
               filename <- paste0(basename(gsub(".txt.bgz","",
-                                               methylBase.obj@dbpath)),"_methMath.txt")
+                                      methylBase.obj@dbpath)),"_methMath.txt")
               
               meth.mat = applyTbxByChunk(methylBase.obj@dbpath,
                                          return.type = "text", 
@@ -952,9 +980,11 @@ setMethod("clusterSamples", "methylBaseDB",
                    filterByQuantile, plot,chunk.size)
           {
             
-            getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, sd.threshold, filterByQuantile){
+            getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, 
+                                   sd.threshold, filterByQuantile){
               
-              # remove rows containing NA values, they might be introduced at unite step
+              # remove rows containing NA values, they might be 
+              # introduced at unite step
               mat      =mat[ rowSums(is.na(mat))==0, ] 
               
               meth.mat = mat[, numCs.index]/
@@ -972,9 +1002,14 @@ setMethod("clusterSamples", "methylBaseDB",
               }
             }
             
-            meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,return.type = "data.frame",FUN=getMethMat,
-                                        numCs.ind=.Object@numCs.index,numTs.ind=.Object@numTs.index,
-                                        sd.filter=sd.filter, sd.threshold=sd.threshold, filterByQuantile=filterByQuantile)
+            meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,
+                                        return.type = "data.frame",
+                                        FUN=getMethMat,
+                                        numCs.ind=.Object@numCs.index,
+                                        numTs.ind=.Object@numTs.index,
+                                        sd.filter=sd.filter, 
+                                        sd.threshold=sd.threshold, 
+                                        filterByQuantile=filterByQuantile)
             
             names(meth.mat)=.Object@sample.ids
             
@@ -992,52 +1027,56 @@ setMethod("PCASamples", "methylBaseDB",
           function(.Object, screeplot, adj.lim,scale,center,comp,
                    transpose,sd.filter, sd.threshold, 
                    filterByQuantile,obj.return,chunk.size)
-          {
-            
-            getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, sd.threshold, filterByQuantile){
-              
-              # remove rows containing NA values, they might be introduced at unite step
-              mat      =mat[ rowSums(is.na(mat))==0, ] 
-              
-              meth.mat = mat[, numCs.index]/
-                (mat[,numCs.index] + mat[,numTs.index] )                                      
-              
-              
-              # if Std. Dev. filter is on remove rows with low variation
-              if(sd.filter){
-                if(filterByQuantile){
-                  sds=rowSds(as.matrix(meth.mat))
-                  cutoff=quantile(sds,sd.threshold)
-                  meth.mat=meth.mat[sds>cutoff,]
-                }else{
-                  meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
-                }
-              }
-              
-            }
-            
-            meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,return.type = "data.frame",FUN=getMethMat,
-                                        numCs.ind=.Object@numCs.index,numTs.ind=.Object@numTs.index,
-                                        sd.filter=sd.filter, sd.threshold=sd.threshold, filterByQuantile=filterByQuantile)
-            
-            names(meth.mat)=.Object@sample.ids
-            
-            if(transpose){
-              .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
-                        adj.lim=adj.lim, 
-                        treatment=.Object@treatment,sample.ids=.Object@sample.ids,
-                        context=.Object@context
-                        ,scale=scale,center=center,obj.return=obj.return)
-              
-            }else{
-              .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
-                       adj.lim=adj.lim, 
-                       treatment=.Object@treatment,sample.ids=.Object@sample.ids,
-                       context=.Object@context,
-                       scale=scale,center=center,  obj.return=obj.return)
-            }
-            
-          }      
+{
+  
+  getMethMat <- function(mat,numCs.index,numTs.index,sd.filter, 
+                         sd.threshold, filterByQuantile){
+    
+    # remove rows containing NA values, they might be introduced at unite step
+    mat      =mat[ rowSums(is.na(mat))==0, ] 
+    
+    meth.mat = mat[, numCs.index]/
+      (mat[,numCs.index] + mat[,numTs.index] )                                      
+    
+    
+    # if Std. Dev. filter is on remove rows with low variation
+    if(sd.filter){
+      if(filterByQuantile){
+        sds=rowSds(as.matrix(meth.mat))
+        cutoff=quantile(sds,sd.threshold)
+        meth.mat=meth.mat[sds>cutoff,]
+      }else{
+        meth.mat=meth.mat[rowSds(as.matrix(meth.mat))>sd.threshold,]
+      }
+    }
+    
+  }
+  
+  meth.mat <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size,
+                              return.type = "data.frame",FUN=getMethMat,
+                              numCs.ind=.Object@numCs.index,
+                              numTs.ind=.Object@numTs.index,
+                              sd.filter=sd.filter, sd.threshold=sd.threshold, 
+                              filterByQuantile=filterByQuantile)
+  
+  names(meth.mat)=.Object@sample.ids
+  
+  if(transpose){
+    .pcaPlotT(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+              adj.lim=adj.lim, 
+              treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+              context=.Object@context
+              ,scale=scale,center=center,obj.return=obj.return)
+    
+  }else{
+    .pcaPlot(meth.mat,comp1=comp[1],comp2=comp[2],screeplot=screeplot, 
+             adj.lim=adj.lim, 
+             treatment=.Object@treatment,sample.ids=.Object@sample.ids,
+             context=.Object@context,
+             scale=scale,center=center,  obj.return=obj.return)
+  }
+  
+}      
 )
 
 #' @rdname reorganize-methods
@@ -1045,64 +1084,70 @@ setMethod("PCASamples", "methylBaseDB",
 setMethod("reorganize", signature(methylObj="methylBaseDB"),
           function(methylObj,sample.ids,treatment,chunk.size,save.db=TRUE,...){
             
-            #sample.ids length and treatment length should be equal
-            if(length(sample.ids) != length(treatment) ){
-              stop("length of sample.ids should be equal to treatment")
-            }
-            
-            if( ! all(sample.ids %in% methylObj@sample.ids) ){
-              stop("provided sample.ids is not a subset of the sample ids of the object")
-            }
-            
-            if(save.db) {
-              
-              temp.id = methylObj@sample.ids # get the subset of ids
-              col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] # get the column order in the original matrix
-              
-              ind.mat=rbind(methylObj@coverage.index[col.ord],  # make a matrix indices for easy access 
-                            methylObj@numCs.index[col.ord],
-                            methylObj@numTs.index[col.ord])
-              
-              
-              getSub <- function(data,ind.mat) {
-                
-                newdat =data[,1:4]
-                for(i in 1:ncol(ind.mat))
-                {
-                  newdat=cbind(newdat,data[,ind.mat[,i]])
-                }
-                return(newdat)
-              }
-              
-              # catch additional args 
-              args <- list(...)
-              
-              if( ( "dbdir" %in% names(args))   ){
-                 dir <- .check.dbdir(args$dbdir) 
-              } else { dir <- dirname(methylObj@dbpath) }
-              
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- NULL
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
-              # filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
-              
-              newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                                           return.type = "tabix", FUN = getSub, ind.mat=ind.mat) 
-              
-              readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,sample.ids=sample.ids,
-                               assembly=methylObj@assembly,context=methylObj@context,
-                               treatment=treatment,destranded=methylObj@destranded, 
-                               resolution=methylObj@resolution )
-            } else {
-              
-              obj <- methylObj[]
-              reorganize(obj,sample.ids,treatment,save.db=FALSE,...)
-              
-            }
+  #sample.ids length and treatment length should be equal
+  if(length(sample.ids) != length(treatment) ){
+    stop("length of sample.ids should be equal to treatment")
+  }
+  
+  if( ! all(sample.ids %in% methylObj@sample.ids) ){
+    stop("provided sample.ids is not a subset of the sample ids of the object")
+  }
+  
+  if(save.db) {
+    
+    temp.id = methylObj@sample.ids # get the subset of ids
+    # get the column order in the original matrix
+    col.ord = order(match(temp.id,sample.ids))[1:length(sample.ids)] 
+    
+    # make a matrix indices for easy access 
+    ind.mat=rbind(methylObj@coverage.index[col.ord],  
+                  methylObj@numCs.index[col.ord],
+                  methylObj@numTs.index[col.ord])
+    
+    
+    getSub <- function(data,ind.mat) {
+      
+      newdat =data[,1:4]
+      for(i in 1:ncol(ind.mat))
+      {
+        newdat=cbind(newdat,data[,ind.mat[,i]])
+      }
+      return(newdat)
+    }
+    
+    # catch additional args 
+    args <- list(...)
+    
+    if( ( "dbdir" %in% names(args))   ){
+       dir <- .check.dbdir(args$dbdir) 
+    } else { dir <- dirname(methylObj@dbpath) }
+    
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- NULL
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+    
+    newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,
+                                 chunk.size = chunk.size, dir=dir,
+                                 filename = filename, 
+                                 return.type = "tabix", FUN = getSub, 
+                                 ind.mat=ind.mat) 
+    
+    readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,
+                     sample.ids=sample.ids,
+                     assembly=methylObj@assembly,context=methylObj@context,
+                     treatment=treatment,destranded=methylObj@destranded, 
+                     resolution=methylObj@resolution )
+  } else {
+    
+    obj <- methylObj[]
+    reorganize(obj,sample.ids,treatment,save.db=FALSE,...)
+    
+  }
 })
 
 #' @rdname pool-methods
@@ -1110,64 +1155,68 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
 setMethod("pool", "methylBaseDB",
           function(obj,sample.ids,chunk.size,save.db,...){
             
-            if(save.db) {
-              
-              mypool <- function(df,treatment,numCs.index){
-                
-                treat=unique(treatment)
-                res=df[,1:4]
-                for(i in 1:length(treat) ){
-                  
-                  # get indices
-                  setCs=numCs.index[treatment==treat[i]]
-                  setTs=setCs+1
-                  set.cov=setCs-1
-                  
-                  if(length(setCs)>1){
-                    Cs=rowSums(df[,setCs],na.rm=TRUE)
-                    Ts=rowSums(df[,setTs],na.rm=TRUE)
-                    covs=rowSums(df[,set.cov],na.rm=TRUE)
-                    
-                  }else{
-                    Cs  =df[,setCs]
-                    Ts  =df[,setTs]
-                    covs=df[,set.cov]
-                  }
-                  res=cbind(res,covs,Cs,Ts) # bind new data
-                }
-                return(res)
-              }
-              
-              treat = unique(obj@treatment)
-              coverage.ind=3*(1:length(treat)) + 2
-              
-              # catch additional args 
-              args <- list(...)
-              
-              if( ( "dbdir" %in% names(args))   ){
-                if( !(is.null(args$dbdir)) ) { 
-                  dir <- .check.dbdir(args$dbdir) }
-              } else { dir <- dirname(obj@dbpath) }
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- NULL
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
-              
-              newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size, dir=dir,filename = filename, 
-                                           return.type = "tabix", FUN = mypool, treatment = obj@treatment,numCs.index = obj@numCs.index) 
-              
-              readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,sample.ids=sample.ids,
-                               assembly=obj@assembly,context=obj@context,
-                               treatment=treat,destranded=obj@destranded,
-                               resolution=obj@resolution )
-            } else {
-              
-              tmp <- obj[]
-              pool(tmp,sample.ids,save.db=FALSE)
-            }
+  if(save.db) {
+    
+    mypool <- function(df,treatment,numCs.index){
+      
+      treat=unique(treatment)
+      res=df[,1:4]
+      for(i in 1:length(treat) ){
+        
+        # get indices
+        setCs=numCs.index[treatment==treat[i]]
+        setTs=setCs+1
+        set.cov=setCs-1
+        
+        if(length(setCs)>1){
+          Cs=rowSums(df[,setCs],na.rm=TRUE)
+          Ts=rowSums(df[,setTs],na.rm=TRUE)
+          covs=rowSums(df[,set.cov],na.rm=TRUE)
+          
+        }else{
+          Cs  =df[,setCs]
+          Ts  =df[,setTs]
+          covs=df[,set.cov]
+        }
+        res=cbind(res,covs,Cs,Ts) # bind new data
+      }
+      return(res)
+    }
+    
+    treat = unique(obj@treatment)
+    coverage.ind=3*(1:length(treat)) + 2
+    
+    # catch additional args 
+    args <- list(...)
+    
+    if( ( "dbdir" %in% names(args))   ){
+      if( !(is.null(args$dbdir)) ) { 
+        dir <- .check.dbdir(args$dbdir) }
+    } else { dir <- dirname(obj@dbpath) }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- NULL
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    
+    newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size,
+                                 dir=dir,filename = filename, 
+                                 return.type = "tabix", FUN = mypool, 
+                                 treatment = obj@treatment,
+                                 numCs.index = obj@numCs.index) 
+    
+    readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,
+                     sample.ids=sample.ids,
+                     assembly=obj@assembly,context=obj@context,
+                     treatment=treat,destranded=obj@destranded,
+                     resolution=obj@resolution )
+  } else {
+    
+    tmp <- obj[]
+    pool(tmp,sample.ids,save.db=FALSE)
+  }
 })
 
 
@@ -1179,156 +1228,180 @@ setMethod("pool", "methylBaseDB",
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBaseDB",
           function(.Object,covariates,overdispersion=c("none","MN","shrinkMN"),
-                   adjust=c("SLIM","holm","hochberg","hommel","bonferroni","BH","BY","fdr","none","qvalue"),
+                   adjust=c("SLIM","holm","hochberg","hommel","bonferroni",
+                            "BH","BY","fdr","none","qvalue"),
                    effect=c("wmean","mean","predicted"),parShrinkMN=list(),
                    test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
                    chunk.size,save.db=TRUE,...){
             
-            if(length(.Object@treatment)<2 ){
-              stop("can not do differential methylation calculation with less than two samples")
-            }
-            if(length(unique(.Object@treatment))<2 ){
-              stop("can not do differential methylation calculation when there is no control\n
-                   treatment option should have 0 and 1 designating treatment and control samples")
-            }
-            if(length(unique(.Object@treatment))>2 ){
-              stop("can not do differential methylation calculation when there are more than\n
-                   two groups, treatment vector indicates more than two groups")
-            }
-            #### check if covariates+intercept+treatment more than replicates ####
-            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index))
-            {
-              stop("Too many covariates/too few replicates.")}
-            }
-            
-            if(save.db) {
-              
-              # add backwards compatibility with old parameters
-              if(slim==FALSE) adjust="BH" else adjust=adjust
-              if(weighted.mean==FALSE) effect="mean" else effect=effect
-              
-              vars <- covariates
-              
-              # function to apply the test to data
-              diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,overdispersion,effect,
-                                   parShrinkMN,test,adjust,mc.cores){
-                
-                cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
-                
-                tmp=simplify2array(
-                  mclapply(cntlist,logReg,formula,vars,treatment=treatment,overdispersion=overdispersion,effect=effect,
-                           parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
-                tmp <- as.data.frame(t(tmp))
-                #print(head(tmp))
-                x=data.frame(data[,1:4],tmp$p.value,p.adjusted(tmp$q.value,method=adjust),meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
-                
-                return(x)
-              }
-              
-              # catch additional args 
-              args <- list(...)
-              dir <- dirname(.Object@dbpath)
-              
-              if( ( "dbdir" %in% names(args))   ){
-                if( !(is.null(args$dbdir)) ) { 
-                  dir <- .check.dbdir(args$dbdir) 
-                }
-              }
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- "_diffMeth"
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
-              
-              #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
-              
-              dbpath <- applyTbxByChunk(.Object@dbpath,dir = dir,chunk.size = chunk.size,  filename = filename, return.type = "tabix", FUN = diffMeth,
-                                        Ccols = .Object@numCs.index,Tcols = .Object@numTs.index,formula=formula,vars=vars,
-                                        treatment=.Object@treatment,overdispersion=overdispersion,effect=effect,
-                                        parShrinkMN=parShrinkMN,test=test,adjust=adjust,mc.cores=mc.cores)
-              
-              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                                   destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-              obj
-              
-            } else {
-              
-              tmp <- .Object[]
-              calculateDiffMeth(tmp,covariates,overdispersion=overdispersion,
-                                adjust=adjust,
-                                effect=effect,parShrinkMN=parShrinkMN,
-                                test=test,mc.cores=mc.cores,slim=slim,weighted.mean=weighted.mean,
-                                save.db=FALSE)
-              
-            }
-            }
+    if(length(.Object@treatment)<2 ){
+      stop("can not do differential methylation calculation with less than two samples")
+    }
+    if(length(unique(.Object@treatment))<2 ){
+      stop("can not do differential methylation calculation when there is no control\n
+           treatment option should have 0 and 1 designating treatment and control samples")
+    }
+    if(length(unique(.Object@treatment))>2 ){
+      stop("can not do differential methylation calculation when there are more than\n
+           two groups, treatment vector indicates more than two groups")
+    }
+    #### check if covariates+intercept+treatment more than replicates ####
+    if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index))
+    {
+      stop("Too many covariates/too few replicates.")}
+    }
+    
+    if(save.db) {
+      
+      # add backwards compatibility with old parameters
+      if(slim==FALSE) adjust="BH" else adjust=adjust
+      if(weighted.mean==FALSE) effect="mean" else effect=effect
+      
+      vars <- covariates
+      
+      # function to apply the test to data
+      diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,
+                           overdispersion,effect,
+                           parShrinkMN,test,adjust,mc.cores){
+        
+        cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+        
+        tmp=simplify2array(
+          mclapply(cntlist,logReg,formula,vars,treatment=treatment,
+                   overdispersion=overdispersion,effect=effect,
+                   parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+        tmp <- as.data.frame(t(tmp))
+        #print(head(tmp))
+        x=data.frame(data[,1:4],tmp$p.value,
+                     p.adjusted(tmp$q.value,method=adjust),
+                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+        
+        return(x)
+      }
+      
+      # catch additional args 
+      args <- list(...)
+      dir <- dirname(.Object@dbpath)
+      
+      if( ( "dbdir" %in% names(args))   ){
+        if( !(is.null(args$dbdir)) ) { 
+          dir <- .check.dbdir(args$dbdir) 
+        }
+      }
+      if(!( "suffix" %in% names(args) ) ){
+        suffix <- "_diffMeth"
+      } else { 
+        suffix <- paste0("_",args$suffix)
+      }
+      
+      filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+      
+      #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+      
+      dbpath <- applyTbxByChunk(.Object@dbpath,dir = 
+                                  dir,chunk.size = chunk.size,  
+                                filename = filename, 
+                                return.type = "tabix", FUN = diffMeth,
+                                Ccols = .Object@numCs.index,
+                                Tcols = .Object@numTs.index,
+                                formula=formula,vars=vars,
+                                treatment=.Object@treatment,
+                                overdispersion=overdispersion,effect=effect,
+                                parShrinkMN=parShrinkMN,test=test,
+                                adjust=adjust,mc.cores=mc.cores)
+      
+      obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, 
+                           sample.ids=.Object@sample.ids,
+                           assembly=.Object@assembly,context=.Object@context,
+                           destranded=.Object@destranded,
+                           treatment=.Object@treatment,
+                           resolution=.Object@resolution)
+      obj
+      
+    } else {
+      
+      tmp <- .Object[]
+      calculateDiffMeth(tmp,covariates,overdispersion=overdispersion,
+                        adjust=adjust,
+                        effect=effect,parShrinkMN=parShrinkMN,
+                        test=test,mc.cores=mc.cores,
+                        slim=slim,weighted.mean=weighted.mean,
+                        save.db=FALSE)
+      
+    }
+}
 )
 
 #' @aliases getMethylDiff,methylDiffDB-method
 #' @rdname getMethylDiff-methods
 setMethod(f="getMethylDiff", signature="methylDiffDB", 
-          definition=function(.Object,difference,qvalue,type,chunk.size,save.db=TRUE,...) {
+          definition=function(.Object,difference,qvalue,type,
+                              chunk.size,save.db=TRUE,...) {
             
-            if(!( type %in% c("all","hyper","hypo") )){
-              stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
-            }
-            meth.diff=NULL
-            if(save.db) {
-              
-              #function applied to data
-              f <- function(data,difference,qv,type){
-                
-                data <- data.table(data)
-                .setMethylDBNames(data,methylDBclass = "methylDiffDB")
-                
-                if(type=="all"){
-                  data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
-                }else if(type=="hyper"){
-                  data <- data[(qvalue < qv) & (meth.diff > difference)]
-                }else if(type=="hypo"){
-                  data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
-                }
-                return(data)
-              }
-              
-              # catch additional args 
-              args <- list(...)
-              dir <- dirname(.Object@dbpath)
-              
-              if( ( "dbdir" %in% names(args))   ){
-                if( !(is.null(args$dbdir)) ) { 
-                  dir <- .check.dbdir(args$dbdir) 
-                } 
-              }
-              
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_diffMeth_",type)
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              
-              filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
-              
-              #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
-              
-              dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, dir = dir, filename = filename, return.type = "tabix", FUN = f,
-                                        difference = difference, qv = qvalue, type = type)
-              
-              
-              obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                                   destranded=.Object@destranded,treatment=.Object@treatment,resolution=.Object@resolution)
-              return(obj)
-              
-            } else {
-              
-              tmp <- .Object[]
-              getMethylDiff(tmp,difference,qvalue,type,save.db=FALSE)
-              
-            }
-            
+  if(!( type %in% c("all","hyper","hypo") )){
+    stop("Wrong 'type' argument supplied for the function, ",
+         "it can be 'hypo', 'hyper' or 'all' ")
+  }
+  meth.diff=NULL
+  if(save.db) {
+    
+    #function applied to data
+    f <- function(data,difference,qv,type){
+      
+      data <- data.table(data)
+      .setMethylDBNames(data,methylDBclass = "methylDiffDB")
+      
+      if(type=="all"){
+        data <- data[(qvalue < qv) & (abs(meth.diff) > difference)]
+      }else if(type=="hyper"){
+        data <- data[(qvalue < qv) & (meth.diff > difference)]
+      }else if(type=="hypo"){
+        data <- data[(qvalue < qv) & (meth.diff < -1*difference)]
+      }
+      return(data)
+    }
+    
+    # catch additional args 
+    args <- list(...)
+    dir <- dirname(.Object@dbpath)
+    
+    if( ( "dbdir" %in% names(args))   ){
+      if( !(is.null(args$dbdir)) ) { 
+        dir <- .check.dbdir(args$dbdir) 
+      } 
+    }
+    
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_diffMeth_",type)
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    
+    filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+    
+    #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+    
+    dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
+                              dir = dir, filename = filename, 
+                              return.type = "tabix", FUN = f,
+                              difference = difference, qv = qvalue, type = type)
+    
+    
+    obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, 
+                         sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,
+                         treatment=.Object@treatment,resolution=.Object@resolution)
+    return(obj)
+    
+  } else {
+    
+    tmp <- .Object[]
+    getMethylDiff(tmp,difference,qvalue,type,save.db=FALSE)
+    
+  }
+    
 }) 
 
 #' @aliases diffMethPerChr,methylDiffDB-method
@@ -1336,61 +1409,75 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
 setMethod("diffMethPerChr", signature(x = "methylDiffDB"),
           function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
             
-            
-            diffMeth <- function(data,qvalue.cutoff, meth.cutoff){
-              
-              .setMethylDBNames(data,"methylDiffDB")
-              
-              temp.hyper=data[data$qvalue < qvalue.cutoff & data$meth.diff >= meth.cutoff,]
-              temp.hypo =data[data$qvalue < qvalue.cutoff & data$meth.diff <= -meth.cutoff,]
-              
-              # plot barplot for percentage of DMCs per chr
-              dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), as.data.frame(table(data$chr)),by="Var1")
-              dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
-              
-              dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), as.data.frame(table(data$chr)),by="Var1")
-              dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
-              
-              dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],dmc.hypo.chr[,c(1,2,4)],by="Var1",all=T) # merge hyper hypo per chromosome
-              
-              
-              names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated","percentage.of.hypermethylated","number.of.hypomethylated","percentage.of.hypomethylated")
-              
-              return(dmc.hyper.hypo)
-            }
-            
-            res <- applyTbxByChr(x@dbpath,return.type = "data.frame",FUN = diffMeth,qvalue.cutoff=qvalue.cutoff, meth.cutoff=meth.cutoff)
-            
-            dmc.hyper=100*sum(res$number.of.hypermethylated)/x@num.records # get percentages of hypo/ hyper
-            dmc.hypo =100*sum(res$number.of.hypomethylated)/x@num.records
-            
-            all.hyper.hypo=data.frame(number.of.hypermethylated=sum(res$number.of.hypermethylated),
-                                      percentage.of.hypermethylated=dmc.hyper,
-                                      number.of.hypomethylated=sum(res$number.of.hypomethylated),
-                                      percentage.of.hypomethylated=dmc.hypo)
-            
-            dmc.hyper.hypo=res[order(as.numeric(sub("chr","",res$chr))),] # order the chromosomes
-            
-            if(plot){
-              
-              if(!is.null(exclude)){dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
-              
-              barplot(
-                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],hypo=dmc.hyper.hypo[,5],row.names=dmc.hyper.hypo[,1]) ))
-                ,las=2,horiz=T,col=c("magenta","aquamarine4"),main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),xlab="% (percentage)",...)
-              mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",meth.cutoff," %",sep="") )
-              legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
-            }else{
-              
-              list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
-              
-            }
+
+diffMeth <- function(data,qvalue.cutoff, meth.cutoff){
+  
+  .setMethylDBNames(data,"methylDiffDB")
+  
+  temp.hyper=data[data$qvalue < qvalue.cutoff & data$meth.diff >= meth.cutoff,]
+  temp.hypo =data[data$qvalue < qvalue.cutoff & data$meth.diff <= -meth.cutoff,]
+  
+  # plot barplot for percentage of DMCs per chr
+  dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), 
+                      as.data.frame(table(data$chr)),by="Var1")
+  dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/
+                        dmc.hyper.chr[,3])
+  
+  dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), 
+                     as.data.frame(table(data$chr)),by="Var1")
+  dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
+  
+  dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],dmc.hypo.chr[,c(1,2,4)],
+                       by="Var1",all=T) # merge hyper hypo per chromosome
+  
+  
+  names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
+                          "percentage.of.hypermethylated",
+                          "number.of.hypomethylated",
+                          "percentage.of.hypomethylated")
+  
+  return(dmc.hyper.hypo)
+}
+
+res <- applyTbxByChr(x@dbpath,return.type = "data.frame",FUN = diffMeth,qvalue.cutoff=qvalue.cutoff, meth.cutoff=meth.cutoff)
+
+dmc.hyper=100*sum(res$number.of.hypermethylated)/x@num.records # get percentages of hypo/ hyper
+dmc.hypo =100*sum(res$number.of.hypomethylated)/x@num.records
+
+all.hyper.hypo=data.frame(number.of.hypermethylated=sum(res$number.of.hypermethylated),
+                          percentage.of.hypermethylated=dmc.hyper,
+                          number.of.hypomethylated=sum(res$number.of.hypomethylated),
+                          percentage.of.hypomethylated=dmc.hypo)
+
+dmc.hyper.hypo=res[order(as.numeric(sub("chr","",res$chr))),] # order the chromosomes
+
+if(plot){
+  
+  if(!is.null(exclude)){dmc.hyper.hypo=
+    dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
+  
+  barplot(
+    t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
+                           hypo=dmc.hyper.hypo[,5],
+                           row.names=dmc.hyper.hypo[,1]) ))
+    ,las=2,horiz=T,col=c("magenta","aquamarine4"),
+    main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),
+    xlab="% (percentage)",...)
+  mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",
+                     meth.cutoff," %",sep="") )
+  legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
+}else{
+  
+  list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
+  
+}
             
 })
 
 #' @aliases annotateWithGenicParts,methylDiffDB,GRangesList-method
 #' @rdname annotateWithGenicParts-methods
-setMethod("annotateWithGenicParts", signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
+setMethod("annotateWithGenicParts", 
+          signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
           function(target,GRangesList.obj,strand){
             gr=as(target,"GRanges")
             annotateWithGenicParts(gr,GRangesList.obj,strand)
@@ -1398,11 +1485,13 @@ setMethod("annotateWithGenicParts", signature(target = "methylDiffDB",GRangesLis
 
 #' @aliases annotateWithFeatureFlank,methylDiffDB,GRanges,GRanges-method
 #' @rdname annotateWithFeatureFlank-methods
-setMethod("annotateWithFeatureFlank", signature(target= "methylDiffDB",feature="GRanges",flank="GRanges"),
+setMethod("annotateWithFeatureFlank", 
+          signature(target= "methylDiffDB",
+                                                feature="GRanges",flank="GRanges"),
           function(target, feature, flank,feature.name,flank.name,strand){
-            gr=as(target,"GRanges")
-            annotateWithFeatureFlank(gr,feature, flank,feature.name,flank.name,strand)
-          })
+  gr=as(target,"GRanges")
+  annotateWithFeatureFlank(gr,feature, flank,feature.name,flank.name,strand)
+})
 
 #' @aliases annotateWithFeature,methylDiffDB,GRanges-method
 #' @rdname annotateWithFeature-methods
@@ -1419,83 +1508,86 @@ setMethod("annotateWithFeature", signature(target = "methylDiffDB",feature="GRan
 setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
           function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
             
-            if(save.db) {
-              
-              # sort regions
-              regions <- sortSeqlevels(regions)
-              regions <- sort(regions,ignore.strand=TRUE)
-              
-              getCounts <- function(data,regions,cov.bases,strand.aware){
-                .setMethylDBNames(data)
-                # overlap data with regions
-                # convert data to GRanges without metacolumns
-                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-                if(!strand.aware){
-                  strand(g.meth)="*"
-                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
-                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
-                  
-                }else{
-                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
-                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
-                  
-                }
-                
-                # create a temporary data.table row ids from regions and counts from object
-                temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
-                
-                coverage=NULL
-                numCs=NULL
-                numTs=NULL
-                id=covered=NULL
-                
-                # use data.table to sum up counts per region
-                sum.dt=temp.dt[,list(coverage=sum(coverage),
-                                     numCs   =sum(numCs),
-                                     numTs   =sum(numTs),covered=length(numTs)),by=id] 
-                sum.dt=sum.dt[covered>=cov.bases,]
-                temp.df=as.data.frame(regions) # get regions to a dataframe
-                
-                #create a new methylRaw object to return
-                new.data=data.frame(#id      =new.ids,
-                  chr     =temp.df[sum.dt$id,"seqnames"],
-                  start   =temp.df[sum.dt$id,"start"],
-                  end     =temp.df[sum.dt$id,"end"],
-                  strand  =temp.df[sum.dt$id,"strand"],
-                  coverage=sum.dt$coverage,
-                  numCs   =sum.dt$numCs,
-                  numTs   =sum.dt$numTs)
-              }
-              
-              # catch additional args 
-              args <- list(...)
-              dir <- dirname(object@dbpath)
-              
-              if( "dbdir" %in% names(args) ){
-                if( !(is.null(args$dbdir)) ){
-                  dir <- .check.dbdir(args$dbdir) 
-                }
-              } 
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","regions")
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
-              
-              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
-              
-              readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
-                              assembly=object@assembly, context =object@context,resolution="region",
-                              dbtype = object@dbtype)
-              
-            } else {
-              tmp <- object[]
-              regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
-            }
-          }
+  if(save.db) {
+    
+    # sort regions
+    regions <- sortSeqlevels(regions)
+    regions <- sort(regions,ignore.strand=TRUE)
+    
+    getCounts <- function(data,regions,cov.bases,strand.aware){
+      .setMethylDBNames(data)
+      # overlap data with regions
+      # convert data to GRanges without metacolumns
+      g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+      if(!strand.aware){
+        strand(g.meth)="*"
+        mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+        #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+        
+      }else{
+        mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+        #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+        
+      }
+      
+      # create a temporary data.table row ids from regions and counts from object
+      temp.dt=data.table(id = mat[, 1], data[mat[, 2], c(5, 6, 7)])
+      
+      coverage=NULL
+      numCs=NULL
+      numTs=NULL
+      id=covered=NULL
+      
+      # use data.table to sum up counts per region
+      sum.dt=temp.dt[,list(coverage=sum(coverage),
+                           numCs   =sum(numCs),
+                           numTs   =sum(numTs),covered=length(numTs)),by=id] 
+      sum.dt=sum.dt[covered>=cov.bases,]
+      temp.df=as.data.frame(regions) # get regions to a dataframe
+      
+      #create a new methylRaw object to return
+      new.data=data.frame(#id      =new.ids,
+        chr     =temp.df[sum.dt$id,"seqnames"],
+        start   =temp.df[sum.dt$id,"start"],
+        end     =temp.df[sum.dt$id,"end"],
+        strand  =temp.df[sum.dt$id,"strand"],
+        coverage=sum.dt$coverage,
+        numCs   =sum.dt$numCs,
+        numTs   =sum.dt$numTs)
+    }
+    
+    # catch additional args 
+    args <- list(...)
+    dir <- dirname(object@dbpath)
+    
+    if( "dbdir" %in% names(args) ){
+      if( !(is.null(args$dbdir)) ){
+        dir <- .check.dbdir(args$dbdir) 
+      }
+    } 
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_","regions")
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+    
+    newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
+                                   ranges=regions,  dir=dir,filename = filename, 
+                                   return.type = "tabix", FUN = getCounts,
+                                   regions,cov.bases,strand.aware)
+    
+    readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
+                    assembly=object@assembly, context =object@context,
+                    resolution="region",
+                    dbtype = object@dbtype)
+    
+  } else {
+    tmp <- object[]
+    regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
+  }
+}
 )
 
 #' @rdname regionCounts
@@ -1645,93 +1737,105 @@ setMethod("regionCounts", signature(object="methylRawListDB",
 #' @rdname regionCounts
 #' @aliases regionCounts,methylBaseDB,GRanges-method
 setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
-          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
+          function(object,regions,cov.bases,strand.aware,chunk.size,
+                   save.db=TRUE,...){
             
-            if(save.db) {
-              
-              # sort regions
-              regions <- sortSeqlevels(regions)
-              regions <- sort(regions,ignore.strand=TRUE)
-              
-              getCounts <- function(data,regions,cov.bases,strand.aware){
-                .setMethylDBNames(data)
-                # overlap data with regions
-                # convert data to GRanges without metacolumns
-                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-                if(!strand.aware){
-                  strand(g.meth)="*"
-                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
-                  #mat=matchMatrix( findOverlaps(regions,g.meth ) )
-                  
-                }else{
-                  mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
-                  #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
-                  
-                }
-                
-                #require(data.table)
-                # create a temporary data.table row ids from regions and counts from object
-                temp.dt=data.table(id = mat[, 1], data[mat[, 2], 5:ncol(data)])
-                
-                coverage=NULL
-                numCs=NULL
-                numTs=NULL
-                id=NULL
-                .SD=NULL
-                numTs1=covered=NULL
-                # use data.table to sum up counts per region
-                sum.dt=temp.dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
-                sum.dt=sum.dt[covered>=cov.bases,]
-                temp.df=as.data.frame(regions) # get regions to a dataframe
-                
-                #create a new methylRaw object to return
-                new.data=data.frame(#id      =new.ids,
-                  chr     =temp.df[sum.dt$id,"seqnames"],
-                  start   =temp.df[sum.dt$id,"start"],
-                  end     =temp.df[sum.dt$id,"end"],
-                  strand  =temp.df[sum.dt$id,"strand"],
-                  as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
-              }
-              
-              
-              # catch additional args 
-              args <- list(...)
-              dir <- dirname(object@dbpath)
-              
-              if( "dbdir" %in% names(args) ){
-                dir <- .check.dbdir(args$dbdir) 
-              } 
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","regions")
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
-              
-              #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
-              
-              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
-              
-              if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
-              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
-                               assembly=object@assembly,context=object@context,treatment=object@treatment,
-                               destranded=destranded,resolution="region")
-              
-            } else {
-              
-              tmp <- object[]
-              regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
-              
-            }
-          }
+    if(save.db) {
+      
+      # sort regions
+      regions <- sortSeqlevels(regions)
+      regions <- sort(regions,ignore.strand=TRUE)
+      
+      getCounts <- function(data,regions,cov.bases,strand.aware){
+        .setMethylDBNames(data)
+        # overlap data with regions
+        # convert data to GRanges without metacolumns
+        g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),
+                                  strand =strand))
+        if(!strand.aware){
+          strand(g.meth)="*"
+          mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
+          #mat=matchMatrix( findOverlaps(regions,g.meth ) )
+          
+        }else{
+          mat=IRanges::as.matrix( findOverlaps(regions,g.meth) )
+          #mat=matchMatrix( findOverlaps(regions,as(object,"GRanges")) )
+          
+        }
+        
+        #require(data.table)
+        # create a temporary data.table row ids from regions and counts 
+        #from object
+        temp.dt=data.table(id = mat[, 1], data[mat[, 2], 5:ncol(data)])
+        
+        coverage=NULL
+        numCs=NULL
+        numTs=NULL
+        id=NULL
+        .SD=NULL
+        numTs1=covered=NULL
+        # use data.table to sum up counts per region
+        sum.dt=temp.dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
+        sum.dt=sum.dt[covered>=cov.bases,]
+        temp.df=as.data.frame(regions) # get regions to a dataframe
+        
+        #create a new methylRaw object to return
+        new.data=data.frame(#id      =new.ids,
+          chr     =temp.df[sum.dt$id,"seqnames"],
+          start   =temp.df[sum.dt$id,"start"],
+          end     =temp.df[sum.dt$id,"end"],
+          strand  =temp.df[sum.dt$id,"strand"],
+          as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),
+          stringsAsFactors=FALSE)
+      }
+      
+      
+      # catch additional args 
+      args <- list(...)
+      dir <- dirname(object@dbpath)
+      
+      if( "dbdir" %in% names(args) ){
+        dir <- .check.dbdir(args$dbdir) 
+      } 
+      if(!( "suffix" %in% names(args) ) ){
+        suffix <- paste0("_","regions")
+      } else { 
+        suffix <- paste0("_",args$suffix)
+      }
+      
+      filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+      
+      #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+      
+      newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
+                                     ranges=regions,  dir=dir,
+                                     filename = filename, 
+                                     return.type = "tabix", 
+                                     FUN = getCounts,regions,cov.bases,
+                                     strand.aware)
+      
+      if(strand.aware & !(object@destranded) ){destranded=FALSE}else{
+        destranded=TRUE}
+      readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,
+                       sample.ids=object@sample.ids,
+                       assembly=object@assembly,
+                       context=object@context,treatment=object@treatment,
+                       destranded=destranded,resolution="region")
+      
+    } else {
+      
+      tmp <- object[]
+      regionCounts(tmp,regions,cov.bases,strand.aware,save.db=FALSE)
+      
+    }
+  }
 )
 
 #' @rdname regionCounts
 #' @aliases regionCounts,methylBaseDB,GRangesList-method
 setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList"),
-          function(object,regions,cov.bases,strand.aware,chunk.size,save.db=TRUE,...){
+          function(object,regions,cov.bases,strand.aware,chunk.size,
+                   save.db=TRUE,...){
             
             # combine and sort GRanges from List
             regions <- unlist(regions)
@@ -1745,7 +1849,8 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
                 .setMethylDBNames(data)
                 # overlap data with regions
                 # convert data to GRanges without metacolumns
-                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
+                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),
+                                          strand =strand))
                 if(!strand.aware){
                   strand(g.meth)="*"
                   mat=IRanges::as.matrix( findOverlaps(regions,g.meth ) )
@@ -1758,10 +1863,12 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
                 }
                 
                 #require(data.table)
-                # create a temporary data.table row ids from regions and counts from object
+                # create a temporary data.table row ids from regions and counts 
+                #from object
                 temp.dt=data.table(id = mat[, 1], data[mat[, 2], 5:ncol(data)])
                 #dt=data.table::data.table(dt)
-                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) #worked with data.table 1.7.7
+                #dt=data.table(id=mat[,1],data[mat[,2],c(5,6,7)] ) 
+                #worked with data.table 1.7.7
                 
                 coverage=NULL
                 numCs=NULL
@@ -1780,7 +1887,8 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
                   start   =temp.df[sum.dt$id,"start"],
                   end     =temp.df[sum.dt$id,"end"],
                   strand  =temp.df[sum.dt$id,"strand"],
-                  as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
+                  as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),
+                  stringsAsFactors=FALSE)
               }
               
               # catch additional args 
