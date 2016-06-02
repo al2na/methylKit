@@ -30,7 +30,7 @@ knitr::opts_chunk$set(cache = FALSE)
 
 # Introduction
 
-In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
+In this manual, we will show how to use the methylKit package. methylKit is an R package for analysis and annotation of DNA methylation information obtained by high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from RRBS and its variants. But, it can potentially handle whole-genome bisulfite sequencing data if proper input format is provided. 
 
 ## DNA methylation
 
@@ -49,7 +49,17 @@ The reasons why we will not get a binary response are:
 
 ## Reading the methylation call files
 
-We start by reading in the methylation call data from bisulfite sequencing with `read` function. Reading in the data this way will return a `methylRawList` object which stores methylation information per sample for each covered base. The methylation call files are basically text files that contain percent methylation score per base. A typical methylation call file looks like this:
+We start by reading in the methylation call data from bisulfite sequencing with `read` 
+function. Reading in the data this way will return a `methylRawList` object which stores 
+methylation information per sample for each covered base. The methylation call files are 
+basically text files that contain percent methylation score per base. Such 
+input files may be obtained from [AMP pipeline](http://code.google.com/p/amp-errbs/)
+developed for aligning RRBS reads or from `processBismarkAln` function.
+. However, "cytosineReport" and "coverage" files from 
+[Bismark aligner](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) can
+be read in to methylKit as well.
+
+A typical methylation call file looks like this:
 
 ```{r, eval=TRUE, echo=FALSE}
 tab <- read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=T,nrows=5)
@@ -76,6 +86,11 @@ myobj=methRead(file.list,
            context="CpG"
            )
 ```
+
+In addition to the options we mentioned above,
+any tab separated text file with a generic format can be read in using methylKit, 
+such as methylation ratio files from [BSMAP](http://code.google.com/p/bsmap/).
+See [here](http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html) for an example.
 
 ##  Reading the methylation call files and store them as flat file database
 
@@ -311,7 +326,7 @@ diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
 ```
 
 ## Correcting for overdispersion
-Overdispersion occurs when there is more variablity in the data than assumed
+Overdispersion occurs when there is more variability in the data than assumed
 by the distribution. In the logistic regression model, the response variable
 methylation values for sample groups are expected to have binomial distribution:
 $meth_i ~ Bin(n_i, \pi_i)$.
@@ -332,7 +347,7 @@ by default only when no overdispersion correction is applied.
 If overdispersion correction is applied, the function automatically switches 
 to the F-test. The Chisq-test can be manually chosen in this case as well, 
 but the F-test only works with overdispersion correction switched on. In both
-cases, the procedure tests if the full model (the model where treatmet is 
+cases, the procedure tests if the full model (the model where treatment is 
 included as an explanatory variable)
 explains the data better than the null model (the model with no treatment,
 just intercept). If there is no effect based on samples being from different
@@ -482,13 +497,24 @@ as(myDiff,"GRanges")
 In addition, 
 
 ## Converting methylKit objects to methylDB objects and vice versa
-methylDB objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing resources are available. This can be done via "as()" function.
+**methylDB** objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing resources are available. This can be done via "as()" function.
 
 ```{r}
 class(myobjDB[[1]])
 as(myobjDB[[1]],"methylRaw")
 ```
 
+You can also convert methylDB objects to their in-memory equivalents. Since
+that requires an additional parameter (the directory where the files will be
+located), we have a different function, named `makeMethylDB` to achieve this 
+goal. Below, we convert a methylBase object to `methylBaseDB` and saving it 
+at "exMethylDB" directory.
+```{r,eval=FALSE}
+data(methylKit)
+ 
+objDB=makeMethylDB(methylBase.obj,"exMethylDB")
+
+```
 
 ## Selection: subsetting methylKit Objects
 
@@ -544,7 +570,13 @@ Methylation or differential methylation profiles can be segmented to sections
 that contain similar CpGs with respect to their methylation profiles. This 
 kind of segmentation could help us find interesting regions. For example, 
 segmentation analysis will usually reveal high or low methylated regions, where
-low methylated regions could be interesting for gene regulation. See more at
+low methylated regions could be interesting for gene regulation. The algorithm
+first finds segments that have CpGs with similar methylation levels, then those
+segments are classified to segment groups based on their mean methylation levels.
+This enables us to group segments with similar methylation levels to the 
+same class. 
+
+See more at
 http://zvfak.blogspot.de/2015/06/segmentation-of-methylation-profiles.html
 
 ```{r, eval=FALSE}
@@ -634,7 +666,8 @@ For example see `?unite` and also check the `...` argument section for further d
 # Acknowledgements
 
 This package is initially developed at Weill Cornell Medical College by 
-Altuna Akalin with important code contributions from Matthias Kormaksson(mk375@cornell.edu) 
+Altuna Akalin with important code contributions from 
+Matthias Kormaksson(mk375@cornell.edu) 
 and Sheng Li (shl2018@med.cornell.edu). 
 We wish to thank especially Maria E. Figueroa, Francine Garret-Bakelman, 
 Christopher Mason and Ari Melnick for their contribution of ideas, data and 

@@ -664,6 +664,8 @@ setAs("methylRawListDB","methylRawList", function(from)
 #' @param obj an \code{\link{methylBase}},
 #' \code{\link{methylRaw}},
 #' \code{\link{methylRawList}} or an \code{\link{methylDiff}} object
+#' @param dbdir directory where flat file database(s) should be stored, 
+#'              defaults to getwd(), working directory.
 #' @examples 
 #' \dontrun{
 #' data(methylKit)
@@ -671,41 +673,57 @@ setAs("methylRawListDB","methylRawList", function(from)
 #' 
 #' makeMethylDB(methylBase.obj,"my/path")
 #' }
+#' 
 #' @return an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
 #' \code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
 #' @export
 #' @docType methods
 #' @rdname makeMethylDB-methods
-setGeneric("makeMethylDB", def=function(obj,dbpath="") standardGeneric("makeMethylDB"))
+setGeneric("makeMethylDB", def=function(obj,dbdir=getwd()) 
+  standardGeneric("makeMethylDB"))
 
 #' @rdname makeMethylDB-methods
 #' @aliases makeMethylDB,methylBase-methods
-setMethod("makeMethylDB", signature="methylBase", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  makeMethylBaseDB(df=getData(obj),dbpath=dbdir,dbtype="tabix",sample.ids=obj@sample.ids,
+setMethod("makeMethylDB", signature="methylBase", definition=function(obj,dbdir) 
+  {
+  dbdir <- .check.dbdir(dbdir)
+  makeMethylBaseDB(df=getData(obj),dbpath=dbdir,dbtype="tabix",
+                   sample.ids=obj@sample.ids,
                    assembly=obj@assembly,context=obj@context,
                    treatment=obj@treatment,coverage.index=obj@coverage.index,
-                   numCs.index=obj@numCs.index,numTs.index=obj@numTs.index,destranded=obj@destranded,
+                   numCs.index=obj@numCs.index,numTs.index=obj@numTs.index,
+                   destranded=obj@destranded,
                    resolution=obj@resolution)
 })
 
-setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  makeMethylRawDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.id=obj@sample.id,
-                  assembly=obj@assembly, context=obj@context, resolution=obj@resolution)
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylRaw-methods
+setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
+  makeMethylRawDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", 
+                  sample.id=obj@sample.id,
+                  assembly=obj@assembly, context=obj@context, 
+                  resolution=obj@resolution)
 })
 
-setMethod("makeMethylDB", signature="methylDiff", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylDiff-methods
+setMethod("makeMethylDB", signature="methylDiff", 
+          definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
   suffix <- "_diffMeth"
-  makeMethylDiffDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.ids=obj@sample.ids,
+  makeMethylDiffDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", 
+                   sample.ids=obj@sample.ids,
                    assembly=obj@assembly,context=obj@context,
                    destranded=obj@destranded,treatment=obj@treatment,
                    resolution=obj@resolution,suffix=suffix)
 })
 
-setMethod("makeMethylDB", signature="methylRawList", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylRawList-methods
+setMethod("makeMethylDB", signature="methylRawList", 
+          definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
   outList <- lapply(obj,makeMethylDB,dbdir)
   new("methylRawListDB",outList,treatment=obj@treatment)
 })

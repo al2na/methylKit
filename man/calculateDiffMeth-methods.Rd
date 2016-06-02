@@ -35,7 +35,7 @@ will be attempted.
              correction applies a scaling parameter to variance estimated
              by the model.
              EXPERIMENTAL: If set to "shrinkMN", scaling parameter will be
-             shrunk to a common value  (not thoroughly tested as of yet).}
+             shrunk towards a common value  (not thoroughly tested as of yet).}
 
 \item{adjust}{different methods to correct the p-values for multiple testing. 
 Default is "SLIM" from methylKit. For "qvalue" please see 

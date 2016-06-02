@@ -11,7 +11,15 @@ Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=d
 
 
 #Introduction
-*methylKit* is an [R](http://en.wikipedia.org/wiki/R_%28programming_language%29) package for DNA methylation analysis and annotation from high-throughput bisulfite sequencing. The package is designed to deal with sequencing data from [RRBS](http://www.nature.com/nprot/journal/v6/n4/abs/nprot.2010.190.html) and its variants, but also target-capture methods such as [Agilent SureSelect methyl-seq](http://www.halogenomics.com/sureselect/methyl-seq). In addition, methylKit can deal with base-pair resolution data for 5hmC obtained from Tab-seq or oxBS-seq. It can also handle whole-genome bisulfite sequencing data if proper input format is provided.
+*methylKit* is an [R](http://en.wikipedia.org/wiki/R_%28programming_language%29) package 
+for DNA methylation analysis and annotation from high-throughput bisulfite sequencing. The 
+package is designed to deal with sequencing data from 
+[RRBS](http://www.nature.com/nprot/journal/v6/n4/abs/nprot.2010.190.html) and its variants,
+but also target-capture methods such as [Agilent SureSelect 
+methyl-seq](http://www.halogenomics.com/sureselect/methyl-seq). 
+In addition, methylKit can 
+deal with base-pair resolution data for 5hmC obtained from Tab-seq or oxBS-seq. It can also 
+handle whole-genome bisulfite sequencing data if proper input format is provided.
 
 ##Current Features
  * Coverage statistics
@@ -56,7 +64,7 @@ install_github("al2na/methylKit", build_vignettes=FALSE,
   repos=BiocInstaller::biocinstallRepos(),
   dependencies=TRUE)
 ```
-### Install development verions
+### Install the development version
 ```r
 library(devtools)
 install_github("al2na/methylKit", build_vignettes=FALSE, 
@@ -87,7 +95,7 @@ chr21.9853326	chr21	9853326	F	17	70.59	29.41
 Below, there are several options showing how to do basic analysis with *`methylKit`*.
 
 ##Documentation##
- * You can look at the vignette [here](https://github.com/al2na/methylKit/blob/master/vignettes/methylKit.pdf?raw=true)
+ * You can look at the vignette [here](http://rpubs.com/al2na/methylKit)
  * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013
  * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012
  * You can see the code snippet below
