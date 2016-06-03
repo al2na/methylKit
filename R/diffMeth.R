@@ -349,13 +349,14 @@ estimatePhi<-function(counts,modelMat,treatment){
   
   # fit glm
   mu <- fitted(glmfit)
+  nprm=length(glmfit$coef) # number of parameters fitted
   
   # calculate and record results
   resids <- (y-n*mu)/sqrt(mu*(n-n*mu))
 
   # get phi correction coefficients 
-  phi <- sum( resids^2 )/(length(n)-2)
-  c(phi,(length(n)-2))
+  phi <- sum( resids^2 )/(length(n)-nprm)
+  c(phi,(length(n)-nprm))
 }
 
 # end of S3 functions
