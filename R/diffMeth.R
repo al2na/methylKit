@@ -627,7 +627,7 @@ setMethod("calculateDiffMeth", "methylBase",
             cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
             
             # call estimate shrinkage before logReg
-            if(overdispersion=="shrinkMN"){
+            if(overdispersion[1] == "shrinkMN"){
               parShrinkMN<-estimateShrinkageMN(cntlist,
                                                treatment=.Object@treatment,
                                                covariates=vars,
