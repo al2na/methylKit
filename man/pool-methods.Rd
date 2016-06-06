@@ -7,7 +7,7 @@
 \alias{pool,methylBaseDB-method}
 \title{Pool replicates within groups to a single sample per group}
 \usage{
-pool(obj,sample.ids,chunk.size,save.db,...)
+pool(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
 
 \S4method{pool}{methylBase}(obj, sample.ids, chunk.size = 1e+06,
   save.db = FALSE, ...)
@@ -16,7 +16,8 @@ pool(obj,sample.ids,chunk.size,save.db,...)
   save.db = FALSE, ...)
 }
 \arguments{
-\item{obj}{\code{methylBase} or \code{methylBaseDB} object with two groups or more and each group 
+\item{obj}{\code{methylBase} or \code{methylBaseDB} object with two groups
+ or more and each group 
 should have multiple samples}
 
 \item{sample.ids}{a character vector of new sample.ids ex:c("test","control"), 
@@ -24,39 +25,58 @@ should have multiple samples}
 and should be equal to the length of the unique treatment
  vector}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawListDB} objects, default: 1e6}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
 
 \code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+      A character string to append to the name of the
+       output flat file database, 
+      only used if save.db is true, default actions: 
+      append \dQuote{_filtered} to current filename 
+      if database already exists or generate new file 
+      with filename \dQuote{sampleID_filtered}
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
+      The directory where flat file database(s) should be 
+      stored, defaults
       to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+      and to same directory for already existing database
+      
+\code{dbtype}
+       The type of the flat file database, currently only option is "tabix"
+       (only used for newly stored databases)}
 }
 \value{
-a  \code{methylBase} or \code{methylBaseDB} object depending on class of input object
+a  \code{methylBase} or \code{methylBaseDB} object depending 
+on class of input object
 }
 \description{
 The function sums up coverage, numCs and numTs values within each group so 
-one representative sample for each group will be created in a new methylBase object
+one representative sample for each group will be created in a new methylBase
+ object
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylBaseDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for 
+most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB}, 
-while being per default FALSE for \code{methylBase}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylBaseDB}, 
+while being per default FALSE for \code{methylBase}. If you wish to save 
+the result of an 
+in-memory-calculation as flat file database or if the size of the 
+database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
 \examples{

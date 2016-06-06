@@ -10,35 +10,46 @@
 
 #' Get regional counts for given GRanges or GRangesList object
 #'
-#' Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}}  object into 
+#' Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}},
+#'  \code{\link{methylRawList}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or 
+#' \code{\link{methylBaseDB}}  object into 
 #' regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
-#' @param object a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}} object
-#' @param regions a GRanges or GRangesList object. Make sure that the GRanges objects are
+#' @param object a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 
+#' \code{\link{methylRawList}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBase}} or
+#'  \code{\link{methylBaseDB}} object
+#' @param regions a GRanges or GRangesList object. Make sure that the GRanges
+#'  objects are
 #'        unique in chr,start,end and strand columns.You can make them unique by 
 #'        using unique() function.
 #' @param cov.bases number minimum bases covered per region (Default:0). 
 #' Only regions with base coverage above this threshold are returned.
 #' @param strand.aware if set to TRUE only CpGs that match the strand of 
 #' the region will be summarized. (default:FALSE)
-#' @param chunk.size Number of rows to be taken as a chunk for processing the \code{methylDB} objects (default: 1e6)
-#' @param save.db A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections  
+#' @param chunk.size Number of rows to be taken as a chunk for processing 
+#' the \code{methylDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#' saved as flat file database or not, default: explained in Details sections  
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output flat 
+#'                  file database, 
+#'                  only used if save.db is true, 
+#'                  default actions: append \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
+#'                  The directory where flat file database(s) should be stored, 
+#'                  defaults
 #'                  to getwd(), working directory for newly stored databases
 #'                  and to same directory for already existing database
 #'                  
-#            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
-#                  (only used for newly stored databases)
+#'            \code{dbtype}
+#'                The type of the flat file database, currently only option is "tabix"
+#'                  (only used for newly stored databases)
 #' 
 #' @return  a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
 #'          set to FALSE (default). Even though the resulting object will have
@@ -60,14 +71,20 @@
 #' cov.bases=0,strand.aware=FALSE)
 #' 
 #' @section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects 
+#' which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most 
+#' systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
-#' while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{methylRawList}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as 
+#' \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRaw}, \code{methylBase} or
+#'  \code{methylRawList}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #' 
 #' @export
@@ -106,14 +123,12 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
     
     #require(data.table)
     # create a temporary data.table row ids from regions and counts from object
+    coverage=numCs=numTs=id=covered=NULL
     df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
     dt=data.table::data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
-    coverage=NULL
-    numCs=NULL
-    numTs=NULL
-    id=NULL
+
     # use data.table to sum up counts per region
     sum.dt=dt[,list(coverage=sum(coverage),
                     numCs   =sum(numCs),
@@ -215,6 +230,8 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
             dt=data.table::data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
+            coverage=.SD=numTs=id=numTs1=covered=NULL
+            
             # use data.table to sum up counts per region
             sum.dt=dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
             sum.dt=sum.dt[sum.dt$covered>=cov.bases,]
@@ -260,9 +277,12 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
             }
             
             # create methylBaseDB
-            makeMethylBaseDB(df=new.data,dbpath=dbdir,dbtype="tabix",sample.ids=object@sample.ids,
-                             assembly=object@assembly,context=object@context,treatment=object@treatment,
-                             coverage.index=object@coverage.index,numCs.index=object@numCs.index,
+            makeMethylBaseDB(df=new.data,dbpath=dbdir,dbtype="tabix",
+                             sample.ids=object@sample.ids,
+                             assembly=object@assembly,context=object@context,
+                             treatment=object@treatment,
+                             coverage.index=object@coverage.index,
+                             numCs.index=object@numCs.index,
                              numTs.index=object@numTs.index,destranded=destranded,
                              resolution="region", suffix=suffix )
           }
@@ -428,6 +448,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
             dt=data.table::data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
+            id=.SD=numTs1=NULL
             # use data.table to sum up counts per region
             sum.dt=dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
             sum.dt=sum.dt[sum.dt$covered>=cov.bases,]

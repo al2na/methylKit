@@ -5,8 +5,10 @@
 \alias{methylRawList.obj}
 \title{Example methylRawList object.}
 \format{Methylation data from multiple the samples regardless 
-  of common coverage are stored in  methylRawList.obj object. \code{methylRawList} extends \code{list} S3 class}
+  of common coverage are stored in  methylRawList.obj object. 
+  \code{methylRawList} extends \code{list} S3 class}
 \description{
-\code{methylBase}, \code{methylDiff} and \code{methylRawList}. You can load the data using \code{data(methylKit)}
+\code{methylBase}, \code{methylDiff} and \code{methylRawList}.
+  You can load the data using \code{data(methylKit)}
 }
 

@@ -45,13 +45,15 @@ with \code{methylDiff} class.
 
 \section{Coercion}{
 
-  \code{methylDiff} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{methylDiff} object can be coerced to 
+  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 }
 
 \section{Accessors}{
  
 The following functions provides access to data slots of methylDiff:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+\code{\link[methylKit]{getContext}}
 }
 \examples{
 data(methylKit)

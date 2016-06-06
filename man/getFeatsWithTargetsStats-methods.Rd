@@ -6,29 +6,37 @@
 \alias{getFeatsWithTargetsStats,annotationByFeature-method}
 \title{Get the percentage/count of annotation features overlapping with target features}
 \usage{
-getFeatsWithTargetsStats(x,percentage=TRUE)
+getFeatsWithTargetsStats(x, percentage = TRUE)
 
 \S4method{getFeatsWithTargetsStats}{annotationByFeature}(x, percentage = TRUE)
 }
 \arguments{
-\item{x}{an \code{\link[methylKit]{annotationByFeature}} or an \code{\link[methylKit]{annotationByGenicParts}} object}
+\item{x}{an \code{\link[methylKit]{annotationByFeature}} or an 
+\code{\link[methylKit]{annotationByGenicParts}} object}
 
-\item{percentage}{TRUE|FALSE. If TRUE percentage of annotation features will be returned. If FALSE, number of annotation features will be returned}
+\item{percentage}{TRUE|FALSE. If TRUE percentage of annotation features will 
+be returned. If FALSE, number of annotation features will be returned}
 }
 \value{
-a vector of percentages or counts showing quantity of annotation features overlapping with target features
+a vector of percentages or counts showing quantity of annotation 
+features overlapping with target features
 }
 \description{
-This function retrieves percentage/number of annotation features overlapping with targets. 
-For example, if \code{annotationByFeature}  object is containing statistics of differentially methylated 
-regions overlapping with gene annotation. This function will return number/percentage of introns,exons and promoters
+This function retrieves percentage/number of annotation features overlapping 
+with targets. 
+For example, if \code{annotationByFeature}  object is containing statistics 
+of differentially methylated 
+regions overlapping with gene annotation. This function will return 
+number/percentage of introns,exons and promoters
 overlapping with differentially methylated regions.
 }
 \examples{
 data(methylKit)
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
+cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt",
+ package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
-ann=annotate.WithFeature.Flank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,feature.name="CpGi",flank.name="Shores")
+ann=annotateWithFeatureFlank(methylDiff.obj,cpg.obj$CpGi,cpg.obj$shores,
+feature.name="CpGi",flank.name="Shores")
 getFeatsWithTargetsStats(ann,percentage=TRUE)
 
 }

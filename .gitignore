@@ -7,4 +7,9 @@ methylkit_rstudio.Rproj
 .Rbuildignore~
 .travis.c.yml
 .travis.r.yml
+<<<<<<< HEAD
 
+||||||| merged common ancestors
+=======
+.DS_Store
+>>>>>>> d9ad96c29081451932703c0b8a4decf3b305fbb3

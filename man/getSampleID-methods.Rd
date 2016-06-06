@@ -60,14 +60,18 @@ getSampleID(x) <- value
 \S4method{getSampleID}{methylDiffDB}(x) <- value
 }
 \arguments{
-\item{x}{an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object}
+\item{x}{an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or 
+\code{\link{methylDiffDB}} object}
 
 \item{value}{a valid replacement vector for the sample-ids of the object}
 }
 \description{
-The function returns or replaces the sample-ids stored in any of the following \code{methylKit} objects:
-\code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylBase}}, \code{\link{methylBaseDB}},
-\code{\link{methylRawList}}, \code{\link{methylRawListDB}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}}.
+The function returns or replaces the sample-ids stored in any of the 
+following \code{methylKit} objects:
+\code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylBase}}, 
+\code{\link{methylBaseDB}},
+\code{\link{methylRawList}}, \code{\link{methylRawListDB}}, 
+\code{\link{methylDiff}}, \code{\link{methylDiffDB}}.
 }
 \examples{
 

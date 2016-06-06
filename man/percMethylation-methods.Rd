@@ -18,11 +18,14 @@ percMethylation(methylBase.obj, rowids = FALSE, save.txt = FALSE,
 \arguments{
 \item{methylBase.obj}{a methylBase or methylBaseDB object}
 
-\item{rowids}{if TRUE, matrix rownames have identifiers as base/region location (default:FALSE)}
+\item{rowids}{if TRUE, matrix rownames have identifiers as base/region 
+location (default:FALSE)}
 
-\item{save.txt}{if TRUE, the matrix will be written to a text file, but only for methylBaseDB objects (default: FALSE)}
+\item{save.txt}{if TRUE, the matrix will be written to a text file, 
+but only for methylBaseDB objects (default: FALSE)}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylBaseDB} objects (default: 1e6)}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing 
+the \code{methylBaseDB} objects (default: 1e6)}
 }
 \value{
 matrix with percent methylation values per base/region across all 
@@ -33,10 +36,14 @@ get percent methylation scores from methylBase or methylBaseDB object
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylBaseDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for
+ most systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the
+ \code{chunk.size}.
 }
 \examples{
 

@@ -8,10 +8,11 @@
 methSeg(obj, diagnostic.plot = TRUE, ...)
 }
 \arguments{
-\item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, \code{\link{methylDiffDB}},
-\code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
-\code{\link[GenomicRanges]{GRanges}}
- it should have one meta column with methylation scores}
+\item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
+\code{\link{methylDiffDB}},
+           \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
+           \code{\link[GenomicRanges]{GRanges}}
+            it should have one meta column with methylation scores}
 
 \item{diagnostic.plot}{if TRUE a diagnostic plot is plotted. The plot shows
 methylation and length statistics per segment group. In addition, it 

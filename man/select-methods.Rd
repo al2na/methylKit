@@ -26,8 +26,9 @@ select(x,i)
 \S4method{select}{methylDiffDB}(x, i)
 }
 \arguments{
-\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},\code{\link{methylRaw}},\code{\link{methylRawDB}} or
-\code{\link{methylDiff}} object}
+\item{x}{an \code{\link{methylBase}},\code{\link{methylBaseDB}},
+\code{\link{methylRaw}},\code{\link{methylRawDB}} or
+ \code{\link{methylDiff}} object}
 
 \item{i}{a numeric or logical vector. This vector corresponds to bases or 
 regions contained in \code{methylKit} objects.The vector is used to 
@@ -45,7 +46,7 @@ objects.
 data(methylKit)
 
 
-methylRawDB.obj=read( system.file("extdata","test1.txt.bgz",package="methylKit"),
+methylRawDB.obj=methRead( system.file("extdata","test1.txt.bgz",package="methylKit"),
                           sample.id="test1", assembly="hg18",
                           dbtype = "tabix",dbdir = "methylDB")
 

@@ -8,15 +8,21 @@
 assocComp(mBase, sampleAnnotation)
 }
 \arguments{
-\item{mBase}{\code{\link{methylBase}} or \code{\link{methylBaseDB}} object with no NA values in the data part.}
+\item{mBase}{\code{\link{methylBase}} or \code{\link{methylBaseDB}} 
+object with no NA values in the data part.}
 
-\item{sampleAnnotation}{a data frame where columns are different annotations and 
-rows are the samples, in the same order as in the methylBase object.}
+\item{sampleAnnotation}{a data frame where columns are different 
+annotations and 
+                       rows are the samples, in the same order as 
+                       in the methylBase object.}
 }
 \value{
-a named list of principal component matrix (named 'pcs'),% variation explained
-        by principal compopents (named 'vars') and a p-value matrix showing association
-        p-values between sample annotations and principal components (named 'association').
+a named list of principal component matrix (named 'pcs'),
+% variation explained
+        by principal compopents (named 'vars') and a p-value matrix 
+        showing association
+        p-values between sample annotations and principal components 
+        (named 'association').
 }
 \description{
 This function associates principal components with sample annotations

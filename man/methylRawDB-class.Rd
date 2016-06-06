@@ -25,14 +25,17 @@ percent methylation values and read coverage values per genomic base/region.
 
 \section{Details}{
 
-\code{methylRawDB} is created via \code{\link{read}} function and has the same functionality as \code{\link{methylRaw}} class, 
-but the data is saved in a flat database file and therefore allocates less space in memory.
+\code{methylRawDB} is created via \code{\link{read}} function and has the 
+same functionality as \code{\link{methylRaw}} class, 
+but the data is saved in a flat database file and therefore allocates less 
+space in memory.
 }
 
 \section{Subsetting}{
 
  In the following code snippets, \code{x} is a \code{methylRawDB}.
- Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if subsetting is done on
+ Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if 
+ subsetting is done on
  rows. Column subsetting is not directly allowed to prevent errors in the 
  downstream analysis. see ?methylKit[ .
  \code{x[]} will return the \code{methylRawDB} object as new \code{methylRaw} object
@@ -58,7 +61,8 @@ read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 header=TRUE,nrows=5)
 
 
-methylRawDB.obj <- read(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+methylRawDB.obj <- methRead(
+system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
                         sample.id = "ctrl1", assembly = "hg18",
                         dbtype = "tabix", dbdir = "methylDB")
 

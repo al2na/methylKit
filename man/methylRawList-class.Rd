@@ -13,8 +13,10 @@ by \code{\link[methylKit]{read}} function.
 }
 \section{Slots}{
 \describe{
-                 \item{\code{treatment}}{numeric vector denoting control and test samples}
-                 \item{\code{.Data}}{a list of \code{\link{methylRaw}} objects  } 
+                 \item{\code{treatment}}{numeric vector denoting control 
+                 and test samples}
+                 \item{\code{.Data}}{a list of 
+                 \code{\link{methylRaw}} objects  } 
                }
 }
 \examples{

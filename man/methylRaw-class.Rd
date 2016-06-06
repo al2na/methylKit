@@ -49,9 +49,10 @@ The following functions provides access to data slots of methylRaw:
 }
 \examples{
 
-# example of a raw methylation data contained as a text file
-read.table(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-header=TRUE,nrows=5)
+# example of a raw methylation data as a text file
+read.table(system.file("extdata", "control1.myCpG.txt", 
+                                package = "methylKit"),
+                                    header=TRUE,nrows=5)
 
 data(methylKit)
 
