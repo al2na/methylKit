@@ -8,7 +8,7 @@
 #include <deque>
 #include <string>
 #include <map>
-#include <getopt.h>
+//#include <getopt.h>
 #include "sam.h"
 #include "bgzf.h"
 #include "zlib.h"
