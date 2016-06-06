@@ -64,7 +64,8 @@ bases/regions (the default), or as an absolute value}
 \item{obj.return}{if the result of \code{prcomp} function should be returned 
 or not. (Default:FALSE)}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawListDB} objects, default: 1e6}
 }
 \value{
 The form of the value returned by \code{PCASamples} is the summary 
@@ -80,10 +81,14 @@ cor option is not in use anymore, since \code{prcomp} is used for PCA
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylBaseDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most 
+systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 }
 \examples{
 data(methylKit) 

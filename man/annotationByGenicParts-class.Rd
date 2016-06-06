@@ -6,32 +6,49 @@
 \alias{annotationByGenicParts-class}
 \title{An S4 class for overlap of target features with gene annotation}
 \description{
-This object is desgined to hold basic statistics and information about genomic feature overlaps. It extends \code{\link[methylKit]{annotationByFeature}} class.
-The class contains an additional slot for data containing distance to nearest transcription start site (TSS).
+This object is desgined to hold basic statistics and information about 
+genomic feature overlaps. It extends 
+\code{\link[methylKit]{annotationByFeature}} class.
+The class contains an additional slot for data containing distance to nearest 
+transcription start site (TSS).
 }
 \section{Slots}{
 \describe{
-                 \item{\code{members}}{a matrix showing overlap of target features with gene annotation  features}
-                 \item{\code{annotation}}{a named vector of percentages of overlap between feature and gene annotation}
-                 \item{\code{precedence}}{a named vector of percentages of overlap between feature and  gene annotation}
-                 \item{\code{num.annotation}}{a named vector of numbers of overlap between feature and gene annotation}
-                 \item{\code{num.precedence}}{a named vector of numbers of overlap between feature and gene annotation}
-                 \item{\code{no.of.OlapFeat}}{a named vector of numbers of overlap between gene annotation and the feature}
-                 \item{\code{perc.of.OlapFeat}}{a named vector of percentages of overlap between gene annotation and the feature }
-                 \item{\code{dist.to.TSS}}{a data frame showing distances to TSS and gene/TSS names and strand}
+                 \item{\code{members}}{a matrix showing overlap of target 
+                 features with gene annotation  features}
+                 \item{\code{annotation}}{a named vector of percentages of 
+                 overlap between feature and gene annotation}
+                 \item{\code{precedence}}{a named vector of percentages of 
+                 overlap between feature and  gene annotation}
+                 \item{\code{num.annotation}}{a named vector of numbers of 
+                 overlap between feature and gene annotation}
+                 \item{\code{num.precedence}}{a named vector of numbers of 
+                 overlap between feature and gene annotation}
+                 \item{\code{no.of.OlapFeat}}{a named vector of numbers of 
+                 overlap between gene annotation and the feature}
+                 \item{\code{perc.of.OlapFeat}}{a named vector of percentages 
+                 of overlap between gene annotation and the feature }
+                 \item{\code{dist.to.TSS}}{a data frame showing distances to 
+                 TSS and gene/TSS names and strand}
 }
 }
 \examples{
 data(methylKit)
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+gene.obj=readTranscriptFeatures(system.file("extdata", 
+         "refseq.hg18.bed.txt", package = "methylKit"))
 
 # the following function returns an annotationByGenicParts object
-ann=annotate.WithGenicParts(methylDiff.obj, gene.obj)
+ann=annotateWithGenicParts(methylDiff.obj, gene.obj)
 
 }
 \seealso{
-see \code{\link[methylKit]{annotate.WithGenicParts}} on how to create this object, see following functions that operates on this object  
-\code{\link[methylKit]{getTargetAnnotationStats}}, \code{\link[methylKit]{getMembers}}, \code{\link[methylKit]{getAssociationWithTSS}},
-\code{\link[methylKit]{getTargetAnnotationStats}}, code{\link[methylKit]{getFeatsWithTargetsStats}},\code{\link[methylKit]{plotTargetAnnotation}}
+see \code{\link[methylKit]{annotateWithGenicParts}} on 
+how to create this object, see following functions that operates on this object  
+\code{\link[methylKit]{getTargetAnnotationStats}}, 
+\code{\link[methylKit]{getMembers}}, 
+\code{\link[methylKit]{getAssociationWithTSS}},
+\code{\link[methylKit]{getTargetAnnotationStats}}, 
+code{\link[methylKit]{getFeatsWithTargetsStats}},
+\code{\link[methylKit]{plotTargetAnnotation}}
 }
 

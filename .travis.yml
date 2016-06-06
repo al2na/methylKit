@@ -4,32 +4,30 @@
 # see the wiki:
 #   https://github.com/craigcitro/r-travis/wiki
 
-language: r
+language: R
 sudo: false
-bioc_required: true
 warnings_are_errors: false
+cache: packages
+r: bioc-devel
 
-#before_install:
-#  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-#  - chmod 755 ./travis-tool.sh
-#  - ./travis-tool.sh bootstrap
-#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-#  - sudo apt-get update -qq
 
-#install:
-#  - ./travis-tool.sh install_deps
-#  - ./travis-tool.sh install_bioc_deps
-#  - sudo apt-get install -qq g++-4.8
-#  - export CXX="g++-4.8"
-  
-#script: ./travis-tool.sh run_tests
 
-#after_failure:
-#  - ./travis-tool.sh dump_logs
+bioc_required: true
+bioc_packages:
+  - BiocCheck
 
-#after_script:
-#  - ./travis-tool.sh dump_logs_by_extension "timings"
-#  - ./travis-tool.sh dump_sysinfo
+
+
+after_script:
+  - ls -lah
+  - FILE=$(ls -1t *.tar.gz | head -n 1)
+  - Rscript -e "library(BiocCheck); BiocCheck(\"${FILE}\")"
+
+
+
+
+
+
 
 addons:
   apt:

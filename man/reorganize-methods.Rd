@@ -9,7 +9,8 @@
 \alias{reorganize,methylRawListDB-method}
 \title{Reorganize methylKit objects by creating new objects from subset of samples}
 \usage{
-reorganize(methylObj,sample.ids,treatment,chunk.size,save.db,...)
+reorganize(methylObj, sample.ids, treatment, chunk.size = 1e+06,
+  save.db = FALSE, ...)
 
 \S4method{reorganize}{methylBase}(methylObj, sample.ids, treatment,
   chunk.size = 1e+06, save.db = FALSE, ...)
@@ -24,35 +25,49 @@ reorganize(methylObj,sample.ids,treatment,chunk.size,save.db,...)
   chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
-\item{methylObj}{a \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} object}
+\item{methylObj}{a \code{methylRawList}, \code{methylRawListDB}, 
+\code{methylBase} or \code{methylBaseDB} object}
 
 \item{sample.ids}{a vector for sample.ids to be subset. Order is 
-important and the order should be similar to treatment. sample.ids should be
+important and the order should be similar to treatment. sample.ids 
+should be
 a subset or reordered version of sample ids in the input object.}
 
 \item{treatment}{treatment vector, should be same length as sample.ids vector}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylBaseDB} or \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylBaseDB} or \code{methylRawListDB} objects, default: 1e6}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
-
-\code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
-      
-\code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
-      to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+ 
+ \code{suffix}
+       A character string to append to the name of the output 
+       flat file database, 
+       only used if save.db is true, default actions: 
+       append \dQuote{_filtered} to current filename 
+       if database already exists or generate new file 
+       with filename \dQuote{sampleID_filtered}
+       
+ \code{dbdir} 
+       The directory where flat file database(s) should be 
+       stored, defaults
+       to getwd(), working directory for newly stored databases
+       and to same directory for already existing database
+       
+\code{dbtype}
+       The type of the flat file database, currently only option 
+      "tabix"}
 }
 \value{
-returns a \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} object depending on the input object
+returns a \code{methylRawList}, \code{methylRawListDB}, 
+\code{methylBase} or \code{methylBaseDB} object depending on the input object
 }
 \description{
-The function creates a new  \code{methylRawList}, \code{methylRawListDB}, \code{methylBase} or \code{methylBaseDB} 
+The function creates a new  \code{methylRawList}, \code{methylRawListDB}, 
+\code{methylBase} or \code{methylBaseDB} 
 object by selecting a subset of samples from the input object, which is 
 a \code{methylRawList} or \code{methylBase} object. You can use the function
  to partition a large methylRawList or methylBase object
@@ -61,14 +76,20 @@ to smaller object based on sample ids or when you want to reorder samples
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylBaseDB} or \code{methylRawListDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylBaseDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized 
+objects which are stored as flat file database.
 Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylBaseDB} and \code{methylRawListDB}, 
-while being per default FALSE for \code{methylBase} and \code{methylRawList}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylBaseDB} and \code{methylRawListDB}, 
+while being per default FALSE for \code{methylBase} and 
+\code{methylRawList}. If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the 
+database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
 \examples{
@@ -80,7 +101,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
 
 
 # read the files to a methylRawList object: myobj
-myobj=read( file.list,
+myobj=methRead( file.list,
           sample.id=list("test1","test2","ctrl1","ctrl2"),
           assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 meth=unite(myobj,destrand=TRUE)

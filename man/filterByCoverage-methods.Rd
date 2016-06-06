@@ -7,10 +7,12 @@
 \alias{filterByCoverage,methylRawDB-method}
 \alias{filterByCoverage,methylRawList-method}
 \alias{filterByCoverage,methylRawListDB-method}
-\title{Filter methylRaw, methylRawDB, methylRawList and methylRawListDB object based on read coverage}
+\title{Filter methylRaw, methylRawDB, methylRawList and methylRawListDB object 
+based on read coverage}
 \usage{
-filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL,
-                        chunk.size,save.db,...)
+filterByCoverage(methylObj, lo.count = NULL, lo.perc = NULL,
+  hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06, save.db = FALSE,
+  ...)
 
 \S4method{filterByCoverage}{methylRaw}(methylObj, lo.count = NULL,
   lo.perc = NULL, hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
@@ -29,64 +31,94 @@ filterByCoverage(methylObj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=NULL
   save.db = TRUE, ...)
 }
 \arguments{
-\item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object}
+\item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} 
+or \code{methylRawListDB} object}
 
-\item{lo.count}{An integer for read counts.Bases/regions having lower coverage than this count is discarded}
+\item{lo.count}{An integer for read counts.Bases/regions having lower 
+coverage than this count is discarded}
 
-\item{lo.perc}{A double [0-100] for percentile of read counts. Bases/regions having lower coverage than this percentile is discarded}
+\item{lo.perc}{A double [0-100] for percentile of read counts. Bases/regions 
+having lower coverage than this percentile is discarded}
 
-\item{hi.count}{An integer for read counts. Bases/regions having higher coverage than this is count discarded}
+\item{hi.count}{An integer for read counts. Bases/regions having higher 
+coverage than this is count discarded}
 
-\item{hi.perc}{A double [0-100] for percentile of read counts. Bases/regions having higher coverage than this percentile is discarded}
+\item{hi.perc}{A double [0-100] for percentile of read counts. Bases/regions 
+having higher coverage than this percentile is discarded}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing the 
+\code{methylRawDB} or \code{methylRawListDB} objects, default: 1e6}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
 
 \code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+      A character string to append to the name of the output 
+      flat file database, 
+      only used if save.db is true, default actions: append 
+      \dQuote{_filtered} to current filename 
+      if database already exists or generate new file with 
+      filename \dQuote{sampleID_filtered}
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
+      The directory where flat file database(s) should be stored, 
+      defaults
       to getwd(), working directory for newly stored databases
-      and to original directory for already existing database}
+      and to original directory for already existing database
+      
+\code{dbtype}
+      The type of the flat file database, currently only 
+      option is "tabix"
+      (only used for newly stored databases)}
 }
 \value{
-\code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or \code{methylRawListDB} object depending on input object
+\code{methylRaw}, \code{methylRawDB}, \code{methylRawList} or
+ \code{methylRawListDB} object depending on input object
 }
 \description{
-This function filters \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} and \code{methylRawListDB} objects.
-You can filter based on lower read cutoff or high read cutoff. Higher read cutoff is usefull to eliminate PCR effects
+This function filters \code{methylRaw}, \code{methylRawDB}, 
+\code{methylRawList} and \code{methylRawListDB} objects.
+You can filter based on lower read cutoff or high read cutoff.
+ Higher read cutoff is usefull to eliminate PCR effects
 Lower read cutoff is usefull for doing better statistical tests.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylRawDB} or \code{methylRawListDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
-have a high amount of memory available feel free to adjust the \code{chunk.size}.
+The parameter \code{chunk.size} is only used when working with 
+\code{methylRawDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects
+ which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most 
+systems. If you encounter memory problems or 
+have a high amount of memory available feel free to adjust the 
+\code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB} and \code{methylRawListDB}, 
-while being per default FALSE for \code{methylRaw} and \code{methylRawList}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylRawDB} and \code{methylRawListDB}, 
+while being per default FALSE for \code{methylRaw} and \code{methylRawList}. 
+If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the database 
+allows the calculation in-memory, 
 then you might change the value of this parameter.
 }
 \examples{
 data(methylKit)
 
 # filter out bases with covereage above 500 reads
-filtered1=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=500,hi.perc=NULL)
+filtered1=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,
+hi.count=500,hi.perc=NULL)
 
-# filter out bases with cread coverage above 99.9th percentile of coverage distribution
-filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
+# filter out bases with cread coverage above 99.9th percentile of coverage
+# distribution
+filtered2=filterByCoverage(methylRawList.obj,lo.count=NULL,lo.perc=NULL,
+hi.count=NULL,hi.perc=99.9)
 
-# filter out bases with covereage above 500 reads and save to database "test1_max500.txt.bgz" 
+# filter out bases with covereage above 500 reads and save to database 
+# "test1_max500.txt.bgz" 
 # in directory "methylDB", filtered3 now becomes a \\code{methylRawDB} object
-filtered3=filterByCoverage(methylRawList.obj[[1]], lo.count=NULL, lo.perc=NULL, 
+filtered3=filterByCoverage(methylRawList.obj[[1]], lo.count=NULL,lo.perc=NULL, 
                            hi.count=500, hi.perc=NULL, save.db=TRUE, 
                            suffix="max500", dbdir="methylDB")
                            

@@ -41,8 +41,10 @@ a \code{\link{methylBase}},\code{\link{methylRaw}} or
           \code{\link{methylDiff}} object depending on the input object.
 }
 \description{
-The function selects records from a \code{\link{methylBaseDB}}, \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
-that lie inside the regions given by \code{ranges} of class \code{GRanges} and returns an object of class 
+The function selects records from a \code{\link{methylBaseDB}}, 
+\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
+that lie inside the regions given by \code{ranges} of class \code{GRanges} 
+and returns an object of class 
 \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}}
 }
 \examples{
@@ -53,7 +55,7 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
-methylRawListDB.obj=read(file.list,
+methylRawListDB.obj=methRead(file.list,
                          sample.id=list("test1","test2","ctrl1","ctrl2"),
                          assembly="hg18",treatment=c(1,1,0,0),
                          dbtype = "tabix",dbdir = "methylDB")

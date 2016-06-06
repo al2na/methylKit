@@ -16,7 +16,7 @@
 #'   mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1)
 #'   
 #' @usage mergeTabix(tabixList,dir,filename,mc.cores=1 ,all=FALSE)
-#'   
+#' @noRd
 mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
   
   # get outfile
@@ -35,7 +35,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
     # random file string
     rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
     filename2=paste(rndFile,filename,sep="_")
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,mc.cores=mc.cores,all=all)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename2,parallel=TRUE,
+                     mc.cores=mc.cores,all=all)
     
     #concat subfiles
 
@@ -60,7 +61,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       unlink(outfile)
     }
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,parallel=FALSE,all=all,mc.cores=mc.cores)
+    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,
+                     parallel=FALSE,all=all,mc.cores=mc.cores)
     outfile= file.path(path.expand(dir),filename) 
   }
   
@@ -79,8 +81,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
 #' @param outfile name of the output file
 #' 
 #' @usage df2tabix(df,outfile)
-#' 
-df2tabix<-function(df,outfile){
+#' @noRd
+df2tabix<-function(df,outfile,rm.file=TRUE){
   
   if(file.exists(outfile)){
     message("overwriting ",outfile)
@@ -94,7 +96,7 @@ df2tabix<-function(df,outfile){
   
   #make tabix out if the file
   makeMethTabix( outfile ,skip=0)
-  
+  if(rm.file){file.remove(outfile)}
 }
 
 
@@ -105,6 +107,7 @@ df2tabix<-function(df,outfile){
 #' @param sort sort list of subfiles in alpha, numerical way
 #' 
 #' @usage catsub2tabix(dir,pattern,filename,sort=F)
+#' @noRd
 catsub2tabix<-function(dir,pattern,filename,sort=F){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
@@ -135,7 +138,7 @@ catsub2tabix<-function(dir,pattern,filename,sort=F){
 #' @param skip number of lines to skip
 #' 
 #' @usage makeMethTabix(filepath,skip=0)
-#' 
+#' @noRd
 makeMethTabix<-function(filepath,skip=0){
   message("compressing the file with bgzip...")
   zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
@@ -156,6 +159,7 @@ makeMethTabix<-function(filepath,skip=0){
 #' @param filename the output file name
 #' @param parallel logical to determine internal processing of output
 #' @param all logical parameter passed to \code{\link{merge}} function
+#' @noRd
 mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   #get first file on the list
@@ -171,6 +175,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   }
   
   # order rows
+  V1=V2=V3=NULL
   data.table::setorder(res, V1,V2,V3)
   
   if(!parallel){
@@ -178,14 +183,16 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   # if not parallel we can write out one file and append to it
   outfile= file.path(path.expand(dir),filename)   
   con=file(outfile, open = "a", blocking = TRUE)
-  write.table(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  write.table(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,
+              append=TRUE)
   close(con)
   }else{
     
     # when parallel, we have to write seperate files for each chr
     # then merge them outside this function
     outfile= file.path(path.expand( dir),paste(chr,filename,sep="_")) 
-    write.table(res,outfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+    write.table(res,outfile,quote=FALSE,sep="\t",
+                col.names=FALSE,row.names=FALSE,append=TRUE)
     
   }
   return(outfile)
@@ -198,7 +205,9 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
 # @example
 # tbxFile=system.file("extdata", "ctrl1.txt", package = "methylKit")
 #  getTabixByChr(chr="chr21",tbxFile)
-getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.frame","GRanges")){
+#' @noRd
+getTabixByChr<-function(tbxFile,chr="chr10",
+                        return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
   
@@ -225,6 +234,7 @@ getTabixByChr<-function(tbxFile,chr="chr10",return.type=c("data.table","data.fra
 # granges <- as(methylRawListDB[[1]],"GRanges")
 # tbxFile=methylRawListDB[[1]]@dbpath
 #  getTabixByOverlap(granges=granges[1:50],tbxFile)
+#' @noRd
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -249,9 +259,10 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 
 #' get data from meth tabix for a given number of rows
 #'
-# @example
-# tbxFile=methylRawListDB[[1]]@dbpath
-#  headTabix(tbxFile)
+#' @example
+#' tbxFile=methylRawListDB[[1]]@dbpath
+#' headTabix(tbxFile)
+#' @noRd
 headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
   
   if( class(tbxFile) != "TabixFile" ){
@@ -268,7 +279,9 @@ headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
 # @example
 # tbxFile=methylRawListDB[[1]]@dbpath
 #  getTabixByChunk( tbxFile,chunk.size=10)
-getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","data.frame","GRanges")){
+#' @noRd
+getTabixByChunk<-function(tbxFile,chunk.size=1e6,
+                          return.type=c("data.table","data.frame","GRanges")){
   
   return.type <- match.arg(return.type)
   
@@ -293,29 +306,35 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,return.type=c("data.table","dat
 
 #' convert methylKit tabix to data.table
 # assuming you get a list length 1
+#' @noRd
 tabix2dt<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE)
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                       stringsAsFactors=TRUE)
   
 }
 
 #' convert methylKit tabix to data.frame
 # assuming you get a list length 1
+#' @noRd
 tabix2df<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),stringsAsFactors=TRUE,data.table = FALSE)
+    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+                       stringsAsFactors=TRUE,data.table = FALSE)
     
 }
 
 #' convert methylKit tabix to GRanges without Metacolumns
 # assuming you get a list length 1
 # for GRanges object with metacolumns coerce from methylDB object
+#' @noRd
 tabix2gr<-function(tabixRes){
   
     from <- data.table::fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                               stringsAsFactors=TRUE, data.table = FALSE)
     
-  GRanges(seqnames=as.character(from$V1),ranges=IRanges(start=from$V2, end=from$V3),
+  GRanges(seqnames=as.character(from$V1),
+          ranges=IRanges(start=from$V2, end=from$V3),
           strand=from$V4, from[,5:ncol(from)])
 
 }
@@ -324,8 +343,10 @@ tabix2gr<-function(tabixRes){
 #' Serially apply a function on chunks of tabix files
 #' 
 #' The function reads chunks of a tabix file and applies a function on them. 
-#' The function (FUN argument) should apply on data.frames and return a data frame
-#' as a result. The function is serially applied to chunks (means no parallelization). 
+#' The function (FUN argument) should apply on data.frames and 
+#' return a data frame
+#' as a result. The function is serially applied to chunks 
+#' (means no parallelization). 
 #' However, the function FUN itself can be a parallelized function
 #' and related arguments could be passed on to the function via ... argument.
 #' 
@@ -340,6 +361,7 @@ tabix2gr<-function(tabixRes){
 #' a path, just a file name.
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
+#' @noRd
 applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table","text"),
                           FUN,...){
@@ -393,7 +415,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,tbxFile,dir,filename,FUN,...){
+    myFunc2<-function(chunk.num,tbxFile,dir,filename,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
       res=FUN(data,...)  
       
@@ -408,7 +430,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     filename2=paste(rndFile,filename,sep="_")
     
     # apply function to chunks
-    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,tbxFile,dir,filename2,FUN,...)
     
     
     outfile= file.path(path.expand(dir),filename) # get file name 
@@ -417,7 +439,8 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       unlink(outfile)
     }
     con=file(outfile, open = "a", blocking = TRUE) # open connection  
-    for(file in gtools::mixedsort(list.files(path = dir, pattern = filename2,full.names=TRUE))){
+    for(file in gtools::mixedsort(
+      list.files(path = dir, pattern = filename2,full.names=TRUE))){
       file.append(outfile,file) # append files
     }
     close(con)
@@ -430,23 +453,23 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,tbxFile,FUN,...){
+    myFunc3<-function(chunk.num,tbxFile,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chunk.num,tbxFile,FUN,...){
+    myFunc4<-function(chunk.num,tbxFile,FUN,...){
       data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.table")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc4,tbxFile,FUN,...)
   
     
     # collect and return
@@ -459,14 +482,18 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 # applyTbxByCHr
 #' Apply a function on tabix files chromosome by chromosome 
 #' 
-#' The function reads a tabix file chromosome by chromosome and applies a function on each. 
-#' The function (FUN argument) should apply on data.frames and return a data frame
+#' The function reads a tabix file chromosome by chromosome and applies 
+#' a function on each. 
+#' The function (FUN argument) should apply on data.frames and return a 
+#' data frame
 #' as a result. The function is parallel applied to each chromosome 
 #' and related arguments could be passed on to the function via ... argument.
 #' 
 #' @param tbxFile tabix file to read. a TabixFile object
-#' @param chrs chromosome names. Based on chromosome names the chunks of tabix file
-#'        will be read into the memory. If missing use all chromosome names in tabix file.
+#' @param chrs chromosome names. Based on chromosome names the chunks of 
+#' tabix file
+#'        will be read into the memory. If missing use all chromosome names 
+#'        in tabix file.
 #' @param return.type indicates the return type for the function
 #' @param FUN function to apply to chrs, it takes a data.frame and returns a 
 #'            data.frame. First argument of the function should be a data frame
@@ -477,7 +504,10 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
 #' 
 #' @return either a path to a tabix or text file, or a data frame or data.table
-applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.frame","data.table"),FUN,...,mc.cores=1){
+#' @noRd
+applyTbxByChr<-function(tbxFile,chrs,dir,filename,
+                        return.type=c("tabix","data.frame","data.table"),
+                        FUN,...,mc.cores=1){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -514,23 +544,23 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chr,tbxFile,FUN,...){
+    myFunc2<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.frame")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
+    res=mclapply(chrs,myFunc2,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chr,tbxFile,FUN,...){
+    myFunc3<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.table")
       res=FUN(data,...)  
     }
     
-    res=mclapply(chrs,myFunc,tbxFile,FUN,...,mc.cores = mc.cores)
+    res=mclapply(chrs,myFunc3,tbxFile,FUN,...,mc.cores = mc.cores)
     
     # collect and return
     rbindlist(res)
@@ -558,6 +588,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,return.type=c("tabix","data.fr
 #' a path, just a file name.
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
+#' @noRd
 applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table"),
                           FUN,...){
@@ -592,13 +623,17 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     # create a custom function that contains the function
     # to be applied
     myFunc<-function(chunk.num,region.split,tbxFile,dir,filename,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+      data <- try(expr = data <- getTabixByOverlap(
+        tbxFile,granges = region.split[[chunk.num]],
+        return.type="data.frame"),silent = TRUE)
       
       if( class(data)== "try-error") {
         
-#         warning( paste("No records found in range between", min(IRanges::end(region.split[[chunk.num]])),
+#         warning( paste("No records found in range between",
+        # min(IRanges::end(region.split[[chunk.num]])),
 #                        "and",max(IRanges::end(region.split[[chunk.num]])),
-#                        "for Chromosome",unique(as.character(region.split[[chunk.num]]@seqnames))))
+#                        "for Chromosome",
+        # unique(as.character(region.split[[chunk.num]]@seqnames))))
         
       } else {
       
@@ -627,29 +662,34 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.frame"),silent = TRUE)
+    myFunc2<-function(chunk.num,region.split,tbxFile,FUN,...){
+      data <- try(expr = data <- getTabixByOverlap(
+        tbxFile,granges = region.split[[chunk.num]],
+        return.type="data.frame"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
       res=FUN(data,...) 
       }
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,tbxFile,FUN,...)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc<-function(chunk.num,region.split,tbxFile,FUN,...){
-      data <- try(expr = data <- getTabixByOverlap(tbxFile,granges = region.split[[chunk.num]],return.type="data.table"),silent = TRUE)
+    myFunc3<-function(chunk.num,region.split,tbxFile,FUN,...){
+      data <- try(expr = data <- getTabixByOverlap(
+                                    tbxFile,
+                                    granges = region.split[[chunk.num]],
+                                    return.type="data.table"),silent = TRUE)
       
       if( !(class(data)== "try-error") ) {
       res=FUN(data,...)  
       }
     }
     
-    res=lapply(1:chunk.num,myFunc,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
     
     
     # collect and return

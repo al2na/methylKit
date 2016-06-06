@@ -17,23 +17,36 @@ getCorrelation(object,method="pearson",plot=FALSE,nrow)
 \arguments{
 \item{object}{a methylBase or methylBaseDB object}
 
-\item{method}{a character string indicating which correlation coefficient (or covariance) is to be computed (default:"pearson", other options are "kendall" and "spearman")}
+\item{method}{a character string indicating which correlation coefficient 
+(or covariance) is to be computed (default:"pearson", other options are 
+"kendall" and "spearman")}
 
 \item{plot}{scatterPlot if TRUE (default:FALSE)}
 
-\item{nrow}{a numeric giving the number of lines to read in of methylBaseDB object, defaults to 2e6}
+\item{nrow}{a numeric giving the number of lines to read in of methylBaseDB 
+object, defaults to 2e6}
 }
 \value{
 a correlation matrix object and plot scatterPlot
 }
 \description{
-The functions returns a matrix of correlation coefficients and/or a set of scatterplots showing the relationship between samples
+The functions returns a matrix of correlation coefficients and/or a set
+ of scatterplots showing the relationship between samples. The scatterplots
+ will contain also fitted lines using \code{lm()} for linear regression
+ and \code{lowess} for polynomial regression.
 }
 \section{Details}{
- The argument 'nrow' is only evaluated if the input is a \code{methylBaseDB} object.
-If 'nrow' is not specified \code{getCorrelation} will read the first 2M records of the given object,
+ The argument 'nrow' is only evaluated if the 
+input is a \code{methylBaseDB} object.
+If 'nrow' is not specified \code{getCorrelation} will read the 
+first 2M records of the given object,
 but if you want to read all records 'nrow' has to be NULL. 
-You should change 'nrow' if using \code{getCorrelation} with all records of the methylBaseDB object would take to long.
+You should change 'nrow' if using \code{getCorrelation} with 
+all records of the methylBaseDB object would take too long.
+
+If the scatter plot is plotted, the red line in the plot is from linear 
+regression fit and the green line is from polynomial regression fit with 
+\code{stats::lowess}.
 }
 \examples{
 

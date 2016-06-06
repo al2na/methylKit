@@ -13,17 +13,23 @@ by \code{\link[methylKit]{read}} function.
 }
 \section{Slots}{
 \describe{
-                 \item{\code{treatment}}{numeric vector denoting control and test samples}
+                 \item{\code{treatment}}{numeric vector denoting control
+                  and test samples}
                  \item{\code{.Data}}{a list of \code{\link{methylRawDB}} objects  } 
                }
 }
 \examples{
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+file.list=list( system.file("extdata", "test1.myCpG.txt", 
+package = "methylKit"),
+                system.file("extdata", "test2.myCpG.txt", 
+                package = "methylKit"),
+                system.file("extdata", "control1.myCpG.txt", 
+                package = "methylKit"),
+                system.file("extdata", "control2.myCpG.txt", 
+                package = "methylKit") )
 
-methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
+methylRawListDB.obj <- methRead(file.list,
+sample.id = list("test1","test2","ctrl1","ctrl2"),
                             assembly = "hg18",treatment = c(1,1,0,0),
                             dbtype = "tabix",dbdir = "methylDB")
 

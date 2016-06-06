@@ -62,12 +62,15 @@ regionCounts(object,regions,cov.bases=0,strand.aware=FALSE,chunk.size,save.db,..
   save.db = TRUE, ...)
 }
 \arguments{
-\item{object}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}} object}
+\item{object}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 
+\code{\link{methylRawList}}, 
+\code{\link{methylRawListDB}}, \code{\link{methylBase}} or
+ \code{\link{methylBaseDB}} object}
 
-\item{regions}{a GRanges or GRangesList object. Make sure that the GRanges objects are
-unique in chr,start,end and strand columns.You can make them unique by 
-using unique() function.}
+\item{regions}{a GRanges or GRangesList object. Make sure that the GRanges
+objects are
+      unique in chr,start,end and strand columns.You can make them unique by 
+      using unique() function.}
 
 \item{cov.bases}{number minimum bases covered per region (Default:0). 
 Only regions with base coverage above this threshold are returned.}
@@ -75,21 +78,31 @@ Only regions with base coverage above this threshold are returned.}
 \item{strand.aware}{if set to TRUE only CpGs that match the strand of 
 the region will be summarized. (default:FALSE)}
 
-\item{chunk.size}{Number of rows to be taken as a chunk for processing the \code{methylDB} objects (default: 1e6)}
+\item{chunk.size}{Number of rows to be taken as a chunk for processing 
+the \code{methylDB} objects (default: 1e6)}
 
-\item{save.db}{A Logical to decide whether the resulting object should be saved as flat file database or not, default: explained in Details sections}
+\item{save.db}{A Logical to decide whether the resulting object should be 
+saved as flat file database or not, default: explained in Details sections}
 
 \item{...}{optional Arguments used when save.db is TRUE
 
 \code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+      A character string to append to the name of the output flat 
+      file database, 
+      only used if save.db is true, 
+      default actions: append \dQuote{_filtered} to current filename 
+      if database already exists or generate new file with 
+      filename \dQuote{sampleID_filtered}
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
+      The directory where flat file database(s) should be stored, 
+      defaults
       to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+      and to same directory for already existing database
+      
+\code{dbtype}
+    The type of the flat file database, currently only option is "tabix"
+      (only used for newly stored databases)}
 }
 \value{
 a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
@@ -98,20 +111,28 @@ a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
          methylation information from both strands.
 }
 \description{
-Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}}, \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylBase}} or \code{\link{methylBaseDB}}  object into 
+Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}},
+ \code{\link{methylRawList}}, 
+\code{\link{methylRawListDB}}, \code{\link{methylBase}} or 
+\code{\link{methylBaseDB}}  object into 
 regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+The parameter \code{chunk.size} is only used when working with 
+\code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects 
+which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most 
+systems. If you encounter memory problems or 
 have a high amount of memory available feel free to adjust the \code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
-while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{methylRawList}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
+while being per default FALSE for \code{methylRaw}, \code{methylBase} or
+ \code{methylRawList}. If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the database 
+allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
 \examples{

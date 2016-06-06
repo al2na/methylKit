@@ -4,7 +4,7 @@
 \alias{updateMethObject}
 \title{update methylKit objects 
  
-The method updates object from earlier versions (<v1.0.0) to latest object.}
+The method updates object from earlier versions (<v0.9.1) to latest object.}
 \usage{
 updateMethObject(object)
 }
@@ -23,6 +23,6 @@ or \code{\link{methylRawList}} object
 \description{
 update methylKit objects 
  
-The method updates object from earlier versions (<v1.0.0) to latest object.
+The method updates object from earlier versions (<v0.9.1) to latest object.
 }
 

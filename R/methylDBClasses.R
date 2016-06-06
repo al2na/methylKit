@@ -6,18 +6,25 @@
 # set column names for methylRawDB and methylBaseDB data aquired from flat file database
 # @param df data.frame containing methylRaw or methylBase data
 # @param methylDBclass 
-.setMethylDBNames <- function(df,methylDBclass=c("methylDB","methylBaseDB","methylDiffDB")){
+.setMethylDBNames <- function(df,
+                              methylDBclass=c("methylDB","methylBaseDB",
+                                              "methylDiffDB")){
   
   if(missing(methylDBclass)){
         
     if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
-      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+      data.table::setnames(x = df,old = names(df), 
+                           new = c("chr","start","end","strand",
+                                   "coverage","numCs","numTs"))
       
     } else if( length(df) == 7 & unique(sapply(df,class)[5:7])=="numeric"){
-      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff")) 
+      data.table::setnames(x = df,old = names(df), 
+                           new = c("chr","start","end","strand",
+                                   "pvalue","qvalue","meth.diff")) 
 
     } else if( length(df) > 7){
-      data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
+      data.table::setnames(x = df,old = names(df)[1:4], 
+                           new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
       coverage.ind=seq(5,by=3,length.out=numsamples)
@@ -25,9 +32,12 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[coverage.ind], 
+                           paste(c("coverage"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numCs.ind], 
+                           paste(c("numCs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numTs.ind], 
+                           paste(c("numTs"),1:numsamples,sep="" ))
       
     } 
     
@@ -36,10 +46,13 @@
   } else {
     
     if( methylDBclass == "methylRawDB" ){
-      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","coverage","numCs","numTs"))
+      data.table::setnames(x = df,old = names(df), 
+                           new = c("chr","start","end","strand",
+                                   "coverage","numCs","numTs"))
     
     } else if ( methylDBclass == "methylBaseDB"){
-      data.table::setnames(x = df,old = names(df)[1:4], new = c("chr","start","end","strand"))
+      data.table::setnames(x = df,old = names(df)[1:4], 
+                           new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
       coverage.ind=seq(5,by=3,length.out=numsamples)
@@ -47,12 +60,17 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], paste(c("numTs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[coverage.ind], 
+                           paste(c("coverage"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numCs.ind], 
+                           paste(c("numCs"),1:numsamples,sep="" ))
+      data.table::setnames(df,names(df)[numTs.ind], 
+                           paste(c("numTs"),1:numsamples,sep="" ))
       
     } else if( methylDBclass == "methylDiffDB" ){
-      data.table::setnames(x = df,old = names(df), new = c("chr","start","end","strand","pvalue","qvalue","meth.diff"))
+      data.table::setnames(x = df,old = names(df), 
+                           new = c("chr","start","end","strand",
+                                   "pvalue","qvalue","meth.diff"))
     
     #return(df)
     }
@@ -107,12 +125,15 @@ valid.methylRawDB <- function(object) {
 #'  \item{\code{dbtype}:}{string for type of the flat file database, ex: tabix}
 #'                 }
 #' @section Details:
-#' \code{methylRawDB} is created via \code{\link{read}} function and has the same functionality as \code{\link{methylRaw}} class, 
-#' but the data is saved in a flat database file and therefore allocates less space in memory.
+#' \code{methylRawDB} is created via \code{\link{read}} function and has the 
+#' same functionality as \code{\link{methylRaw}} class, 
+#' but the data is saved in a flat database file and therefore allocates less 
+#' space in memory.
 #' 
 #' @section Subsetting:
 #'  In the following code snippets, \code{x} is a \code{methylRawDB}.
-#'  Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if subsetting is done on
+#'  Subsetting by \code{x[i,]} will produce a new \code{methylRaw} object if 
+#'  subsetting is done on
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #'  \code{x[]} will return the \code{methylRawDB} object as new \code{methylRaw} object
@@ -134,7 +155,8 @@ valid.methylRawDB <- function(object) {
 #' header=TRUE,nrows=5)
 #' 
 #' 
-#' methylRawDB.obj <- read(system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+#' methylRawDB.obj <- methRead(
+#' system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
 #'                         sample.id = "ctrl1", assembly = "hg18",
 #'                         dbtype = "tabix", dbdir = "methylDB")
 #' 
@@ -170,6 +192,10 @@ setClass("methylRawDB", slots=list(dbpath="character",num.records="numeric",
 makeMethylRawDB<-function(df,dbpath,dbtype,
                           sample.id, assembly ,context,
                           resolution){
+  if(dbtype != "tabix"){
+    stop("unknown 'dbtype' argument provided, ",
+         "currently only 'tabix' is accepted.")
+  }
   filepath=paste0(dbpath,"/",sample.id,".txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
@@ -210,7 +236,8 @@ valid.methylRawListDB <- function(object) {
     FALSE
   }
   else if ( length(object) != length(object@treatment) ){
-    message("The number of samples is different from the number of treatments, check the length of 'treatment'")
+    message("The number of samples is different from the number of treatments, ","
+            check the length of 'treatment'")
     FALSE
   }
   else{
@@ -228,17 +255,23 @@ valid.methylRawListDB <- function(object) {
 #' by \code{\link[methylKit]{read}} function.
 #'
 #' @section Slots:\describe{
-#'                  \item{\code{treatment}}{numeric vector denoting control and test samples}
+#'                  \item{\code{treatment}}{numeric vector denoting control
+#'                   and test samples}
 #'                  \item{\code{.Data}}{a list of \code{\link{methylRawDB}} objects  } 
 #'                }
 #'                
 #' @examples
-#' file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-#'                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+#' file.list=list( system.file("extdata", "test1.myCpG.txt", 
+#' package = "methylKit"),
+#'                 system.file("extdata", "test2.myCpG.txt", 
+#'                 package = "methylKit"),
+#'                 system.file("extdata", "control1.myCpG.txt", 
+#'                 package = "methylKit"),
+#'                 system.file("extdata", "control2.myCpG.txt", 
+#'                 package = "methylKit") )
 #' 
-#' methylRawListDB.obj <- read(file.list,sample.id = list("test1","test2","ctrl1","ctrl2"),
+#' methylRawListDB.obj <- methRead(file.list,
+#' sample.id = list("test1","test2","ctrl1","ctrl2"),
 #'                             assembly = "hg18",treatment = c(1,1,0,0),
 #'                             dbtype = "tabix",dbdir = "methylDB")
 #' 
@@ -281,47 +314,65 @@ valid.methylBaseDB <- function(object) {
     FALSE
   }
   else if(! check3){
-    message("The number of samples is different from the number of treatments, check the length of 'treatment'")
+    message("The number of samples is different from the number of treatments,",
+            " check the length of 'treatment'")
     FALSE
   }
   
 }
 
 
-#' An S4 class for storing methylation events sampled in multiple experiments as flat file database
+#' An S4 class for storing methylation events sampled in multiple experiments 
+#' as flat file database
 #'
-#' This class is designed to contain methylation information such as coverage, number of methylated bases, etc...
-#' The class creates an object that holds methylation information and genomic location as flat file database.
-#' The object belonging to this class is produced by \code{\link{unite}} function.
+#' This class is designed to contain methylation information such as coverage, 
+#' number of methylated bases, etc...
+#' The class creates an object that holds methylation information and genomic 
+#' location as flat file database.
+#' The object belonging to this class is produced by \code{\link{unite}} 
+#' function.
 #'          
 #' @section Slots:\describe{
 #'                  \item{\code{dbpath}:}{path to flat file database(s) }
-#'                  \item{\code{num.records}:}{number of records (lines) in the object}
-#'                  \item{\code{sample.ids}:}{character vector for ids of samples in the object}
+#'                  \item{\code{num.records}:}{number of records (lines) 
+#'                  in the object}
+#'                  \item{\code{sample.ids}:}{character vector for ids of 
+#'                  samples in the object}
 #'                  \item{\code{assembly}:}{name of the genome assembly}
-#'                  \item{\code{context}:}{context of methylation. Ex: CpG,CpH,CHH, etc}
-#'                  \item{\code{treatment}:}{treatment vector denoting which samples are test and control}
-#'                  \item{\code{coverage.index}:}{vector denoting which columns in the data correspond to 
+#'                  \item{\code{context}:}{context of methylation. 
+#'                  Ex: CpG,CpH,CHH, etc}
+#'                  \item{\code{treatment}:}{treatment vector denoting which 
+#'                  samples are test and control}
+#'                  \item{\code{coverage.index}:}{vector denoting which 
+#'                  columns in the data correspond to 
 #'                  coverage values}
-#'                  \item{\code{numCs.index}:}{vector denoting which columns in the data correspond to 
+#'                  \item{\code{numCs.index}:}{vector denoting which columns 
+#'                  in the data correspond to 
 #'                  number of methylatedCs values}
-#'                  \item{\code{numTs.index}:}{vector denoting which columns in the data correspond to 
+#'                  \item{\code{numTs.index}:}{vector denoting which columns
+#'                   in the data correspond to 
 #'                  number of unmethylated Cs values}
-#'                  \item{\code{destranded}:}{ logical value. If \code{TRUE} object is destranded, 
+#'                  \item{\code{destranded}:}{ logical value. 
+#'                  If \code{TRUE} object is destranded, 
 #'                  if \code{FALSE} it is not.}
-#'                  \item{\code{resolution}:}{ resolution of methylation information, 
+#'                  \item{\code{resolution}:}{ resolution of methylation 
+#'                  information, 
 #'                  allowed values: 'base' or 'region'}
-#'                  \item{\code{dbtype}:}{string for type of the flat file database, ex: tabix}
+#'                  \item{\code{dbtype}:}{string for type of the flat file 
+#'                  database, ex: tabix}
 #' }
 #' 
 #' @section Details:
-#' \code{methylBaseDB} class has the same functionality as \code{\link{methylBase}} class, 
-#' but the data is saved in a flat database file and therefore allocates less space in memory.
+#' \code{methylBaseDB} class has the same functionality as
+#'  \code{\link{methylBase}} class, 
+#' but the data is saved in a flat database file and therefore allocates
+#'  less space in memory.
 #' 
 #' 
 #' @section Subsetting:
 #'  In the following code snippets, \code{x} is a \code{methylBaseDB}.
-#'  Subsetting by \code{x[i,]} will produce a new \code{methylBase} object if subsetting is done on
+#'  Subsetting by \code{x[i,]} will produce a new \code{methylBase} object 
+#'  if subsetting is done on
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
@@ -353,9 +404,13 @@ valid.methylBaseDB <- function(object) {
 #' @docType class
 #' @rdname methylBaseDB-class
 #' @export
-setClass("methylBaseDB",slots=list(dbpath = "character", num.records = "numeric", sample.ids = "character",
-                                   assembly = "character", context = "character", resolution = "character",
-                                   dbtype = "character", treatment = "numeric", coverage.index = "numeric",
+setClass("methylBaseDB",slots=list(dbpath = "character", 
+                                   num.records = "numeric", 
+                                   sample.ids = "character",
+                                   assembly = "character", 
+                                   context = "character", resolution = "character",
+                                   dbtype = "character", 
+                                   treatment = "numeric", coverage.index = "numeric",
                                    numCs.index = "numeric", numTs.index = "numeric", destranded = "logical"),
          validity = valid.methylBaseDB)
 
@@ -657,6 +712,86 @@ setMethod("makeMethylDB", signature="methylRawList", definition=function(obj,dbp
   new("methylRawListDB",outList,treatment=obj@treatment)
 })
 
+
+setAs("methylRawListDB","methylRawList", function(from)
+{
+    outList = lapply(from,as,"methylRaw")
+    new("methylRawList", outList,treatment=from@treatment)
+})
+
+
+## coerce methyl-obj to methylDB
+
+#' coerce methylKit objects from memory to flat file database objects
+#' 
+#' The function converts in-memory methylKit objects to methylDB objects
+#' 
+#' @param obj an \code{\link{methylBase}},
+#' \code{\link{methylRaw}},
+#' \code{\link{methylRawList}} or an \code{\link{methylDiff}} object
+#' @param dbdir directory where flat file database(s) should be stored, 
+#'              defaults to getwd(), working directory.
+#' @examples 
+#' \dontrun{
+#' data(methylKit)
+#' 
+#' 
+#' makeMethylDB(methylBase.obj,"my/path")
+#' }
+#' 
+#' @return an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
+#' \code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
+#' @export
+#' @docType methods
+#' @rdname makeMethylDB-methods
+setGeneric("makeMethylDB", def=function(obj,dbdir=getwd()) 
+  standardGeneric("makeMethylDB"))
+
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylBase-methods
+setMethod("makeMethylDB", signature="methylBase", definition=function(obj,dbdir) 
+  {
+  dbdir <- .check.dbdir(dbdir)
+  makeMethylBaseDB(df=getData(obj),dbpath=dbdir,dbtype="tabix",
+                   sample.ids=obj@sample.ids,
+                   assembly=obj@assembly,context=obj@context,
+                   treatment=obj@treatment,coverage.index=obj@coverage.index,
+                   numCs.index=obj@numCs.index,numTs.index=obj@numTs.index,
+                   destranded=obj@destranded,
+                   resolution=obj@resolution)
+})
+
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylRaw-methods
+setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
+  makeMethylRawDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", 
+                  sample.id=obj@sample.id,
+                  assembly=obj@assembly, context=obj@context, 
+                  resolution=obj@resolution)
+})
+
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylDiff-methods
+setMethod("makeMethylDB", signature="methylDiff", 
+          definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
+  suffix <- "_diffMeth"
+  makeMethylDiffDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", 
+                   sample.ids=obj@sample.ids,
+                   assembly=obj@assembly,context=obj@context,
+                   destranded=obj@destranded,treatment=obj@treatment,
+                   resolution=obj@resolution,suffix=suffix)
+})
+
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylRawList-methods
+setMethod("makeMethylDB", signature="methylRawList", 
+          definition=function(obj,dbdir) {
+  dbdir <- .check.dbdir(dbdir)
+  outList <- lapply(obj,makeMethylDB,dbdir)
+  new("methylRawListDB",outList,treatment=obj@treatment)
+})
 
 # accessors ---------------------------------------------------------------
 
