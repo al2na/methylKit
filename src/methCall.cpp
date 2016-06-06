@@ -417,26 +417,6 @@ double median(std::vector<double> vec) {
   
 }
 
-
-void split_cigar(std::string& source, std::vector<std::pair<int,std::string> > &result) {
-
-  std::string op;
-  int oplen, oplen_start=0, op_pos;
-  std::string::const_iterator it;
-  for (it = source.begin(); it < source.end() ; ++it) {
-    
-    if( std::isalpha(*it) )    {
-      op = *it;
-      op_pos=it - source.begin();
-      oplen = atoi(source.substr(oplen_start,op_pos).c_str());
-      oplen_start = op_pos+1;
-      
-      //std::cout << oplen << " "<<  op << std::endl;
-      result.push_back(std::make_pair(oplen,op));
-    }
-  }
-} 
-
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
@@ -447,7 +427,22 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
   std::vector<std::pair<int,std::string> > cigar_split; // Cigar string is splitted into its single operations
                                                         // -> each pair consists of number and type of operation
-  split_cigar(cigar, cigar_split);                      // can be accessed via .first (number) and .second (op)
+                                                        // can be accessed via .first (number) and .second (op)
+  std::string op;
+  int oplen, oplen_start=0, op_pos;
+  std::string::const_iterator it;
+  for (it = cigar.begin(); it < cigar.end() ; ++it) {
+    
+    if( std::isalpha(*it) )    {
+      op = *it;
+      op_pos=it - cigar.begin();
+      oplen = atoi(cigar.substr(oplen_start,op_pos).c_str());
+      oplen_start = op_pos+1;
+      
+      //std::cout << oplen << " "<<  op << std::endl;
+      cigar_split.push_back(std::make_pair(oplen,op));
+    }
+  }                                                      
 
   std::deque<int> insPos; // location of the insertions
   std::deque<int> insLen; // location of the insert lengths
