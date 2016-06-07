@@ -4,7 +4,7 @@ Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
 Version: 0.99.1
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
-  	     email = "altuna.akalin@mdc-berlin.de"),
+  	     email = "aakalin@gmail.com"),
 	      person("Matthias","Kormaksson", role = "aut"),
 	      person("Sheng","Li", role = "aut"),
 	      person("Arsene", "Wabo", role = "ctb"),
