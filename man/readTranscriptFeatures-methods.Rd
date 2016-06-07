@@ -16,8 +16,8 @@ readTranscriptFeatures(location, remove.unsual = TRUE, up.flank = 1000,
 \arguments{
 \item{location}{location of the bed file with 12 or more columns}
 
-\item{remove.unsual}{remove the chromomesomes with unsual names, mainly 
-random chromsomes etc}
+\item{remove.unsual}{remove the chromosomes with unsual names, mainly 
+random chromosomes etc}
 
 \item{up.flank}{up-stream from TSS to detect promoter boundaries}
 

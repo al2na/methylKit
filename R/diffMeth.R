@@ -349,13 +349,14 @@ estimatePhi<-function(counts,modelMat,treatment){
   
   # fit glm
   mu <- fitted(glmfit)
+  nprm=length(glmfit$coef) # number of parameters fitted
   
   # calculate and record results
   resids <- (y-n*mu)/sqrt(mu*(n-n*mu))
 
   # get phi correction coefficients 
-  phi <- sum( resids^2 )/(length(n)-2)
-  c(phi,(length(n)-2))
+  phi <- sum( resids^2 )/(length(n)-nprm)
+  c(phi,(length(n)-nprm))
 }
 
 # end of S3 functions
@@ -626,7 +627,7 @@ setMethod("calculateDiffMeth", "methylBase",
             cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
             
             # call estimate shrinkage before logReg
-            if(overdispersion=="shrinkMN"){
+            if(overdispersion[1] == "shrinkMN"){
               parShrinkMN<-estimateShrinkageMN(cntlist,
                                                treatment=.Object@treatment,
                                                covariates=vars,
@@ -1079,7 +1080,7 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                                        hypo=dmc.hyper.hypo[,5],
                                        row.names=dmc.hyper.hypo[,1]) ))
                 ,las=2,horiz=T,col=c("magenta","aquamarine4"),
-                main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),
+                main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
                 xlab="% (percentage)",...)
               mtext(side=3,paste("qvalue<",qvalue.cutoff,
                                  " & methylation diff. >=",meth.cutoff,

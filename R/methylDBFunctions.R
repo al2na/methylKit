@@ -1461,7 +1461,7 @@ if(plot){
                            hypo=dmc.hyper.hypo[,5],
                            row.names=dmc.hyper.hypo[,1]) ))
     ,las=2,horiz=T,col=c("magenta","aquamarine4"),
-    main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),
+    main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
     xlab="% (percentage)",...)
   mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",
                      meth.cutoff," %",sep="") )

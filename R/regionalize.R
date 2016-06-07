@@ -296,7 +296,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
 # RETURNS a new methylRawList object
 # gets regional counts for all elements in methylRawList for given regions
 # MAKE SURE an element of the list, which will be a set of GRanges rows, 
-#  are not on different chromsomes and strands
+#  are not on different chromosomes and strands
 # Also, make sure id column of returned methylRaw object is unique
 # you can add refseq id to the id column: chr.start.end.refseqid
 # @param object a \code{methylRaw} object

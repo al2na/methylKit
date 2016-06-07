@@ -74,7 +74,7 @@ setMethod("calculateDiffMethDSS", "methylBase",
       
       output=raw_output[, c('chr', 'pos', 'pos', 'strand', 'pval',
                             'fdr', 'diff')]
-      output$diff=100*(output$diff)
+      output$diff=-100*(output$diff) # change the direction similar to methylKit
       colnames(output)=c('chr', 'start', 'end', 'strand', 'pvalue',
                          'qvalue', 'meth.diff')
       
@@ -404,8 +404,10 @@ mergeData.counts <- function(n1, x1, gr1, n2, x2, gr2) {
   
   
   dat1 <- data.frame(chr=as.character(seqnames(gr1)), pos=start(gr1), x1, n1)
-  dat2 <- data.frame(chr=as.character(seqnames(gr2)), pos=start(gr2), x2, n2)
-  alldat <- merge(dat1, dat2, all=FALSE) ## only keep the ones with data in both samples
+  dat2 <- data.frame( x2, n2)
+  
+  # changed original merge() with cbind
+  alldat <- cbind(dat1, dat2) ## only keep the ones with data in both samples
   alldat[is.na(alldat)] <- 0
   
   return(alldat)

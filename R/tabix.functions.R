@@ -9,7 +9,7 @@
 #' @param dir working directory
 #' @param filename the output file name
 #' @param mc.cores number of multiple cores. If mc.cores>1 temporary files for
-#'   each chromsome will be created prior to cat, zipping and indexing the
+#'   each chromosome will be created prior to cat, zipping and indexing the
 #'   single output file
 #' @param all logical parameter passed to \code{\link{merge}} function
 #'   
@@ -215,15 +215,15 @@ getTabixByChr<-function(tbxFile,chr="chr10",
     tbxFile <- TabixFile(tbxFile)
   }
   
-  res=Rsamtools:::.tabix_scan(tbxFile,space=chr,start=1L,end=500000000L) 
-  
+  #res=Rsamtools:::.tabix_scan(tbxFile,space=chr,start=1L,end=500000000L) 
+  param=GRanges(chr, IRanges(start=1L,end=500000000L))
   if(return.type=="data.table")
   {
-    tabix2dt(res)
+    tabix2dt(scanTabix(tbxFile,param=param) )
   }else if (return.type=="data.frame"){
-    tabix2df(res)
+    tabix2df(scanTabix(tbxFile,param=param))
   }else {
-    tabix2gr(res)
+    tabix2gr(scanTabix(tbxFile,param=param))
   }
 }
 

@@ -494,7 +494,6 @@ class(myDiff)
 as(myDiff,"GRanges")
 ```
 
-In addition, 
 
 ## Converting methylKit objects to methylDB objects and vice versa
 **methylDB** objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) can be coerced to normal `methylKit` objects. This might speed up the analysis if sufficient computing resources are available. This can be done via "as()" function.
