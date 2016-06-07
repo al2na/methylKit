@@ -32,8 +32,10 @@ with \code{methylDiffDB} class.
 
 \section{Details}{
 
-\code{methylDiffDB} class has the same functionality as \code{\link{methylDiff}} class, 
-but the data is saved in a flat database file and therefore allocates less space in memory.
+\code{methylDiffDB} class has the same functionality as 
+\code{\link{methylDiff}} class, 
+but the data is saved in a flat database file and therefore 
+allocates less space in memory.
 }
 
 \section{Subsetting}{
@@ -54,7 +56,8 @@ but the data is saved in a flat database file and therefore allocates less space
 \section{Accessors}{
  
 The following functions provides access to data slots of methylDiffDB:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+\code{\link[methylKit]{getContext}}
 }
 \examples{
 data(methylKit)

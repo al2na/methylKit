@@ -9,7 +9,7 @@
 \title{read file(s) to methylRaw or methylRawList objects}
 \usage{
 methRead(location, sample.id, assembly, dbtype = NA, pipeline = "amp",
-  header = T, skip = 0, sep = "\\t", context = "CpG",
+  header = TRUE, skip = 0, sep = "\\t", context = "CpG",
   resolution = "base", treatment, dbdir = getwd(), mincov = 10)
 
 \S4method{methRead}{character,character,character}(location, sample.id,
@@ -17,7 +17,7 @@ methRead(location, sample.id, assembly, dbtype = NA, pipeline = "amp",
   mincov)
 
 \S4method{methRead}{list,list,character}(location, sample.id, assembly,
-  dbtype = NA, pipeline = "amp", header = T, skip = 0, sep = "\\t",
+  dbtype = NA, pipeline = "amp", header = TRUE, skip = 0, sep = "\\t",
   context = "CpG", resolution = "base", treatment, dbdir = getwd(),
   mincov = 10)
 }

@@ -8,7 +8,7 @@
 \usage{
 getFlanks(grange, flank = 2000, clean = TRUE)
 
-\S4method{getFlanks}{GRanges}(grange, flank = 2000, clean = T)
+\S4method{getFlanks}{GRanges}(grange, flank = 2000, clean = TRUE)
 }
 \arguments{
 \item{grange}{\code{\link[GenomicRanges]{GRanges}} object for the feature}

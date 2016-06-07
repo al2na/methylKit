@@ -20,11 +20,14 @@ getDBPath(x)
 \S4method{getDBPath}{methylDiffDB}(x)
 }
 \arguments{
-\item{x}{an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object}
+\item{x}{an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
+\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object}
 }
 \description{
-The function returns the path to the flat file database that stores the data of the \code{\link{methylRawDB}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylBaseDB}} or \code{\link{methylDiffDB}} objects.
+The function returns the path to the flat file database that stores the data 
+of the \code{\link{methylRawDB}}, 
+\code{\link{methylRawListDB}}, \code{\link{methylBaseDB}} or 
+\code{\link{methylDiffDB}} objects.
 }
 \examples{
 

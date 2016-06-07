@@ -42,7 +42,11 @@ Imports:
     mclust,
     Rcpp,
     R.utils,
-    limma
+    limma, 
+    grDevices, 
+    graphics, 
+    stats, 
+    utils
 Suggests:
     testthat,knitr, rmarkdown
 VignetteBuilder: knitr

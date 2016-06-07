@@ -3,7 +3,8 @@
 # regular R functions to be used in S4 functions
 
 
-# set column names for methylRawDB and methylBaseDB data aquired from flat file database
+# set column names for methylRawDB and methylBaseDB data aquired from 
+# flat file database
 # @param df data.frame containing methylRaw or methylBase data
 # @param methylDBclass 
 .setMethylDBNames <- function(df,
@@ -411,7 +412,9 @@ setClass("methylBaseDB",slots=list(dbpath = "character",
                                    context = "character", resolution = "character",
                                    dbtype = "character", 
                                    treatment = "numeric", coverage.index = "numeric",
-                                   numCs.index = "numeric", numTs.index = "numeric", destranded = "logical"),
+                                   numCs.index = "numeric", 
+                                   numTs.index = "numeric", 
+                                   destranded = "logical"),
          validity = valid.methylBaseDB)
 
 # PRIVATE function:
@@ -495,7 +498,8 @@ valid.methylDiffDB <- function(object) {
     FALSE
   }
   else if(! check3){
-    message("The number of samples is different from the number of treatments, check the length of 'treatment'")
+    message("The number of samples is different from the number of treatments, ",
+            "check the length of 'treatment'")
     FALSE
   }
   
@@ -526,8 +530,10 @@ valid.methylDiffDB <- function(object) {
 #' }
 #' 
 #' @section Details:
-#' \code{methylDiffDB} class has the same functionality as \code{\link{methylDiff}} class, 
-#' but the data is saved in a flat database file and therefore allocates less space in memory.
+#' \code{methylDiffDB} class has the same functionality as 
+#' \code{\link{methylDiff}} class, 
+#' but the data is saved in a flat database file and therefore 
+#' allocates less space in memory.
 #' 
 #' 
 #' @section Subsetting:
@@ -543,7 +549,8 @@ valid.methylDiffDB <- function(object) {
 #'    
 #' @section Accessors: 
 #' The following functions provides access to data slots of methylDiffDB:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+#' \code{\link[methylKit]{getContext}}
 #' 
 #' @examples
 #' data(methylKit)
@@ -631,7 +638,8 @@ setAs("methylBaseDB", "GRanges", function(from)
 
 setAs("methylDiffDB", "GRanges", function(from)
 {
-  gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, return.type = "GRanges")
+  gr <- headTabix(tbxFile = from@dbpath, nrow = from@num.records, 
+                  return.type = "GRanges")
   names(GenomicRanges::mcols(gr)) <- c("pvalue","qvalue","meth.diff") 
   return(gr)
 })
@@ -658,66 +666,6 @@ setAs("methylDiffDB","methylDiff", function(from)
   return(from[])
 })
 
-## coerce methyl-obj to methylDB
-
-#' coerce methylKit objects from memory to database
-#' 
-#' The function converts in-memory methylKit objects to methylDB objects
-#' 
-#' @param obj an \code{\link{methylBase}},\code{\link{methylRaw}},\code{\link{methylRawList}} or an \code{\link{methylDiff}} object
-#' @usage makeMethylDB(x,dbpath)
-#' @examples 
-#' 
-#' data(methylKit)
-#' 
-#' makeMethylDB(methylBase.obj,"my/path")
-#'
-#' 
-#' @return an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
-#' @author Alexander Gosdschan
-#' @export
-#' @docType methods
-#' @rdname makeMethylDB-methods
-setGeneric("makeMethylDB", def=function(obj,dbpath="") standardGeneric("makeMethylDB"))
-
-#' @rdname makeMethylDB-methods
-#' @aliases makeMethylDB,methylBase-methods
-setMethod("makeMethylDB", signature="methylBase", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  makeMethylBaseDB(df=getData(obj),dbpath=dbdir,dbtype="tabix",sample.ids=obj@sample.ids,
-                          assembly=obj@assembly,context=obj@context,
-                          treatment=obj@treatment,coverage.index=obj@coverage.index,
-                          numCs.index=obj@numCs.index,numTs.index=obj@numTs.index,destranded=obj@destranded,
-                          resolution=obj@resolution)
-})
-
-setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  makeMethylRawDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.id=obj@sample.id,
-                      assembly=obj@assembly, context=obj@context, resolution=obj@resolution)
-})
-
-setMethod("makeMethylDB", signature="methylDiff", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  suffix <- "_diffMeth"
-  makeMethylDiffDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.ids=obj@sample.ids,
-                   assembly=obj@assembly,context=obj@context,
-                   destranded=obj@destranded,treatment=obj@treatment,
-                   resolution=obj@resolution,suffix=suffix)
-})
-
-setMethod("makeMethylDB", signature="methylRawList", definition=function(obj,dbpath) {
-  dbdir <- .check.dbdir(dbpath)
-  outList <- lapply(obj,makeMethylDB,dbdir)
-  new("methylRawListDB",outList,treatment=obj@treatment)
-})
-
-
-setAs("methylRawListDB","methylRawList", function(from)
-{
-    outList = lapply(from,as,"methylRaw")
-    new("methylRawList", outList,treatment=from@treatment)
-})
 
 
 ## coerce methyl-obj to methylDB
@@ -835,7 +783,8 @@ setMethod("getContext", signature="methylDiffDB", definition=function(x) {
 #' @rdname getData-methods
 #' @aliases getData,methylRawDB-method
 setMethod("getData", signature="methylRawDB", definition=function(x) {
-  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
+  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, 
+                  return.type = "data.frame")
   .setMethylDBNames(df,"methylRawDB")
   
   return(df)
@@ -844,7 +793,8 @@ setMethod("getData", signature="methylRawDB", definition=function(x) {
 #' @rdname getData-methods
 #' @aliases getData,methylBaseDB-method
 setMethod("getData", signature="methylBaseDB", definition=function(x) {
-  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
+  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, 
+                  return.type = "data.frame")
  .setMethylDBNames(df,"methylBaseDB")
   
   return(df)
@@ -853,7 +803,8 @@ setMethod("getData", signature="methylBaseDB", definition=function(x) {
 #' @rdname getData-methods
 #' @aliases getData,methylDiffDB-method
 setMethod(f="getData", signature="methylDiffDB", definition=function(x) {
-  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, return.type = "data.frame")
+  df <- headTabix(tbxFile = x@dbpath, nrow = x@num.records, 
+                  return.type = "data.frame")
   .setMethylDBNames(df,"methylDiffDB")
   
   return(df)
@@ -866,7 +817,9 @@ setMethod(f="getData", signature="methylDiffDB", definition=function(x) {
 setMethod("show", "methylRawDB", function(object) {
   
   cat("methylRawDB object with",object@num.records,"rows\n--------------\n")
-  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylRawDB"))
+  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,
+                                    return.type = "data.frame"),
+                          methylDBclass = "methylRawDB"))
   cat("--------------\n")
   cat("sample.id:",object@sample.id,"\n")
   cat("assembly:",object@assembly,"\n")
@@ -893,7 +846,9 @@ setMethod("show", "methylRawListDB", function(object) {
 setMethod("show", "methylBaseDB", function(object) {
   
   cat("methylBaseDB object with",object@num.records,"rows\n--------------\n")
-  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylBaseDB"))
+  print(.setMethylDBNames(headTabix(object@dbpath,
+                                    nrow = 6,return.type = "data.frame"),
+                          methylDBclass = "methylBaseDB"))
   cat("--------------\n")
   cat("sample.ids:",object@sample.ids,"\n")
   cat("destranded",object@destranded,"\n")
@@ -912,7 +867,9 @@ setMethod("show", "methylBaseDB", function(object) {
 setMethod("show", "methylDiffDB", function(object) {
   
   cat("methylDiffDB object with",object@num.records,"rows\n--------------\n")
-  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,return.type = "data.frame"),methylDBclass = "methylDiffDB"))
+  print(.setMethylDBNames(headTabix(object@dbpath,nrow = 6,
+                                    return.type = "data.frame"),
+                          methylDBclass = "methylDiffDB"))
   cat("--------------\n")
   cat("sample.ids:",object@sample.ids,"\n")
   cat("destranded",object@destranded,"\n")
@@ -1048,11 +1005,13 @@ setMethod("[",signature(x="methylDiffDB", i="ANY", j="ANY"),
 setMethod("selectByOverlap", "methylRawDB",
           function(object, ranges){
             
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
-            }
+    if(missing(ranges) | class(ranges)!="GRanges") {
+      stop("No ranges specified or given ranges object not of class GRanges, ", 
+           "please check your input!")
+      }
             
-            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
+            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, 
+                                     return.type = "data.frame") 
             
             
 
@@ -1071,15 +1030,16 @@ setMethod("selectByOverlap", "methylRawDB",
 setMethod("selectByOverlap", "methylRawListDB",
           function(object, ranges){
             
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
-            }
-            
-            new.list <- lapply(object,selectByOverlap,ranges)
-            
-            new("methylRawList",new.list,treatment=object@treatment)
-              
-          }
+    if(missing(ranges) | class(ranges)!="GRanges") {
+      stop("No ranges specified or given ranges object not of class GRanges, ", 
+           "please check your input!")
+    }
+    
+    new.list <- lapply(object,selectByOverlap,ranges)
+    
+    new("methylRawList",new.list,treatment=object@treatment)
+      
+  }
 )
 
 #' @aliases selectByOverlap,methylBaseDB-method
@@ -1087,23 +1047,25 @@ setMethod("selectByOverlap", "methylRawListDB",
 setMethod("selectByOverlap", "methylBaseDB",
           function(object, ranges){
   
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
-            }
-            
-            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
-            
-            new("methylBase",.setMethylDBNames(df,"methylBaseDB"),
-                sample.ids = object@sample.ids, 
-                assembly = object@assembly,
-                context = object@context,
-                treatment=object@treatment,
-                coverage.index=object@coverage.index,
-                numCs.index=object@numCs.index,
-                numTs.index=object@numTs.index,
-                destranded=object@destranded,
-                resolution =object@resolution)
-            
+if(missing(ranges) | class(ranges)!="GRanges") {
+  stop("No ranges specified or given ranges object not of class GRanges, ",
+       "please check your input!")
+}
+
+df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, 
+                         return.type = "data.frame") 
+
+new("methylBase",.setMethylDBNames(df,"methylBaseDB"),
+    sample.ids = object@sample.ids, 
+    assembly = object@assembly,
+    context = object@context,
+    treatment=object@treatment,
+    coverage.index=object@coverage.index,
+    numCs.index=object@numCs.index,
+    numTs.index=object@numTs.index,
+    destranded=object@destranded,
+    resolution =object@resolution)
+
 }
 )
 
@@ -1112,21 +1074,23 @@ setMethod("selectByOverlap", "methylBaseDB",
 setMethod("selectByOverlap", "methylDiffDB",
           function(object, ranges){
             
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class GRanges, please check your input!")
-            }
-            
-            df <-  getTabixByOverlap(tbxFile = object@dbpath,granges = ranges, return.type = "data.frame") 
-            
-            new("methylDiff",.setMethylDBNames(df,"methylDiffDB"),
-                sample.ids = object@sample.ids,
-                assembly = object@assembly,
-                context = object@context,
-                treatment=object@treatment,
-                destranded=object@destranded,
-                resolution=object@resolution)
-            
-          }
+  if(missing(ranges) | class(ranges)!="GRanges") {
+    stop("No ranges specified or given ranges object not of class GRanges, ",
+         "please check your input!")
+  }
+  
+  df <-  getTabixByOverlap(tbxFile = object@dbpath,
+                           granges = ranges, return.type = "data.frame") 
+  
+  new("methylDiff",.setMethylDBNames(df,"methylDiffDB"),
+      sample.ids = object@sample.ids,
+      assembly = object@assembly,
+      context = object@context,
+      treatment=object@treatment,
+      destranded=object@destranded,
+      resolution=object@resolution)
+  
+}
 )
 
 
@@ -1220,9 +1184,12 @@ setReplaceMethod("getTreatment", signature = "methylDiffDB", function(x, value) 
 
 #  Get or Set sample ids of the methylDB objects
 #  
-#  The function returns or replaces the sample-ids stored in any of the \code{\link{methylRawDB}}, \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} objects 
+#  The function returns or replaces the sample-ids stored in any of the 
+# \code{\link{methylRawDB}}, \code{\link{methylBaseDB}},
+# \code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} objects 
 #  
-#  @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
+#  @param x an \code{\link{methylBaseDB}},\code{\link{methylRawListDB}} or
+#           \code{\link{methylDiffDB}} object
 #  @param value a valid replacement for the sample-ids of the object 
 #  @usage 
 #  getSampleID(x)
@@ -1324,12 +1291,14 @@ setReplaceMethod("getSampleID", signature = "methylDiffDB", function(x, value) {
 
 #' Get path to database of the methylDB objects
 #' 
-#' The function returns the path to the flat file database that stores the data of the \code{\link{methylRawDB}}, 
-#' \code{\link{methylRawListDB}}, \code{\link{methylBaseDB}} or \code{\link{methylDiffDB}} objects. 
+#' The function returns the path to the flat file database that stores the data 
+#' of the \code{\link{methylRawDB}}, 
+#' \code{\link{methylRawListDB}}, \code{\link{methylBaseDB}} or 
+#' \code{\link{methylDiffDB}} objects. 
 #'  
 #' 
-#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
-#' @usage getDBPath(x)
+#' @param x an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
+#' \code{\link{methylRawListDB}} or \code{\link{methylDiffDB}} object
 #' @examples
 #' 
 #' data(methylKit)

@@ -825,7 +825,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       
       rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),collapse="")
       matFile=paste(rndFile,"methMat.txt",sep="_")
-      write.table(methMat,matFile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+      .write.bed(methMat,matFile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
       methMat = matFile
       
@@ -2031,11 +2031,13 @@ setMethod("tileMethylCounts", signature(object="methylRawListDB"),
                 dbdir <- NULL
               } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
               
-              new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases,mc.cores,save.db,dbdir=dbdir,...) 
+              new.list=lapply(object,tileMethylCounts,win.size,step.size,
+                              cov.bases,mc.cores,save.db,dbdir=dbdir,...) 
               new("methylRawListDB", new.list,treatment=object@treatment)
               
             } else {
-              new.list=lapply(object,tileMethylCounts,win.size,step.size,cov.bases,save.db=FALSE) 
+              new.list=lapply(object,tileMethylCounts,win.size,step.size,
+                              cov.bases,save.db=FALSE) 
               new("methylRawList", new.list,treatment=object@treatment)
             }
             
@@ -2044,90 +2046,105 @@ setMethod("tileMethylCounts", signature(object="methylRawListDB"),
 #' @aliases tileMethylCounts,methylBaseDB-method
 #' @rdname tileMethylCounts-methods
 setMethod("tileMethylCounts", signature(object="methylBaseDB"),
-          function(object,win.size,step.size,cov.bases,mc.cores,save.db=TRUE,...){
+          function(object,win.size,step.size,cov.bases,
+                   mc.cores,save.db=TRUE,...){
             
-            if(save.db) {
-              
-              tileCount <- function(data,win.size,step.size,cov.bases,resolution,destranded) {
-                
-                .setMethylDBNames(data,"methylBaseDB")
-                # overlap data with regions
-                # convert data to GRanges without metacolumns
-                g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),strand =strand))
-                
-                chrs   =as.character(unique(seqnames(g.meth)))
-                
-                # get max length of feature covered chromosome
-                max.length=max(IRanges::end(g.meth)) 
-                # get start of sliding window
-                min.length=min(IRanges::end(g.meth))
-                win.start = floor(min.length/win.size)*win.size
-                
-                #get sliding windows with covered CpGs
-                numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
-                
-                all.wins=GRanges(seqnames=rep(chrs,numTiles),
-                                 ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
-                                                width=rep(win.size,numTiles)) )
-                
-                # clean up
-                rm(g.meth)
-                
-                tmp <- new("methylBase",data,
-                           resolution=object@resolution,
-                           destranded=object@destranded)
-                # clean up
-                rm(data)
-                
-                res <- regionCounts(tmp,all.wins,cov.bases,strand.aware=FALSE)
-                # clean up
-                rm(tmp)
-                
-                getData(res)
-                
-              }
-              
-              # catch additional args 
-              args <- list(...)
-              dir <- dirname(object@dbpath)
-              
-              if( "dbdir" %in% names(args) ){
-                  dir <- .check.dbdir(args$dbdir) 
-              } 
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","tiled")
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
-              
-              newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",dir = dir,filename = filename,
-                                         FUN = tileCount, win.size = win.size,step.size = step.size,cov.bases = cov.bases,resolution=object@resolution,
-                                         mc.cores = mc.cores)
-              
-              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
-                               assembly=object@assembly,context=object@context,treatment=object@treatment,
-                               destranded=TRUE,resolution="region")
-            } else {
-              
-              tmp <- object[]
-              tileMethylCounts(tmp,win.size,step.size,cov.bases,mc.cores)
-              
-            }
-            
-          }
+  if(save.db) {
+    
+    tileCount <- function(data,win.size,step.size,cov.bases,
+                          resolution,destranded) {
+      
+      .setMethylDBNames(data,"methylBaseDB")
+      # overlap data with regions
+      # convert data to GRanges without metacolumns
+      g.meth=with(data, GRanges(chr, IRanges(start=start, end=end),
+                                strand =strand))
+      
+      chrs   =as.character(unique(seqnames(g.meth)))
+      
+      # get max length of feature covered chromosome
+      max.length=max(IRanges::end(g.meth)) 
+      # get start of sliding window
+      min.length=min(IRanges::end(g.meth))
+      win.start = floor(min.length/win.size)*win.size
+      
+      #get sliding windows with covered CpGs
+      numTiles=floor(  (max.length-(win.size-step.size)- win.start)/step.size )+1
+      
+      all.wins=GRanges(seqnames=rep(chrs,numTiles),
+                       ranges=IRanges(start=win.start + 1 + 0:(numTiles-1)*step.size,
+                                      width=rep(win.size,numTiles)) )
+      
+      # clean up
+      rm(g.meth)
+      
+      tmp <- new("methylBase",data,
+                 resolution=object@resolution,
+                 destranded=object@destranded)
+      # clean up
+      rm(data)
+      
+      res <- regionCounts(tmp,all.wins,cov.bases,strand.aware=FALSE)
+      # clean up
+      rm(tmp)
+      
+      getData(res)
+      
+    }
+    
+    # catch additional args 
+    args <- list(...)
+    dir <- dirname(object@dbpath)
+    
+    if( "dbdir" %in% names(args) ){
+        dir <- .check.dbdir(args$dbdir) 
+    } 
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_","tiled")
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+    
+    newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
+                               dir = dir,filename = filename,
+                               FUN = tileCount, win.size = win.size,
+                               step.size = step.size,cov.bases = cov.bases,
+                               resolution=object@resolution,
+                               mc.cores = mc.cores)
+    
+    readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,
+                     sample.ids=object@sample.ids,
+                     assembly=object@assembly,context=object@context,
+                     treatment=object@treatment,
+                     destranded=TRUE,resolution="region")
+  } else {
+    
+    tmp <- object[]
+    tileMethylCounts(tmp,win.size,step.size,cov.bases,mc.cores)
+    
+  }
+  
+}
 )
 
 # BedGraph methods --------------------------------------------------------
 
+# to be able to write w/o scientific notation, there might be better methods
+.write.bed<-function(...){
+  defsci=options()$scipen
+  options(scipen = 999)
+  write.table(...)
+  options(scipen = defsci)
+}
 #' @rdname bedgraph-methods
 #' @aliases bedgraph,methylRawDB-method
 setMethod("bedgraph", signature(methylObj="methylRawDB"),
           function(methylObj,file.name,col.name,unmeth,log.transform,negative
                    ,add.on,chunk.size){
   if(!col.name %in%  c('coverage', 'numCs','numTs','perc.meth') ){
-    stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth'")
+  stop("col.name argument is not one of 'coverage', 'numCs','numTs','perc.meth'")
   }
   
   bedgr <- function(data,col.name,file.name,unmeth,log.transform,
@@ -2157,18 +2174,18 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
       if(unmeth & col.name=="perc.meth")
       {
         # write meth data to single file
-        write.table(df,file=paste0(file.name,"_meth"),quote=FALSE,
+        .write.bed(df,file=paste0(file.name,"_meth"),quote=FALSE,
                     col.names=FALSE,row.names=FALSE,sep="\t",
                     append=TRUE)
         
         # write unmeth data to single file
         df[,4]=100-df[,4]
-        write.table(df,file=paste0(file.name,"_unmeth"),quote=FALSE,
+        .write.bed(df,file=paste0(file.name,"_unmeth"),quote=FALSE,
                     col.names=FALSE,row.names=FALSE,sep="\t",
                     append=TRUE)
         
       }else{
-        write.table(df,file=file.name,quote=FALSE,col.names=FALSE,
+        .write.bed(df,file=file.name,quote=FALSE,col.names=FALSE,
                     row.names=FALSE,sep="\t",append=TRUE)
       }
     }
@@ -2282,67 +2299,71 @@ setMethod("bedgraph", signature(methylObj="methylRawListDB"),
 #' @rdname bedgraph-methods
 #' @aliases bedgraph,methylDiffDB-method
 setMethod("bedgraph", signature(methylObj="methylDiffDB"),
-          function(methylObj,file.name,col.name,log.transform,negative,add.on,chunk.size){
+          function(methylObj,file.name,col.name,log.transform,
+                   negative,add.on,chunk.size){
             
-            if(! col.name %in% c('pvalue','qvalue', 'meth.diff') )
-            {
-              stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
-            }
-            
-            bedgr <- function(data,col.name,file.name,log.transform,negative,add.on,sample.id){
-              
-              data <- as.data.table(data)
-              .setMethylDBNames(df = data,methylDBclass = "methylDiffDB")
-              chr=start=end=.=NULL
-              df=data[,.(chr,start=start-1,end,get(col.name) )]
-              df <- as.data.frame(df)
-              names(df)[4] <- col.name
-              if(log.transform){
-                df[,4]=log10(df[,4])
-              }
-              if(negative){
-                df[,4]=-1*(df[,4])
-              }
-              if(is.null(file.name)){
-                return(df)
-              }else{
-                write.table(df,file=file.name,quote=FALSE,col.names=FALSE,
-                            row.names=FALSE,sep="\t",append=TRUE)
-              }
-            }
-            
-            if(is.null(file.name)){
-              
-              applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, 
-                              return.type = "data.frame", FUN = bedgr,
-                              col.name = col.name, file.name= file.name,
-                              log.transform=log.transform, negative= negative,
-                              add.on = add.on, sample.id = methylObj@sample.id)
-            } else {
-              
-              rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUERUE),collapse="")
-              filename2=paste(file.name,rndFile,sep="_")
-              
-              txtPath <- applyTbxByChunk(methylObj@dbpath,
-                                         chunk.size = chunk.size, 
-                                         return.type = "data.frame", 
-                                         FUN = bedgr,
-                                         col.name = col.name,
-                                         file.name= filename2, 
-                                         log.transform=log.transform, 
-                                         negative= negative,
-                                         add.on = add.on, 
-                                         sample.id = methylObj@sample.id)
-              
-              track.line=paste(
-                "track type=bedGraph name='",file.name,"' description='",col.name,
-                "' visibility=full color=255,0,255 altColor=102,205,170 maxHeightPixels=80:80:11 ",add.on,sep="")
-              cat(track.line,"\n",file=file.name)
-              file.append(file.name,filename2)
-              
-              unlink(filename2)
-              
-            }
-          }
+  if(! col.name %in% c('pvalue','qvalue', 'meth.diff') )
+  {
+    stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
+  }
+  
+  bedgr <- function(data,col.name,file.name,log.transform,negative,add.on,
+                    sample.id){
+    
+    data <- as.data.table(data)
+    .setMethylDBNames(df = data,methylDBclass = "methylDiffDB")
+    chr=start=end=.=NULL
+    df=data[,.(chr,start=start-1,end,get(col.name) )]
+    df <- as.data.frame(df)
+    names(df)[4] <- col.name
+    if(log.transform){
+      df[,4]=log10(df[,4])
+    }
+    if(negative){
+      df[,4]=-1*(df[,4])
+    }
+    if(is.null(file.name)){
+      return(df)
+    }else{
+      .write.bed(df,file=file.name,quote=FALSE,col.names=FALSE,
+                  row.names=FALSE,sep="\t",append=TRUE)
+    }
+  }
+  
+  if(is.null(file.name)){
+    
+    applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, 
+                    return.type = "data.frame", FUN = bedgr,
+                    col.name = col.name, file.name= file.name,
+                    log.transform=log.transform, negative= negative,
+                    add.on = add.on, sample.id = methylObj@sample.id)
+  } else {
+    
+    rndFile=paste(sample(c(0:9, letters, LETTERS),9, replace=TRUE),
+                  collapse="")
+    filename2=paste(file.name,rndFile,sep="_")
+    
+    txtPath <- applyTbxByChunk(methylObj@dbpath,
+                               chunk.size = chunk.size, 
+                               return.type = "data.frame", 
+                               FUN = bedgr,
+                               col.name = col.name,
+                               file.name= filename2, 
+                               log.transform=log.transform, 
+                               negative= negative,
+                               add.on = add.on, 
+                               sample.id = methylObj@sample.id)
+    
+    track.line=paste(
+      "track type=bedGraph name='",file.name,"' description='",col.name,
+      "' visibility=full color=255,0,255 altColor=102,205,170 maxHeightPixels=80:80:11 ",
+      add.on,sep="")
+    cat(track.line,"\n",file=file.name)
+    file.append(file.name,filename2)
+    
+    unlink(filename2)
+    
+  }
+}
 )
 

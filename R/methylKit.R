@@ -17,6 +17,10 @@
 #' 
 #' @importFrom rtracklayer export.bed
 #' 
+#' @importFrom gtools mixedsort chr
+#' 
+#' @importFrom R.utils isGzipped
+#' 
 #' @importFrom limma squeezeVar
 #' @importFrom grDevices colorRamp colorRampPalette densCols rainbow rgb topo.colors 
 #' @importFrom graphics abline barplot boxplot hist legend lines mtext pairs par pie plot 
