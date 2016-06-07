@@ -8,8 +8,7 @@
 #include <deque>
 #include <string>
 #include <map>
-#include <getopt.h>
-#include <regex.h>
+//#include <getopt.h>
 #include "sam.h"
 #include "bgzf.h"
 #include "zlib.h"
@@ -42,7 +41,8 @@ using namespace Rcpp;
 
 //split function to seperate strings by delimiter 
 // taken from http://stackoverflow.com/a/236803
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+std::vector<std::string> &split(const std::string &s, char delim,
+                                std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
     while (std::getline(ss, item, delim)) {
@@ -417,49 +417,6 @@ double median(std::vector<double> vec) {
   
 }
 
-
-void split_cigar(std::string& source, std::string& regexString, std::vector<std::pair<int,std::string> > &result) {
-
-  size_t maxMatches =  source.length();
-  size_t maxGroups = 3;
-  regex_t regexCompiled;
-  regmatch_t groupArray[maxGroups];
-  unsigned int m;
-  unsigned int op_len;
-  std::string cursor, op;
-  
-  if (regcomp(&regexCompiled, regexString.c_str(), REG_EXTENDED))
-  {
-    Rcpp::stop("Could not compile regular expression.\n");
-  };
-  
-  m = 0;
-  op_len = 0;
-  cursor = source;
-
-  for (m = 0; m < maxMatches; m ++)
-  {
-    if (regexec(&regexCompiled, cursor.c_str(), maxGroups, groupArray, 0)) break;  // No more matches
-    
-    // unsigned int g = 0;
-    size_t offset = 0;
-    
-    offset = groupArray[0].rm_eo;
-    
-    op_len = atoi(cursor.substr(groupArray[1].rm_so,groupArray[1].rm_eo-groupArray[1].rm_so).c_str());
-    op = cursor.substr(groupArray[2].rm_so,groupArray[2].rm_eo-groupArray[2].rm_so);
-    
-//     std::cout << m  << " " <<  cursor 
-//               <<  " " << cursor.substr(groupArray[1].rm_so,groupArray[1].rm_eo-groupArray[1].rm_so) 
-//               <<  " " << cursor.substr(groupArray[2].rm_so,groupArray[2].rm_eo-groupArray[2].rm_so)
-//               << "\n";
-    
-    result.push_back(std::make_pair(op_len,op));
-    cursor.erase(cursor.begin(),cursor.begin()+offset);
-  }
-  regfree(&regexCompiled);
-}
-
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
@@ -467,9 +424,25 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   std::string insertion;
   std::string ops ("MIDS"); // allowed operations
   
+  
   std::vector<std::pair<int,std::string> > cigar_split; // Cigar string is splitted into its single operations
-  std::string regexString = "^([0-9]+)([MIDSNHP])";       // -> each pair consists of number and type of operation
-  split_cigar(cigar,regexString, cigar_split);          // can be accessed via .first (number) and .second (op)
+                                                        // -> each pair consists of number and type of operation
+                                                        // can be accessed via .first (number) and .second (op)
+  std::string op;
+  int oplen, oplen_start=0, op_pos;
+  std::string::const_iterator it;
+  for (it = cigar.begin(); it < cigar.end() ; ++it) {
+    
+    if( std::isalpha(*it) )    {
+      op = *it;
+      op_pos=it - cigar.begin();
+      oplen = atoi(cigar.substr(oplen_start,op_pos).c_str());
+      oplen_start = op_pos+1;
+      
+      //std::cout << oplen << " "<<  op << std::endl;
+      cigar_split.push_back(std::make_pair(oplen,op));
+    }
+  }                                                      
 
   std::deque<int> insPos; // location of the insertions
   std::deque<int> insLen; // location of the insert lengths
