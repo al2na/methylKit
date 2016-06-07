@@ -287,7 +287,7 @@ setMethod("readBed", signature(location = "character"),#remove.unsual="logical" 
         if(grepl("^track",f.line))(skip=1)
         
         # read bed6
-        bed=.readTableFast(location,header=F,skip=skip)                    
+        bed=.readTableFast(location,header=FALSE,skip=skip)                    
         if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
         convert.bed.df(bed)
                     
@@ -334,7 +334,7 @@ setMethod("readTranscriptFeatures", signature(location = "character"),
     if(grepl("^track",f.line))(skip=1)
     
     # read bed6
-    bed=.readTableFast(location,header=F,skip=skip)                    
+    bed=.readTableFast(location,header=FALSE,skip=skip)                    
     if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
     
     introns=convert.bed2introns(bed)
@@ -409,7 +409,7 @@ setGeneric("getFlanks", function(grange,flank=2000,clean=TRUE)
 #' @aliases getFlanks,GRanges-method
 #' @rdname getFlanks-methods
 setMethod("getFlanks", signature(grange= "GRanges"),
-                    function(grange,flank=2000,clean=T){
+                    function(grange,flank=2000,clean=TRUE){
           
     shores=c( IRanges::flank(grange,flank),IRanges::flank(grange,flank,FALSE) )
     if(clean){
@@ -622,7 +622,7 @@ setMethod("show", "annotationByFeature", function(object) {
 # these shouldn't be exported
 #######################################
 
-annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=F)
+annotate.gr.WithGenicParts<-function(gr,prom,exon,intron,strand=FALSE)
 {
   #require(GenomicRanges)
   if( ! strand){strand(gr)="*"}

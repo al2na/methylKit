@@ -27,7 +27,7 @@ fread.gzipped<-function(filepath,...){
   
 }
 # reads a table in a fast way to a dataframe
-.readTableFast<-function(filename,header=T,skip=0,sep="auto")
+.readTableFast<-function(filename,header=TRUE,skip=0,sep="auto")
 {
   #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
   #                       nrows = 100,stringsAsFactors=FALSE)
@@ -157,7 +157,7 @@ fread.gzipped<-function(filepath,...){
     strand  =rep("+",nrow(cpgFR)),
     coverage=cpgFR$coverage.x + cpgFR$coverage.y,
     numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =F
+    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
   )
   Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
   Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
@@ -188,7 +188,7 @@ fread.gzipped<-function(filepath,...){
     strand  =rep("+",nrow(cpgFR)),
     coverage=cpgFR$coverage.x + cpgFR$coverage.y,
     numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =F
+    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
   )
   Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
   Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
@@ -538,7 +538,7 @@ setClass("methylRawList", representation(treatment = "numeric"),contains = "list
 #' @docType methods
 #' @rdname methRead-methods
 setGeneric("methRead", function(location,sample.id,assembly,dbtype=NA,
-                            pipeline="amp",header=T,skip=0,sep="\t",
+                            pipeline="amp",header=TRUE,skip=0,sep="\t",
                             context="CpG",resolution="base",
                             treatment,dbdir=getwd(),mincov=10) 
   standardGeneric("methRead"))
@@ -1464,9 +1464,9 @@ setMethod("getCoverageStats", "methylRaw",
       
       par(mfrow=c(1,2))
       if(labels){
-        a=hist(log10(plus.cov),plot=F)
+        a=hist(log10(plus.cov),plot=FALSE)
         my.labs=as.character(round(100*a$counts/length(plus.cov),1))
-      }else{my.labs=F}
+      }else{my.labs=FALSE}
 
       hist(log10(plus.cov),col="chartreuse4",
            xlab=paste("log10 of read coverage per",object@resolution),
@@ -1476,10 +1476,10 @@ setMethod("getCoverageStats", "methylRaw",
       mtext(object@sample.id, side = 3)
 
      if(labels){
-        a=hist(log10(mnus.cov),plot=F)
+        a=hist(log10(mnus.cov),plot=FALSE)
         my.labs=as.character(round(100*a$counts/length(mnus.cov),1))
-      }else{my.labs=F}
-      a=hist(log10(mnus.cov),plot=F)
+      }else{my.labs=FALSE}
+      a=hist(log10(mnus.cov),plot=FALSE)
       hist(log10(mnus.cov),col="chartreuse4",
            xlab=paste("log10 of read coverage per",object@resolution),
            main=paste("Histogram of", object@context, 
@@ -1490,9 +1490,9 @@ setMethod("getCoverageStats", "methylRaw",
     }else{
       all.cov= object$coverage
      if(labels){
-       a=hist(log10(all.cov),plot=F)
+       a=hist(log10(all.cov),plot=FALSE)
        my.labs=as.character(round(100*a$counts/length(all.cov),1))
-      }else{my.labs=F}                          
+      }else{my.labs=FALSE}                          
 
       hist(log10(all.cov),col="chartreuse4",
            xlab=paste("log10 of read coverage per",object@resolution),
@@ -1591,7 +1591,7 @@ setMethod("getMethylationStats", "methylRaw",
       
       par(mfrow=c(1,2))
       if(labels){
-        a=hist((plus.met),plot=F,...)
+        a=hist((plus.met),plot=FALSE,...)
         my.labs=as.character(round(100*a$counts/length(plus.met),1))
       }else{my.labs=FALSE}
       hist((plus.met),col="cornflowerblue",
@@ -1601,7 +1601,7 @@ setMethod("getMethylationStats", "methylRaw",
       mtext(object@sample.id, side = 3)
 
       if(labels){                          
-        a=hist((mnus.met),plot=F,...)
+        a=hist((mnus.met),plot=FALSE,...)
         my.labs=as.character(round(100*a$counts/length(mnus.met),1))
       }
       else{my.labs=FALSE}
@@ -1615,7 +1615,7 @@ setMethod("getMethylationStats", "methylRaw",
     }else{
       if(labels){                          
       
-        a=hist((all.met),plot=F,...)
+        a=hist((all.met),plot=FALSE,...)
         my.labs=as.character(round(100*a$counts/length(all.met),1))
       }else{my.labs=FALSE}
       hist((all.met),col="cornflowerblue",

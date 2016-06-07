@@ -103,7 +103,8 @@ dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,
   addinfo<-rep(0,sites)
   
   # if more than one effect size is supplied, randomize effect sizes
-  effects <- if(length(effect)==1) rep(effect,length(x)) else sample(effect,length(x),replace=T)
+  effects <- if(length(effect)==1) rep(effect,length(x)) else sample(effect,
+                                                                     length(x),replace=TRUE)
   
   # fill data.frame with raw counts for each sample
   for(i in 1:replicates){

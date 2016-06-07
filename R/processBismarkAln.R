@@ -170,13 +170,13 @@ function(location,sample.id,assembly,save.folder,save.context
       if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
       obj=methRead(location=out.files[[read.context]],
                sample.id=paste(sample.id,tolower(read.context),sep = "_"),
-               assembly=assembly,dbtype=dbtype,pipeline="bismark",header=T, 
+               assembly=assembly,dbtype=dbtype,pipeline="bismark",header=TRUE, 
                context=read.context,dbdir = dbdir,mincov=mincov)
       obj@sample.id <- sample.id
     }
     else {
       obj=methRead(location=out.files[[read.context]],sample.id=sample.id,
-               assembly=assembly,pipeline="bismark",header=T, 
+               assembly=assembly,pipeline="bismark",header=TRUE, 
                context=read.context,mincov=mincov)
     }
     if(temp.files ){dummy=lapply(out.files,unlink)}

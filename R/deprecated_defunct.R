@@ -1,7 +1,7 @@
 
 #' @export
 read <- function(location,sample.id,assembly,dbtype=NA,
-                          pipeline="amp",header=T,skip=0,sep="\t",
+                          pipeline="amp",header=TRUE,skip=0,sep="\t",
                           context="CpG",resolution="base",
                           treatment,dbdir=getwd(),mincov=10)
 {

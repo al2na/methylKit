@@ -19,6 +19,9 @@ IMPROVEMENTS AND BUG FIXES
 * Ported the Perl script for methylation base calling to C/C++ via Rcpp. 
   Contributed by Alexander Gosdschan.
 * methRead() uses data.table::fread() to read files faster.
+* methRead() has a new argument mincov, which sets the minimum number of
+  reads that needs to cover a base. Positions with coverage below this 
+  number are discarded.
 
 NEW FUNCTIONS AND FEATURES
 

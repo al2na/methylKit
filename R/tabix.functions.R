@@ -52,7 +52,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
     }
     close(con)
     #remove temp files
-    unlink(list.files(path = dir, pattern = rndFile,full.names=T))
+    unlink(list.files(path = dir, pattern = rndFile,full.names=TRUE))
   }else{
     
     outfile= file.path(path.expand(dir),filename) # get file name 
@@ -108,7 +108,7 @@ df2tabix<-function(df,outfile,rm.file=TRUE){
 #' 
 #' @usage catsub2tabix(dir,pattern,filename,sort=F)
 #' @noRd
-catsub2tabix<-function(dir,pattern,filename,sort=F){
+catsub2tabix<-function(dir,pattern,filename,sort=FALSE){
   
   outfile= file.path(path.expand(dir),filename) # get file name 
   if(file.exists(outfile)){
@@ -654,7 +654,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,region.split,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE)
     
     return(gsub(".tbi","",path))
     

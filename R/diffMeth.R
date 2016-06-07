@@ -1019,7 +1019,6 @@ setMethod(f="getMethylDiff", signature="methylDiff",
 #' @return plots a piechart or a barplot for percentage of the target 
 #' features overlapping with annotation
 #' 
-#' @usage diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)
 #' @examples
 #' 
 #' data(methylKit)
@@ -1031,7 +1030,7 @@ setMethod(f="getMethylDiff", signature="methylDiff",
 #' @export
 #' @docType methods
 #' @rdname diffMethPerChr-methods
-setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, 
+setGeneric("diffMethPerChr", def=function(x,plot=TRUE,qvalue.cutoff=0.01, 
                                           meth.cutoff=25,exclude=NULL,...) 
   standardGeneric("diffMethPerChr"))
 
@@ -1079,7 +1078,7 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                 t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
                                        hypo=dmc.hyper.hypo[,5],
                                        row.names=dmc.hyper.hypo[,1]) ))
-                ,las=2,horiz=T,col=c("magenta","aquamarine4"),
+                ,las=2,horiz=TRUE,col=c("magenta","aquamarine4"),
                 main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
                 xlab="% (percentage)",...)
               mtext(side=3,paste("qvalue<",qvalue.cutoff,

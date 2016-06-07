@@ -122,7 +122,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
 }
 
 # finds segment groups using mixture modeling
-densityFind<-function(score.gr,diagnostic.plot=T,...){
+densityFind<-function(score.gr,diagnostic.plot=TRUE,...){
   dens = densityMclust(score.gr$seg.mean,... )
   
   if(diagnostic.plot){
@@ -138,11 +138,11 @@ diagPlot<-function(dens,score.gr){
   par(mfrow=c(2,3))
   boxplot(
     lapply(1:dens$G,function(x) scores[dens$classification==x] ),
-    horizontal=T,main="methylation per group",xlab="methylation")
+    horizontal=TRUE,main="methylation per group",xlab="methylation")
   
   boxplot(
     lapply(1:dens$G,function(x) log10(width(score.gr)[dens$classification==x]) ),
-    horizontal=T,main="segment length per group",
+    horizontal=TRUE,main="segment length per group",
     xlab="log10(length) in bp ",outline=FALSE)
   
   
