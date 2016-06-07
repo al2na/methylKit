@@ -407,7 +407,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    path <- catsub2tabix(dir,pattern=filename2,filename,sort = T)
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE)
 
     return(gsub(".tbi","",path))
     

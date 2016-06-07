@@ -288,7 +288,7 @@ setMethod("readBed", signature(location = "character"),#remove.unsual="logical" 
         
         # read bed6
         bed=.readTableFast(location,header=FALSE,skip=skip)                    
-        if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
+        if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=TRUE),] }
         convert.bed.df(bed)
                     
 })
@@ -335,7 +335,7 @@ setMethod("readTranscriptFeatures", signature(location = "character"),
     
     # read bed6
     bed=.readTableFast(location,header=FALSE,skip=skip)                    
-    if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=T),] }
+    if(remove.unsual){ bed=bed[grep("_", as.character(bed[,1]),invert=TRUE),] }
     
     introns=convert.bed2introns(bed)
     exons  =convert.bed2exons(bed)

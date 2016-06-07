@@ -1,3 +1,11 @@
+methylKit 0.99.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* mostly changes to meet for BioCcheck()  requirements and reccomendations
+* C++ code compiles on windows now, regex requirement is no longer there.
+ 
+
 methylKit 0.9.6
 --------------
 IMPROVEMENTS AND BUG FIXES

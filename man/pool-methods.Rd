@@ -80,7 +80,7 @@ database allows the calculation in-memory,
 then you might want to change the value of this parameter.
 }
 \examples{
-library(methylKit)
+
 data(methylKit)
 
 # methylBase.obj has two groups, each group has two samples,

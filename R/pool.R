@@ -58,7 +58,7 @@
 #' @author  Altuna Akalin
 #' @export
 #' @examples
-#' library(methylKit)
+#' 
 #' data(methylKit)
 #' 
 #' # methylBase.obj has two groups, each group has two samples,

@@ -813,7 +813,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       
       # check if indeed methMat is percent methylation matrix
       if(max(methMat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+        warning("\nmake sure 'methMat' is percent methylation matrix ",
+                "(values between 0-100) \n")
       }
       
       # check if methMat is percent methylation matrix fitting to mBase  
@@ -832,11 +833,12 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     } else {
       
       # methMat can also be a file containing a percent methylation matrix
-      mat <- read.table(methMat,header = F)
+      mat <- fread(methMat,header = FALSE)
       
       # check if indeed methMat is percent methylation matrix
       if(max(mat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix (values between 0-100) \n")
+        warning("\nmake sure 'methMat' is percent methylation matrix ",
+                "(values between 0-100) \n")
       }
       
       # check if methMat is percent methylation matrix fitting to mBase  
@@ -850,7 +852,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
       
       mat=data[,numCs.index]+data[,numTs.index]
-      methMat = read.table(methMat,header = F, nrows = chunk)
+      methMat = fread(methMat,header = FALSE, nrows = chunk)
       
       # get new unmethylated and methylated counts
       numCs=round(methMat*mat/100)
@@ -2245,7 +2247,7 @@ setMethod("bedgraph", signature(methylObj="methylRawDB"),
     }
     # tidy up
     unlink(list.files(path = dirname(file.name),pattern = rndFile,
-                      full.names = T))
+                      full.names = TRUE))
     
   }
   

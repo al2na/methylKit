@@ -126,7 +126,7 @@ fread.gzipped<-function(filepath,...){
     tempdir <- paste(getwd(),"/",dir,sep = "")
     if(! file.exists(tempdir)){
       message(paste("creating directory ","/",dir,sep = "","..."))
-      dir.create(tempdir,recursive = T)
+      dir.create(tempdir,recursive = TRUE)
     }
     dir <- tempdir
   }
@@ -225,7 +225,7 @@ fread.gzipped<-function(filepath,...){
                 strand="*",
                 coverage=(df[,5]+df[,6]),numCs=df[,5],
                 numTs=df[,6],
-                stringsAsFactors = F)
+                stringsAsFactors = FALSE)
   
 }
   
@@ -257,7 +257,8 @@ fread.gzipped<-function(filepath,...){
     # make the object (arrange columns of df), put it in a list
     data.frame(chr=df[,1],start=df[,2],end=df[,2],
                                 strand=df[,3],coverage=(df[,4]+df[,5]),
-                                numCs=df[,4],numTs=df[,5],stringsAsFactors = F)
+                                numCs=df[,4],numTs=df[,5],
+               stringsAsFactors = FALSE)
 }
 
 # end of regular functions to be used in S4 functions
