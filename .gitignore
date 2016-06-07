@@ -3,6 +3,22 @@
 .RData
 methylkit_rstudio.Rproj
 *.Rproj
+*.DS_Store
+.Rbuildignore~
 .travis.c.yml
 .travis.r.yml
-.DS_Store
+
+# src/
+*.so
+*.o
+
+# vignettes/
+*.build.timestamp
+
+# inst/extdata/
+*ctrl1.txt.bgz.tbi
+*ctrl2.txt.bgz.tbi
+*test1.txt.bgz.tbi
+*test2.txt.bgz.tbi
+*test1_test2_ctrl1_ctrl2.txt.bgz.tbi
+

@@ -200,6 +200,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
   sample.id = sample.id, assembly = assembly,context=context,
@@ -431,6 +432,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylBaseDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
@@ -577,6 +579,7 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  file.remove(filepath)
   
   new("methylDiffDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
@@ -633,9 +636,16 @@ setAs("methylDiffDB", "GRanges", function(from)
   return(gr)
 })
 
+## coerce methylDB to methyl-obj
 setAs("methylRawDB","methylRaw", function(from)
 {
   return(from[])
+})
+
+setAs("methylRawListDB","methylRawList", function(from)
+{
+  outList = lapply(from,as,"methylRaw")
+  new("methylRawList", outList,treatment=from@treatment)
 })
 
 setAs("methylBaseDB","methylBase", function(from)
@@ -647,6 +657,61 @@ setAs("methylDiffDB","methylDiff", function(from)
 {
   return(from[])
 })
+
+## coerce methyl-obj to methylDB
+
+#' coerce methylKit objects from memory to database
+#' 
+#' The function converts in-memory methylKit objects to methylDB objects
+#' 
+#' @param obj an \code{\link{methylBase}},\code{\link{methylRaw}},\code{\link{methylRawList}} or an \code{\link{methylDiff}} object
+#' @usage makeMethylDB(x,dbpath)
+#' @examples 
+#' 
+#' data(methylKit)
+#' 
+#' makeMethylDB(methylBase.obj,"my/path")
+#'
+#' 
+#' @return an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},\code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
+#' @author Alexander Gosdschan
+#' @export
+#' @docType methods
+#' @rdname makeMethylDB-methods
+setGeneric("makeMethylDB", def=function(obj,dbpath="") standardGeneric("makeMethylDB"))
+
+#' @rdname makeMethylDB-methods
+#' @aliases makeMethylDB,methylBase-methods
+setMethod("makeMethylDB", signature="methylBase", definition=function(obj,dbpath) {
+  dbdir <- .check.dbdir(dbpath)
+  makeMethylBaseDB(df=getData(obj),dbpath=dbdir,dbtype="tabix",sample.ids=obj@sample.ids,
+                          assembly=obj@assembly,context=obj@context,
+                          treatment=obj@treatment,coverage.index=obj@coverage.index,
+                          numCs.index=obj@numCs.index,numTs.index=obj@numTs.index,destranded=obj@destranded,
+                          resolution=obj@resolution)
+})
+
+setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbpath) {
+  dbdir <- .check.dbdir(dbpath)
+  makeMethylRawDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.id=obj@sample.id,
+                      assembly=obj@assembly, context=obj@context, resolution=obj@resolution)
+})
+
+setMethod("makeMethylDB", signature="methylDiff", definition=function(obj,dbpath) {
+  dbdir <- .check.dbdir(dbpath)
+  suffix <- "_diffMeth"
+  makeMethylDiffDB(df=getData(obj), dbpath=dbdir, dbtype="tabix", sample.ids=obj@sample.ids,
+                   assembly=obj@assembly,context=obj@context,
+                   destranded=obj@destranded,treatment=obj@treatment,
+                   resolution=obj@resolution,suffix=suffix)
+})
+
+setMethod("makeMethylDB", signature="methylRawList", definition=function(obj,dbpath) {
+  dbdir <- .check.dbdir(dbpath)
+  outList <- lapply(obj,makeMethylDB,dbdir)
+  new("methylRawListDB",outList,treatment=obj@treatment)
+})
+
 
 setAs("methylRawListDB","methylRawList", function(from)
 {
