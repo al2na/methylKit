@@ -52,13 +52,19 @@ fread.gzipped<-function(filepath,...){
 # no matter what the alignment pipeline
 .structureAMPoutput<-function(data,mincov)
 {  
-  strand=rep("+",nrow(data))
-  strand[data[,4]=="R"]="-"
-  numCs=round(data[,5]*data[,6]/100)
-  numTs=round(data[,5]*data[,7]/100)
   
   # remove data beyond mincoverage
   data = data[data[,5] >= mincov,]
+  
+  strand=rep("+",nrow(data))
+  strand[data[,4]=="R"]="-"
+  
+
+  
+  numCs=round(data[,5]*data[,6]/100)
+  numTs=round(data[,5]*data[,7]/100)
+  
+
   
   
   data.frame(chr=data[,2],start=data[,3],end=data[,3]
