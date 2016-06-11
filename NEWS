@@ -5,6 +5,7 @@ IMPROVEMENTS AND BUG FIXES
 * Fixed a bug in methRead() introduced after the addition of mincov argument.
   the bug occurred only reading files legacy text files that have CpGs
   with coverage below 10
+* Changes to vignette for better description of the tests.
 
 
 methylKit 0.99.1
