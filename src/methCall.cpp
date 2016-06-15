@@ -664,7 +664,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
       if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
-      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
+      else { key = "R|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
 
       process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
@@ -921,8 +921,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
-      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
+      else { key = "R|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
 
       process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
@@ -1100,8 +1100,8 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
       //if last base is a C and it is a part of CCGG motif, don't call for meth
       if( ( (gbases[i] == 'C') && (i==quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
       std::string key; // initilaize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
-      else { key = "R|"+ chr+"|"+std::to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
+      else { key = "R|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
       
       process_call_string(mcalls, i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
       
