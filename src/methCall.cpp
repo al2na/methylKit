@@ -663,7 +663,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
-      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(start+i); }
+      if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
       else { key = "R|"+ chr+"|"+std::to_string(start+i); }
 
       process_call_string(mcalls,i,key, CGmethHash, nonCGmethHash, CHHmethHash, CHGmethHash);
