@@ -6,6 +6,8 @@ IMPROVEMENTS AND BUG FIXES
   the bug occurred only reading files legacy text files that have CpGs
   with coverage below 10
 * Changes to vignette for better description of the tests.
+* Compiler error that occurs in older compilers are fixed via this PR 
+  https://github.com/al2na/methylKit/pull/43
 
 
 methylKit 0.99.1
