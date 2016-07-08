@@ -1,0 +1,369 @@
+methylKit 0.99.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* mostly changes to meet for BioCcheck()  requirements and reccomendations
+* C++ code compiles on windows now, regex requirement is no longer there.
+ 
+
+methylKit 0.9.6
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* changes to following function names:
+  read() to methRead()  
+  read.bismark to processBismarkAln()
+  adjust.methylC() to adjustMethylC() 
+  get.methylDiff() to getMethylDiff()
+  annotate.WithFeature() to annotateWithFeature()
+  annotate.WithFeature.Flank() to annotateWithFeatureFlank()
+  annotate.WithGenicParts() to annotateWithGenicParts()
+  read.bed() to readBed()
+  read.feature.flank() to readFeatureFlank()
+  read.transcript.features() to readTranscriptFeatures()
+* Improved documentation for methRead() (old read())
+* Now, bismark cytosine report and coverage files can be read using methRead()
+  pipeline argument. see ?methRead
+* Ported the Perl script for methylation base calling to C/C++ via Rcpp. 
+  Contributed by Alexander Gosdschan.
+* methRead() uses data.table::fread() to read files faster.
+* methRead() has a new argument mincov, which sets the minimum number of
+  reads that needs to cover a base. Positions with coverage below this 
+  number are discarded.
+
+NEW FUNCTIONS AND FEATURES
+
+* new function methSeg() can segment methylation (methylRaw objects) and
+  differential methylation (methylDiff objects) profiles to segments.
+  Associated function methSeg2bed() creates BED files from segments.
+  see ?methSeg. A test is added to check this in R CMD check.
+  Contributed by Arsene Wabo and Alexander Gosdschan.
+
+* new tabix based classes methylRawDB, methylRawListDB, methylBaseDB, 
+  methylDiffDB and respective methods implemented. Tests are updated to 
+  check proper function in R CMD check. Contributed by Alexander Gosdschan.
+
+* calculateDiffMeth() now supports basic overdispersion correction and multiple 
+  methods for pvalue correction. The function also now handles covariates 
+  such as age,sex etc. A test is added to check this in R CMD check. 
+  Contributed by Adrian Bierling.
+
+* New function calculateDiffMethDSS() is using beta-binomial model from DSS 
+  package to calculate differential methylation. Contributed by 
+  Dhruva Chandramohan with modifications from Altuna Akalin. This is a modified
+  version of the function from DSS package so that it can work with methylKit
+  objects.
+
+* dataSim creates a methylBase object with simulated methylation data. 
+  A test is added to check this in R CMD check. Contributed by Adrian Bierling.
+
+methylKit 0.9.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* travis CI build shield added
+
+
+methylKit 0.9.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* tileMethylCounts now works on methylBase objects, affected by BioC 3.0 upgrade.
+  A test is added to check this in R CMD check.
+
+
+methylKit 0.9.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* compatibility with BioC 3.0. Multiple BioC functions moved to other packages
+  within BioC,which broke some code and caused installation issues. 
+  Now this is fixed.
+* data.table::merge is now stable when all=TRUE. Removed my(altuna) version of data.table::merge
+  the code base.
+
+
+methylKit 0.9.2.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* calculateDiffMeth slim=FALSE argument works correctly when there are multiple
+  samples per group.
+
+
+methylKit 0.9.2.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* install_github() now works correctly. Removed blank lines at the end of
+  DESCRIPTION file.
+
+* calculateDiffMeth and tileMethylCounts now works correctly,
+ typos were introduced in code with 0.9.2.2. Now these are fixed
+
+
+methylKit 0.9.2.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* regionCounts() bug occurring when the first argument is a class of methylBase is fixed.
+  The bug introduced an additional column to the resulting methylBase object.
+  https://groups.google.com/forum/#!topic/methylkit_discussion/p19K-pgavAI
+
+
+methylKit 0.9.2.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* unite() issues when destrand=FALSE is resolved. The issue appeared due to numeric vs.
+  integer conflict when merging data sets using chr,start and end locations.
+* typo in calculateDiffMeth() argument "weighted.mean" is fixed.
+* unite() is faster when destrand=TRUE, due to improvements in internal function
+  .CpG.dinuc.unify()
+* regionCounts() strand.aware argument now works correctly. This bug had no effect
+  on tileMethylCounts. With the default arguments, strand aware setting was not
+  in effect at all, so every region was treated as strandless.
+* Conversion to GRanges objects now removes seqlevels(chromosome names)
+  that are not used. Not removing these could cause problems in regionCounts()
+  function and functions depending on regionCounts().
+* read() function in some cases was treating strand columns of the flat CpG
+  files as logical if strand had F or R letters and most of the first CpGs were
+  having F strand (Forward strand). Now this is fixed.
+
+methylKit 0.9.2.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Fixes a bug in getMethylationStats() function that generates incorrect label numbers when the user overrides the default number
+  of breaks for the histogram. Contributed by Bonnie Barrilleaux.
+
+methylKit 0.9.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* A bug introduced with 0.9.1 is fixed. The bug occured when unite() function
+is used with destrand=TRUE argument. It returned less number of CpGs then it was
+supposed to, although returned CpGs had correct methylation and coverage values.
+
+
+methylKit 0.9.1
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* objects takes less memory and they are reorganized. updateMethObject() updates
+  the objects from previous versions the latest version.
+
+* New batch effect control functions are implemented. You can control if certain principal
+  components are associated with batch effects and remove those components from your
+  data. see ?assocComp amd ?removeComp. In addition, if you have corrected for the
+  batch effects via other methods, you can reconstruct a corrected methylBase object (
+  see ?reconstruct). Check the "batch effects" section in the vignette.
+
+IMPROVEMENTS AND BUG FIXES
+
+* unite() function takes less time due to use of data.table::merge
+
+* fixes a bug appeared with R 3.02, where getting exon and intron coordinates
+  from BED12 files produced an error.
+
+* tested with R 3.2 and matching bioconductor packages
+
+* data(methylKit) has the new objects
+
+
+
+methylKit 0.5.7
+--------------
+
+
+IMPROVEMENTS AND BUG FIXES
+
+* tested with R 3.0 and matching bioconductor packages
+
+* deprecated matchMatrix import from IRanges was causing a problem with package installation. v0.5.7 fixes that problem.
+
+* Now there is no need for "chr" string in BED files when reading them as annotation files. Some assemblies do not have the "chr"" string in their chromosome names.
+
+
+methylKit 0.5.6
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new arguments for clusterSamples() and PCASamples() functions are added. With
+  the new options "sd.filter","sd.threshold","filterByQuantile" are added. These
+  options help finetune how low variation bases/regions are discarded prior to
+  clustering or PCA. See ?PCASamples and ?clusterSamples() for details on the
+  new options
+
+* FAQ section added to the vignette
+
+* show methods added for each class. Now, typing the variable name containing the
+  object will display concise information about the contents of the object.
+
+* Subsetting objects via "[" notation is now enabled. You can subset rows of the
+  objects and it will return a new object rather than just a data frame.
+
+
+IMPROVEMENTS AND BUG FIXES
+
+* tileMethylCounts() error  is fixed. Error occurred when tilling sparsely
+  covered small chromosomes like chrM in human RRBS data.
+
+* read.bismark() can deal with Bismark output with Bowtie2. Bowtie2 can put gaps
+  in the alignment, now read.bismark() can deal with those gaps when parsing the
+  SAM file.
+
+* Coverage columns are coerced to integer when reading generic methylation per
+  base files. BSMAP scripts can produce a methylation ratio file where coverages
+  (or "effective CT counts" as they are called)  are not always integers, which
+  causes a problem in the downstream analysis. Now, these non-integer columns
+  are rounded to nearest integer while reading.
+  See http://zvfak.blogspot.com/2012/10/how-to-read-bsmap-methylation-ratio.html
+  for example usage of this functionality.
+
+
+
+methylKit 0.5.5
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* Differential methylation percentage calculation bug fixed. The bug occurred when "min.per.group" argument used in unite() function and when "weighted.mean=TRUE" in calculateDiffMeth() function.
+
+* plotTargetAnnotation bug is fixed. Bug occured when "precedence" argument set to FALSE.
+
+
+methylKit 0.5.4
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* Examples added to help pages
+
+* Changes to DESCRIPTION for complying with the bioconductor guidelines
+
+* unused "cor" option removed from PCASamples() function
+
+* some irrelevant functions are not exported (i.e they are not public) anymore.
+
+* getContext() looks for the correct slot name now
+
+
+methylKit 0.5.3
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function adjust.methylC() can be used to adjust measured 5mC levels by measured 5hmC levels
+
+
+IMPROVEMENTS AND BUG FIXES
+
+* pool() function bug fixed where one of the groups have one sample the pool function was not returning correct values
+
+* calculateMethDiff() function option "SLIM" is now working. If set to TRUE SLIM method for q-value calculation will be used. If FALSE, p.adjust with method="BH" option will be used for P-value correction.
+
+* read.bismark() function now works correctly under Windows.
+
+* read.bismark() bug occurring when the reads are paired and overlapping is fixed now.
+
+* read.bismark() bug occurring when the alignment is done in non-directional manner is fixed now. However, illumina sequencing protocols are directional and you are unlikely to have encountered this error if you aligned your sequences in a directional manner.
+
+* getCorrelation() function has a new option called "method" can take the value of "spearman","person" or "kendall"
+
+methylKit 0.5.2
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function pool() sums up coverage, numCs and numTs values within each group so one representative sample for each group will be created in a new methylBase object.
+
+* new function normalizeCoverage()  normalizes coverage and associated number of Cs and number of Ts values between samples using a scaling factor derived from the ratio between mean or median of coverage distributions of samples.
+
+
+methylKit 0.5.1
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* calculateDiffMeth() can now deal with differential methylation calculations where one group has multiple samples but the other one has only one.
+
+
+methylKit 0.5
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function reorganize() can be used to reorganize methylRawList and methylBase objects to create new objects from subset of samples or can be used to change the order of samples and treatment vector.
+
+* new function bedgraph() can output UCSC bedgraph files for methylRaw and methylDiff objects
+
+* new function percMethylation() extracts percent methylation values from a methylBase object and returns a matrix
+
+* unite() now can merge bases/regions that are not covered by all samples by setting "min.per.group" option
+
+* PCASamples() has new options "transpose" and "sd.threshold". Now, one can do PCA analysis on the transposed % methylation values. "sd.threshold" is for removing rows with small variation prior to PCA analysis  .see ?PCASamples for details
+
+IMPROVEMENTS AND BUG FIXES
+
+* regionCounts() bug that appeared with data.table 1.8.0 is fixed
+
+* unite() bug that appeared with R 2.15 is fixed
+
+* calculateDiffMeth() can deal with NA values introduced by setting "min.per.replicate" option of unite() function
+
+* PCASamples() now uses "prcomp" function to do the PCA analysis
+
+* external annotation data (cpgi.hg18.bed.txt and refseq.hg18.bed.txt) that comes with the package is now only a subset of full datasets. Do not use them for your own analysis, download the complete annotation data from UCSC or other sources in BED format.
+
+methylKit 0.4.1
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* new function select() can be used to subset methylRaw, methylBase and methylDiff objects to create new objects with a subset of methylation data useful if you want to use only a particular portion of methylation events on the genome.
+
+IMPROVEMENTS AND BUG FIXES
+
+* read.bismark bug fixed, now it should be able to save methylation call files with no problem
+
+methylKit 0.4
+--------------
+
+NEW FUNCTIONS AND FEATURES
+
+* New read.bismark() function can read directly from a sorted SAM file output by Bismark aligner, the function can save methylation calls as text files or read them as methylRaw object to be used in analysis
+
+* calculateDiffMeth() can do all differential methylation calculations using multiple-cores if 'num.cores' is set to an integer denoting how many cores should be used.
+
+* getCoverageStats() & getMethylationStats() have a new option called 'labels', if set to FALSE, no labels will be drawn on top of the histogram bars.
+
+IMPROVEMENTS AND BUG FIXES
+
+* cov.bases option in tileMethylCounts() now works
+
+* methylRaw,methylBase and methylDiff objects have a new slot 'resolution', which designates
+  whether methylation information is base-pair resolution or regional resolution. allowed values 'base' or 'region'
+
+* getCoverageStats() & getMethylationStats() now print the sample ids and methylation context automatically in the
+  title when plotting
+
+* getCoverageStats() & getMethylationStats() takes extra options to be passed to hist() function
+
+* destrand option of unite() function will be over-ridden when methylRawList to be united contains regions rather than bases
+
+* unite() function checks if supplied elements of methylRawList object have the same context,assembly and resolution before
+  uniting data sets.
+
+* validity function checking the format of the data for a methylRaw object is implemented
+
+* clusterSamples() and PCASamples() take methylation context information automatically and use it in plot titles
+
+methylKit 0.3.1
+--------------
+
+IMPROVEMENTS AND BUG FIXES
+
+* syntax error when fisher.test applied at calculateMethDiff() is fixed.
