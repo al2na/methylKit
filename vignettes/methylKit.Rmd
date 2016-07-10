@@ -360,7 +360,37 @@ head(tiles[[1]],3)
 
 ## Finding differentially methylated bases or regions
 
-The `calculateDiffMeth()` function is the main function to calculate differential methylation. Depending on the sample size per each set it will either use Fisher's exact or logistic regression to calculate P-values. P-values will be adjusted to Q-values using [SLIM method](http://www.ncbi.nlm.nih.gov/pubmed/21098430) [@Wang2011a].
+The `calculateDiffMeth()` function is the main function to calculate
+differential methylation. Depending on the sample size per each set it will
+either use Fisher's exact or logistic regression to calculate P-values. P-values
+will be adjusted to Q-values using [SLIM
+method](http://www.ncbi.nlm.nih.gov/pubmed/21098430) [@Wang2011a]. If you have
+replicates, the function will automatically use logistic regression. You can
+force the `calculateDiffMeth()` function to use Fisher's exact test if you
+pool the replicates when there is only test and control sample groups. This
+can be achieved with `pool()` function, see [FAQ](# Frequently Asked Questions)
+for more info.
+
+In its
+simplest form ,where there are no covariates, the logistic regression will try
+to model the the log odds ratio which is based on methylation proportion of a
+CpG, $\pi_i$, using the treatment vector which denotes the sample group
+membership for the CpGs in the model. Below, the "Treatment" variable is used
+to predict the log-odds ratio of methylation proportions. 
+
+$$
+\text{log}\left(\dfrac{\pi_i}{1-\pi_i}\right) =\beta_0 + \beta_1 Treatment_i
+$$
+
+The logistic regression model is fitted per CpG or per region and we test if 
+treatment vector has
+any effect on the outcome variable or not. In other words,
+we are testing if $log(\pi_i/(1-\pi_i)) = \beta_0 + \beta_1 Treatment_i$ 
+is a "better" model than $log(\pi_i/(1-\pi_i)) = \beta_0$.
+
+The following code snippet tests for differential methylation. Since the example
+data has replicates, the logistic regression based modeling and test will 
+be used.
 
 ```{r}
 myDiff=calculateDiffMeth(meth)
@@ -389,19 +419,24 @@ diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
 ## Correcting for overdispersion
 Overdispersion occurs when there is more variability in the data than assumed
 by the distribution. In the logistic regression model, the response variable
-methylation values for sample groups are expected to have binomial distribution:
-$meth_i ~ Bin(n_i, \pi_i)$.
-Therefore, the methylation values will have the variance $\mu_i (n_i-\mu_i)/n_i$ 
-and mean $\mu_i$. $n_i$ is the coverage for the CpG or a region and $\pi_i$ is 
-the underlying methylation proportion. Overdispersion occurs when the variance
-of $meth_i$ is greater than $\mu_i (n_i-\mu_i)/n_i$. This can be corrected by
+$meth_i$ (number of methylated CpGs) is expected to have a binomial distribution:
+$$meth_i \sim Bin(n_i, \pi_i)$$
+Therefore, the methylated CpGs will have the variance $n_i \pi_i(1-\pi_i)$ 
+and mean $\mu_i=n_i \pi_i$. $n_i$ is the coverage for the CpG or a region and $\pi_i$ is 
+the underlying methylation proportion.
+
+Overdispersion occurs when the variance
+of $meth_i$ is greater than $n_i \hat{\pi_i}(1-\hat{\pi_i})$, where $\hat{\pi_i}$
+is the estimated methylation proportion from the model. This can be corrected by
 calculating a scaling parameter $\phi$ and adjusting the variance 
-as in $\phi \mu_i (n_i-\mu_i)/n_i$. `calculateDiffMeth` can calculate that
+as $\phi n_i \hat{\pi_i}(1-\hat{\pi_i})$. `calculateDiffMeth` can calculate that
 scaling parameter and use it in statistical tests to correct for overdispersion.
 The parameter is calculated as proposed by [@McCullagh1989] as follows: $\hat{\phi}=X^2/(N-P)$, where $X$ is Pearson goodness-of-fit statistic, 
-$N$ is the number of samples, and $P$ is the number of parameters.
+$N$ is the number of samples, and $P$ is the number of parameters. This scaling
+parameter also effects the statistical tests and if there is overdispersion
+correction the tests will be more stringent in general.
 
-By default,the overdispersion correction is not applied. 
+By default,this overdispersion correction is not applied. 
 This can be achieved by setting
 `overdispersion="MN"`. The Chisq-test is used 
 by default only when no overdispersion correction is applied.
