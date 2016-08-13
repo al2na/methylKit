@@ -553,18 +553,16 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
     std::vector<std::string> cols = split(line,'\t');
     int start                     = atoi(cols[3].c_str()); 
-    // if(!String2Int(cols[3],start)) { Rcpp::stop("Error from String2Int") ;return -1;}
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
     std::string cigar             = cols[5];
     std::string methc             = cols[13]; 
+    if(methc.find("XM:Z:")==std::string::npos) {Rcpp::stop("no methylation tag found.");}
     methc.erase(methc.begin(),methc.begin()+ 5 ); //  remove "XM:Z:"
     std::string qual              = cols[10];
     std::string mrnm              = cols[6];
     int mpos                      = atoi(cols[7].c_str());
-    // int isize                     = atoi(cols[8].c_str());
-//     if(!String2Int(cols[7],mpos)) { Rcpp::stop("Error from String2Int");return -1;}
-//     if(!String2Int(cols[8],isize)) { Rcpp::stop("Error from String2Int");return -1;}
+
     
     
     // process cigar string to get indels
@@ -793,7 +791,9 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
           len_cigar = b->core.n_cigar;        // number of cigar operations
 
   // read methylation call string
-  char *meth = (char*) bam_aux_get(b,"XM");   
+  char *meth = (char*) bam_aux_get(b,"XM");
+  if(meth==NULL) {Rcpp::stop("no methylation tag found for bam file " + input );}
+  
   
   // initialize buffers for sequence, qual and cigar string
   std::string seq, qual;
@@ -1220,4 +1220,3 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
   if(file.is_open()) file.close();
 
 }
-
