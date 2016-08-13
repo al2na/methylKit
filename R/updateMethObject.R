@@ -1,7 +1,7 @@
 
 #' update methylKit objects 
 #'  
-#' The method updates object from earlier versions (<v1.0.0) to latest object.
+#' The method updates object from earlier versions (<v0.9.1) to latest object.
 #' 
 #' @param object a methylKit object: methylRaw, methylRawList, methylBase or methylDiff
 #'
@@ -12,19 +12,21 @@
 #'  @export 
 #'  @docType methods
 #'  @rdname updateMethObject
-setGeneric("updateMethObject",function(object) standardGeneric("updateMethObject"))
+setGeneric("updateMethObject",function(object) 
+  standardGeneric("updateMethObject"))
 
-#'  @aliases updateMethObject,methylRaw-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylRaw-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylRaw" ),
           function(object){
             
             new("methylRaw",getData(object)[,-1],sample.id=object@sample.id,
-                assembly=object@assembly,context=object@context,resolution=object@resolution)
+                assembly=object@assembly,context=object@context,
+                resolution=object@resolution)
           })
 
-#' @aliases updateMethObject,methylRawList-method
-#'  @rdname updateMethObject
+# @aliases updateMethObject,methylRawList-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylRawList" ),
           function(object){
             
@@ -33,8 +35,8 @@ setMethod("updateMethObject" ,signature(object = "methylRawList" ),
           })
 
 
-#'  @aliases updateMethObject,methylBase-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylBase-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylBase" ),
           function(object){
             
@@ -52,8 +54,8 @@ setMethod("updateMethObject" ,signature(object = "methylBase" ),
             
           })
 
-#'  @aliases updateMethObject,methylDiff-method
-#'  @rdname updateMethObject
+#  @aliases updateMethObject,methylDiff-method
+#  @rdname updateMethObject
 setMethod("updateMethObject" ,signature(object = "methylDiff" ),
           function(object){
             

@@ -4,11 +4,41 @@
 ## S3 functions to be used in S4 stuff
 ##############################################################################
 
+# wrapper function for SLIM, p.adjust, qvalue-package
+p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
+                                      "bonferroni","BH","BY","fdr","none",
+                                      "qvalue"),
+                       n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,Divi=10,
+                       Pz=0.05,B=100,Bplot=FALSE){
+  
+  method <- match.arg(method)
+  
+  qvals=switch(method,
+               # SLIM function
+               SLIM={QValuesfun(pvals,
+                                SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,B=B,
+                                         Bplot=Bplot)$pi0_Est)
+               },
+               # r-base/p-adjust functions
+               holm={p.adjust(pvals,method=method,n)},
+               hochberg={p.adjust(pvals,method=method,n)},
+               hommel={p.adjust(pvals,method=method,n)},
+               bonferroni={p.adjust(pvals,method=method,n)},
+               BH={p.adjust(pvals,method=method,n)},
+               BY={p.adjust(pvals,method=method,n)},
+               fdr={p.adjust(pvals,method=method,n)},
+               none={p.adjust(pvals,method=method,n)},
+               # r-bioconductor/qvalue-package function
+               qvalue={qvalue(pvals,fdr.level,pfdr)$qvalues}
+  )
+}
+
 # SLIM
 ######################################
 #####SLIM pi0 Estimation function
 #####Copyright by Tsai Lab of UGA, US, and Hong-Qiang Wang, IIM, CAS, China
-#####Reference: SLIM: A Sliding Linear Model for Estimating the Proportion of True Null Hypotheses in Datasets With Dependence Structures
+#####Reference: SLIM: A Sliding Linear Model for Estimating the Proportion of 
+##### True Null Hypotheses in Datasets With Dependence Structures
 #####usage:
 #####inputs: 
 #####rawp:p-values, required
@@ -26,11 +56,11 @@
 
 SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
 {
-
-
+  
+  
   ####################
   m <- length(rawp) 
- 
+  
   ########################
   alpha_mtx=NULL;#
   pi0s_est_COM=NULL;
@@ -63,8 +93,8 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
     LModel=lm(gamma_mtx~lambda);
     pi0_mtx=c(pi0_mtx,coefficients(LModel)[2]);
   }
-
-
+  
+  
   ##################################
   ########searching
   N_COM=NULL;
@@ -77,7 +107,8 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
   {
     qua_point=quapoint_mtx[k];
     
-    pi0_combLR=min(quantile(pi0_mtx,qua_point),1);#mean(pi0_mtx);#median();# qua_point=0.78 for desreasing distribution;
+    pi0_combLR=min(quantile(pi0_mtx,qua_point),1);#mean(pi0_mtx);#median();
+    # qua_point=0.78 for desreasing distribution;
     ##0.4 for uniform or normal distribution;
     pi0_est=pi0_combLR;
     
@@ -124,7 +155,10 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
     par(mfrow=c(1,2));
     hist(rawp,main="Histogram of p-value");
     gamma_ga=sapply(lambda_ga,f1,rawp=rawp);
-    plot(lambda_ga,gamma_ga,type="l",main="Relationship of p- and q value",xlab=expression(lambda),ylab=expression(gamma),cex.lab=1.45,cex.axis=1.42)
+    plot(lambda_ga,gamma_ga,type="l",
+         main="Relationship of p- and q value",
+         xlab=expression(lambda),ylab=expression(gamma),
+         cex.lab=1.45,cex.axis=1.42)
     #par(xaxp=c(0,1,10));
     #axis(1);
     ##qvalues
@@ -134,8 +168,11 @@ SLIMfunc<-function(rawp,STA=.1,Divi=10,Pz=0.05,B=100,Bplot=FALSE)
     abline(v=Pz,col="black",lwd=2,lty="dotdash")
     abline(v=maxFDR.Pz,col="blue",lwd=2,lty="dotdash")
     text(0.75,0.6,labels=paste("L=",round(abs(Diff.loc),4),sep=""));
-    leg=list(bquote("CPD of p-value"),bquote("CPD of q-value"),bquote("Pmax"==.(Pz)),bquote("FDRmax"==.(round(maxFDR.Pz,2))));
-    legend("bottomright",legend=as.expression(leg),lwd=2,lty=c("solid","dashed","dotdash","dotdash"),col=c("black","blue","black","blue"));
+    leg=list(bquote("CPD of p-value"),bquote("CPD of q-value"),
+             bquote("Pmax"==.(Pz)),bquote("FDRmax"==.(round(maxFDR.Pz,2))));
+    legend("bottomright",legend=as.expression(leg),lwd=2,
+           lty=c("solid","dashed","dotdash","dotdash"),
+           col=c("black","blue","black","blue"));
   }
   
   return(list(pi0_Est=pi0_Est,selQuantile=selQuantile));
@@ -155,351 +192,171 @@ QValuesfun<-function(rawp,pi0)
   qvalues=qvalues[order(order(rawp))]
 }
 
-glm.set<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
-{
 
-  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
+# New calulateDiffMeth-part
 
-  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
-  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
-
-  sums=Cs+Ts # get number of Cs and Ts
-  Ps  =Cs/sums # get probability of Cs
+logReg<-function(counts, formula, vars, treatment, 
+                 overdispersion=c("none","MN","shrinkMN"),
+                 effect=c("wmean","mean","predicted"), parShrinkMN=list(), 
+                 test=c("F","Chisq")){
   
-  Tmod=model.matrix(~Treat)
-  glm.bare<-function(X,Y) # X probs > Ps, Y total number > sums
-  {
-    #cat(Tmod)
-    obj=glm.fit(Tmod,X,weights=Y,family=binomial(link=logit))
-    deviance <- obj$null.deviance - obj$deviance
-    dispersion=1 #(if binomial or poisson)
-    aliased <- is.na(coef(obj))
-    p <- obj$rank
-    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
-        p1 <- 1L:p
-        Qr <- obj$qr
-        coef.p <- obj$coefficients[Qr$pivot[p1]]
-        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
-        covmat <- dispersion * covmat.unscaled
-        var.cf <- diag(covmat)
-        s.err <- sqrt(var.cf)
-        tvalue <- (coef.p/s.err)[2]    
-     }else if (obj$df.residual<=0)
-     { tvalue=NaN }
- 
-    wald <- tvalue
-    beta1 <- obj$coefficients[2]
-    p.value <- 1-pchisq(deviance,df=1)
-
-    return( c(wald,beta1,p.value) )
-  }
-
-  Ps.list=split(Ps,1:nrow(Ps) ) # get Probs
-  Ws.list=split(sums,1:nrow(sums) ) # get weights to feed into function
-  res=t(mapply(glm.bare,Ps.list,Ws.list))
-  colnames(res)=c("wald","beta1","pvalue")
-  return(res)
-}
-
-
-glm.set.mc<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
-{
-
-  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
-
-  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
-  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
-
-  sums=Cs+Ts # get number of Cs and Ts
-  Ps  =Cs/sums # get probability of Cs
+  # correct counts and treatment factor for NAs in counts
+  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  treatment<-treatment[!is.na(treatment)]
+  counts<-counts[!is.na(counts)]
   
-  Tmod=model.matrix(~Treat)
-  glm.bare<-function(dat,indX,indY,Tmod) # X probs > Ps, Y total number > sums
-  {
-    #cat(Tmod)
-    obj=glm.fit(Tmod,dat[indX],weights=dat[indY],family=binomial(link=logit))
-    deviance <- obj$null.deviance - obj$deviance
-    dispersion=1 #(if binomial or poisson)
-    aliased <- is.na(coef(obj))
-    p <- obj$rank
-    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
-        p1 <- 1L:p
-        Qr <- obj$qr
-        coef.p <- obj$coefficients[Qr$pivot[p1]]
-        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
-        covmat <- dispersion * covmat.unscaled
-        var.cf <- diag(covmat)
-        s.err <- sqrt(var.cf)
-        tvalue <- (coef.p/s.err)[2]    
-     }else if (obj$df.residual<=0)
-     { tvalue=NaN }
- 
-    wald <- tvalue
-    beta1 <- obj$coefficients[2]
-    p.value <- 1-pchisq(deviance,df=1)
-
-    return( c(wald,beta1,p.value) )
-  }
-
-  PWs=cbind(Ps,sums)
-  PWs.list=split(PWs,1:nrow(PWs) ) # get weights to feed into function
-  res=simplify2array(mclapply(PWs.list,glm.bare,indX=1:ncol(Ps),indY=ncol(Ps)+(1:ncol(sums)),Tmod=Tmod,  mc.cores=n.mc))
-  res=data.frame(t(res))
-  colnames(res)=c("wald","beta1","pvalue")
-  return(res)
-}
-
-### GLMs that can deal with NA values
-
-glm.set.v1<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind)
-{
-
-  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
-
-  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
-  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
-
-  sums=Cs+Ts # get number of Cs and Ts
-  Ps  =Cs/sums # get probability of Cs
+  w=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
+  y=counts[1:(length(counts)/2)]
+  prop=y/w
   
-  #Tmod=model.matrix(~Treat)
-  #X=c(0.1,NA,0.6,0.8)
-  #Y=c(30,NA,40,100)
-  glm.bare<-function(X,Y,Treat) # X probs > Ps, Y total number > sums
-  {
-    #cat(Tmod)
-    Treat2=Treat[!is.na(X)]
-    Tmod=model.matrix(~Treat2)
-    obj=glm.fit(Tmod,X[!is.na(X)],weights=Y[! is.na(Y)],family=binomial(link=logit))
-    deviance <- obj$null.deviance - obj$deviance
-    dispersion=1 #(if binomial or poisson)
-    aliased <- is.na(coef(obj))
-    p <- obj$rank
-    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
-        p1 <- 1L:p
-        Qr <- obj$qr
-        coef.p <- obj$coefficients[Qr$pivot[p1]]
-        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
-        covmat <- dispersion * covmat.unscaled
-        var.cf <- diag(covmat)
-        s.err <- sqrt(var.cf)
-        tvalue <- (coef.p/s.err)[2]    
-     }else if (obj$df.residual<=0)
-     { tvalue=NaN }
- 
-    wald <- tvalue
-    beta1 <- obj$coefficients[2]
-    p.value <- 1-pchisq(deviance,df=1)
-
-    return( c(wald,beta1,p.value) )
-  }
-
-  Ps.list=split(Ps,1:nrow(Ps) ) # get Probs
-  Ws.list=split(sums,1:nrow(sums) ) # get weights to feed into function
-  res=t(mapply(glm.bare,Ps.list,Ws.list,MoreArgs = list(Treat = Treat)))
-  colnames(res)=c("wald","beta1","pvalue")
-  return(res)
-}
-
-
-
-glm.set.mc.v1<-function(set,numC1.ind,numC2.ind,numT1.ind,numT2.ind,n.mc)
-{
-
-  Treat <-  c( rep(1,length(numC1.ind)),rep(0,length(numC2.ind)) ) # get the treatment vector
-
-  Cs=as.matrix(set[,c(numC1.ind,numC2.ind)])
-  Ts=as.matrix(set[,c(numT1.ind,numT2.ind)])
-
-  sums=Cs+Ts # get number of Cs and Ts
-  Ps  =Cs/sums # get probability of Cs
+  # get the model matrix from treatment and (optional) covariates
+  vars <- as.data.frame(cbind(treatment,vars))
   
-  #Tmod=model.matrix(~Treat)
-  glm.bare<-function(dat,indX,indY,Treat) # X probs > Ps, Y total number > sums
-  {
-    #cat(Tmod)
-
-    X=dat[indX]
-    Y=dat[indY]
-    Treat2=Treat[!is.na(X)]
-    Tmod=model.matrix(~Treat2)
-    obj=glm.fit(Tmod,X[! is.na(X)],weights=Y[! is.na(Y)],family=binomial(link=logit))
-    deviance <- obj$null.deviance - obj$deviance
-    dispersion=1 #(if binomial or poisson)
-    aliased <- is.na(coef(obj))
-    p <- obj$rank
-    if (p > 0) { # if clause and the rest to get the t-value or wald statistic
-        p1 <- 1L:p
-        Qr <- obj$qr
-        coef.p <- obj$coefficients[Qr$pivot[p1]]
-        covmat.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-        dimnames(covmat.unscaled) <- list(names(coef.p), names(coef.p))
-        covmat <- dispersion * covmat.unscaled
-        var.cf <- diag(covmat)
-        s.err <- sqrt(var.cf)
-        tvalue <- (coef.p/s.err)[2]    
-     }else if (obj$df.residual<=0)
-     { tvalue=NaN }
- 
-    wald <- tvalue
-    beta1 <- obj$coefficients[2]
-    p.value <- 1-pchisq(deviance,df=1)
-
-    return( c(wald,beta1,p.value) )
+  # get formula from model matrix
+  formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
+  
+  # if there are covariates other than treatment
+  if(ncol(vars)>1){
+    fmlaCov<-as.formula(paste("~ ", paste(colnames(vars)[-1], collapse= "+")))
+    modelCov<-model.matrix(as.formula(fmlaCov),as.data.frame(vars[,-1,drop=FALSE]) )
+    # this is only with covariates
+    objCov=glm.fit(modelCov,prop,weights=w,family=binomial(link=logit))
   }
-
-  PWs=cbind(Ps,sums)
-  PWs.list=split(PWs,1:nrow(PWs) ) # get weights to feed into function
-  res=simplify2array(mclapply(PWs.list,glm.bare,indX=1:ncol(Ps),indY=ncol(Ps)+(1:ncol(sums)),Treat=Treat,  mc.cores=n.mc))
-  res=data.frame(t(res))
-  colnames(res)=c("wald","beta1","pvalue")
-  return(res)
-}
-
-
-### END OF GLMs that can deal with NA values
-
-
-# function to fix logistic regression pvalues and make qvalues
-fix.q.values.glm<-function(pvals,slim=FALSE)
-{
-   if(slim==FALSE){
-    #qvals=qvalue::qvalue(pvals[,3])$qvalues # get qvalues
-    qvals=p.adjust(pvals[,3],"BH")
+  
+  # full model with all variables
+  modelMat<-model.matrix( formula ,as.data.frame(vars) )
+  obj=glm.fit(modelMat,prop,weights=w,family=binomial(link=logit))
+  
+  mu=fitted(obj)
+  nprm=length(obj$coef) # number of parameters fitted
+  
+  #get dispersion
+  overdispersion <- match.arg(overdispersion)
+  phi=switch(overdispersion,
+             none=1,
+             MN={
+               mu=fitted(obj)
+               uresids <- (y-w*mu)/sqrt(mu*(w-w*mu)) # pearson residuals
+               phi=sum( uresids^2 )/(length(w)-nprm) # correction factor  
+               ifelse(phi>1,phi,1)
+             },
+             shrinkMN={
+               mu=fitted(obj)
+               uresids <- (y-w*mu)/sqrt(mu*(w-w*mu)) # pearson residuals
+               phi=sum( uresids^2 )/(length(w)-nprm) # correction factor
+               
+               # change phi with parameters from parShrinkMN
+               df.prior=parShrinkMN$df.prior
+               var.prior=parShrinkMN$var.prior
+               df.total=(length(w)-nprm)+df.prior
+               phi=((length(w)-nprm)*phi + df.prior*var.prior)/df.total
+               ifelse(phi>1,phi,1)
+             })
+  
+  if(ncol(vars)>1){
+    deviance <- objCov$deviance - obj$deviance
+    ddf=objCov$df.residual-obj$df.residual
   }else{
-    slimObj=SLIMfunc(pvals[,3]);qvals=QValuesfun(pvals[,3], slimObj$pi0_Est)
-  }                
-
-  pvals=cbind(pvals,qvalue=qvals) # merge pvals and qvals
-  return(pvals)
-}
-
-# function to fix fisher.test pvalues and make qvalues
-fix.q.values.fisher<-function(pvals,slim=FALSE)
-{
-  if(slim==FALSE){
-    #qvals=qvalue::qvalue(pvals)$qvalues # get qvalues
-    qvals=p.adjust(pvals,"BH")
-    
+    deviance <- obj$null.deviance - obj$deviance
+    ddf=obj$df.null-obj$df.residual # difference in degrees of freedom
+  }
+  
+  test=match.arg(test)
+  
+  # do F-test when overdispersion >1 given
+  test=ifelse(test=="F" & phi>1,"F","Chisq")
+  
+  p.value=switch(test,
+                 F={
+                   pf(deviance/phi, ddf, (length(w)-nprm), lower.tail = FALSE)     
+                 },
+                 Chisq={
+                   pchisq(deviance/phi, 1, lower.tail = FALSE)
+                 })
+  
+  #calculate effect size
+  effect <- match.arg(effect)
+  meths=switch(effect,
+               wmean={
+                 #ms=tapply(y, as.factor(vars$treatment), sum )
+                 ms=tapply(y,treatment,sum)
+                 #ws=tapply(w, as.factor(vars$treatment), sum )
+                 ws=tapply(w,treatment,sum)
+                 ms/ws  
+               },
+               mean={
+                 tapply(prop, treatment, FUN = mean)
+               },
+               predicted={
+                 tapply(mu, treatment, FUN = mean)
+               }
+  )
+  
+  # calculate the difference
+  # if more than two groups calculate is as abs(max difference between two groups)
+  if(length(unique(treatment))>2){
+    meth.diff=max(meths)-min(meths)
   }else{
-  slimObj=SLIMfunc(pvals);qvals=QValuesfun(pvals, slimObj$pi0_Est)
-  }                
-
-  pvals=data.frame(pvalue=pvals,qvalue=qvals) # merge pvals and qvals
-  return(pvals)
-}
- 
-# A FASTER VERSION OF FISHERs EXACT
-fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control = list(), 
-    or = 1, alternative = "two.sided", conf.int = TRUE, conf.level = 0.95, 
-    simulate.p.value = FALSE, B = 2000, cache=F) 
-{
-    if (nrow(x)!=2 | ncol(x)!=2) stop("Incorrect input format for fast.fisher")
-    #if (cache) {
-    #  key = paste(x,collapse="_")
-    # cachedResult = hashTable[[key]]
-    #  if (!is.null(cachedResult)) {
-    #    return(cachedResult)
-    #  }
-    #}
-    # ---- START: cut version of fisher.test ----
-    DNAME <- deparse(substitute(x))
-    METHOD <- "Fisher's Exact Test for Count Data"
-    nr <- nrow(x)
-    nc <- ncol(x)
-    PVAL <- NULL
-    if ((nr == 2) && (nc == 2)) {
-        m <- sum(x[, 1])
-        n <- sum(x[, 2])
-        k <- sum(x[1, ])
-        x <- x[1, 1]
-        lo <- max(0, k - n)
-        hi <- min(k, m)
-        NVAL <- or
-        names(NVAL) <- "odds ratio"
-        support <- lo:hi
-        logdc <- dhyper(support, m, n, k, log = TRUE)
-        dnhyper <- function(ncp) {
-            d <- logdc + log(ncp) * support
-            d <- exp(d - max(d))
-            d/sum(d)
-        }
-        mnhyper <- function(ncp) {
-            if (ncp == 0) 
-                return(lo)
-            if (ncp == Inf) 
-                return(hi)
-            sum(support * dnhyper(ncp))
-        }
-        pnhyper <- function(q, ncp = 1, upper.tail = FALSE) {
-            if (ncp == 1) {
-                if (upper.tail) 
-                  return(phyper(x - 1, m, n, k, lower.tail = FALSE))
-                else return(phyper(x, m, n, k))
-            }
-            if (ncp == 0) {
-                if (upper.tail) 
-                  return(as.numeric(q <= lo))
-                else return(as.numeric(q >= lo))
-            }
-            if (ncp == Inf) {
-                if (upper.tail) 
-                  return(as.numeric(q <= hi))
-                else return(as.numeric(q >= hi))
-            }
-            d <- dnhyper(ncp)
-            if (upper.tail) 
-                sum(d[support >= q])
-            else sum(d[support <= q])
-        }
-        if (is.null(PVAL)) {
-            PVAL <- switch(alternative, less = pnhyper(x, or), 
-                greater = pnhyper(x, or, upper.tail = TRUE), 
-                two.sided = {
-                  if (or == 0) 
-                    as.numeric(x == lo)
-                  else if (or == Inf) 
-                    as.numeric(x == hi)
-                  else {
-                    relErr <- 1 + 10^(-7)
-                    d <- dnhyper(or)
-                    sum(d[d <= d[x - lo + 1] * relErr])
-                  }
-                })
-            RVAL <- list(p.value = PVAL)
-        }
-        mle <- function(x) {
-            if (x == lo) 
-                return(0)
-            if (x == hi) 
-                return(Inf)
-            mu <- mnhyper(1)
-            if (mu > x) 
-                uniroot(function(t) mnhyper(t) - x, c(0, 1))$root
-            else if (mu < x) 
-                1/uniroot(function(t) mnhyper(1/t) - x, c(.Machine$double.eps, 
-                  1))$root
-            else 1
-        }
-        ESTIMATE <- mle(x)
-        #names(ESTIMATE) <- "odds ratio"
-        RVAL <- c(RVAL, estimate = ESTIMATE, null.value = NVAL)
-    }
-    RVAL <- c(RVAL, alternative = alternative, method = METHOD, data.name = DNAME)
-    attr(RVAL, "class") <- "htest"
-    # ---- END: cut version of fisher.test ----    
-    #if (cache) hashTable[[key]] <<- RVAL # write to global variable
-    return(RVAL)                                                                         
+    meth.diff=meths[2]-meths[1]
+  }
+  
+  names(meths)=paste0("meth_",names(meths))
+  c(meth.diff=100*meth.diff,p.value=p.value,q.value=p.value,100*meths)
 }
 
-mc.fish<-function(my.list,num.cores)
-{
+# estimation of shrinkage parameters
+estimateShrinkageMN<-function(cntlist,treatment,covariates,
+                              sample.size=100000,mc.cores=1){
+  
+  message("Estimating shrinkage for scaling factor phi...")
+  
+  # get formula and construct model matrix
+  vars <- as.data.frame(cbind(treatment,covariates))
+  formula <-as.formula(paste("~ ", paste(colnames(vars), collapse= "+")))
+  modelMat<-model.matrix( formula ,as.data.frame(vars) )
+  
+  # check number of samples
+  sample.size <- ifelse(length(cntlist)<=100000,length(cntlist),sample.size)
+  
+  # calculate phis up to the first 100000 sites (stabilizing point)
+  estimation=simplify2array(
+    mclapply(cntlist[1:sample.size],estimatePhi,modelMat=modelMat,treatment=treatment,
+             mc.cores=mc.cores))
+  
+  # for each phi, take the correct df (depending on number of model parameters)
+  phis<-estimation[1,]
+  df<-estimation[2,]
+  
+  # squeeze sample variances 
+  shr=squeezeVar(phis,df)
+  
+  # output prior df and variances (to be used later as input for parShrinkMN)
+  list(df.prior=shr$df.prior,var.prior=shr$var.prior)
+}
 
-unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x) ,ncol=2,byrow=T),conf.int = F)$p.value,
-                                                         mc.cores=num.cores,mc.preschedule = TRUE) ) 
+estimatePhi<-function(counts,modelMat,treatment){
+  
+  # correct counts and treatment factor for NAs in counts
+  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  treatment<-treatment[!is.na(treatment)]
+  counts<-counts[!is.na(counts)]
+  
+  n=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
+  y=counts[1:(length(counts)/2)]
+  prop=y/n
+  
+  glmfit=glm.fit(modelMat,prop,weights=n,family=binomial(link=logit))
+  
+  # fit glm
+  mu <- fitted(glmfit)
+  nprm=length(glmfit$coef) # number of parameters fitted
+  
+  # calculate and record results
+  resids <- (y-n*mu)/sqrt(mu*(n-n*mu))
+
+  # get phi correction coefficients 
+  phi <- sum( resids^2 )/(length(n)-nprm)
+  c(phi,(length(n)-nprm))
 }
 
 # end of S3 functions
@@ -511,8 +368,10 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 
 #' An S4 class that holds differential methylation information
 #'
-#' This class is designed to hold statistics and locations for differentially methylated regions/bases. It extends \code{\link{data.frame}} class.
-#'  \code{\link[methylKit]{calculateDiffMeth}} function returns an object with \code{methylDiff} class.
+#' This class is designed to hold statistics and locations for differentially 
+#' methylated regions/bases. It extends \code{\link{data.frame}} class.
+#' \code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+#' with \code{methylDiff} class.
 #'          
 #' @section Slots:\describe{
 #'    \item{\code{sample.ids}}{ids/names of samples in a vector}
@@ -536,16 +395,18 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 #' 
 #' @section Subsetting:
 #'  In the following code snippets, \code{x} is a \code{methylDiff}.
-#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done on
-#'  rows. Column subsetting is not directly allowed to prevent errors in the 
+#'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done 
+#'  on rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
-#'   \code{methylDiff} object can be coerced to \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{methylDiff} object can be coerced to 
+#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' @section Accessors: 
 #' The following functions provides access to data slots of methylDiff:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},\code{\link[methylKit]{getContext}}
+#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
+#' \code{\link[methylKit]{getContext}}
 #' 
 #' @examples
 #' data(methylKit)
@@ -558,7 +419,9 @@ unlist( parallel::mclapply( my.list,function(x) fast.fisher(matrix(as.numeric( x
 #' @export
 #' @docType class
 setClass("methylDiff",representation(
-  sample.ids = "character", assembly = "character",context = "character",treatment="numeric",destranded="logical",resolution="character"),contains="data.frame")
+  sample.ids = "character", assembly = "character",context = "character",
+  treatment="numeric",destranded="logical",resolution="character"),
+  contains="data.frame")
 
 
 ##############################################################################
@@ -571,187 +434,254 @@ setClass("methylDiff",representation(
 #' The function calculates differential methylation statistics between two groups 
 #' of samples. The function uses either logistic regression test
 #' or Fisher's Exact test to calculate differential methylation. 
-#' See references for detailed explanation on statistics.
+#' See the rest of the help page and 
+#' references for detailed explanation on statistics.
 #' 
-#' @param .Object a methylBase object to calculate differential methylation
-#' @param slim If TRUE(default) SLIM method will be used for P-value adjustment.
-#'             If FALSE, \code{\link{p.adjust}} with method="BH" option will be 
-#'             used for P-value correction.
-#' @param weighted.mean calculate the mean methylation difference between groups 
-#'                      using read coverage as weights
-#' @param num.cores  integer for denoting how many cores should be used for 
-#'                   differential methylation calculations (only can be used in
-#'                    machines with multiple cores)
-#' @usage calculateDiffMeth(.Object,slim=TRUE,weighted.mean=TRUE,num.cores=1)
+#' @param .Object a methylBase or methylBaseDB object to calculate differential
+#'  methylation                    
+#' @param covariates a data.frame containing covariates, which should be 
+#' included in the test.                   
+#' @param overdispersion If set to "none"(default), no overdispersion correction 
+#' will be attempted.
+#'              If set to "MN", basic overdispersion correction, 
+#'              proposed by McCullagh and Nelder (1989) will be applied.This
+#'              correction applies a scaling parameter to variance estimated
+#'              by the model.
+#'              EXPERIMENTAL: If set to "shrinkMN", scaling parameter will be
+#'              shrunk towards a common value  (not thoroughly tested as of yet).
+#' @param adjust different methods to correct the p-values for multiple testing. 
+#'              Default is "SLIM" from methylKit. For "qvalue" please see 
+#'              \code{\link[qvalue]{qvalue}} 
+#'              and for all other methods see \code{\link[stats]{p.adjust}}.
+#' @param effect method to calculate the mean methylation different between groups 
+#'              using read coverage as weights (default). When set to "mean", 
+#'              the generic mean is applied
+#'              and when set to "predicted", predicted means from the logistic
+#'              regression model is used for calculating the effect.
+#' @param parShrinkMN a list for squeezeVar(). (NOT IMPLEMENTED)
+#' @param test the statistical test used to determine the methylation differences. 
+#'              The Chisq-test is used by default, while the F-test can be chosen 
+#'              if overdispersion control ist applied.
+#' @param mc.cores integer denoting how many cores should be used for parallel
+#'              differential methylation calculations (can only be used in
+#'              machines with multiple cores).
+#' @param slim If set to FALSE, \code{adjust} will be set to "BH" (default 
+#'              behaviour of earlier versions)
+#' @param weighted.mean If set to FALSE, \code{effect} will be set to "mean" 
+#'                      (default behaviour of earlier versions)  
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#'                    \code{methylBaseDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#'                saved as flat file database or not, default: explained in 
+#'                Details section.
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output 
+#'                  flat file database, 
+#'                  only used if save.db is true, default actions: append 
+#'                  \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, 
+#'                  defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#'           \code{dbtype}
+#'                  The type of the flat file database, currently only option 
+#'                  is "tabix"
+#'                  (only used for newly stored databases)             
+#'                    
+#' 
 #' @examples
 #' 
 #' data(methylKit)
 #' 
-#' # Logistic regression test will be applied since there are multiple samples in each group
-#' # in methylBase.obj object
-#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=TRUE,weighted.mean=TRUE,num.cores=1)
+#' # The Chisq-test will be applied when no overdispersion control is chosen.
+#' my.diffMeth=calculateDiffMeth(methylBase.obj,covariates=NULL,
+#'                               overdispersion=c("none"),
+#'                               adjust=c("SLIM"))
 #' 
-#' # P-value adjustment with Benjamini-Hocberg via p.adjust
-#' my.diffMeth=calculateDiffMeth(methylBase.obj,slim=FALSE,weighted.mean=TRUE)
-#'
 #' # pool samples in each group
 #' pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 #'  
-#' # After applying pool() function, there is one sample in each group.
-#' # Fisher's exact test will be applied for differential methylation
-#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,slim=TRUE,
-#'                                weighted.mean=TRUE,num.cores=1)
+#' # After applying the pool() function, there is one sample in each group.
+#' # The Fisher's exact test will be applied for differential methylation.
+#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,overdispersion=c("none"),
+#'                                adjust=c("SLIM"),effect=c("wmean"),test=c("F"))
+#'                                
+#' # Covariates and overdispersion control:
+#' # generate a methylBase object with age as a covariate
+#' covariates=data.frame(age=c(30,80,30,80))
+#' sim.methylBase<-dataSim(replicates=4,sites=1000,treatment=c(1,1,0,0),
+#'                         covariates=covariates,
+#'                         sample.ids=c("test1","test2","ctrl1","ctrl2"))
 #' 
-#' 
-#' 
+#' # Apply overdispersion correction and include covariates 
+#' # in differential methylation calculations.
+#' my.diffMeth3<-calculateDiffMeth(sim.methylBase,
+#'                                 covariates=covariates,
+#'                                 overdispersion="MN",test="Chisq",mc.cores=1)
+#'                                
 #' @return a methylDiff object containing the differential methylation 
-#'                      statistics and locations
+#'                      statistics and locations for regions or bases
 #' @section Details:
-#'  The function either uses a logistic regression 
-#'  (when there are multiple samples per group) or fisher's exact 
-#'  when there is one sample per group.
+#' Covariates can be included in the analysis. The function will then try to 
+#' separate the 
+#' influence of the covariates from the treatment effect via a linear model.\cr
+#' The Chisq-test is used per default only when no overdispersion correction is
+#'  applied.
+#' If overdispersion correction is applied, the function automatically switches 
+#' to the 
+#' F-test. The Chisq-test can be manually chosen in this case as well, but the 
+#' F-test only 
+#' works with overdispersion correction switched on.
+#' 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylBaseDB} objects, as they are read in chunk by chunk to enable 
+#' processing large-sized objects which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most systems. 
+#' If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for 
+#' methylDB objects as \code{methylBaseDB}, 
+#' while being per default FALSE for \code{methylBase}. 
+#' If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
+#' 
 #' @references Altuna Akalin, Matthias Kormaksson, Sheng Li,
 #'             Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, 
 #'             Christopher E. Mason. (2012). 
 #'             "methylKit: A comprehensive R package for the analysis 
 #'             of genome-wide DNA methylation profiles." Genome Biology. 
+#'             
+#'             McCullagh and Nelder. (1989). Generalized Linear Models. Chapman
+#'             and Hall. London New York.
 #' @seealso \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
+#'          \code{\link[methylKit]{dataSim}}
 #' 
 #' @export
 #' @docType methods
-#' @rdname calculateDiffMeth-methods
-setGeneric("calculateDiffMeth", function(.Object,slim=TRUE,weighted.mean=TRUE,
-                              num.cores=1) standardGeneric("calculateDiffMeth"))
-
 #' @aliases calculateDiffMeth,methylBase-method
 #' @rdname calculateDiffMeth-methods
+
+setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
+                                         overdispersion=c("none","MN","shrinkMN"),
+                                         adjust=c("SLIM","holm","hochberg","hommel",
+                                                  "bonferroni","BH","BY","fdr",
+                                                  "none","qvalue"),
+                                         effect=c("wmean","mean","predicted"),
+                                         parShrinkMN=list(),
+                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,
+                                         weighted.mean=TRUE,
+                                         chunk.size=1e6,save.db=FALSE,...) 
+  standardGeneric("calculateDiffMeth"))
+
 setMethod("calculateDiffMeth", "methylBase",
-                    function(.Object,slim,weighted.mean,num.cores){
-    
-    #get CpGs with the cutoff
-    #inds=rowSums( S3Part(.Object)[,.Object@coverage.index]>=coverage.cutoff) == length(.Object@coverage.index,na.rm=TRUE)
-    #subst=S3Part(.Object)[inds,]
-    subst=S3Part(.Object,strictS3 = TRUE)
-    
-    if(length(.Object@treatment)<2 ){
-      stop("can not do differential methylation calculation with less than two samples")
-    }
-    if(length(unique(.Object@treatment))<2 ){
-      stop("can not do differential methylation calculation when there is no control\n
-           treatment option should have 0 and 1 designating treatment and control samples")
-    }
-    
-    if(length(unique(.Object@treatment))>2 ){
-      stop("can not do differential methylation calculation when there are more than\n
-           two groups, treatment vector indicates more than two groups")
-    }
-       
-       
-    # get the indices for numCs and numTs in each set
-    set1.Cs=.Object@numCs.index[.Object@treatment==1]
-    set2.Cs=.Object@numCs.index[.Object@treatment==0]
-    set1.Ts=.Object@numTs.index[.Object@treatment==1]
-    set2.Ts=.Object@numTs.index[.Object@treatment==0]
-  
-    # if one control, one treatment case to the fisher's exact test
-    if(length(.Object@treatment)==2 )
-    {
-      if(num.cores>1){
-        my.f.list=split(as.matrix(subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)]),1:nrow(subst))
-        f.fisher=function(x){ fast.fisher(matrix( x ,ncol=2,byrow=T),conf.int = F)$p.value }
-        pvals    = unlist( parallel::mclapply( my.f.list ,f.fisher, mc.cores=num.cores) ) # apply fisher test
-        #pvals    =mc.fish(my.f.list,num.cores)
-  
-      }else{
-        pvals =apply( subst[,c(set1.Cs,set1.Ts,set2.Cs,set2.Ts)],1,function(x) fast.fisher(matrix(as.numeric(x),ncol=2,byrow=T),conf.int = F)$p.value ) # apply fisher test
-      }
-      pvals    = fix.q.values.fisher(pvals,slim=slim)   
-      
-      # calculate mean methylation change
-      mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
-      mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
-      mom.mean.diff=mom.meth1-mom.meth2 # get difference between percent methylations
-      x=data.frame(subst[,1:4],pvals,meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
-      obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-          treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-      obj
-    }
-    else # else do the GLM - logistic regression
-    { 
-                              
-        # pvalues
-        if(num.cores>1){
-          #pvals  = glm.set.mc(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
-          pvals  = glm.set.mc.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts,num.cores)
-  
-        }else{
-          #pvals  = glm.set(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
-          pvals  = glm.set.v1(subst,set1.Cs,set2.Cs,set1.Ts,set2.Ts) # get p-values
+          function(.Object,covariates,overdispersion,
+                   adjust,effect,parShrinkMN,
+                   test,mc.cores,slim,weighted.mean,save.db=FALSE,...){
+            
+            # extract data.frame from methylBase
+            subst=S3Part(.Object,strictS3 = TRUE)        
+            
+            if(length(.Object@treatment)<2 ){
+              stop("can not do differential methylation calculation with less ",
+                   "than two samples")
+            }
+            
+            if(length(unique(.Object@treatment))<2 ){
+              stop("can not do differential methylation calculation when there ",
+                   "is no control\n",
+                   "treatment option should have 0 and 1 designating treatment ",
+                    "and control samples")
+            }
+            
+            if(length(unique(.Object@treatment))>2 ){
+              stop("can not do differential methylation calculation when there ",
+                   "are more than\n
+                   two groups, treatment vector indicates more than two groups")
+            }
+            
+            # add backwards compatibility with old parameters
+            if(slim==FALSE) adjust="BH" else adjust=adjust
+            if(weighted.mean==FALSE) effect="mean" else effect=effect
+            
+            vars <- covariates
+            
+            # get C and T cols from methylBase data.frame-part
+            Tcols=seq(7,ncol(subst),by=3)
+            Ccols=Tcols-1
+            
+            #### check if covariates+intercept+treatment more than replicates 
+            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){
+              stop("Too many covariates/too few replicates.")}}
+            
+            # get count matrix and make list
+            cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
+            
+            # call estimate shrinkage before logReg
+            if(overdispersion[1] == "shrinkMN"){
+              parShrinkMN<-estimateShrinkageMN(cntlist,
+                                               treatment=.Object@treatment,
+                                               covariates=vars,
+                                               sample.size=100000,
+                                               mc.cores=mc.cores)
+            }
+            
+            # get the result of tests
+            tmp=simplify2array(
+              mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,
+                       overdispersion=overdispersion,effect=effect,
+                       parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+            
+            # return the data frame part of methylDiff
+            tmp <- as.data.frame(t(tmp))
+            x=data.frame(subst[,1:4],tmp$p.value,
+                         p.adjusted(tmp$q.value,method=adjust),
+                         meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+            colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+            
+            if(!save.db) {
+              obj=new("methylDiff",x,sample.ids=.Object@sample.ids,
+                      assembly=.Object@assembly,context=.Object@context,
+                      destranded=.Object@destranded,treatment=.Object@treatment,
+                      resolution=.Object@resolution)
+              obj
+            } else {
+              
+              # catch additional args 
+              args <- list(...)
+              
+              if( !( "dbdir" %in% names(args)) ){
+                dbdir <- .check.dbdir(getwd())
+              } else { dbdir <- .check.dbdir(args$dbdir) }
+              #                         if(!( "dbtype" %in% names(args) ) ){
+              #                           dbtype <- "tabix"
+              #                         } else { dbtype <- args$dbtype }
+              if(!( "suffix" %in% names(args) ) ){
+                suffix <- "_diffMeth"
+              } else { 
+                suffix <- paste0("_",args$suffix)
+              }
+              
+              # create methylDiffDB
+              makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
+                               sample.ids=.Object@sample.ids,
+                               assembly=.Object@assembly,context=.Object@context,
+                               destranded=.Object@destranded,
+                               treatment=.Object@treatment,
+                               resolution=.Object@resolution,suffix=suffix )
+            }
+
         }
-  
-        # get qvalues
-        pvals  = fix.q.values.glm(pvals,slim=slim)   
-        
-        # calculate mean methylation change
-        if(length(set1.Cs) > 1){
-          mom.meth1=100*rowMeans(subst[,set1.Cs]/subst[,set1.Cs-1],na.rm=TRUE) # get means of means
-          pm.meth1=100*rowSums(subst[,set1.Cs],na.rm=TRUE)/rowSums(subst[,set1.Cs-1],na.rm=TRUE) # get weigthed means
-        }else{
-          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
-          pm.meth1     = mom.meth1
-        }
-  
-        if(length(set2.Cs)>1){
-          mom.meth2=100*rowMeans(subst[,set2.Cs]/subst[,set2.Cs-1],na.rm=TRUE)
-          pm.meth2=100*rowSums(subst[,set2.Cs],na.rm=TRUE)/rowSums(subst[,set2.Cs-1],na.rm=TRUE) # get weigthed means
-        }else{
-          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1]) # get % methylation
-          pm.meth2     = mom.meth2
-        }
-        pm.mean.diff=pm.meth1-pm.meth2
-        mom.mean.diff=mom.meth1-mom.meth2
-        
-        if(weighted.mean){
-          x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=pm.mean.diff,stringsAsFactors=F) # make a data frame and return it
-          obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-          obj
-  
-        }
-        else{
-          x=data.frame(subst[,1:4],pvals[,3:4],meth.diff=mom.mean.diff,stringsAsFactors=F) # make a data frame and return it
-          obj=new("methylDiff",x,sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-            treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-          obj
-        }
-      
-    }
-  }    
 )
-
-
-# differential methylation summary
-# outputs a summary.methylDiff object
-# that shows:
-# total number of DMCs
-# total number of CpGs covered in given assays
-# total number of DMCs per Chromosome
-# total number CpGs covered per Chr
-#setGeneric(name="synopsis", def=function(.Object,difference=25,qvalue=0.01) standardGeneric("synopsis"))
-#setMethod(f="synopsis", signature="methylDiff", 
-#          definition=function(.Object,difference,qvalue) {
-#                    cat("hi")                         
-#})
-
-# a class that holds differential methylation information
-# 
-#setClass("synopsis.methylDiff",representation(
-#qvalue="numeric",
-#  difference="numeric",
-#  sample.ids = "character", 
-#  assembly = "character",
-#  treatment="numeric",
-#  destranded="logical"),contains="data.frame")
 
 
 
@@ -778,8 +708,8 @@ setMethod("show", "methylDiff", function(object) {
 #' @rdname getContext-methods
 #' @aliases getContext,methylDiff-method
 setMethod("getContext", signature="methylDiff", definition=function(x) {
-                return(x@context)
-        })
+  return(x@context)
+})
 
 
 #' @rdname getAssembly-methods
@@ -793,10 +723,49 @@ setMethod("getAssembly", signature="methylDiff", definition=function(x) {
 #' @rdname getData-methods
 #' @aliases getData,methylDiff-method
 setMethod(f="getData", signature="methylDiff", definition=function(x) {
-                #return(as(x,"data.frame"))
-                return(S3Part(x, strictS3 = TRUE))
-        }) 
+  #return(as(x,"data.frame"))
+  return(S3Part(x, strictS3 = TRUE))
+}) 
 
+
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylDiff-method
+setMethod("getTreatment", signature = "methylDiff", function(x) {
+  return(x@treatment)
+})
+
+#' @rdname getTreatment-methods
+#' @aliases getTreatment,methylDiff-method
+setReplaceMethod("getTreatment", signature = "methylDiff", function(x, value) {
+  
+  if(! ( length(x@treatment) == length(value) ) ){
+    stop("The new treatment vector is not valid, check the length of input")
+  } else {
+    x@treatment <- value
+    return(x)
+  }
+  
+})
+
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylDiff-method
+setMethod("getSampleID", signature = "methylDiff", function(x) {
+  return(x@sample.id)
+})
+
+#' @rdname getSampleID-methods
+#' @aliases getSampleID,methylDiff-method
+setReplaceMethod("getSampleID", signature = "methylDiff", function(x, value) {
+  
+  if(! ( length(value) == length(x@sample.ids) ) ){
+    stop("The vector of new sample ids is not valid, check the length of input")
+  } else {
+    x@sample.ids <- value
+    return(x)
+  }
+  
+})
 
 
 ##############################################################################
@@ -806,7 +775,8 @@ setMethod(f="getData", signature="methylDiff", definition=function(x) {
 setAs("methylDiff", "GRanges", function(from)
 {
   
-  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, end=from$end),
+  GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, 
+                                                         end=from$end),
           strand=from$strand, 
           qvalue=from$qvalue,
           meth.diff=from$meth.diff
@@ -835,9 +805,9 @@ setMethod("select", "methylDiff",
           }
 )
 
-
 #' @rdname extract-methods
-#' @aliases [,methylDiff-method
+# @aliases [,methylDiff-method
+#' @aliases extract,methylDiff-method
 setMethod("[","methylDiff", 
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
@@ -851,69 +821,181 @@ setMethod("[","methylDiff",
           }
 )
 
+#' @aliases selectByOverlap,methylDiff-method
+#' @rdname selectByOverlap-methods
+setMethod("selectByOverlap", "methylDiff",
+          function(object, ranges){
+            
+            if(missing(ranges) | class(ranges)!="GRanges") {
+              stop("No ranges specified or given ranges object not of class ",
+                   "GRanges, please check your input!")
+            }
+            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
+            
+            return(object[hits])
+          }
+)
 
 
-
-
-                      
 #' get differentially methylated regions/bases based on cutoffs 
 #' 
-#' The function subsets a \code{\link{methylDiff}} object in order to get 
+#' The function subsets a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} 
+#' object in order to get 
 #' differentially methylated bases/regions
 #' satisfying thresholds.
 #' 
-#' @param .Object  a \code{\link{methylDiff}} object
-#' @param difference  cutoff for absolute value of % methylation change between test and control (default:25)
-#' @param qvalue  cutoff for qvalue of differential methylation statistic (default:0.01) 
-#' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type of differentially menthylated bases/regions should be returned.
-#'              For retrieving Hyper-methylated regions/bases type="hyper", for hypo-methylated type="hypo" (default:"all") 
+#' @param .Object  a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object
+#' @param difference  cutoff for absolute value of methylation percentage change 
+#'                    between test and control (default:25)
+#' @param qvalue  cutoff for qvalue of differential methylation statistic 
+#'                (default:0.01) 
+#' @param type  one of the "hyper","hypo" or "all" strings. Specifies what type 
+#'              of differentially menthylated bases/regions should be returned.
+#'              For retrieving Hyper-methylated regions/bases type="hyper", 
+#'              for hypo-methylated type="hypo" (default:"all") 
+#' @param chunk.size Number of rows to be taken as a chunk for processing the 
+#'                   \code{methylDiffDB} objects (default: 1e6)
+#' @param save.db A Logical to decide whether the resulting object should be 
+#'                saved as flat file database or not, default: see Details  
+#' @param ... optional Arguments used when save.db is TRUE
+#'            
+#'            \code{suffix}
+#'                  A character string to append to the name of the output flat 
+#'                  file database, 
+#'                  only used if save.db is true, default actions: append 
+#'                  \dQuote{_filtered} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_filtered}
+#'                  
+#'            \code{dbdir} 
+#'                  The directory where flat file database(s) should be stored, 
+#'                  defaults
+#'                  to getwd(), working directory for newly stored databases
+#'                  and to same directory for already existing database
+#'                  
+#'            \code{dbtype}
+#'                 The type of the flat file database, currently only 
+#'                  option is "tabix"
+#'                  (only used for newly stored databases)
 #' 
-#' @return a methylDiff object containing the differential methylated locations satisfying the criteria 
+#' @return a methylDiff or methylDiffDB object containing the differential 
+#' methylated locations satisfying the criteria 
 #' 
-#' @usage get.methylDiff(.Object,difference=25,qvalue=0.01,type="all")
 #' @examples
 #' 
 #' data(methylKit)
 #' 
 #' # get differentially methylated bases/regions with specific cutoffs
-#' all.diff=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
+#' all.diff=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="all")
 #' 
 #' # get hyper-methylated
-#' hyper=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
+#' hyper=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
 #' 
 #' # get hypo-methylated
-#' hypo=get.methylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
+#' hypo=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 #' 
+#' @section Details:
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylDiffDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects 
+#' which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most 
+#' systems. If you encounter memory problems or 
+#' have a high amount of memory available feel free to adjust the \code{chunk.size}.
+#' 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as 
+#' \code{methylDiffDB}, 
+#' while being per default FALSE for \code{methylDiff}. If you wish to save 
+#' the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
+#' then you might want to change the value of this parameter.
 #'
 #' @export
 #' @docType methods
-#' @rdname get.methylDiff-methods
-setGeneric(name="get.methylDiff", def=function(.Object,difference=25,qvalue=0.01,type="all") standardGeneric("get.methylDiff"))
+#' @rdname getMethylDiff-methods
+setGeneric(name="getMethylDiff", def=function(.Object,difference=25,qvalue=0.01,
+                                               type="all",chunk.size=1e6,
+                                               save.db=FALSE,...) 
+  standardGeneric("getMethylDiff"))
 
-#' @aliases get.methylDiff,methylDiff-method
-#' @rdname get.methylDiff-methods
-setMethod(f="get.methylDiff", signature="methylDiff", 
-          definition=function(.Object,difference,qvalue,type) {
+#' @aliases getMethylDiff,methylDiff-method get.methylDiff
+#' @rdname getMethylDiff-methods
+setMethod(f="getMethylDiff", signature="methylDiff", 
+          definition=function(.Object,difference,qvalue,type,save.db=FALSE,...){
             
-                    if(type=="all"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                      return(new.obj)
-                    }else if(type=="hyper"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution)
-                      return(new.obj)
-                    }else if(type=="hypo"){
-                      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                              sample.ids=.Object@sample.ids,assembly=.Object@assembly,context=.Object@context,
-                              treatment=.Object@treatment,destranded=.Object@destranded,resolution=.Object@resolution) 
-                      return(new.obj)
-                    }else{
-                      stop("Wrong 'type' argument supplied for the function, it can be 'hypo', 'hyper' or 'all' ")
-                    }
-          }) 
+  if(!save.db) {
+  
+    if(type=="all"){
+      new.obj=new("methylDiff",
+                  .Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution)
+      return(new.obj)
+    }else if(type=="hyper"){
+      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution)
+      return(new.obj)
+    }else if(type=="hypo"){
+      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                  context=.Object@context,
+                  treatment=.Object@treatment,destranded=.Object@destranded,
+                  resolution=.Object@resolution) 
+      return(new.obj)
+    }else{
+      stop("Wrong 'type' argument supplied for the function, it can be ",
+           "'hypo', 'hyper' or 'all' ")
+    }
+  
+  } else {
+    
+    # catch additional args 
+    args <- list(...)
+    
+    if( !( "dbdir" %in% names(args)) ){
+      dbdir <- .check.dbdir(getwd())
+    } else { dbdir <- .check.dbdir(args$dbdir) }
+    #                         if(!( "dbtype" %in% names(args) ) ){
+    #                           dbtype <- "tabix"
+    #                         } else { dbtype <- args$dbtype }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- paste0("_",type)
+    } else { 
+      suffix <- paste0("_",args$suffix)
+    }
+    
+    # create methylBaseDB
+    if(type=="all"){
+      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else if(type=="hyper"){
+    new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else if(type=="hypo"){
+      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
+                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+    }else{
+      stop("Wrong 'type' argument supplied for the function, it can be ",
+           "'hypo', 'hyper' or 'all' ")
+    }
+    return(new.obj) 
+  }
+}) 
 
 ##############################################################################
 ## PLOTTING FUNCTIONS FOR methylDiff OBJECT
@@ -921,74 +1003,95 @@ setMethod(f="get.methylDiff", signature="methylDiff",
 
 #' Get and plot the number of hyper/hypo methylated regions/bases per chromosome
 #'
-#' This function gets number of  hyper/hypo methylated regions/bases from \code{\link{methylDiff}} object. 
+#' This function gets number of  hyper/hypo methylated regions/bases from 
+#' \code{\link{methylDiff}} object. 
 #' It can also plot percentages of differentially methylated bases per chromosome.
 #'
 #' @param x a \code{\link{methylDiff}}  object
-#' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of hypo/hyper methylated bases/regions
+#' @param plot TRUE|FALSE. If TRUE horizontal barplots for proportion of
+#'             hypo/hyper methylated bases/regions
 #' @param qvalue.cutoff  cutoff for q-value
 #' @param meth.cutoff cutoff for percent methylation difference
 #' @param exclude names of chromosomes to be excluded
-#' @param ... extra graphical parameters to be passed to \code{\link{barplot}} function
+#' @param ... extra graphical parameters to be passed to \code{\link{barplot}} 
+#'                  function
 #' 
-#' @return plots a piechart or a barplot for percentage of the target features overlapping with annotation
+#' @return plots a piechart or a barplot for percentage of the target 
+#' features overlapping with annotation
 #' 
-#' @usage diffMethPerChr(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...)
 #' @examples
 #' 
 #' data(methylKit)
 #'  
 #' # get a list of differentially methylated bases/regions per chromosome and overall
-#' diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL)
+#' diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01, 
+#'                meth.cutoff=25,exclude=NULL)
 #'
 #' @export
 #' @docType methods
 #' @rdname diffMethPerChr-methods
-setGeneric("diffMethPerChr", def=function(x,plot=T,qvalue.cutoff=0.01, meth.cutoff=25,exclude=NULL,...) standardGeneric("diffMethPerChr"))
+setGeneric("diffMethPerChr", def=function(x,plot=TRUE,qvalue.cutoff=0.01, 
+                                          meth.cutoff=25,exclude=NULL,...) 
+  standardGeneric("diffMethPerChr"))
 
 #' @aliases diffMethPerChr,methylDiff-method
 #' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiff"),
-                    function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
-                      x=getData(x)
-                      temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]
-                      temp.hypo =x[x$qvalue < qvalue.cutoff & x$meth.diff <= -meth.cutoff,]
-                      
-                      dmc.hyper=100*nrow(temp.hyper)/nrow(x) # get percentages of hypo/ hyper
-                      dmc.hypo =100*nrow(temp.hypo )/nrow(x)
-                      
-                      all.hyper.hypo=data.frame(percentage.of.hypermethylated=dmc.hyper,
-                                                number.of.hypermethylated=nrow(temp.hyper),
-                                                percentage.of.hypomethylated=dmc.hypo  ,
-                                                number.of.hypomethylated=nrow(temp.hypo))
-                      
-                      # plot barplot for percentage of DMCs per chr
-                      dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), as.data.frame(table(x$chr)),by="Var1")
-                      dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
-
-                      dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), as.data.frame(table(x$chr)),by="Var1")
-                      dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
-
-                      dmc.hypo.hyper=merge(dmc.hypo.chr[,c(1,2,4)],dmc.hyper.chr[,c(1,2,4)],by="Var1") # merge hyper hypo per chromosome
-                      dmc.hypo.hyper=dmc.hypo.hyper[order(as.numeric(sub("chr","",dmc.hypo.hyper$Var1))),] # order the chromosomes
-                      
-                      names(dmc.hypo.hyper)=c("chr","number.of.hypomethylated","percentage.of.hypomethylated","number.of.hypermethylated","percentage.of.hypermethylated")
-                      if(plot){
-                        
-                        if(!is.null(exclude)){dmc.hypo.hyper=dmc.hypo.hyper[! dmc.hypo.hyper$chr %in% exclude,]}
-                        
-                        barplot(
-                          t(as.matrix(data.frame(hyper=dmc.hypo.hyper[,5],hypo=dmc.hypo.hyper[,3],row.names=dmc.hypo.hyper[,1]) ))
-                          ,las=2,horiz=T,col=c("magenta","aquamarine4"),main=paste("% of hyper & hypo methylated regions per chromsome",sep=""),xlab="% (percentage)",...)
-                        mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",meth.cutoff," %",sep="") )
-                        legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
-                      }else{
-                        
-                        list(diffMeth.per.chr=dmc.hypo.hyper,diffMeth.all=all.hyper.hypo)
-                        
-                      }
-
-})
-
-
+          function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
+            x=getData(x)
+            temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]
+            temp.hypo =x[x$qvalue < qvalue.cutoff & x$meth.diff <= -meth.cutoff,]
+            
+            dmc.hyper=100*nrow(temp.hyper)/nrow(x) # get percentages of hypo/ hyper
+            dmc.hypo =100*nrow(temp.hypo )/nrow(x)
+            
+            all.hyper.hypo=data.frame(number.of.hypermethylated=nrow(temp.hyper),
+                                      percentage.of.hypermethylated=dmc.hyper,
+                                      number.of.hypomethylated=nrow(temp.hypo),
+                                      percentage.of.hypomethylated=dmc.hypo)
+            
+            # plot barplot for percentage of DMCs per chr
+            dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), 
+                                as.data.frame(table(x$chr)),by="Var1")
+            dmc.hyper.chr=cbind(dmc.hyper.chr,
+                                perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
+            
+            dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)),
+                               as.data.frame(table(x$chr)),by="Var1")
+            dmc.hypo.chr=cbind(dmc.hypo.chr,
+                               perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
+            
+            # merge hyper hypo per chromosome
+            dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],
+                                 dmc.hypo.chr[,c(1,2,4)],by="Var1") 
+            dmc.hyper.hypo=dmc.hyper.hypo[order(as.numeric(sub("chr","",dmc.hyper.hypo$Var1))),] # order the chromosomes
+            
+            names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
+                                    "percentage.of.hypermethylated",
+                                    "number.of.hypomethylated",
+                                    "percentage.of.hypomethylated")
+            if(plot){
+              
+              if(!is.null(exclude)){dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
+              
+              barplot(
+                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
+                                       hypo=dmc.hyper.hypo[,5],
+                                       row.names=dmc.hyper.hypo[,1]) ))
+                ,las=2,horiz=TRUE,col=c("magenta","aquamarine4"),
+                main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
+                xlab="% (percentage)",...)
+              mtext(side=3,paste("qvalue<",qvalue.cutoff,
+                                 " & methylation diff. >=",meth.cutoff,
+                                 " %",sep="") )
+              legend("topright",
+                     legend=c("hyper","hypo"),
+                     fill=c("magenta","aquamarine4"))
+            }else{
+              
+              list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
+              
+            }
+            
+          })
 

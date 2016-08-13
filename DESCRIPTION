@@ -2,41 +2,63 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 0.9.5
+Version: 0.99.2
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
-  	     email = "altuna.akalin@mdc-berlin.de"),
-	      person("Matthias","Kormaksson", role = "aut",comment="providing initial logistic regression based test function"),
-	      person("Sheng","Li", role = "aut",comment="providing initial clustering functions"))
+  	     email = "aakalin@gmail.com"),
+	      person("Matthias","Kormaksson", role = "aut"),
+	      person("Sheng","Li", role = "aut"),
+	      person("Arsene", "Wabo", role = "ctb"),
+	      person("Adrian", "Bierling", role= "aut"),
+	      person("Alexander","Gosdschan", role="aut"))
 Description: methylKit is an R package for DNA methylation analysis and
-  annotation from high-throughput bisulfite sequencing. The package is designed 
-  to deal with sequencing data from RRBS and its variants, but also target-capture 
-  methods and whole genome bisulfite sequencing. It also has functions to analyze 
-  base-pair resolution 5hmC data from experimental protocols such as oxBS-Seq 
-  and TAB-Seq. Perl is needed to read SAM files only.
+    annotation from high-throughput bisulfite sequencing. The package is
+    designed to deal with sequencing data from RRBS and its variants, but also
+    target-capture methods and whole genome bisulfite sequencing. It also has
+    functions to analyze base-pair resolution 5hmC data from experimental
+    protocols such as oxBS-Seq and TAB-Seq. Perl is needed to read SAM files
+    only.
 License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
-SystemRequirements:  Perl
-biocViews: DNAMethylation
+LinkingTo: Rcpp, Rhtslib, zlibbioc
+biocViews: DNAMethylation, Sequencing, MethylSeq
 Depends:
-    methods,
-    R (>= 2.15.0)
-Imports:
+    R (>= 3.3.0),
     GenomicRanges (>= 1.18.1),
+    methods
+Imports:
     IRanges,
-    data.table (>= 1.9.2),
+    data.table (>= 1.9.6),
     parallel,
     S4Vectors,
-    GenomeInfoDb
+    GenomeInfoDb,
+    KernSmooth,
+    qvalue,
+    emdbook,
+    Rsamtools,
+    gtools,
+    fastseg,
+    rtracklayer,
+    mclust,
+    Rcpp,
+    R.utils,
+    limma, 
+    grDevices, 
+    graphics, 
+    stats, 
+    utils
 Suggests:
-    testthat
+    testthat,knitr, rmarkdown
+VignetteBuilder: knitr
 Collate:
+    'methylKit.R'
     'backbone.R'
     'diffMeth.R'
     'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
-    'read.bismark.R'
+    'processBismarkAln.R'
+    'RcppExports.R'
     'document_data.R'
     'bedgraph.R'
     'reorganize.R'
@@ -46,3 +68,16 @@ Collate:
     'adjust.methylC.R'
     'updateMethObject.R'
     'batchControl.R'
+    'dataSim.R'
+    'methylDBClasses.R'
+    'methylDBFunctions.R'
+    'tabix.functions.R'
+    'methSeg.R'
+    'diffMethDSS.R'
+    'deprecated_defunct.R'
+RoxygenNote: 5.0.1
+NeedsCompilation: yes
+Author: Altuna Akalin [aut, cre], Matthias Kormaksson [aut], Sheng Li
+        [aut], Arsene Wabo [ctb], Adrian Bierling [aut], Alexander
+        Gosdschan [aut]
+Maintainer: Altuna Akalin <aakalin@gmail.com>

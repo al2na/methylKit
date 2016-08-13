@@ -1,4 +1,21 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-## Ignore travis config fileq
 ^\.travis\.yml$
+^methylDB */
+^man/applyTbxByChr\.Rd$
+^man/applyTbxByChunk\.Rd$
+^man/applyTbxByOverlap\.Rd$
+^man/catsub2tabix\.Rd$
+^man/df2tabix\.Rd$
+^man/tabix2gr\.Rd$
+^man/tabix2dt\.Rd$
+^man/tabix2df\.Rd$
+^man/getTabixByChr\.Rd$
+^man/getTabixByChunk\.Rd$
+^man/getTabixByOverlap\.Rd$
+^man/headTabix\.Rd$
+^man/makeMethTabix\.Rd$
+^man/mergeTabix\.Rd$
+^man/mergeTbxByChr\.Rd$
+^\.travis\.c\.yml$
+^\.travis\.r\.yml$
