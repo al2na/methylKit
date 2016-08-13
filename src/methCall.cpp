@@ -778,11 +778,16 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     // this link provides some explanations in the definitions
     // https://github.com/samtools/htslib/blob/develop/htslib/sam.h
 
-  int32_t pos = b->core.pos,        // mapping pos aka start 
+  int32_t pos = b->core.pos,        // 0-based leftmost coordinate 
           len = b->core.l_qseq,     // length of query
           chrom = b->core.tid,      // chromosome id defined by bam_hdr_t, might differ from original names. Compare with ordering header in header!
           mtid = b ->core.mtid,     // chromosome id of next read in template
           mposi = b->core.mpos;     // 0-based leftmost coordinate of next read in template
+  
+  // change pos and mposi to 1-based coordinates to get same results as for sam input  
+  pos = pos + 1; 
+  mposi = mposi + 1;
+    
   
   uint32_t *cigar_pointer = bam_get_cigar(b), // pointer to cigar array
           len_cigar = b->core.n_cigar;        // number of cigar operations
