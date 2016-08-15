@@ -1,3 +1,10 @@
+methylKit 0.99.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* Fixed a bug in processBismark() C++ function where BAM files are should be treated as 0-based.
+  Now  this is fixed.
+
+
 methylKit 0.99.2
 --------------
 IMPROVEMENTS AND BUG FIXES
