@@ -71,8 +71,9 @@ setMethod("calculateDiffMethDSS", "methylBase",
       #raw_output$id=ids
       #raw_output=raw_output[ with(raw_output, order(chr, pos) ), ]
       raw_output$strand=getData(meth)$strand
+      raw_output$end=getData(meth)$end
       
-      output=raw_output[, c('chr', 'pos', 'pos', 'strand', 'pval',
+      output=raw_output[, c('chr', 'pos', 'end', 'strand', 'pval',
                             'fdr', 'diff')]
       output$diff=-100*(output$diff) # change the direction similar to methylKit
       colnames(output)=c('chr', 'start', 'end', 'strand', 'pvalue',
