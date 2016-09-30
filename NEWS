@@ -3,7 +3,7 @@ methylKit 0.99.3
 IMPROVEMENTS AND BUG FIXES
 * Fixed a bug in processBismark() C++ function where BAM files are should be treated as 0-based.
   Now  this is fixed.
-
+* Bug in calculateDiffMethDSS is fixed (https://github.com/al2na/methylKit/issues/49)
 
 methylKit 0.99.2
 --------------
