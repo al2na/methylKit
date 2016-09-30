@@ -50,43 +50,57 @@ get.methylDiff<-function(...){
   getMethylDiff(...)
 }
 
+
+#' Deprecated/Defunct functions
+#' 
+#' These are deprecated or defunct functions. Most of them 
+#' are replaced by genomation functions.
+#' 
+#' @docType methods
+#' @aliases annotate.WithFeature
+#' @rdname genomation-deprecated
 #' @export
-annotate.WithFeature<-function(...){
-  .Deprecated("annotateWithFeature")
-  annotateWithFeature(...)
-}
+annotate.WithFeature<-function(){
+  .Deprecated("genomation::annotateWithFeature")
+  message("Use functions in genomation package from Bioconductor\n",
+          "See vignette for examples.")}
 
+#' @rdname  genomation-deprecated
 #' @export
-annotate.WithFeature.Flank<-function(...){
-  .Deprecated("annotateWithFeatureFlank")
-  annotateWithFeatureFlank(...)
-}
-
-
-#' @export
-annotate.WithGenicParts<-function(...){
-  .Deprecated("annotateWithGenicParts")
-  annotateWithGenicParts(...)
-}
-
-
-#' @export
-read.bed<-function(...){
-  .Deprecated("readBed")
-  readBed(...)
-}
-
-#' @export
-read.feature.flank<-function(...){
-  .Deprecated("readFeatureFlank")
-  readFeatureFlank(...)
+annotate.WithFeature.Flank<-function(){
+  .Deprecated("genomation::annotateWithFeatureFlank")
+  message("Use functions in genomation package from Bioconductor\n",
+          "See vignette for examples.")
 }
 
 
+#' @rdname genomation-deprecated
 #' @export
-read.transcript.features<-function(...){
-  .Deprecated("readTranscriptFeatures")
-  readTranscriptFeatures(...)
+annotate.WithGenicParts<-function(){
+  .Deprecated("genomation::annotateWithGeneParts")
+  message("Use functions in genomation package from Bioconductor")
 }
+
+
+#' @rdname genomation-deprecated
+#' @export
+read.bed<-function(){
+  .Deprecated("genomation::readBed")
+  message("Use functions in genomation package from Bioconductor\n",
+          "See vignette for examples.")}
+
+#' @rdname genomation-deprecated
+#' @export
+read.feature.flank<-function(){
+  .Deprecated("genomation::readFeatureFlank")
+  message("Use functions in genomation package from Bioconductor\n",
+          "See vignette for examples.")}
+
+#' @rdname genomation-deprecated
+#' @export
+read.transcript.features<-function(){
+  .Deprecated("genomation::readTranscriptFeatures")
+  message("Use functions in genomation package from Bioconductor\n",
+          "See vignette for examples.")}
 
 

@@ -48,13 +48,12 @@ Imports:
     stats, 
     utils
 Suggests:
-    testthat,knitr, rmarkdown
+    testthat,knitr, rmarkdown, genomation
 VignetteBuilder: knitr
 Collate:
     'methylKit.R'
     'backbone.R'
     'diffMeth.R'
-    'annotate.R'
     'clusterSamples.R'
     'regionalize.R'
     'processBismarkAln.R'
