@@ -1,8 +1,12 @@
 methylKit 0.99.4
 --------------
 IMPROVEMENTS AND BUG FIXES
-* all annotation functions are now removed and are available through genomation
-  packages. See the vignette for examples.
+* all annotation functions are now removed and are available    
+  through genomation package. See the vignette for examples. Most
+  functions have similar names and functionality in genomation. 
+  The users need to convert methylKit objects to GRanges using 
+  as(methylKit.obj,"GRanges") before they can use genomation 
+  functions.
 
 
 methylKit 0.99.3
