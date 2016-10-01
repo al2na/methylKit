@@ -1,3 +1,10 @@
+methylKit 0.99.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+* all annotation functions are now removed and are available through genomation
+  packages. See the vignette for examples.
+
+
 methylKit 0.99.3
 --------------
 IMPROVEMENTS AND BUG FIXES
