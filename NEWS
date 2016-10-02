@@ -1,3 +1,24 @@
+<<<<<<< HEAD
+=======
+methylKit 0.99.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+* all annotation functions are now removed and are available    
+  through genomation package. See the vignette for examples. Most
+  functions have similar names and functionality in genomation. 
+  The users need to convert methylKit objects to GRanges using 
+  as(methylKit.obj,"GRanges") before they can use genomation 
+  functions.
+
+
+methylKit 0.99.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* Fixed a bug in processBismark() C++ function where BAM files are should be treated as 0-based.
+  Now  this is fixed.
+* Bug in calculateDiffMethDSS is fixed (https://github.com/al2na/methylKit/issues/49)
+
+>>>>>>> master
 methylKit 0.99.2
 --------------
 IMPROVEMENTS AND BUG FIXES

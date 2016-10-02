@@ -503,15 +503,19 @@ myDiff=calculateDiffMeth(meth,num.cores=2)
 
 # Annotating differentially methylated bases or regions
 
-We can annotate our differentially methylated regions/bases based on gene annotation. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using `GenomicFeatures` package available from Bioconductor.org.
+We can annotate our differentially methylated regions/bases based on gene annotation using [genomation](https://bioconductor.org/packages/release/bioc/html/genomation.html) pacakge. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information using genomation functions. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using `GenomicFeatures` package available from Bioconductor.org.
 
 ```{r}
+library(genomation)
+
+# read the gene BED file
 gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", 
                                            package = "methylKit"))
 #
-# annotate differentially methylated Cs with promoter/exon/intron using annotation data
+# annotate differentially methylated CpGs with 
+# promoter/exon/intron using annotation data
 #
-annotateWithGenicParts(myDiff25p,gene.obj)
+annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
 ```
 
 Similarly, we can read the CpG island annotation and annotate our differentially methylated bases/regions with them.
@@ -523,14 +527,16 @@ cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt",
                                         package = "methylKit"),
                            feature.flank.name=c("CpGi","shores"))
 #
-#
-diffCpGann=annotateWithFeatureFlank(myDiff25p,cpg.obj$CpGi,cpg.obj$shores,
-                                      feature.name="CpGi",flank.name="shores")
+# convert methylDiff object to GRanges and annotate
+diffCpGann=annotateWithFeatureFlank(as(myDiff25p,"GRanges"),
+                                    cpg.obj$CpGi,cpg.obj$shores,
+                         feature.name="CpGi",flank.name="shores")
 ```
 
 ## Regional analysis
 
-We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a `methylRaw` or `methylRawList` object depending on the input.
+We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a `methylRaw` or `methylRawList` object depending on the input. We are using the output of 
+genomation functions used above to provide the locations of promoters.
 
 ```{r}
 promoters=regionCounts(myobj,gene.obj$promoters)
@@ -540,10 +546,10 @@ head(promoters[[1]])
 
 ## Convenience functions for annotation objects
 
-After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the `getAssociationWithTSS` function.
+After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the `getAssociationWithTSS` function from genomation package.
 
 ```{r,}
-diffAnn=annotateWithGenicParts(myDiff25p,gene.obj)
+diffAnn=annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
 
 # target.row is the row number in myDiff25p
 head(getAssociationWithTSS(diffAnn))
