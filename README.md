@@ -185,10 +185,11 @@ myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 # read-in transcript locations to be used in annotation
 # IMPORTANT: annotation files that come with the package (version >=0.5) are a subset of full annotation
 # files. Download appropriate annotation files from UCSC (or other sources) in BED format
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+library(genomation) # install from BioC
+gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
 
 # annotate differentially methylated Cs with promoter/exon/intron using annotation data
-annotate.WithGenicParts(myDiff25p,gene.obj)
+annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
 ```
 
 SEE PACKAGE VIGNETTE and TUTORIAL (both hyper-linked above) FOR MORE

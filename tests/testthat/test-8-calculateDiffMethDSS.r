@@ -19,9 +19,6 @@ methidh2=unite(myobj,min.per.group=1L)
 myDiff =calculateDiffMethDSS(methidh)
 myDiff2=calculateDiffMethDSS(methidh2)
 
-# load annotation
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
 myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 
@@ -50,13 +47,3 @@ test_that("check getting hypo/hyper meth works", {
         is_a('methylDiff'))
 })
 
-test_that("annotate.WithGenicParts", {
-    expect_that(annotate.WithGenicParts(myDiff,gene.obj),
-        is_a('annotationByGenicParts'))
-})
-
-
-test_that("annotate.WithGenicParts", {
-    expect_that(annotate.WithFeature.Flank(myDiff,cpg.obj$CpGi,cpg.obj$shores),
-        is_a('annotationByFeature'))
-})
