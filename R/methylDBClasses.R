@@ -947,9 +947,9 @@ setMethod("select", "methylDiffDB",
 )
 
 
-# @aliases [,methylRawDB-method
+#' @aliases [,methylRawDB,ANY,ANY,ANY-method
 #' @rdname extract-methods
-#' @aliases extract,methylRawDB-method
+#' @aliases extract,methylRawDB,ANY-method
 setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),  
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))
@@ -963,8 +963,8 @@ setMethod("[", signature(x="methylRawDB", i = "ANY", j="ANY"),
           }
 )
 
-# @aliases [,methylBaseDB-method
-#' @aliases extract,methylBaseDB-method
+#' @aliases [,methylBaseDB,ANY,ANY,ANY-method
+#' @aliases extract,methylBaseDB,ANY-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"), 
           function(x,i,j){
@@ -980,8 +980,8 @@ setMethod("[",signature(x="methylBaseDB", i = "ANY", j="ANY"),
 )
 
 #' @rdname extract-methods
-#' @aliases extract,methylDiffDB-method
-# @aliases [,methylDiffDB-method
+#' @aliases [,methylDiffDB,ANY,ANY,ANY-method
+#' @aliases extract,methylDiffDB,ANY-method
 setMethod("[",signature(x="methylDiffDB", i="ANY", j="ANY"),
           function(x,i,j){
             #cat(missing(i),"\n",missing(j),"\n",missing(drop))

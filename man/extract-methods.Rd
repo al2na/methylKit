@@ -2,19 +2,19 @@
 % Please edit documentation in R/backbone.R, R/diffMeth.R, R/methylDBClasses.R
 \docType{methods}
 \name{extract}
+\alias{[,methylBase,ANY,ANY,ANY-method}
 \alias{[,methylBase,ANY,ANY-method}
+\alias{[,methylBaseDB,ANY,ANY,ANY-method}
 \alias{[,methylBaseDB,ANY,ANY-method}
+\alias{[,methylDiff,ANY,ANY,ANY-method}
 \alias{[,methylDiff,ANY,ANY-method}
+\alias{[,methylDiffDB,ANY,ANY,ANY-method}
 \alias{[,methylDiffDB,ANY,ANY-method}
+\alias{[,methylRaw,ANY,ANY,ANY-method}
 \alias{[,methylRaw,ANY,ANY-method}
+\alias{[,methylRawDB,ANY,ANY,ANY-method}
 \alias{[,methylRawDB,ANY,ANY-method}
 \alias{extract}
-\alias{extract,methylBase-method}
-\alias{extract,methylBaseDB-method}
-\alias{extract,methylDiff-method}
-\alias{extract,methylDiffDB-method}
-\alias{extract,methylRaw-method}
-\alias{extract,methylRawDB-method}
 \title{extract parts of methylRaw,methylRawDB,methylBase,methylBaseDB and methylDiff data}
 \usage{
 \S4method{[}{methylRaw,ANY,ANY}(x, i, j)
