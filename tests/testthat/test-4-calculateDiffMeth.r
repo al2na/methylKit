@@ -1,5 +1,5 @@
 library("methylKit")
-context("calculateDiffMeth and annotate.WithGenicPart checks")
+context("calculateDiffMeth checks")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
@@ -34,10 +34,6 @@ hyper <- get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 suppressMessages(hypoDB <- get.methylDiff(myDiffDB,difference=25,qvalue=0.01,type="hypo"))
 suppressMessages(hyperDB <- get.methylDiff(myDiffDB,difference=25,qvalue=0.01,type="hyper"))
 
-
-# load annotation
-gene.obj=read.transcript.features(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-cpg.obj=read.feature.flank(system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),feature.flank.name=c("CpGi","shores"))
 
 myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 suppressMessages(mydblist2 <- reorganize(mydblist,sample.ids=c("t1","c2"),treatment=c(1,0) ))
@@ -80,23 +76,3 @@ test_that("check getting hypo/hyper meth works with methylDiffDB", {
 })
 
 
-test_that("annotate.WithGenicParts with methylDiff", {
-    expect_is(annotate.WithGenicParts(myDiff,gene.obj),
-        'annotationByGenicParts')
-})
-
-test_that("annotate.WithGenicParts with methylDiffDB", {
-  expect_is(annotate.WithGenicParts(myDiffDB,gene.obj),
-            'annotationByGenicParts')
-})
-
-
-test_that("annotate.WithGenicParts with methylDiff", {
-    expect_is(annotate.WithFeature.Flank(myDiff,cpg.obj$CpGi,cpg.obj$shores),
-        'annotationByFeature')
-})
-
-test_that("annotate.WithGenicParts with methylDiffDB", {
-  expect_is(annotate.WithFeature.Flank(myDiffDB,cpg.obj$CpGi,cpg.obj$shores),
-            'annotationByFeature')
-})

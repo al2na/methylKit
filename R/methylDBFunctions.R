@@ -1481,33 +1481,6 @@ if(plot){
             
 })
 
-#' @aliases annotateWithGenicParts,methylDiffDB,GRangesList-method
-#' @rdname annotateWithGenicParts-methods
-setMethod("annotateWithGenicParts", 
-          signature(target = "methylDiffDB",GRangesList.obj="GRangesList"),
-          function(target,GRangesList.obj,strand){
-            gr=as(target,"GRanges")
-            annotateWithGenicParts(gr,GRangesList.obj,strand)
-          })
-
-#' @aliases annotateWithFeatureFlank,methylDiffDB,GRanges,GRanges-method
-#' @rdname annotateWithFeatureFlank-methods
-setMethod("annotateWithFeatureFlank", 
-          signature(target= "methylDiffDB",
-                                                feature="GRanges",flank="GRanges"),
-          function(target, feature, flank,feature.name,flank.name,strand){
-  gr=as(target,"GRanges")
-  annotateWithFeatureFlank(gr,feature, flank,feature.name,flank.name,strand)
-})
-
-#' @aliases annotateWithFeature,methylDiffDB,GRanges-method
-#' @rdname annotateWithFeature-methods
-setMethod("annotateWithFeature", signature(target = "methylDiffDB",feature="GRanges"),
-          function(target, feature, strand,extend,feature.name){                      
-            gr=as(target,"GRanges")
-            annotateWithFeature(gr, feature, strand,extend,feature.name)
-          })
-
 # Regionalize methods ----------------------------------------------------
 
 #' @rdname regionCounts
