@@ -148,7 +148,7 @@ call them  **methylDB** objects.
 
 We can now create a `methylRawListDB` object, which stores the same content as *myobj* from above. But the single `methylRaw` objects retrieve their data from the tabix-file linked under `dbpath`. 
 
-```{r, message=FALSE}
+```{r, message=FALSE,warning=FALSE}
 library(methylKit)
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
@@ -503,7 +503,14 @@ myDiff=calculateDiffMeth(meth,num.cores=2)
 
 # Annotating differentially methylated bases or regions
 
-We can annotate our differentially methylated regions/bases based on gene annotation using [genomation](https://bioconductor.org/packages/release/bioc/html/genomation.html) pacakge. In this example, we read the gene annotation from a bed file and annotate our differentially methylated regions with that information using genomation functions. This will tell us what percentage of our differentially methylated regions are on promoters/introns/exons/intergenic region. Similar gene annotation can be fetched using `GenomicFeatures` package available from Bioconductor.org.
+We can annotate our differentially methylated regions/bases based on gene annotation using [genomation](https://bioconductor.org/packages/release/bioc/html/genomation.html) package. In this example, we read the gene annotation from a BED file and annotate our differentially methylated regions with that information using genomation functions. Note that these functions operate on `GRanges` objects
+,so we first coerce methylKit objects to GRanges. This annotation
+operation will tell us what percentage of our differentially 
+methylated regions are on promoters/introns/exons/intergenic 
+region. In this case we read annotation from a BED file, similar 
+gene annotation information can be fetched using 
+`GenomicFeatures` package or other packages available from 
+Bioconductor.org.
 
 ```{r}
 library(genomation)
@@ -536,7 +543,8 @@ diffCpGann=annotateWithFeatureFlank(as(myDiff25p,"GRanges"),
 ## Regional analysis
 
 We can also summarize methylation information over a set of defined regions such as promoters or CpG islands. The function below summarizes the methylation information over a given set of promoter regions and outputs a `methylRaw` or `methylRawList` object depending on the input. We are using the output of 
-genomation functions used above to provide the locations of promoters.
+genomation functions used above to provide the locations of promoters. For regional summary  functions, we need to 
+provide regions of interest as GRanges object.
 
 ```{r}
 promoters=regionCounts(myobj,gene.obj$promoters)
@@ -724,13 +732,13 @@ Currently, we will be able to tell you if your regions/bases overlap with the ge
 
 ### How can I find the nearest TSS associated with my CpGs ?
 
-See `?getAssociationWithTSS`
+See `?genomation::getAssociationWithTSS`
 
 ### How do you define promoters and CpG island shores ? 
 
-Promoters are defined by options at `readTranscriptFeatures` function. 
+Promoters are defined by options at `genomation::readTranscriptFeatures` function. 
 The default option is to take -1000,+1000bp around the TSS and you can change that. 
-Same goes for CpG islands when reading them in via `readFeatureFlank` function. 
+Same goes for CpG islands when reading them in via `genomation::readFeatureFlank` function. 
 Default is to take 2000bp flanking regions on each side of the CpG island as shores. 
 But you can change that as well.
 
