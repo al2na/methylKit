@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 methylKit 0.99.4
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -21,11 +16,7 @@ IMPROVEMENTS AND BUG FIXES
   Now  this is fixed.
 * Bug in calculateDiffMethDSS is fixed (https://github.com/al2na/methylKit/issues/49)
 
-<<<<<<< HEAD
->>>>>>> master
-=======
 
->>>>>>> master
 methylKit 0.99.2
 --------------
 IMPROVEMENTS AND BUG FIXES
