@@ -9,12 +9,12 @@
 \alias{[,methylRaw,ANY,ANY-method}
 \alias{[,methylRawDB,ANY,ANY-method}
 \alias{extract}
-\alias{extract,methylBase-method}
-\alias{extract,methylBaseDB-method}
-\alias{extract,methylDiff-method}
-\alias{extract,methylDiffDB-method}
-\alias{extract,methylRaw-method}
-\alias{extract,methylRawDB-method}
+\alias{extract,methylBase,ANY-method}
+\alias{extract,methylBaseDB,ANY-method}
+\alias{extract,methylDiff,ANY-method}
+\alias{extract,methylDiffDB,ANY-method}
+\alias{extract,methylRaw,ANY-method}
+\alias{extract,methylRawDB,ANY-method}
 \title{extract parts of methylRaw,methylRawDB,methylBase,methylBaseDB and methylDiff data}
 \usage{
 \S4method{[}{methylRaw,ANY,ANY}(x, i, j)
