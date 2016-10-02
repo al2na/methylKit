@@ -1995,7 +1995,7 @@ setMethod("select", "methylRaw",
 #' @rdname extract-methods
 NULL
 
-# @aliases [,methylRaw-method
+#' @aliases [,methylRaw,ANY,ANY,ANY-method
 #' @aliases extract,methylRaw,ANY-method
 #' @rdname extract-methods
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
@@ -2011,7 +2011,7 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
           }
               )
 
-# @aliases [,methylBase-method
+#' @aliases [,methylBase,ANY,ANY,ANY-method
 #' @aliases extract,methylBase,ANY-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
