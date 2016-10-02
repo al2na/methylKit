@@ -1996,7 +1996,7 @@ setMethod("select", "methylRaw",
 NULL
 
 # @aliases [,methylRaw-method
-#' @aliases extract,methylRaw-method
+#' @aliases extract,methylRaw,ANY-method
 #' @rdname extract-methods
 setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),  
           function(x,i,j){
@@ -2012,7 +2012,7 @@ setMethod("[", signature(x="methylRaw", i = "ANY", j="ANY"),
               )
 
 # @aliases [,methylBase-method
-#' @aliases extract,methylBase-method
+#' @aliases extract,methylBase,ANY-method
 #' @rdname extract-methods
 setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"), 
           function(x,i,j){
