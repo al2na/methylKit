@@ -617,8 +617,9 @@ setClass("methylDiff",representation(
 #'  
 #' # After applying the pool() function, there is one sample in each group.
 #' # The Fisher's exact test will be applied for differential methylation.
-#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,overdispersion=c("none"),
-#'                                adjust=c("SLIM"),effect=c("wmean"),test=c("F"))
+#' my.diffMeth2=calculateDiffMeth(pooled.methylBase,covariates=NULL,
+#'                                overdispersion=c("none"),
+#'                                adjust=c("SLIM"))
 #'                                
 #' # Covariates and overdispersion control:
 #' # generate a methylBase object with age as a covariate
