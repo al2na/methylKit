@@ -30,7 +30,7 @@
 #'            dnorm fitted formula glm.fit hclust 
 #'            is.leaf kruskal.test lm median model.matrix 
 #'            optimize p.adjust pchisq pf pnorm prcomp 
-#'            quantile rbeta rnbinom wilcox.test
+#'            quantile rbeta rnbinom wilcox.test dhyper phyper uniroot
 #' @importFrom utils head read.table write.table 
 #' 
 #' 
