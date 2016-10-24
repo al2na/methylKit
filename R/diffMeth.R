@@ -202,8 +202,9 @@ logReg<-function(counts, formula, vars, treatment,
   
   # correct counts and treatment factor for NAs in counts
   treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  vars = vars[!is.na(treatment),] # update covariates if there are NAs
   treatment<-treatment[!is.na(treatment)]
-  counts<-counts[!is.na(counts)]
+  counts<-counts[!is.na(counts)] # update counts if there are NAs
   
   w=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
   y=counts[1:(length(counts)/2)]
@@ -358,6 +359,112 @@ estimatePhi<-function(counts,modelMat,treatment){
   phi <- sum( resids^2 )/(length(n)-nprm)
   c(phi,(length(n)-nprm))
 }
+
+# A FASTER VERSION OF FISHERs EXACT
+fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control = list(), 
+                       or = 1, alternative = "two.sided", conf.int = TRUE, conf.level = 0.95, 
+                       simulate.p.value = FALSE, B = 2000, cache=F) 
+{
+  if (nrow(x)!=2 | ncol(x)!=2) stop("Incorrect input format for fast.fisher")
+  #if (cache) {
+  #  key = paste(x,collapse="_")
+  # cachedResult = hashTable[[key]]
+  #  if (!is.null(cachedResult)) {
+  #    return(cachedResult)
+  #  }
+  #}
+  # ---- START: cut version of fisher.test ----
+  DNAME <- deparse(substitute(x))
+  METHOD <- "Fisher's Exact Test for Count Data"
+  nr <- nrow(x)
+  nc <- ncol(x)
+  PVAL <- NULL
+  if ((nr == 2) && (nc == 2)) {
+    m <- sum(x[, 1])
+    n <- sum(x[, 2])
+    k <- sum(x[1, ])
+    x <- x[1, 1]
+    lo <- max(0, k - n)
+    hi <- min(k, m)
+    NVAL <- or
+    names(NVAL) <- "odds ratio"
+    support <- lo:hi
+    logdc <- dhyper(support, m, n, k, log = TRUE)
+    dnhyper <- function(ncp) {
+      d <- logdc + log(ncp) * support
+      d <- exp(d - max(d))
+      d/sum(d)
+    }
+    mnhyper <- function(ncp) {
+      if (ncp == 0) 
+        return(lo)
+      if (ncp == Inf) 
+        return(hi)
+      sum(support * dnhyper(ncp))
+    }
+    pnhyper <- function(q, ncp = 1, upper.tail = FALSE) {
+      if (ncp == 1) {
+        if (upper.tail) 
+          return(phyper(x - 1, m, n, k, lower.tail = FALSE))
+        else return(phyper(x, m, n, k))
+      }
+      if (ncp == 0) {
+        if (upper.tail) 
+          return(as.numeric(q <= lo))
+        else return(as.numeric(q >= lo))
+      }
+      if (ncp == Inf) {
+        if (upper.tail) 
+          return(as.numeric(q <= hi))
+        else return(as.numeric(q >= hi))
+      }
+      d <- dnhyper(ncp)
+      if (upper.tail) 
+        sum(d[support >= q])
+      else sum(d[support <= q])
+    }
+    if (is.null(PVAL)) {
+      PVAL <- switch(alternative, less = pnhyper(x, or), 
+                     greater = pnhyper(x, or, upper.tail = TRUE), 
+                     two.sided = {
+                       if (or == 0) 
+                         as.numeric(x == lo)
+                       else if (or == Inf) 
+                         as.numeric(x == hi)
+                       else {
+                         relErr <- 1 + 10^(-7)
+                         d <- dnhyper(or)
+                         sum(d[d <= d[x - lo + 1] * relErr])
+                       }
+                     })
+      RVAL <- list(p.value = PVAL)
+    }
+    mle <- function(x) {
+      if (x == lo) 
+        return(0)
+      if (x == hi) 
+        return(Inf)
+      mu <- mnhyper(1)
+      if (mu > x) 
+        uniroot(function(t) mnhyper(t) - x, c(0, 1))$root
+      else if (mu < x) 
+        1/uniroot(function(t) mnhyper(1/t) - x, c(.Machine$double.eps, 
+                                                  1))$root
+      else 1
+    }
+    ESTIMATE <- mle(x)
+    #names(ESTIMATE) <- "odds ratio"
+    RVAL <- c(RVAL, estimate = ESTIMATE, null.value = NVAL)
+  }
+  RVAL <- c(RVAL, alternative = alternative, method = METHOD, data.name = DNAME)
+  attr(RVAL, "class") <- "htest"
+  # ---- END: cut version of fisher.test ----    
+  #if (cache) hashTable[[key]] <<- RVAL # write to global variable
+  return(RVAL)                                                                         
+}
+
+
+
 
 # end of S3 functions
 
@@ -588,99 +695,125 @@ setMethod("calculateDiffMeth", "methylBase",
                    adjust,effect,parShrinkMN,
                    test,mc.cores,slim,weighted.mean,save.db=FALSE,...){
             
-            # extract data.frame from methylBase
-            subst=S3Part(.Object,strictS3 = TRUE)        
-            
-            if(length(.Object@treatment)<2 ){
-              stop("can not do differential methylation calculation with less ",
-                   "than two samples")
-            }
-            
-            if(length(unique(.Object@treatment))<2 ){
-              stop("can not do differential methylation calculation when there ",
-                   "is no control\n",
-                   "treatment option should have 0 and 1 designating treatment ",
-                    "and control samples")
-            }
-            
-            if(length(unique(.Object@treatment))>2 ){
-              stop("can not do differential methylation calculation when there ",
-                   "are more than\n
-                   two groups, treatment vector indicates more than two groups")
-            }
-            
-            # add backwards compatibility with old parameters
-            if(slim==FALSE) adjust="BH" else adjust=adjust
-            if(weighted.mean==FALSE) effect="mean" else effect=effect
-            
-            vars <- covariates
-            
-            # get C and T cols from methylBase data.frame-part
-            Tcols=seq(7,ncol(subst),by=3)
-            Ccols=Tcols-1
-            
-            #### check if covariates+intercept+treatment more than replicates 
-            if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){
-              stop("Too many covariates/too few replicates.")}}
-            
-            # get count matrix and make list
-            cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
-            
-            # call estimate shrinkage before logReg
-            if(overdispersion[1] == "shrinkMN"){
-              parShrinkMN<-estimateShrinkageMN(cntlist,
-                                               treatment=.Object@treatment,
-                                               covariates=vars,
-                                               sample.size=100000,
-                                               mc.cores=mc.cores)
-            }
-            
-            # get the result of tests
-            tmp=simplify2array(
-              mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,
-                       overdispersion=overdispersion,effect=effect,
-                       parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
-            
-            # return the data frame part of methylDiff
-            tmp <- as.data.frame(t(tmp))
-            x=data.frame(subst[,1:4],tmp$p.value,
-                         p.adjusted(tmp$q.value,method=adjust),
-                         meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
-            colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
-            
-            if(!save.db) {
-              obj=new("methylDiff",x,sample.ids=.Object@sample.ids,
-                      assembly=.Object@assembly,context=.Object@context,
-                      destranded=.Object@destranded,treatment=.Object@treatment,
-                      resolution=.Object@resolution)
-              obj
-            } else {
-              
-              # catch additional args 
-              args <- list(...)
-              
-              if( !( "dbdir" %in% names(args)) ){
-                dbdir <- .check.dbdir(getwd())
-              } else { dbdir <- .check.dbdir(args$dbdir) }
-              #                         if(!( "dbtype" %in% names(args) ) ){
-              #                           dbtype <- "tabix"
-              #                         } else { dbtype <- args$dbtype }
-              if(!( "suffix" %in% names(args) ) ){
-                suffix <- "_diffMeth"
-              } else { 
-                suffix <- paste0("_",args$suffix)
-              }
-              
-              # create methylDiffDB
-              makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
-                               sample.ids=.Object@sample.ids,
-                               assembly=.Object@assembly,context=.Object@context,
-                               destranded=.Object@destranded,
-                               treatment=.Object@treatment,
-                               resolution=.Object@resolution,suffix=suffix )
-            }
+      # extract data.frame from methylBase
+      subst=S3Part(.Object,strictS3 = TRUE)        
+      
+      if(length(.Object@treatment)<2 ){
+        stop("can not do differential methylation calculation with less ",
+             "than two samples")
+      }
+      
+      if(length(unique(.Object@treatment))<2 ){
+        stop("can not do differential methylation calculation when there ",
+             "is no control\n",
+             "treatment option should have 0 and 1 designating treatment ",
+              "and control samples")
+      }
+      
+      if(length(unique(.Object@treatment))>2 ){
+        stop("can not do differential methylation calculation when there ",
+             "are more than\n
+             two groups, treatment vector indicates more than two groups")
+      }
+      
+      # add backwards compatibility with old parameters
+      if(slim==FALSE) adjust="BH" else adjust=adjust
+      if(weighted.mean==FALSE) effect="mean" else effect=effect
+      
 
+      
+      
+        vars <- covariates
+        
+        # get C and T cols from methylBase data.frame-part
+        Tcols=seq(7,ncol(subst),by=3)
+        Ccols=Tcols-1
+        
+        #### check if covariates+intercept+treatment more than replicates 
+        if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){
+          stop("Too many covariates/too few replicates.")}}
+        
+        # get count matrix and make list
+        cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
+
+      if(length(.Object@treatment)==2 )
+      {
+          fpval=unlist( mclapply( cntlist,
+                            function(x) fast.fisher(matrix(as.numeric( x) ,
+                                                           ncol=2,byrow=F),
+                                                    conf.int = F)$p.value,
+                            mc.cores=mc.cores,mc.preschedule = TRUE) ) 
+          
+          set1.Cs=.Object@numCs.index[.Object@treatment==1]
+          set2.Cs=.Object@numCs.index[.Object@treatment==0]
+          
+          # calculate mean methylation change
+          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+          # get difference between percent methylations
+          mom.mean.diff=mom.meth1-mom.meth2 
+          x=data.frame(subst[,1:4],fpval,
+                     p.adjusted(fpval,method=adjust),
+                     meth.diff=mom.mean.diff,stringsAsFactors=FALSE)
+          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+          
+      }else{        
+        # call estimate shrinkage before logReg
+        if(overdispersion[1] == "shrinkMN"){
+          parShrinkMN<-estimateShrinkageMN(cntlist,
+                                           treatment=.Object@treatment,
+                                           covariates=vars,
+                                           sample.size=100000,
+                                           mc.cores=mc.cores)
         }
+        
+        # get the result of tests
+        tmp=simplify2array(
+          mclapply(cntlist,logReg,formula,vars,treatment=.Object@treatment,
+                   overdispersion=overdispersion,effect=effect,
+                   parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+        
+        # return the data frame part of methylDiff
+        tmp <- as.data.frame(t(tmp))
+        x=data.frame(subst[,1:4],tmp$p.value,
+                     p.adjusted(tmp$q.value,method=adjust),
+                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+        colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+      }
+      
+      if(!save.db) {
+        obj=new("methylDiff",x,sample.ids=.Object@sample.ids,
+                assembly=.Object@assembly,context=.Object@context,
+                destranded=.Object@destranded,treatment=.Object@treatment,
+                resolution=.Object@resolution)
+        obj
+      } else {
+        
+        # catch additional args 
+        args <- list(...)
+        
+        if( !( "dbdir" %in% names(args)) ){
+          dbdir <- .check.dbdir(getwd())
+        } else { dbdir <- .check.dbdir(args$dbdir) }
+        #                         if(!( "dbtype" %in% names(args) ) ){
+        #                           dbtype <- "tabix"
+        #                         } else { dbtype <- args$dbtype }
+        if(!( "suffix" %in% names(args) ) ){
+          suffix <- "_diffMeth"
+        } else { 
+          suffix <- paste0("_",args$suffix)
+        }
+        
+        # create methylDiffDB
+        makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
+                         sample.ids=.Object@sample.ids,
+                         assembly=.Object@assembly,context=.Object@context,
+                         destranded=.Object@destranded,
+                         treatment=.Object@treatment,
+                         resolution=.Object@resolution,suffix=suffix )
+      }
+  
+  }
 )
 
 
