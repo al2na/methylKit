@@ -1,3 +1,15 @@
+methylKit 1.1.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+* Fisher's exact test now works as described in the manual. It is automatically
+  applied in calculateDiffMeth() when there are only two groups with one 
+  replicate each.
+* During logistic regression modeling, the samples without counts are removed 
+  from the model but the same filtering is not applied for covariates 
+  data.frame, which can cause errors if min.per.group argument is used. 
+  Now this is fixed: https://github.com/al2na/methylKit/issues/50
+  
+  
 methylKit 0.99.4
 --------------
 IMPROVEMENTS AND BUG FIXES
