@@ -541,7 +541,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     
     //std::cout << line << std::endl;
     if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
-    if(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
+    while(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
     /** example paired-end reads in SAM format (2 consecutive lines)
     # 1_R1/1	67	5	103172224	255	40M	=	103172417	233	AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:4	XX:Z:4T1T24TT7	XM:Z:....h.h........................hh.......	XR:Z:CT	XG:Z:CT
     # 1_R1/2	131	5	103172417	255	40M	=	103172224	-233	TATTTTTTTTTAGAGTATTTTTTAATGGTTATTAGATTTT	IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII	NM:i:6	XX:Z:T5T1T9T9T7T3	XM:Z:h.....h.h.........h.........h.......h...	XR:Z:GA	XG:Z:CT
@@ -658,7 +658,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
+  //Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -923,7 +923,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
+  //Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -1022,7 +1022,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
     
     //std::cout << line << std::endl;
     if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
-    if(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
+    while(line[0]=='@')                                {std::getline(*fh, line);} // step over the header line
     
     std::vector<std::string> cols = split(line,'\t');
     int start                     = atoi(cols[3].c_str());
@@ -1102,7 +1102,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   // get the conversion rate and write it out!!
   int numF= pMeth_nonCG["F"]["num"];
   int numR= pMeth_nonCG["R"]["num"];
-  Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
+  // Rcpp::Rcout <<  numF << " " <<  numR << std::endl;
   if( (numF == 0) && (numR == 0)) {
     if(CpGstatus){std::remove(CpGfile.c_str());}
     if(CHHstatus){std::remove(CHHfile.c_str());}
@@ -1187,7 +1187,7 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
   if (phred64) offset = 64;
 
   std::istream *input = NULL;
-  std::string line;
+  //std::string line;
   std::ifstream file;
  
   check_args(read1.c_str(), type.c_str(), input, file);
@@ -1216,6 +1216,8 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
     }
 
   }
+  
+  
   
   if(file.is_open()) file.close();
 
