@@ -117,6 +117,7 @@ function(location,sample.id,assembly,save.folder,save.context
          nolap,mincov,minqual,phred64,save.db){
   
   # check if file exists
+  location <- path.expand(location)
   if(! file.exists(location) ){
     stop("File supplied as the 'location' argument doesn't exist\n",
     "can not find file at: ",location,"\n")}
