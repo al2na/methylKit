@@ -14,7 +14,7 @@ output:
       
 bibliography: Vignette_methylKit.bib
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{methylKit: User Guide v`r packageVersion('methylKit')`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
