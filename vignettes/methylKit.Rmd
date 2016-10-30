@@ -74,7 +74,7 @@ The reasons why we will not get a binary response are:
 
 ## Reading the methylation call files
 
-We start by reading in the methylation call data from bisulfite sequencing with `read` 
+We start by reading in the methylation call data from bisulfite sequencing with `methRead` 
 function. Reading in the data this way will return a `methylRawList` object 
 which stores 
 methylation information per sample for each covered base. The methylation call 
@@ -100,7 +100,7 @@ samples. The test samples can be from a disease tissue while the control
 samples can be from a healthy tissue. You can read a set of methylation call 
 files that have test/control conditions giving `treatment` vector option. For 
 sake of subsequent analysis, file.list, sample.id and treatment option should 
-have the same order. In the following example, first two files are have the 
+have the same order. In the following example, first two files have the 
 sample ids "test1" and "test2" and as determined by treatment vector they 
 belong to the same group. The third and fourth files have sample ids "ctrl1" 
 and "ctrl2" and they belong to the same group as indicated by the treatment 
@@ -196,8 +196,8 @@ should be sorted and indexed. This
 could be achieved with samtools (http://www.htslib.org/doc/samtools.html).
 
 The following command reads a sorted SAM file and creates a `methylRaw` object 
-for CpG methylation.The user has the option to save the methylation call files 
-to a folder given by `save.folder` option. The saved files can be read-in using the `read` function when needed. 
+for CpG methylation. The user has the option to save the methylation call files 
+to a folder given by `save.folder` option. The saved files can be read-in using the `methRead` function when needed. 
 
 ```{r, eval=FALSE}
 my.methRaw=processBismarkAln( location = 
@@ -205,7 +205,7 @@ my.methRaw=processBismarkAln( location =
                                                 "test.fastq_bismark.sorted.min.sam", 
 	                                              package = "methylKit"),
                          sample.id="test1", assembly="hg18", 
-                         read.context="CpG",save.folder=getwd())
+                         read.context="CpG", save.folder=getwd())
 ```
 
 
