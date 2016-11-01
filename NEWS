@@ -1,8 +1,13 @@
+methylKit 1.1.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* Typos in the vignette are fixed, thanks to Marcin Kosinski 
+  
 methylKit 1.1.2
 --------------
 IMPROVEMENTS AND BUG FIXES
-* Bug fixes in SAM file reading process. If there were more than one header line
-  there were problems in reading. Now this is fixed.
+* Bug fixes in SAM file reading process. If there were more than one
+  header line there were problems in reading. Now this is fixed.
   https://github.com/al2na/methylKit/pull/51
   
 methylKit 1.1.1
