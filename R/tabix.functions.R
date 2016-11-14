@@ -61,8 +61,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       unlink(outfile)
     }
     
-    outlist=mclapply(chrs,mergeTbxByChr,tabixList,dir,filename,
-                     parallel=FALSE,all=all,mc.cores=mc.cores)
+    outlist=lapply(chrs,mergeTbxByChr,tabixList,dir,filename,
+                     parallel=FALSE,all=all)
     outfile= file.path(path.expand(dir),filename) 
   }
   
@@ -82,7 +82,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
 #' 
 #' @usage df2tabix(df,outfile)
 #' @noRd
-df2tabix<-function(df,outfile,rm.file=TRUE){
+df2tabix<-function(df,outfile){
   
   if(file.exists(outfile)){
     message("overwriting ",outfile)
@@ -96,7 +96,6 @@ df2tabix<-function(df,outfile,rm.file=TRUE){
   
   #make tabix out if the file
   makeMethTabix( outfile ,skip=0)
-  if(rm.file){file.remove(outfile)}
 }
 
 
@@ -136,12 +135,15 @@ catsub2tabix<-function(dir,pattern,filename,sort=FALSE){
 #' 
 #' @param filepath path to the uncompressed file
 #' @param skip number of lines to skip
+#' @param rm.file remove the uncompressed text file (default: yes)
 #' 
 #' @usage makeMethTabix(filepath,skip=0)
 #' @noRd
-makeMethTabix<-function(filepath,skip=0){
+makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
   message("compressing the file with bgzip...")
   zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
+  
+  if(rm.file){file.remove(filepath)}
   
   message("making tabix index...")
   Rsamtools::indexTabix(zipped,
