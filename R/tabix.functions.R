@@ -163,11 +163,14 @@ makeMethTabix<-function(filepath,skip=0){
 mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   #get first file on the list
-  res=getTabixByChr(tbxFile = tabixList[[1]],chr = chr)
+  res=getTabixByChr(tbxFile = tabixList[[1]],chr = chr,return.type = "data.table")
+  colnames(res)[5:7] <- paste(colnames(res)[5:7],"1",sep = ".")
+  
   for(i in 2:length(tabixList)){
     
     # get tabix per Chr
     tmp=getTabixByChr(tbxFile = tabixList[[i]],chr = chr)
+    colnames(tmp)[5:7] <- paste(colnames(tmp)[5:7],i,sep = ".")
     
     # merge tabix in memory
     res=merge(res,tmp,by=c("V1","V2","V3","V4"),all=all)
