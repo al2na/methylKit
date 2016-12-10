@@ -1,3 +1,8 @@
+methylKit 1.1.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fixes missing error messages during methRead : https://github.com/al2na/methylKit/pull/57
+
 methylKit 1.1.4
 --------------
 IMPROVEMENTS AND BUG FIXES
