@@ -1,3 +1,9 @@
+methylKit 1.1.6
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fixed a bug where tileMethylCounts() function did not work with
+  small chromosomes/scaffolds with few bases covered.
+
 methylKit 1.1.5
 --------------
 IMPROVEMENTS AND BUG FIXES

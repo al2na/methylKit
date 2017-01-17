@@ -656,6 +656,7 @@ setMethod("tileMethylCounts", signature(object="methylRaw"),
       
       #get sliding windows with covered CpGs
       numTiles=floor(  (max.length-(win.size-step.size) )/step.size )+1
+      numTiles=ifelse(numTiles<1, 1,numTiles)
       temp.wins=GRanges(seqnames=rep(chrs[i],numTiles),
                         ranges=IRanges(start=1+0:(numTiles-1)*step.size,
                                        width=rep(win.size,numTiles)) )
@@ -720,6 +721,7 @@ setMethod("tileMethylCounts", signature(object="methylBase"),
               
               #get sliding windows with covered CpGs
               numTiles=floor(  (max.length-(win.size-step.size) )/step.size )+1
+              numTiles=ifelse(numTiles<1, 1,numTiles)
               temp.wins=GRanges(seqnames=rep(chrs[i],numTiles),
                                 ranges=IRanges(start=1+0:(numTiles-1)*step.size,
                                                width=rep(win.size,numTiles)) )
