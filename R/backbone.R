@@ -560,15 +560,18 @@ setMethod("methRead", signature(location = "character",sample.id="character",
     if(! file.exists(location)){
       stop(location,", That file doesn't exist !!!")}
     
-    
-    if(dbtype=="tabix" & tools::file_ext(location)=="bgz"){
-      
-      obj = readMethylRawDB(dbpath = location,dbtype = dbtype, 
-                            sample.id = sample.id, 
-                            assembly = assembly, context = context, 
-                            resolution = resolution)
-      obj
-    
+    if(  tools::file_ext(location)=="bgz" ) {
+      if(!is.na(dbtype)) {
+        if(dbtype == "tabix") {
+          obj = readMethylRawDB(dbpath = location,dbtype = dbtype, 
+                                sample.id = sample.id, 
+                                assembly = assembly, context = context, 
+                                resolution = resolution)
+          return(obj)
+        }
+      } else {
+        stop(paste("file",location,"is compressed,\nplease use dbtype 'tabix' or provide uncompressed file with supported pipeline."))
+      }
     } else {
   
       data<- .readTableFast(location,header=header,skip=skip,sep=sep)# read data  
@@ -626,23 +629,34 @@ setMethod("methRead", signature(location = "list",sample.id="list",
     stop("length of 'treatment', 'name' and 'location' should be same\n")
   }
   
-  if(dbtype=="tabix" & unique(tools::file_ext(location))=="bgz"){
-    
-    outList=list()
-    for(i in 1:length(location))
-    {
-   
-      obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, 
-                            sample.id = sample.id[[i]], 
-                            assembly = assembly, context = context, 
-                            resolution = resolution)
-      outList[[i]]=obj
+  if(all(tools::file_ext(location)=="bgz")) {
+    if(!is.na(dbtype)) {
+      if(dbtype == "tabix") {
+        
+        outList=list()
+        for(i in 1:length(location))
+        {
+          
+          obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, 
+                                sample.id = sample.id[[i]], 
+                                assembly = assembly, context = context, 
+                                resolution = resolution)
+          outList[[i]]=obj
+        }
+        myobj=new("methylRawListDB",outList,treatment=treatment)
+        
+        return(myobj)
+        
+      } else {
+        stop("files are compressed,\nplease use dbtype 'tabix' or provide uncompressed file with supported pipeline.")        
+        }
     }
-    myobj=new("methylRawListDB",outList,treatment=treatment)
-    
-    myobj
-    
-  } else {
+  } else if( any(tools::file_ext(location)=="bgz") ) {
+
+    stop("one or more files are compressed,\nplease process uncompressed files beforehand and provide only either only compressed or only uncompressed files.")
+    print(location)
+
+  }  else {
   
     if(!is.na(dbtype)) dbdir <- .check.dbdir(dbdir)
     

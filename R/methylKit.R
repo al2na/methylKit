@@ -2,9 +2,9 @@
 #' 
 #' @importMethodsFrom GenomeInfoDb seqnames seqlengths sortSeqlevels
 #'
-#' @importClassesFrom IRanges RangedData RangedDataList RangedSelection
+#' @importClassesFrom IRanges RangedData RangedSelection
 #' @importMethodsFrom IRanges nearest as.data.frame
-#' @importFrom IRanges IRanges RangedDataList RangedData RangesList findOverlaps RangedSelection ranges countOverlaps
+#' @importFrom IRanges IRanges RangedData RangesList findOverlaps RangedSelection ranges countOverlaps
 #'
 #' @importClassesFrom S4Vectors DataTable Annotated Vector List DataTableORNULL characterORNULL SimpleList DataFrame
 #' @importFrom S4Vectors DataFrame Rle levels elementMetadata "elementMetadata<-"
