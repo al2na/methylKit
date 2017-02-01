@@ -6,7 +6,7 @@
 #' @importMethodsFrom IRanges nearest as.data.frame
 #' @importFrom IRanges IRanges RangedData RangesList findOverlaps RangedSelection ranges countOverlaps
 #'
-#' @importClassesFrom S4Vectors DataTable Annotated Vector List DataTableORNULL characterORNULL SimpleList DataFrame
+#' @importClassesFrom S4Vectors DataTable Annotated Vector List DataTable_OR_NULL character_OR_NULL SimpleList DataFrame
 #' @importFrom S4Vectors DataFrame Rle levels elementMetadata "elementMetadata<-"
 #' 
 #' @importFrom Rsamtools TabixFile scanTabix yieldSize "yieldSize<-"
