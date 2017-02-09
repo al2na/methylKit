@@ -163,6 +163,124 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
   
 }
 
+# create shorte abbreviations for methylDB-slots
+.encodeShortSlotNames <- function(slot.name) {
+  switch(slot.name,
+         sample.id="SI",
+         num.records="NR", sample.ids="SI",
+         assembly="AS", context="CT",
+         resolution="RS", dbtype = "DT",
+         treatment = "TM", coverage.index = "CI",
+         numCs.index = "NC", numTs.index = "NT",
+         destranded = "DS",
+         NULL)
+}
+
+.decodeShortSlotNames <- function(slot.name) {
+  switch(slot.name,
+         NR="num.records", SI="sample.ids",
+         AS="assembly", CT="context",
+         RS="resolution",  DT= "dbtype",
+         TM = "treatment",  CI= "coverage.index",
+         NC = "numCs.index",  NT= "numTs.index",
+         DS = "destranded",
+         NULL)
+}
+
+.formatShortSlotValues<- function(headerItem) {
+  type <- headerItem[1]
+  x <- headerItem[2]
+  val <- switch(type,
+                NR = as.integer(x),
+                SI = unlist(strsplit(as.character(x),split = ",")),
+                AS = as.character(x),
+                CT = as.character(x),
+                RS = as.character(x),
+                DT = as.character(x),
+                TM = as.integer(unlist(strsplit(as.character(x),split = ","))),
+                CI = as.integer(unlist(strsplit(as.character(x),split = ","))),
+                NC = as.integer(unlist(strsplit(as.character(x),split = ","))),
+                NT = as.integer(unlist(strsplit(as.character(x),split = ","))),
+                DS = as.logical(x),
+                NULL
+  )
+  val <- list( val); names(val) <- type
+  
+  return( val)
+}
+
+# this is a small function to write the slots of a methylKit object into the header of a tabix file
+write2tabix <- function(obj,file.name="../my_file2.txt"){
+  
+  # first we query each slots and ... 
+  tabixHead <- sapply(slotNames(obj),
+                      FUN = function(i) {
+                        # convert it into a shorter form
+                        ssn <- .encodeShortSlotNames(i)
+                        # and then paste its values into a comma seperated string
+                        if(!is.null(ssn)) paste(ssn,sep = ":",
+                                                paste0(slot(obj,i),collapse = ",")
+                        )
+                      }
+  )
+  # then we remove slots we don't need in the header (as the @.Data slot) 
+  tabixHead <- tabixHead[!isEmpty(tabixHead)]
+  
+  # then we write the creation date ..
+  write(paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S')),
+        file = file.name)
+  # and the slots as comments 
+  write(paste0("#",tabixHead),
+        file = file.name ,append = TRUE)
+  
+  
+  if ("dbtype" %in% slotNames(obj)) {
+    df <- headTabix(obj@dbpath,nrow = obj@num.records)
+  } 
+  else {
+    df <- data.table::as.data.table(obj@.Data)
+    write("#DT:tabix",file = file.name ,append = TRUE)
+    write(paste0("#NR:",nrow(df)),file = file.name ,append = TRUE)
+  }
+  # sort the data
+  df <- df[with(df,order(V1,V2,V3)),]
+  # then we write the data
+  write.table(x = df,
+              file = file.name, quote = FALSE,
+              append = TRUE,col.names = FALSE,
+              row.names = FALSE,sep = "\t")
+  
+  # and make tabix out of file
+  makeMethTabix(file.name,rm.file = FALSE)
+  
+}
+
+# this is a small function to read the information stored in the tabix header
+readTabixHeader <- function(tbxFile) {
+  
+  # save header values
+  h <- Rsamtools::headerTabix(tbxFile)$header
+  
+  # check if header is empty
+  if(length(h) == 0 ) stop(paste("The Tabix File:",tbxFile,"does not include a header.\n"))
+  
+  # parse the slots and format the values
+  headerVals <- sapply(h,
+                       USE.NAMES = FALSE,
+                       FUN = function(j) {
+                         tmp <- unlist(strsplit(gsub("#", "", j),split = ":"))
+                         val <- .formatShortSlotValues(tmp)
+                         names(val) <- .decodeShortSlotNames(names(val))
+                         return(val)
+                       }
+  )
+  
+  headerVals <- headerVals[!isEmpty(headerVals)]
+  
+  return(headerVals)
+  
+}
+
 
 #' merge the data tables for a given chr
 #' 
