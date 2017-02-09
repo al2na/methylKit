@@ -210,7 +210,7 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
 }
 
 # this is a small function to write the slots of a methylKit object into the header of a tabix file
-write2tabix <- function(obj,file.name="../my_file2.txt"){
+write2tabix <- function(obj,file.name="../my_file2.txt",rm.txt=TRUE){
   
   # first we query each slots and ... 
   tabixHead <- sapply(slotNames(obj),
@@ -251,7 +251,7 @@ write2tabix <- function(obj,file.name="../my_file2.txt"){
               row.names = FALSE,sep = "\t")
   
   # and make tabix out of file
-  makeMethTabix(file.name,rm.file = FALSE)
+  makeMethTabix(file.name,rm.file = rm.txt)
   
 }
 
