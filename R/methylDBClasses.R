@@ -249,11 +249,31 @@ readMethylRawDB<-function(dbpath,dbtype,
   }
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
-  object <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
+  obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.id = sample.id, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype)
   
-  if(valid.methylRawDB(object)) return(object)
+  if(valid.methylRawDB(obj)) {return(obj)}   
+}
+
+# PRIVATE function:
+# creates a methylRawDB object from a flat file database and reads header content
+# it is called from read function or whenever this functionality is needed
+loadMethylRawDB<-function(dbpath,skip=0){
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  
+  h <- readTabixHeader(dbpath)
+  
+  obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
+      sample.id = h$sample.ids, assembly = h$assembly,context=h$context,
+      resolution=h$resolution,dbtype=h$dbtype)
+  
+  if(valid.methylRawDB(obj)) {return(obj)}   
 }
 
 # methylRawListDB
@@ -546,6 +566,28 @@ readMethylBaseDB<-function(dbpath,dbtype,
     
 }
 
+# PRIVATE function:
+# creates a methylBaseDB object from a flat file database and reads header content
+# it is called from read function or whenever this functionality is needed
+loadMethylBaseDB<-function(dbpath,skip=0){
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  
+  h <- readTabixHeader(dbpath)
+  
+  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
+             sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
+             resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
+             coverage.index=h$coverage.ind,numCs.index=h$numCs.ind,numTs.index=h$numTs.ind,
+             destranded=h$destranded)
+  
+  if(valid.methylBaseDB(obj)) {return(obj)}    
+}
+
 # methylDiffDB -------------------------------------------------------
 
 
@@ -686,12 +728,34 @@ readMethylDiffDB<-function(dbpath,dbtype,
   }
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
-  new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
+  obj <- new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,
       destranded=destranded)
+  
+  if(valid.methylDiffDB(obj)) {return(obj)} 
 }
 
+# PRIVATE function:
+# creates a methylDiffDB object from a flat file database and reads header content
+# it is called from read function or whenever this functionality is needed
+loadMethylDiffDB<-function(dbpath,skip=0){
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=skip, comment="#", zeroBased=FALSE)
+  }
+  
+  h <- readTabixHeader(dbpath)
+  
+  obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
+               sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
+               resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
+               destranded=h$destranded)
+  
+  if(valid.methylDiffDB(obj)) {return(obj)}    
+}
 
 # coercion functions ------------------------------------------------------
 
