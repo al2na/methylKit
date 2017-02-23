@@ -163,7 +163,9 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
   
 }
 
-# create shorte abbreviations for methylDB-slots
+
+# create short abbreviations for methylDB-slots
+# used to save slots in tabix file
 .encodeShortSlotNames <- function(slot.name) {
   switch(slot.name,
          sample.id="SI",
@@ -176,6 +178,8 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
          NULL)
 }
 
+# decode the short abbreviations to long ones
+# used to read slots from tabix file
 .decodeShortSlotNames <- function(slot.name) {
   switch(slot.name,
          NR="num.records", SI="sample.ids",
@@ -187,6 +191,7 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
          NULL)
 }
 
+# format the content of slots read from tabix file
 .formatShortSlotValues<- function(headerItem) {
   type <- headerItem[1]
   x <- headerItem[2]
@@ -209,8 +214,27 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
   return( val)
 }
 
-# this is a small function to write the slots of a methylKit object into the header of a tabix file
-write2tabix <- function(obj,file.name="../my_file2.txt",rm.txt=TRUE){
+
+#' make a tabix file from a methylKit object 
+#'  
+#' First writes the slots of the object into the header of the tabix file.
+#' The slots are encoded like this:
+#' "sample.id"/"sample.ids" --> "SI" ; "num.records" -->"NR";
+#' "assembly" --> "AS"; "context" -->"CT"; 
+#' "resolution" --> "RS"; "dbtype" --> "DT"; 
+#' "treatment" --> "TM"; "coverage.index" --> "CI"; 
+#' "numCs.index" --> "NC"; "numTs.index" --> "NT"; 
+#' "destranded" --> "DS"
+#' 
+#' Then the data part of the object is appended to the tabix file.
+#'
+#' @param obj any methylKit object
+#' @param filename name of the file where object is written to 
+#' @param rm.txt should the uncompressed text file be removed (default: TRUE)
+#' 
+#' @usage 
+#' @noRd
+obj2tabix <- function(obj,filename,rm.txt=TRUE){
   
   # first we query each slots and ... 
   tabixHead <- sapply(slotNames(obj),
@@ -228,10 +252,10 @@ write2tabix <- function(obj,file.name="../my_file2.txt",rm.txt=TRUE){
   
   # then we write the creation date ..
   write(paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S')),
-        file = file.name)
+        file = filename)
   # and the slots as comments 
   write(paste0("#",tabixHead),
-        file = file.name ,append = TRUE)
+        file = filename ,append = TRUE)
   
   
   if ("dbtype" %in% slotNames(obj)) {
@@ -239,23 +263,26 @@ write2tabix <- function(obj,file.name="../my_file2.txt",rm.txt=TRUE){
   } 
   else {
     df <- data.table::as.data.table(obj@.Data)
-    write("#DT:tabix",file = file.name ,append = TRUE)
-    write(paste0("#NR:",nrow(df)),file = file.name ,append = TRUE)
+    write("#DT:tabix",file = filename ,append = TRUE)
+    write(paste0("#NR:",nrow(df)),file = filename ,append = TRUE)
   }
   # sort the data
   df <- df[with(df,order(V1,V2,V3)),]
   # then we write the data
   write.table(x = df,
-              file = file.name, quote = FALSE,
+              file = filename, quote = FALSE,
               append = TRUE,col.names = FALSE,
               row.names = FALSE,sep = "\t")
   
   # and make tabix out of file
-  makeMethTabix(file.name,rm.file = rm.txt)
-  
+  makeMethTabix(filename,rm.file = rm.txt)
 }
 
-# this is a small function to read the information stored in the tabix header
+
+#' function to parse the information stored in the tabix header
+#'
+#' @param tbxFile tabix file
+#' @noRd
 readTabixHeader <- function(tbxFile) {
   
   # save header values
