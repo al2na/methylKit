@@ -1,4 +1,4 @@
-library("methylKit")
+#library("methylKit")
 context("calculateDiffMeth checks")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
