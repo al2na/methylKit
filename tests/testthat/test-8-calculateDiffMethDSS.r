@@ -1,4 +1,4 @@
-library("methylKit")
+#library("methylKit")
 context("calculateDiffMethDSS checks")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
@@ -41,9 +41,9 @@ test_that(paste("check if calculateDiffMeth output from",
 })
 
 test_that("check getting hypo/hyper meth works", {
-    expect_that(get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo"),
+    expect_that(getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo"),
         is_a('methylDiff'))
-    expect_that(get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper"),
+    expect_that(getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper"),
         is_a('methylDiff'))
 })
 
