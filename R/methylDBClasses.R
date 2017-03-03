@@ -269,6 +269,10 @@ loadMethylRawDB<-function(dbpath,skip=0){
   
   h <- readTabixHeader(dbpath)
   
+  if(! any(h$class == c("methylRaw", "methylRawDB") ) ) {
+    stop("Tabix file does not originate from methylRaw or methylRawDB.\nPlease provide the correct class of data.")
+    }
+  
   obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
       sample.id = h$sample.ids, assembly = h$assembly,context=h$context,
       resolution=h$resolution,dbtype=h$dbtype)
@@ -579,6 +583,10 @@ loadMethylBaseDB<-function(dbpath,skip=0){
   
   h <- readTabixHeader(dbpath)
   
+  if(! any(h$class == c("methylBase", "methylBaseDB") ) ) {
+    stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
+  }
+  
   obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
              sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
              resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
@@ -748,6 +756,10 @@ loadMethylDiffDB<-function(dbpath,skip=0){
   }
   
   h <- readTabixHeader(dbpath)
+  
+  if(! any(h$class == c("methylDiff", "methylDiffDB") ) ) {
+    stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
+  }
   
   obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
                sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
