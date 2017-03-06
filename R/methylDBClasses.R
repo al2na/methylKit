@@ -218,21 +218,64 @@ setClass("methylRawDB", slots=list(dbpath="character",num.records="numeric",
 # it is called from read function or whenever this functionality is needed
 makeMethylRawDB<-function(df,dbpath,dbtype,
                           sample.id, assembly ,context,
-                          resolution){
+                          resolution,filename=NULL){
   if(dbtype != "tabix"){
     stop("unknown 'dbtype' argument provided, ",
          "currently only 'tabix' is accepted.")
   }
-  filepath=paste0(dbpath,"/",sample.id,".txt")
-  df <- df[with(df,order(chr,start,end)),]
-  df2tabix(df,filepath)
-  num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
   
-  object <- new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
+  # first check for filename length
+  if(is.null(filename)) {
+    filename <- paste0(dbpath,"/",sample.id,".txt")
+    if( nchar( basename(filename) ) >= 245 ) {
+      stop(paste("Generic Filename too long,\n",
+                 "please manually provide filename.")) 
+           }
+  }
+  
+  # then we write the creation date ..
+  write(paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S')),
+        file = filename)
+  # add the class of the object
+  write(paste0("#Class:","methylRawDB"),
+        file = filename, append = TRUE)
+  # and the slots as comments 
+  
+  num.records = nrow(df)
+
+  # prepare slots as comments
+  tabixHead <- paste0("#NR:",num.records,"\n",
+                      "#SI:",sample.id,"\n",
+                      "#AS:",assembly,"\n",
+                      "#CT:",context,"\n",
+                      "#RS:",resolution,"\n",
+                      "#DT:",dbtype)
+  
+  # write slots to file
+  write(tabixHead,
+        file = filename ,append = TRUE)
+  
+  # sort the data
+  df <- df[with(df,order(chr,start,end)),]
+  # then we write the data
+  write.table(x = df,
+              file = filename, quote = FALSE,
+              append = TRUE,col.names = FALSE,
+              row.names = FALSE,sep = "\t")
+  
+  # and make tabix out of file
+  makeMethTabix(filename,rm.file = FALSE)
+  
+  #filepath=paste0(dbpath,"/",sample.id,".txt")
+  #df <- df[with(df,order(chr,start,end)),]
+  #df2tabix(df,filepath) 
+  #num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+
+  #new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
+  new("methylRawDB",dbpath=paste0(filename,".bgz"),num.records=num.records,
   sample.id = sample.id, assembly = assembly,context=context,
   resolution=resolution,dbtype=dbtype)
-  
-  if(valid.methylRawDB(object)) return(object)
+
 }
 
 # PRIVATE function:
@@ -270,12 +313,16 @@ loadMethylRawDB<-function(dbpath,skip=0){
   h <- readTabixHeader(dbpath)
   
   if(! any(h$class == c("methylRaw", "methylRawDB") ) ) {
-    stop("Tabix file does not originate from methylRaw or methylRawDB.\nPlease provide the correct class of data.")
+    stop(
+      paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
+               "Please provide the correct class of data.")
+      )
     }
   
-  obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
-      sample.id = h$sample.ids, assembly = h$assembly,context=h$context,
-      resolution=h$resolution,dbtype=h$dbtype)
+  obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
+             num.records=h$num.records, sample.id = h$sample.ids, 
+             assembly = h$assembly,context=h$context, 
+             resolution=h$resolution,dbtype=h$dbtype)
   
   if(valid.methylRawDB(obj)) {return(obj)}   
 }
