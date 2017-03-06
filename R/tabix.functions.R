@@ -232,7 +232,7 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
 #' @param filename name of the file where object is written to 
 #' @param rm.txt should the uncompressed text file be removed (default: TRUE)
 #' 
-#' @usage 
+#' @usage obj2tabix(methylBase.obj,filename = "my_file.txt")
 #' @noRd
 obj2tabix <- function(obj,filename,rm.txt=TRUE){
   
@@ -254,7 +254,7 @@ obj2tabix <- function(obj,filename,rm.txt=TRUE){
   write(paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S')),
         file = filename)
   # add the class of the object
-  write(paste0("#Class:",class(methylBase.obj)[1]),
+  write(paste0("#Class:",class(obj)[1]),
         file = filename, append = TRUE)
   # and the slots as comments 
   write(paste0("#",tabixHead),
