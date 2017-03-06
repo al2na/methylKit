@@ -1,3 +1,16 @@
+methylKit 1.1.7
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix methCall segementation fault, added tests and test files from bismark
+* fixed missing p.value at coercion of methylBase to GRanges
+* changes to the pool() function: save.db=TRUE for methylBaseDB by default, 
+  differing lengths of given sample.ids and unique treatment lead to error, 
+  added tests
+* fix osx related error when reading gzipped files with methRead
+* change deprecated function names in test files
+
+	
+
 methylKit 1.1.6
 --------------
 IMPROVEMENTS AND BUG FIXES
