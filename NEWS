@@ -1,3 +1,10 @@
+methylKit 1.1.7
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix methCall segementation fault
+* Add some extra test files from bismark output
+* Update tests
+
 methylKit 1.1.6
 --------------
 IMPROVEMENTS AND BUG FIXES
