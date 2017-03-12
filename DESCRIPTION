@@ -74,6 +74,7 @@ Collate:
     'methSeg.R'
     'diffMethDSS.R'
     'deprecated_defunct.R'
+    'onUnload.R'
 RoxygenNote: 5.0.1
 NeedsCompilation: yes
 Author: Altuna Akalin [aut, cre], Matthias Kormaksson [aut], Sheng Li
