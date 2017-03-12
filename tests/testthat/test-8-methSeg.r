@@ -1,5 +1,5 @@
 context("methSeg and methSeg2bed checks")
-library("methylKit")
+#library("methylKit")
 data("methylKit")
 
 tileRaw <- tileMethylCounts(methylRawList.obj[[1]])
