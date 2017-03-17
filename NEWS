@@ -9,8 +9,6 @@ IMPROVEMENTS AND BUG FIXES
 * fix osx related error when reading gzipped files with methRead
 * change deprecated function names in test files
 
-	
-
 methylKit 1.1.6
 --------------
 IMPROVEMENTS AND BUG FIXES
