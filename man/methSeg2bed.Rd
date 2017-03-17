@@ -35,4 +35,3 @@ object.
 \seealso{
 \code{\link{methSeg}}
 }
-

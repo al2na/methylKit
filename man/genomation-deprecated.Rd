@@ -2,18 +2,18 @@
 % Please edit documentation in R/deprecated_defunct.R
 \docType{methods}
 \name{genomation-deprecated}
+\alias{genomation-deprecated}
 \alias{annotate.WithFeature}
 \alias{annotate.WithFeature.Flank}
 \alias{annotate.WithGenicParts}
-\alias{genomation-deprecated}
+\alias{read.bed}
+\alias{read.feature.flank}
+\alias{read.transcript.features}
 \alias{getFeatsWithTargetsStats}
 \alias{getFlanks}
 \alias{getMembers}
 \alias{getTargetAnnotationStats}
 \alias{plotTargetAnnotation}
-\alias{read.bed}
-\alias{read.feature.flank}
-\alias{read.transcript.features}
 \title{Deprecated/Defunct functions}
 \usage{
 annotate.WithFeature()
@@ -44,4 +44,3 @@ are replaced by genomation functions. See the vignette for
 examples on how to use genomation functions for annotation
 purposes.
 }
-

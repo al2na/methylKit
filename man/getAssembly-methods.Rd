@@ -4,11 +4,11 @@
 \name{getAssembly}
 \alias{getAssembly}
 \alias{getAssembly,methylBase-method}
-\alias{getAssembly,methylBaseDB-method}
-\alias{getAssembly,methylDiff-method}
-\alias{getAssembly,methylDiffDB-method}
 \alias{getAssembly,methylRaw-method}
+\alias{getAssembly,methylDiff-method}
 \alias{getAssembly,methylRawDB-method}
+\alias{getAssembly,methylBaseDB-method}
+\alias{getAssembly,methylDiffDB-method}
 \title{get assembly of the genome}
 \usage{
 getAssembly(x)
@@ -47,4 +47,3 @@ getAssembly(methylRawList.obj[[1]])
 
 
 }
-

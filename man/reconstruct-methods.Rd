@@ -4,8 +4,8 @@
 \name{reconstruct}
 \alias{reconstruct}
 \alias{reconstruct,ANY,methylBase-method}
-\alias{reconstruct,ANY,methylBaseDB-method}
 \alias{reconstruct,methylBase-method}
+\alias{reconstruct,ANY,methylBaseDB-method}
 \alias{reconstruct,methylBaseDB-method}
 \title{Reconstruct methylBase or methylBaseDB object based on a new methylation
  percentage matrix}
@@ -98,6 +98,7 @@ in-memory-calculation as flat file database or if the size of the
 database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 data(methylKit)
 
@@ -117,4 +118,3 @@ newobj=reconstruct(mat,methylBase.obj)
 \author{
 Altuna Akalin
 }
-

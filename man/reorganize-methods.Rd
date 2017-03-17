@@ -4,9 +4,9 @@
 \name{reorganize}
 \alias{reorganize}
 \alias{reorganize,methylBase-method}
-\alias{reorganize,methylBaseDB-method}
 \alias{reorganize,methylRawList-method}
 \alias{reorganize,methylRawListDB-method}
+\alias{reorganize,methylBaseDB-method}
 \title{Reorganize methylKit objects by creating new objects from subset of samples}
 \usage{
 reorganize(methylObj, sample.ids, treatment, chunk.size = 1e+06,
@@ -92,6 +92,7 @@ in-memory-calculation as flat file database or if the size of the
 database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 # this is a list of example files, ships with the package
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
@@ -114,4 +115,3 @@ meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 
 
 }
-

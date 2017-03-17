@@ -4,11 +4,11 @@
 \name{getContext}
 \alias{getContext}
 \alias{getContext,methylBase-method}
-\alias{getContext,methylBaseDB-method}
-\alias{getContext,methylDiff-method}
-\alias{getContext,methylDiffDB-method}
 \alias{getContext,methylRaw-method}
+\alias{getContext,methylDiff-method}
 \alias{getContext,methylRawDB-method}
+\alias{getContext,methylBaseDB-method}
+\alias{getContext,methylDiffDB-method}
 \title{get the context of methylation}
 \usage{
 getContext(x)
@@ -45,4 +45,3 @@ getContext(methylDiff.obj)
 getContext(methylRawList.obj[[1]])
 
 }
-

@@ -610,6 +610,9 @@ as(myDiff,"GRanges")
 
 ```{r}
 class(myobjDB[[1]])
+```
+
+```{r,eval=FALSE}
 as(myobjDB[[1]],"methylRaw")
 ```
 

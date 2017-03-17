@@ -90,6 +90,7 @@ systems. If you encounter memory problems or
 have a high amount of memory available feel free to adjust the 
 \code{chunk.size}.
 }
+
 \examples{
 data(methylKit) 
 
@@ -100,4 +101,3 @@ PCASamples(methylBase.obj,screeplot=FALSE, adj.lim=c(0.0004,0.1),
            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE)
 
 }
-

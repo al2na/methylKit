@@ -25,4 +25,3 @@ update methylKit objects
  
 The method updates object from earlier versions (<v0.9.1) to latest object.
 }
-

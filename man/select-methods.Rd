@@ -4,11 +4,11 @@
 \name{select}
 \alias{select}
 \alias{select,methylBase-method}
-\alias{select,methylBaseDB-method}
-\alias{select,methylDiff-method}
-\alias{select,methylDiffDB-method}
 \alias{select,methylRaw-method}
+\alias{select,methylDiff-method}
 \alias{select,methylRawDB-method}
+\alias{select,methylBaseDB-method}
+\alias{select,methylDiffDB-method}
 \title{selects rows from of methylKit objects}
 \usage{
 select(x,i)
@@ -73,4 +73,3 @@ rm(methylRawDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-

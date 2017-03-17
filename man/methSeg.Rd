@@ -69,10 +69,9 @@ To be sure that the algorithm will work on your data,
 unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 
 }
-\author{
-Altuna Akalin, contributions by Arsene Wabo
-}
 \seealso{
 \code{\link{methSeg2bed}}
 }
-
+\author{
+Altuna Akalin, contributions by Arsene Wabo
+}

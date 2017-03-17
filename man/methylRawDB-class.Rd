@@ -2,8 +2,8 @@
 % Please edit documentation in R/methylDBClasses.R
 \docType{class}
 \name{methylRawDB-class}
-\alias{methylRawDB}
 \alias{methylRawDB-class}
+\alias{methylRawDB}
 \title{An S4 class for storing raw methylation data as flat file database.}
 \description{
 This object stores the raw mehylation data that is read in through read 
@@ -54,6 +54,7 @@ The following functions provides access to data slots of methylRawDB:
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
   \code{\link{methylRaw}} object via \code{\link{as}} function.
 }
+
 \examples{
 
 # example of a raw methylation data contained as a text file
@@ -83,4 +84,3 @@ rm(methylRawDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-

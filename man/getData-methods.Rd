@@ -4,11 +4,11 @@
 \name{getData}
 \alias{getData}
 \alias{getData,methylBase-method}
-\alias{getData,methylBaseDB-method}
-\alias{getData,methylDiff-method}
-\alias{getData,methylDiffDB-method}
 \alias{getData,methylRaw-method}
+\alias{getData,methylDiff-method}
 \alias{getData,methylRawDB-method}
+\alias{getData,methylBaseDB-method}
+\alias{getData,methylDiffDB-method}
 \title{get the data slot from the methylKit objects}
 \usage{
 getData(x)
@@ -55,4 +55,3 @@ head(getData(methylRawList.obj[[1]]))
 
 
 }
-

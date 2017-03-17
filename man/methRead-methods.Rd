@@ -137,6 +137,7 @@ methylrawlistDB or methylrawDB object.
    . On Windows, the file is first uncompressed then read into R using 
    \code{data.table::fread}.
 }
+
 \examples{
 
 # this is a list of example files, ships with the package
@@ -197,4 +198,3 @@ read.table(generic.file,header=TRUE)
  
                
 }
-

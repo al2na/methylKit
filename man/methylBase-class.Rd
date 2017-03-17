@@ -2,8 +2,8 @@
 % Please edit documentation in R/backbone.R
 \docType{class}
 \name{methylBase-class}
-\alias{methylBase}
 \alias{methylBase-class}
+\alias{methylBase}
 \title{An S4 class for methylation events sampled in multiple experiments}
 \description{
 This class is designed to contain methylation information such as coverage,
@@ -69,10 +69,10 @@ The following functions provides access to data slots of methylBase:
   \code{methylBase} object can be coerced to 
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 }
+
 \examples{
 data(methylKit)
 library(GenomicRanges)
 my.gr=as(methylBase.obj,"GRanges")
 
 }
-

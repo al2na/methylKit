@@ -3,18 +3,18 @@
 \docType{methods}
 \name{regionCounts}
 \alias{regionCounts}
-\alias{regionCounts,methylBase,GRanges-method}
-\alias{regionCounts,methylBase,GRangesList-method}
-\alias{regionCounts,methylBaseDB,GRanges-method}
-\alias{regionCounts,methylBaseDB,GRangesList-method}
 \alias{regionCounts,methylRaw,GRanges-method}
+\alias{regionCounts,methylBase,GRanges-method}
 \alias{regionCounts,methylRaw,GRangesList-method}
-\alias{regionCounts,methylRawDB,GRanges-method}
-\alias{regionCounts,methylRawDB,GRangesList-method}
+\alias{regionCounts,methylBase,GRangesList-method}
 \alias{regionCounts,methylRawList,GRanges-method}
 \alias{regionCounts,methylRawList,GRangesList-method}
+\alias{regionCounts,methylRawDB,GRanges-method}
+\alias{regionCounts,methylRawDB,GRangesList-method}
 \alias{regionCounts,methylRawListDB,GRanges-method}
 \alias{regionCounts,methylRawListDB,GRangesList-method}
+\alias{regionCounts,methylBaseDB,GRanges-method}
+\alias{regionCounts,methylBaseDB,GRangesList-method}
 \title{Get regional counts for given GRanges or GRangesList object}
 \usage{
 regionCounts(object,regions,cov.bases=0,strand.aware=FALSE,chunk.size,save.db,...)
@@ -135,6 +135,7 @@ in-memory-calculation as flat file database or if the size of the database
 allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 data(methylKit)
 
@@ -149,4 +150,3 @@ regional.methylRaw=regionCounts(object=methylRawList.obj, regions=my.win,
 cov.bases=0,strand.aware=FALSE)
 
 }
-

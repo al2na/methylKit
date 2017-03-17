@@ -2,8 +2,8 @@
 % Please edit documentation in R/methylDBClasses.R
 \docType{class}
 \name{methylBaseDB-class}
-\alias{methylBaseDB}
 \alias{methylBaseDB-class}
+\alias{methylBaseDB}
 \title{An S4 class for storing methylation events sampled in multiple experiments 
 as flat file database}
 \description{
@@ -76,6 +76,7 @@ The following functions provides access to data slots of \code{methylBaseDB}:
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
   \code{\link{methylBase}} object via \code{\link{as}} function.
 }
+
 \examples{
 data(methylKit)
 methylBaseDB.obj <- unite(methylRawList.obj,save.db=TRUE,dbdir="methylDB")
@@ -89,4 +90,3 @@ unlink("methylDB",recursive=TRUE)
 
 
 }
-

@@ -72,6 +72,7 @@ The additional information needed for a valid methylBase.obj is generated as
 "dummy
 values", but can be overwritten as needed.
 }
+
 \examples{
 
 data(methylKit)
@@ -87,4 +88,3 @@ my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
 percentage=30,effect=10:40)
 
 }
-

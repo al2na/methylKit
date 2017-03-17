@@ -2,22 +2,22 @@
 % Please edit documentation in R/backbone.R, R/diffMeth.R, R/methylDBClasses.R
 \docType{methods}
 \name{show,methylBase-method}
-\alias{show,methylBase}
 \alias{show,methylBase-method}
-\alias{show,methylBaseDB}
-\alias{show,methylBaseDB-method}
-\alias{show,methylDiff}
-\alias{show,methylDiff-method}
-\alias{show,methylDiffDB}
-\alias{show,methylDiffDB-method}
-\alias{show,methylRaw}
+\alias{show,methylBase}
 \alias{show,methylRaw-method}
-\alias{show,methylRawDB}
-\alias{show,methylRawDB-method}
-\alias{show,methylRawList}
+\alias{show,methylRaw}
 \alias{show,methylRawList-method}
-\alias{show,methylRawListDB}
+\alias{show,methylRawList}
+\alias{show,methylDiff-method}
+\alias{show,methylDiff}
+\alias{show,methylRawDB-method}
+\alias{show,methylRawDB}
 \alias{show,methylRawListDB-method}
+\alias{show,methylRawListDB}
+\alias{show,methylBaseDB-method}
+\alias{show,methylBaseDB}
+\alias{show,methylDiffDB-method}
+\alias{show,methylDiffDB}
 \title{show method for methylKit classes}
 \usage{
 \S4method{show}{methylBase}(object)
@@ -52,4 +52,3 @@ show(methylDiff.obj)
 
 
 }
-
