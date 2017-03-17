@@ -1160,7 +1160,7 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
 #' @rdname pool-methods
 #' @aliases pool,methylBaseDB-method
 setMethod("pool", "methylBaseDB",
-          function(obj,sample.ids,chunk.size,save.db,...){
+          function(obj,sample.ids,chunk.size,save.db=TRUE,...){
             
   if(save.db) {
     
