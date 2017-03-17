@@ -5,10 +5,10 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
                 system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
-myobj=read( file.list,
+myobj=methRead( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
-mydblist = suppressMessages(read( file.list,
+mydblist = suppressMessages(methRead( file.list,
                                   sample.id=list("t1","t2","c1","c2"),assembly="hg18",
                                   pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
 

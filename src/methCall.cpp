@@ -538,6 +538,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   
   while(std::getline(*fh, line))
   {
+    //check wheter user wnats to interrupt runnning code
+    Rcpp::checkUserInterrupt();
     
     //std::cout << line << std::endl;
     if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
@@ -706,7 +708,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 }
 
 
-// processed  bam/sam file !! with header !!
+// processed  single-end bam/sam file !! with header !!
 int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual, int nolap) {
 
   // intialize hts objects which can refer to bam or sam
@@ -823,7 +825,14 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     std::string methc             = meth; 
     methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
     // std::string qual              = cols[10];
-    std::string mrnm              = header->target_name[mtid];  //get the "real" mate id
+    
+    // check wether the mate reference exists (mtid >= 0), 
+    // if not replace with '*'
+    std::string mrnm;
+    if(mtid != -1 ) {
+      mrnm              = header->target_name[mtid];  //get the "real" mate id
+    } else { mrnm = "*";}
+    
     int mpos                      = mposi;
     int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
     

@@ -1,4 +1,4 @@
-library("methylKit")
+#library("methylKit")
 context("dataSim checks")
 
 data("methylKit")

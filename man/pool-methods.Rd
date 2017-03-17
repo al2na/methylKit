@@ -13,7 +13,7 @@ pool(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
   save.db = FALSE, ...)
 
 \S4method{pool}{methylBaseDB}(obj, sample.ids, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+  save.db = TRUE, ...)
 }
 \arguments{
 \item{obj}{\code{methylBase} or \code{methylBaseDB} object with two groups

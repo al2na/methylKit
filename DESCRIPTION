@@ -2,7 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 1.1.6
+Version: 1.1.7
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
   	     email = "aakalin@gmail.com"),
 	      person("Matthias","Kormaksson", role = "aut"),
@@ -74,6 +74,7 @@ Collate:
     'methSeg.R'
     'diffMethDSS.R'
     'deprecated_defunct.R'
+    'onUnload.R'
 RoxygenNote: 5.0.1
 NeedsCompilation: yes
 Author: Altuna Akalin [aut, cre], Matthias Kormaksson [aut], Sheng Li

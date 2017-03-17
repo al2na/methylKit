@@ -1,4 +1,4 @@
-context("unite checks")
+context("pool checks")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
                 system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
@@ -14,31 +14,22 @@ mydblist = suppressMessages(methRead( file.list,
                                   pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
 
 # unite function
-ta=unite(myobj,destrand=T)
 methidh=unite(myobj)
-methidh2=unite(myobj,min.per.group=1L)
-
-suppressMessages(taDB <- unite(mydblist,destrand=T))
 suppressMessages(methidhDB <- unite(mydblist))
-suppressMessages(methidh2DB <- unite(mydblist,min.per.group=1L))
-
-
-suppressMessages(ta2methylDB <- unite(myobj,destrand=T,save.db = T,dbdir="methylDB"))
-taDB2methyl <- unite(mydblist,destrand=T,save.db = F)
-
 
 test_that("test if output of unite is  methylBase object", {
-    expect_is(ta, 'methylBase')
-    expect_is(methidh, 'methylBase')
-    expect_is(methidh2, 'methylBase')
-    expect_is(taDB2methyl, 'methylBase')
-
+  expect_is(pool(methidh,sample.ids=c("test","control")), 'methylBase')
+  expect_is(pool(methidhDB,sample.ids=c("test","control"),save.db = FALSE), 'methylBase')
 })
 
 test_that("test if output of unite is  methylBaseDB object", {
-  expect_is(taDB, 'methylBaseDB')
-  expect_is(methidhDB, 'methylBaseDB')
-  expect_is(methidh2DB, 'methylBaseDB')
-  expect_is(ta2methylDB, 'methylBaseDB')
+  expect_is(pool(methidhDB,sample.ids=c("test","control")), 'methylBaseDB')
+  expect_is(pool(methidh,sample.ids=c("test","control"),save.db = TRUE), 'methylBaseDB')
+})
+
+
+test_that("wrong number of sample.ids lead to error", {
+  expect_error(pool(methidhDB,sample.ids=c("test","control","onetoomuch")))
+  expect_error(pool(methidh,sample.ids=c("test","control","onetoomuch")))
 })
 

@@ -13,7 +13,7 @@ fread.gzipped<-function(filepath,...){
   if (R.utils::isGzipped(filepath)){
     
     if(.Platform$OS.type == "unix") {
-      filepath=paste("zcat",filepath)
+      filepath=paste("gunzip -c",filepath)
     } else {
       filepath <- R.utils::gunzip(filepath,temporary = FALSE, overwrite = TRUE,
                                   remove = FALSE)
