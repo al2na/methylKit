@@ -1,30 +1,34 @@
 ---
 title: "methylKit: User Guide v`r packageVersion('methylKit')`"
-author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.] 
-
-altuna.akalin@mdc-berlin.de"
+author: "Altuna Akalin^[Author of the vignette. See [Acknowledgements](#acknowledgements) for a list of contributors.]  altuna.akalin@mdc-berlin.de"
 date: "`r Sys.Date()`"
 output: 
-      html_document:
-        toc: true
-        toc_float: true
-        number_sections: true
-        toc_depth: 2
-
-      
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    toc_depth: 2
+    css: width.css
 bibliography: Vignette_methylKit.bib
 vignette: >
-  %\VignetteIndexEntry{methylKit: User Guide v`r packageVersion('methylKit')`}
+  %\VignetteIndexEntry{methylKit: User Guide}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(dpi = 75)
-knitr::opts_chunk$set(cache = FALSE)
+knitr::opts_chunk$set(
+  dpi = 75,
+  cache = FALSE,
+  tidy.opts = list(
+		keep.blank.line = TRUE,	
+		width.cutoff = 120
+		),
+	options(width = 120)
+)
 ```
 
-```{r ,eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
 #devtools::load_all(".")
 ```
 
@@ -90,7 +94,8 @@ be read in to methylKit as well.
 A typical methylation call file looks like this:
 
 ```{r, eval=TRUE, echo=FALSE}
-tab <- read.table( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),header=TRUE,nrows=5)
+tab <- read.table(system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+                  header = TRUE, nrows = 5)
 tab
 #knitr::kable(tab)
 ```
@@ -107,25 +112,20 @@ and "ctrl2" and they belong to the same group as indicated by the treatment
 vector.
 
 
-```{r,message=FALSE}
+```{r, message=FALSE}
 library(methylKit)
-file.list=list( system.file("extdata", 
-                            "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata",
-                            "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", 
-                            "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", 
-                            "control2.myCpG.txt", package = "methylKit") )
+file.list <- list(
+  system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "control2.myCpG.txt", package = "methylKit") 
+)
 
 
 # read the files to a methylRawList object: myobj
-myobj=methRead(file.list,
-           sample.id=list("test1","test2","ctrl1","ctrl2"),
-           assembly="hg18",
-           treatment=c(1,1,0,0),
-           context="CpG"
-           )
+myobj <- methRead(file.list, assembly = "hg18",
+                  sample.id = list("test1","test2","ctrl1","ctrl2"),
+                  treatment = c(1,1,0,0), context = "CpG")
 ```
 
 In addition to the options we mentioned above,
@@ -148,24 +148,22 @@ call them  **methylDB** objects.
 
 We can now create a `methylRawListDB` object, which stores the same content as *myobj* from above. But the single `methylRaw` objects retrieve their data from the tabix-file linked under `dbpath`. 
 
-```{r, message=FALSE,warning=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(methylKit)
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+file.list <- list(
+  system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+  system.file("extdata", "control2.myCpG.txt", package = "methylKit") 
+)
 
 
 # read the files to a methylRawListDB object: myobjDB 
 # and save in databases in folder methylDB
-myobjDB=methRead(file.list,
-           sample.id=list("test1","test2","ctrl1","ctrl2"),
-           assembly="hg18",
-           treatment=c(1,1,0,0),
-           context="CpG",
-           dbtype = "tabix",
-           dbdir = "methylDB"
-           )
+myobjDB <- methRead(file.list, assembly = "hg18",
+                    sample.id = list("test1","test2","ctrl1","ctrl2"),
+                    treatment = c(1,1,0,0), context = "CpG",
+                    dbtype = "tabix", dbdir = "methylDB")
 
 print(myobjDB[[1]]@dbpath)
 
@@ -200,12 +198,13 @@ for CpG methylation. The user has the option to save the methylation call files
 to a folder given by `save.folder` option. The saved files can be read-in using the `methRead` function when needed. 
 
 ```{r, eval=FALSE}
-my.methRaw=processBismarkAln( location = 
-                                system.file("extdata",
-                                                "test.fastq_bismark.sorted.min.sam", 
-	                                              package = "methylKit"),
-                         sample.id="test1", assembly="hg18", 
-                         read.context="CpG", save.folder=getwd())
+my.methRaw <- processBismarkAln(
+  location = system.file("extdata",
+                         "test.fastq_bismark.sorted.min.sam",
+                         package = "methylKit"),
+  sample.id = "test1", assembly = "hg18", 
+  read.context = "CpG", save.folder = getwd()
+)
 ```
 
 
@@ -217,19 +216,19 @@ check `processBismarkAln` documentation.
 Since we read the methylation data now, we can check the basic stats about the methylation data such as coverage and percent  methylation. We now have a `methylRawList` object which contains methylation information per sample. The following command prints out percent methylation statistics for second sample: "test2"
 
 ```{r}
-getMethylationStats(myobj[[2]],plot=FALSE,both.strands=FALSE)
+getMethylationStats(myobj[[2]], plot = FALSE, both.strands = FALSE)
 ```
 
 The following command plots the histogram for percent methylation distribution.The figure below is the histogram and numbers on bars denote what percentage of locations are contained in that bin. Typically, percent methylation histogram should have two peaks on both ends. In any given cell, any given base are either methylated or not. Therefore, looking at many cells should yield a similar pattern where we see lots of locations with high methylation and lots of locations with low methylation.
 
 ```{r} 
-getMethylationStats(myobj[[2]],plot=TRUE,both.strands=FALSE)
+getMethylationStats(myobj[[2]], plot = TRUE, both.strands = FALSE)
 ```
 
 We can also plot the read coverage per base information in a similar way, again numbers on bars denote what percentage of locations are contained in that bin. Experiments that are highly suffering from PCR duplication bias will have a secondary peak towards the right hand side of the histogram.
 
 ```{r}
-getCoverageStats(myobj[[2]],plot=TRUE,both.strands=FALSE)
+getCoverageStats(myobj[[2]], plot = TRUE, both.strands = FALSE)
 ```
 
 ## Filtering samples based on read coverage
@@ -237,8 +236,9 @@ getCoverageStats(myobj[[2]],plot=TRUE,both.strands=FALSE)
 It might be useful to filter samples based on coverage. Particularly, if our samples are suffering from PCR bias it would be useful to discard bases with very high read coverage. Furthermore, we would also like to discard bases that have low read coverage, a high enough read coverage will increase the power of the statistical tests. The code below filters a `methylRawList` and discards bases that have coverage below 10X and also discards the bases that have more than 99.9th percentile of coverage in each sample.
 
 ```{r}
-filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
-                                      hi.count=NULL,hi.perc=99.9)
+filtered.myobj <- filterByCoverage(myobj, 
+                                   lo.count = 10, lo.perc = NULL,
+                                   hi.count = NULL, hi.perc = 99.9)
 ```
 
 
@@ -248,7 +248,7 @@ filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
 In order to do further analysis, we will need to get the bases covered in all samples. The following function will merge all samples to one object for base-pair locations that are covered in all samples. Setting `destrand=TRUE` (the default is FALSE) will merge reads on both strands of a CpG dinucleotide. This provides better coverage, but only advised when looking at CpG methylation (for CpH methylation this will cause wrong results in subsequent analyses). In addition, setting `destrand=TRUE` will only work when operating on base-pair resolution, otherwise setting this option TRUE will have no effect. The `unite()` function will return a `methylBase` object which will be our main object for all comparative analysis. The `methylBase` object contains methylation information for regions/bases that are covered in all samples.
 
 ```{r}
-meth=unite(myobj, destrand=FALSE)
+meth <- unite(myobj, destrand = FALSE)
 ```
 
 Let us take a look at the data content of methylBase object:
@@ -259,13 +259,13 @@ head(meth)
 
 By default, `unite` function produces bases/regions covered in all samples. That requirement can be relaxed using "min.per.group" option in `unite` function.
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
 # creates a methylBase object, 
 # where only CpGs covered with at least 1 sample per group will be returned
 
 # there were two groups defined by the treatment vector, 
 # given during the creation of myobj: treatment=c(1,1,0,0)
-meth.min=unite(myobj,min.per.group=1L)
+meth.min <- unite(myobj, min.per.group = 1L)
 ```
 
 ## Sample Correlation
@@ -274,7 +274,7 @@ We can check the correlation between samples using `getCorrelation`. This functi
 
 
 ```{r}
-getCorrelation(meth,plot=TRUE)
+getCorrelation(meth, plot = TRUE)
 ```
 
 ## Clustering samples
@@ -282,19 +282,19 @@ getCorrelation(meth,plot=TRUE)
 We can cluster the samples based on the similarity of their methylation profiles. The following function will cluster the samples and draw a dendrogram.
 
 ```{r}
-clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
+clusterSamples(meth, dist = "correlation", method = "ward", plot = TRUE)
 ```
 
 Setting the `plot=FALSE` will return a dendrogram object which can be manipulated by users or fed in to other user functions that can work with dendrograms.
 
 ```{r,message=FALSE}
-hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
+hc <- clusterSamples(meth, dist = "correlation", method = "ward", plot = FALSE)
 ```
 
 We can also do a PCA analysis on our samples. The following function will plot a scree plot for importance of components.
 
 ```{r}
-PCASamples(meth, screeplot=TRUE)
+PCASamples(meth, screeplot = TRUE)
 ```
 
 We can also plot PC1 and PC2 axis and a scatter plot of our samples on those axis which will reveal how they cluster.
@@ -314,15 +314,14 @@ The function gets principal components from the percent methylation matrix deriv
 # this is a bogus data frame
 # we don't have batch information
 # for the example data
-sampleAnnotation=data.frame(batch_id=c("a","a","b","b"),
-                            age=c(19,34,23,40))
+sampleAnnotation <- data.frame(batch_id = c("a","a","b","b"),
+                               age = c(19,34,23,40))
 
-as=assocComp(mBase=meth,sampleAnnotation)
-as
+(as <- assocComp(mBase = meth, sampleAnnotation))
 
 # construct a new object by removing the first pricipal component
 # from percent methylation value matrix
-newObj=removeComp(meth,comp=1)
+newObj <- removeComp(meth, comp = 1)
 ```
 
 In addition to the methods described above, if you have used other ways to correct for batch effects and obtained a corrected
@@ -337,25 +336,25 @@ object that does not have missing values (that means all bases in methylBase obj
 should have coverage in all samples).
 
 ```{r}
-mat=percMethylation(meth)
+mat <- percMethylation(meth)
 
 # do some changes in the matrix
 # this is just a toy example
 # ideally you want to correct the matrix
 # for batch effects
-mat[mat==100]=80
+mat[mat == 100] <- 80
  
 # reconstruct the methylBase from the corrected matrix
-newobj=reconstruct(mat,meth)
+newobj <- reconstruct(mat, meth)
 ```
 
 ## Tiling windows analysis
 
 For some situations, it might be desirable to summarize methylation information over tiling windows rather than doing base-pair resolution analysis. `methylKit` provides functionality to do such analysis. The function below tiles the genome with windows 1000bp length and 1000bp step-size and summarizes the methylation information on those tiles. In this case, it returns a `methylRawList` object which can be fed into `unite` and `calculateDiffMeth` functions consecutively to get differentially methylated regions. The tilling function adds up C and T counts from each covered cytosine and returns a total C and T count for each tile.
 
-```{r,warning=FALSE}
-tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
-head(tiles[[1]],3)
+```{r, warning=FALSE}
+tiles <- tileMethylCounts(myobj, win.size = 1000, step.size = 1000)
+head(tiles[[1]], 3)
 ```
 
 ## Finding differentially methylated bases or regions
@@ -393,27 +392,30 @@ data has replicates, the logistic regression based modeling and test will
 be used.
 
 ```{r}
-myDiff=calculateDiffMeth(meth)
+myDiff <- calculateDiffMeth(meth)
 ```
 
 After q-value calculation, we can select the differentially methylated regions/bases based on q-value and percent methylation difference cutoffs. Following bit selects the bases that have q-value<0.01 and percent methylation difference larger than 25\%. If you specify `type="hyper"` or `type="hypo"` options, you will get hyper-methylated or hypo-methylated regions/bases.
 
 ```{r}
 # get hyper methylated bases
-myDiff25p.hyper=getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
+myDiff25p.hyper <- getMethylDiff(myDiff, difference = 25,
+                                 qvalue = 0.01, type = "hyper")
 #
 # get hypo methylated bases
-myDiff25p.hypo=getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
+myDiff25p.hypo <- getMethylDiff(myDiff, difference = 25,
+                                qvalue = 0.01, type = "hypo")
 #
 #
 # get all differentially methylated bases
-myDiff25p=getMethylDiff(myDiff,difference=25,qvalue=0.01)
+myDiff25p <- getMethylDiff(myDiff, difference = 25,
+                           qvalue = 0.01)
 ```
 
 We can also visualize the distribution of hypo/hyper-methylated bases/regions per chromosome using the following function. In this case, the example set includes only one chromosome. The `list` shows percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
 
 ```{r}
-diffMethPerChr(myDiff,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+diffMethPerChr(myDiff, plot = FALSE, qvalue.cutoff = 0.01, meth.cutoff = 25)
 ```
 
 ## Correcting for overdispersion
@@ -451,15 +453,17 @@ groups adding a treatment vector for sample groupings will be no better than
 not adding the treatment vector. Below, we simulate methylation data and use
 overdispersion correction for the logistic regression model.
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
+sim.methylBase1 <- dataSim(
+  replicates = 6,
+  sites = 1000,
+  treatment = c(rep(1, 3), rep(0, 3)),
+  sample.ids = c(paste0("test", 1:3), 
+                 paste0("ctrl", 1:3))
+)
 
-sim.methylBase1<-dataSim(replicates=6,sites=1000,
-                         treatment=c(rep(1,3),rep(0,3)),
-                        sample.ids=c(paste0("test",1:3),paste0("ctrl",1:3))
-                        )
-
-my.diffMeth<-calculateDiffMeth(sim.methylBase1[1:,],
-                                overdispersion="MN",test="Chisq",mc.cores=1)
+my.diffMeth <-calculateDiffMeth(sim.methylBase1[1:, ], mc.cores = 1,
+                                overdispersion = "MN", test = "Chisq")
 ```
 
 
@@ -477,17 +481,21 @@ The data frame can include more columns, and those columns can also be
 `factor` variables. The row order of the data.frame should match the order
 of samples in the `methylBase` object.
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
+covariates <- data.frame(ag e= c(30, 80, 34, 30, 80, 40))
 
-covariates=data.frame(age=c(30,80,34,30,80,40))
-sim.methylBase<-dataSim(replicates=6,sites=1000,
-                        treatment=c(rep(1,3),rep(0,3)),
-                        covariates=covariates,
-                        sample.ids=c(paste0("test",1:3),paste0("ctrl",1:3))
-                        )
-my.diffMeth3<-calculateDiffMeth(sim.methylBase,
-                                covariates=covariates,
-                                overdispersion="MN",test="Chisq",mc.cores=1)
+sim.methylBase <- dataSim(
+  replicates = 6,
+  sites = 1000,
+  treatment = c(rep(1, 3),
+                rep(0, 3)),
+  covariates = covariates,
+  sample.ids = c(paste0("test", 1:3),
+                 paste0("ctrl", 1:3))
+)
+
+my.diffMeth3 <- calculateDiffMeth(sim.methylBase, covariates = covariates,
+                                  overdispersion = "MN", test = "Chisq", mc.cores = 1)
 ```
 
 ## Finding differentially methylated bases using multiple-cores
@@ -497,7 +505,7 @@ The differential methylation calculation speed can be increased substantially by
 The following piece of code will run differential methylation calculation using 2 cores.
 
 ```{r, eval=FALSE}
-myDiff=calculateDiffMeth(meth,num.cores=2)
+myDiff <- calculateDiffMeth(meth, num.cores = 2)
 ```
 
 
@@ -516,13 +524,14 @@ Bioconductor.org.
 library(genomation)
 
 # read the gene BED file
-gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", 
-                                           package = "methylKit"))
+gene.obj <- readTranscriptFeatures(
+  system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit")
+)
 #
 # annotate differentially methylated CpGs with 
 # promoter/exon/intron using annotation data
 #
-annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
+annotateWithGeneParts(as(myDiff25p, "GRanges"), gene.obj)
 ```
 
 Similarly, we can read the CpG island annotation and annotate our differentially methylated bases/regions with them.
@@ -530,14 +539,19 @@ Similarly, we can read the CpG island annotation and annotate our differentially
 ```{r}
 # read the shores and flanking regions and name the flanks as shores 
 # and CpG islands as CpGi
-cpg.obj=readFeatureFlank(system.file("extdata", "cpgi.hg18.bed.txt", 
-                                        package = "methylKit"),
-                           feature.flank.name=c("CpGi","shores"))
+cpg.obj <- readFeatureFlank(
+  system.file("extdata", "cpgi.hg18.bed.txt", package = "methylKit"),
+  feature.flank.name = c("CpGi", "shores")
+)
 #
 # convert methylDiff object to GRanges and annotate
-diffCpGann=annotateWithFeatureFlank(as(myDiff25p,"GRanges"),
-                                    cpg.obj$CpGi,cpg.obj$shores,
-                         feature.name="CpGi",flank.name="shores")
+diffCpGann <- annotateWithFeatureFlank(
+  as(myDiff25p, "GRanges"),
+  cpg.obj$CpGi, 
+  cpg.obj$shores,
+  feature.name = "CpGi",
+  flank.name = "shores"
+)
 ```
 
 ## Regional analysis
@@ -547,7 +561,7 @@ genomation functions used above to provide the locations of promoters. For regio
 provide regions of interest as GRanges object.
 
 ```{r}
-promoters=regionCounts(myobj,gene.obj$promoters)
+promoters <- regionCounts(myobj, gene.obj$promoters)
 
 head(promoters[[1]])
 ```
@@ -557,7 +571,7 @@ head(promoters[[1]])
 After getting the annotation of differentially methylated regions, we can get the distance to TSS and nearest gene name using the `getAssociationWithTSS` function from genomation package.
 
 ```{r,}
-diffAnn=annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
+diffAnn <- annotateWithGeneParts(as(myDiff25p, "GRanges"), gene.obj)
 
 # target.row is the row number in myDiff25p
 head(getAssociationWithTSS(diffAnn))
@@ -568,27 +582,27 @@ head(getAssociationWithTSS(diffAnn))
 It is also desirable to get percentage/number of differentially methylated regions that overlap with intron/exon/promoters
 
 ```{r}
-getTargetAnnotationStats(diffAnn,percentage=TRUE,precedence=TRUE)
+getTargetAnnotationStats(diffAnn, percentage = TRUE, precedence = TRUE)
 ```
 
 We can also plot the percentage of differentially methylated bases overlapping with exon/intron/promoters
 
 ```{r}
-plotTargetAnnotation(diffAnn,precedence=TRUE,
-    main="differential methylation annotation")
+plotTargetAnnotation(diffAnn, precedence = TRUE,
+                     main = "differential methylation annotation")
 ```
 
 We can also plot the CpG island annotation the same way. The plot below shows what percentage of differentially methylated bases are on CpG islands, CpG island shores and other regions.
 
 ```{r}
-plotTargetAnnotation(diffCpGann,col=c("green","gray","white"),
-       main="differential methylation annotation")
+plotTargetAnnotation(diffCpGann, col = c("green", "gray", "white"),
+                     main = "differential methylation annotation")
 ```
 
 It might be also useful to get percentage of intron/exon/promoters that overlap with differentially methylated bases.
 
 ```{r}
-getFeatsWithTargetsStats(diffAnn,percentage=TRUE)
+getFeatsWithTargetsStats(diffAnn, percentage = TRUE)
 ```
 
 # methylKit convenience functions
@@ -599,9 +613,9 @@ Most `methylKit` objects (methylRaw,methylBase and methylDiff), including methyl
 
 ```{r}
 class(meth)
-as(meth,"GRanges")
+as(meth, "GRanges")
 class(myDiff)
-as(myDiff,"GRanges")
+as(myDiff, "GRanges")
 ```
 
 
@@ -610,7 +624,7 @@ as(myDiff,"GRanges")
 
 ```{r}
 class(myobjDB[[1]])
-as(myobjDB[[1]],"methylRaw")
+as(myobjDB[[1]], "methylRaw")
 ```
 
 You can also convert methylDB objects to their in-memory equivalents. Since
@@ -618,10 +632,10 @@ that requires an additional parameter (the directory where the files will be
 located), we have a different function, named `makeMethylDB` to achieve this 
 goal. Below, we convert a methylBase object to `methylBaseDB` and saving it 
 at "exMethylDB" directory.
-```{r,eval=FALSE}
+```{r, eval=FALSE}
 data(methylKit)
  
-objDB=makeMethylDB(methylBase.obj,"exMethylDB")
+objDB <- makeMethylDB(methylBase.obj, "exMethylDB")
 
 ```
 
@@ -633,7 +647,7 @@ object will be returned as a result of `select` function. Or you can use the
 `'['` notation to subset the methylKit objects.
 
 ```{r}
-select(meth,1:5) # get first 10 rows of a methylBase object
+select(meth, 1:5) # get first 10 rows of a methylBase object
 myDiff[21:25,] # get 5 rows of a methylDiff object
 ```
 
@@ -647,13 +661,19 @@ We can select rows from any methylKit object, that lie inside the ranges of a
  function. An appropriate methylKit object will be returned as a result of 
  `selectByOverlap` function.
  
-```{r,message=FALSE,warning=FALSE,eval=FALSE}
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
 library(GenomicRanges)
-my.win=GRanges(seqnames="chr21",
-               ranges=IRanges(start=seq(from=9764513,by=10000,length.out=20),width=5000) )
+my.win <- GRanges(
+  seqnames = "chr21",
+  ranges = IRanges(
+    start = seq(from = 9764513,
+                by = 10000,
+                length.out = 20),
+    width = 5000) 
+)
  
 # selects the records that lie inside the regions
-selectByOverlap(myobj[[1]],my.win)
+selectByOverlap(myobj[[1]], my.win)
 ```
 
 **Important:** Using `selectByOverlap` on methylDB objects will return its normal `methylKit` pendant, to avoid overhead of database operations.
@@ -668,9 +688,9 @@ match the treatment vector order.
 
 ```{r,eval=FALSE}
 # creates a new methylRawList object
-myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+myobj2 <- reorganize(myobj, sample.ids = c("test1", "ctrl2"), treatment = c(1, 0))
 # creates a new methylBase object
-meth2 =reorganize(meth,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
+meth2 <- reorganize(meth, sample.ids = c("test1", "ctrl2"), treatment = c(1, 0))
 ```
 
 
@@ -680,7 +700,7 @@ Percent methylation values can be extracted from `methylBase` object by using `p
 
 ```{r, eval=FALSE}
 # creates a matrix containing percent methylation values
-perc.meth=percMethylation(meth)
+perc.meth <- percMethylation(meth)
 ```
 
 ## methSeg(): segmentation of methylation or differential methylation profiles
@@ -699,18 +719,18 @@ http://zvfak.blogspot.de/2015/06/segmentation-of-methylation-profiles.html
 
 ```{r, eval=FALSE}
  download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
-               destfile="H1.chr21.chr22.rds",method="curl")
+               destfile = "H1.chr21.chr22.rds", method = "curl")
 
- mbw=readRDS("H1.chr21.chr22.rds")
+ mbw <- readRDS("H1.chr21.chr22.rds")
 
  # it finds the optimal number of componets as 6
- res=methSeg(mbw,diagnostic.plot=TRUE,maxInt=100,minSeg=10)
+ res <- methSeg(mbw, diagnostic.plot = TRUE, maxInt = 100, minSeg = 10)
 
  # however the BIC stabilizes after 4, we can also try 4 componets
- res=methSeg(mbw,diagnostic.plot=TRUE,maxInt=100,minSeg=10,G=1:4)
+ res <- methSeg(mbw, diagnostic.plot = TRUE, maxInt = 100, minSeg = 10, G = 1:4)
 
  # get segments to BED file
- methSeg2bed(res,filename="H1.chr21.chr22.trial.seg.bed")
+ methSeg2bed(res, filename="H1.chr21.chr22.trial.seg.bed")
 
 
 ```
@@ -813,5 +833,7 @@ sessionInfo()
 ```{r,eval=TRUE,echo=FALSE}
 # tidy up                  
 rm(myobjDB)              
-unlink(list.files(pattern = "methylDB",full.names = TRUE),recursive = TRUE)
+unlink(list.files(pattern = "methylDB",
+                  full.names = TRUE),
+       recursive = TRUE)
 ```

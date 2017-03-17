@@ -60,17 +60,16 @@ You can also check out the blogposts we make on using methylKit
 in R console,
 ```r
 library(devtools)
-install_github("al2na/methylKit", build_vignettes=FALSE, 
-  repos=BiocInstaller::biocinstallRepos(),
-  dependencies=TRUE)
+install_github("al2na/methylKit", build_vignettes = FALSE, 
+    repos = BiocInstaller::biocinstallRepos(), dependencies = TRUE)
 ```
 if this doesn't work, you might need to add `type="source"` argument.
 ### Install the development version
 ```r
 library(devtools)
-install_github("al2na/methylKit", build_vignettes=FALSE, 
-  repos=BiocInstaller::biocinstallRepos(),ref="development",
-  dependencies=TRUE)
+install_github("al2na/methylKit", build_vignettes = FALSE, 
+    repos = BiocInstaller::biocinstallRepos(), dependencies = TRUE,
+    ref = "development")
 ```
 if this doesn't work, you might need to add `type="source"` argument.
 
@@ -113,25 +112,24 @@ library(methylKit)
 # this is a list of example files, ships with the package
 # for your own analysis you will just need to provide set of paths to files
 # you will not need the "system.file(..."  part
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
+file.list <- list(
+    system.file("extdata", "test1.myCpG.txt", package = "methylKit"), 
+    system.file("extdata", "test2.myCpG.txt", package = "methylKit"), 
+    system.file("extdata", "control1.myCpG.txt", package = "methylKit"), 
+    system.file("extdata", "control2.myCpG.txt", package = "methylKit")
+)
 
 
 # read the files to a methylRawList object: myobj
-myobj=read( file.list,
-           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
+myobj <- read(file.list, sample.id = list("test1", "test2", "ctrl1", "ctrl2"), 
+              assembly = "hg18", treatment = c(1, 1, 0, 0))
 
 ```
 
 ###Get descriptive stats on methylation###
 ```r
 # get methylation statistics on second file "test2" in myobj which is a class of methylRawList
-getMethylationStats(myobj[[2]],plot=F,both.strands=F)
-
-# plot methylation statistics on second file "test2" in myobj which is a class of methylRawList
-getMethylationStats(myobj[[2]],plot=T,both.strands=F)
+getMethylationStats(myobj[[2]], plot = F, both.strands = F)
 ```
 
 ###Get bases covered by all samples and cluster samples###
@@ -142,20 +140,20 @@ head(myobj[[2]])
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # setting destrand=TRUE, will merge reads on both strans of a CpG dinucleotide. This provides better 
 # coverage, but only advised when looking at CpG methylation
-meth=unite(myobj,destrand=TRUE)
+meth <- unite(myobj, destrand = TRUE)
 
 # merge all samples to one table by using base-pair locations that are covered in all samples
 # 
-meth=unite(myobj)
+meth <- unite(myobj)
 
 # cluster all samples using correlation distance and return a tree object for plclust
-hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
+hc <- clusterSamples(meth, dist = "correlation", method = "ward", plot = FALSE)
 
 # cluster all samples using correlation distance and plot hiarachical clustering
-clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
+clusterSamples(meth, dist = "correlation", method = "ward", plot = TRUE)
 
 # screeplot of principal component analysis.
-PCASamples(meth, screeplot=TRUE)
+PCASamples(meth, screeplot = TRUE)
 
 # principal component anlaysis of all samples.
 PCASamples(meth)
@@ -165,19 +163,21 @@ Before differential methylation calculation, consider filtering high coverage ba
 
 ```r
 # calculate differential methylation p-values and q-values
-myDiff=calculateDiffMeth(meth)
+myDiff <- calculateDiffMeth(meth)
 
 # check how data part of methylDiff object looks like
-head( myDiff )
+head(myDiff)
 
 # get differentially methylated regions with 25% difference and qvalue<0.01
-myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
+myDiff25p <- get.methylDiff(myDiff, difference = 25, qvalue = 0.01)
 
 # get differentially hypo methylated regions with 25% difference and qvalue<0.01
-myDiff25pHypo =get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo") 
+myDiff25pHypo <- get.methylDiff(myDiff, difference = 25, qvalue = 0.01, 
+                                type = "hypo")
 
 # get differentially hyper methylated regions with 25% difference and qvalue<0.01
-myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
+myDiff25pHyper <- get.methylDiff(myDiff, difference = 25, qvalue = 0.01, 
+                                 type = "hyper")
 ```
 
 ###Annotate differentially methylated bases/regions###
@@ -186,10 +186,12 @@ myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 # IMPORTANT: annotation files that come with the package (version >=0.5) are a subset of full annotation
 # files. Download appropriate annotation files from UCSC (or other sources) in BED format
 library(genomation) # install from BioC
-gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
+gene.obj <- readTranscriptFeatures(
+  system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit")
+)
 
 # annotate differentially methylated Cs with promoter/exon/intron using annotation data
-annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
+annotateWithGeneParts(as(myDiff25p, "GRanges"), gene.obj)
 ```
 
 SEE PACKAGE VIGNETTE and TUTORIAL (both hyper-linked above) FOR MORE
