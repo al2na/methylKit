@@ -20,9 +20,10 @@ dataSim(replicates, sites, treatment, percentage = 10, effect = 25,
 \item{percentage}{the proportion of sites which should be affected by the 
 treatment.}
 
-\item{effect}{a number or vector specifying the effect size of the 
-treatment.
-                   See `Examples'.}
+\item{effect}{a number between 0 and 100 specifying the effect size of 
+the treatment. This is essentially describing the average
+percent methylation difference between differentially
+methylated bases.See 'Examples' and 'Details'.}
 
 \item{alpha}{shape1 parameter for beta distribution (used for 
 initial sampling of methylation  proportions)}
@@ -39,9 +40,11 @@ sampling of methylation  proportions)}
 but can be 
 overwritten by a character vector containing sample names.}
 
-\item{assembly}{the assembly description (e.g. "hg18")}
+\item{assembly}{the assembly description (e.g. "hg18").Only
+needed for book keeping.}
 
-\item{context}{the experimanteal context of the data (e.g. "CpG")}
+\item{context}{the experimanteal context of the data (e.g. "CpG"). Only
+needed for book keeping.}
 
 \item{add.info}{if set to TRUE, the output will be a list with the first 
 element being 
@@ -49,7 +52,7 @@ the methylbase object and a vector of indices that
 indicate which CpGs should be differentially
 methylated. This vector can be used to subset
 simulated methylBase or methylDiff object with
-differentually methylated bases.}
+differentially methylated bases.}
 }
 \value{
 a methylBase object containing simulated methylation data, 
@@ -77,8 +80,9 @@ The parameters \code{percentage} and \code{effect} determine the proportion
 of sites that are 
 affected by the treatment (meaning differential sites) and the strength of
 this influence, respectively. \code{effect} is added on top of \eqn{\mu} for
-rows that are affected by the treament, and affected group of samples for that
-particular treatment will not be distributed by \eqn{Beta(\mu+effect,\theta)}.
+the CpGs that are affected by the treament. The affected group of samples 
+for that
+particular CpG will now be distributed by \eqn{Beta(\mu+effect,\theta)}.
 The coverage is modeled with a negative binomial distribution, using
 \code{rnbinom} function with \code{size=1} and \code{prob=0.01}. 
 The additional information needed for a valid methylBase object, such as 
