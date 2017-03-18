@@ -20,18 +20,19 @@ dataSim(replicates, sites, treatment, percentage = 10, effect = 25,
 \item{percentage}{the proportion of sites which should be affected by the 
 treatment.}
 
-\item{effect}{a number or vector specifying the effect size of the 
-treatment.
-                   See `Examples'.}
+\item{effect}{a number between 0 and 100 specifying the effect size of 
+the treatment. This is essentially describing the average
+percent methylation difference between differentially
+methylated bases.See 'Examples' and 'Details'.}
 
 \item{alpha}{shape1 parameter for beta distribution (used for 
-substitution probabilites)}
+initial sampling of methylation  proportions)}
 
 \item{beta}{shape2 parameter for beta distribution (used for 
-substitution probabilites)}
+initial sampling of methylation  proportions)}
 
-\item{theta}{dispersion parameter for beta distribution (used for 
-substitution probabilites)}
+\item{theta}{dispersion parameter for beta distribution (initial 
+sampling of methylation  proportions)}
 
 \item{covariates}{a data.frame containing covariates (optional)}
 
@@ -39,20 +40,25 @@ substitution probabilites)}
 but can be 
 overwritten by a character vector containing sample names.}
 
-\item{assembly}{the assembly description (e.g. "hg18")}
+\item{assembly}{the assembly description (e.g. "hg18").Only
+needed for book keeping.}
 
-\item{context}{the experimanteal context of the data (e.g. "CpG")}
+\item{context}{the experimanteal context of the data (e.g. "CpG"). Only
+needed for book keeping.}
 
 \item{add.info}{if set to TRUE, the output will be a list with the first 
 element being 
-the methylbase object and a vector containing the 
-treatment effect sizes 
-of all sites as the second element.}
+the methylbase object and a vector of indices that 
+indicate which CpGs should be differentially
+methylated. This vector can be used to subset
+simulated methylBase or methylDiff object with
+differentially methylated bases.}
 }
 \value{
 a methylBase object containing simulated methylation data, 
-or a list containing the methylbase object and the indices of all treated
- sites as the second element.
+or if add.info=TRUE a list containing the methylbase object and 
+the indices of all treated sites (differentially methylated bases or regions) 
+as the second element.
 }
 \description{
 The function simulates DNA methylation data from multiple samples.
@@ -60,31 +66,39 @@ See references for detailed explanation on statistics.
 }
 \section{Details}{
 
-While the coverage is modeled with a binomial distribution, the function uses 
-a Beta distribution to simulate the methylation background across all samples.\cr
-The parameters \code{alpha}, \code{beta} and \code{theta} determine this beta
- distribution and 
-thereby the methylation values.\cr
+The function uses 
+a Beta distribution to simulate the methylation proportion 
+background across all samples. 
+The parameters \code{alpha}, \code{beta} used in a beta distribution to draw
+methylation proportions,\eqn{\mu}, from a typical bimodal distribution. 
+For each initial methylation proportion drawn using the parameters above, 
+a range of 
+methylation proportions is distributed around the original \eqn{\mu} with
+overdispersion parameter \eqn{\theta}, this is using an alternative 
+parameterization of Beta distribution:   \eqn{Beta(\mu,\theta)}. 
 The parameters \code{percentage} and \code{effect} determine the proportion 
 of sites that are 
-affected by the treatment and the strength of this influence, respectively.\cr
-The additional information needed for a valid methylBase.obj is generated as 
-"dummy
-values", but can be overwritten as needed.
+affected by the treatment (meaning differential sites) and the strength of
+this influence, respectively. \code{effect} is added on top of \eqn{\mu} for
+the CpGs that are affected by the treament. The affected group of samples 
+for that
+particular CpG will now be distributed by \eqn{Beta(\mu+effect,\theta)}.
+The coverage is modeled with a negative binomial distribution, using
+\code{rnbinom} function with \code{size=1} and \code{prob=0.01}. 
+The additional information needed for a valid methylBase object, such as 
+CpG start, end and strand, is generated as "dummy values", 
+but can be overwritten as needed.
 }
+
 \examples{
 
 data(methylKit)
 
-# Simualte data for 4 samples with 20000 sites each.
-# The methylation in 10\% of the sites are elevated by 50\%.
+# Simulate data for 4 samples with 20000 sites each.
+# The methylation in 10\% of the sites are elevated by 25\%.
 my.methylBase=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
 percentage=10,effect=25)
 
-# Simulate data with variable effect sizes of the treatment
-# The methylation in 30\% of the sites are elevated by 40\%, 50\% or 60\%.
-my.methylBase2=dataSim(replicates=4,sites=2000,treatment=c(1,1,0,0),
-percentage=30,effect=10:40)
+
 
 }
-

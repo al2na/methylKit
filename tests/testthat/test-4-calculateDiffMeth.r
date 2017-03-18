@@ -1,4 +1,4 @@
-library("methylKit")
+#library("methylKit")
 context("calculateDiffMeth checks")
 
 file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
@@ -7,10 +7,10 @@ file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit")
                 system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 file.list
 
-myobj=read( file.list,
+myobj=methRead( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
-mydblist = suppressMessages(read( file.list,
+mydblist = suppressMessages(methRead( file.list,
                                   sample.id=list("t1","t2","c1","c2"),assembly="hg18",
                                   pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
 
@@ -28,11 +28,11 @@ myDiff2=calculateDiffMeth(methidh2)
 suppressMessages(myDiffDB <- calculateDiffMeth(methidhDB))
 suppressMessages(myDiff2DB <- calculateDiffMeth(methidh2DB))
 
-hypo <- get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
-hyper <- get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
+hypo <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
+hyper <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 
-suppressMessages(hypoDB <- get.methylDiff(myDiffDB,difference=25,qvalue=0.01,type="hypo"))
-suppressMessages(hyperDB <- get.methylDiff(myDiffDB,difference=25,qvalue=0.01,type="hyper"))
+suppressMessages(hypoDB <- getMethylDiff(myDiffDB,difference=25,qvalue=0.01,type="hypo"))
+suppressMessages(hyperDB <- getMethylDiff(myDiffDB,difference=25,qvalue=0.01,type="hyper"))
 
 
 myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )

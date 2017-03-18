@@ -3,14 +3,14 @@
 \docType{methods}
 \name{selectByOverlap}
 \alias{selectByOverlap}
-\alias{selectByOverlap,methylBase-method}
-\alias{selectByOverlap,methylBaseDB-method}
-\alias{selectByOverlap,methylDiff-method}
-\alias{selectByOverlap,methylDiffDB-method}
 \alias{selectByOverlap,methylRaw-method}
-\alias{selectByOverlap,methylRawDB-method}
 \alias{selectByOverlap,methylRawList-method}
+\alias{selectByOverlap,methylBase-method}
+\alias{selectByOverlap,methylDiff-method}
+\alias{selectByOverlap,methylRawDB-method}
 \alias{selectByOverlap,methylRawListDB-method}
+\alias{selectByOverlap,methylBaseDB-method}
+\alias{selectByOverlap,methylDiffDB-method}
 \title{selects records of methylDB objects lying inside a GRanges range}
 \usage{
 selectByOverlap(object,ranges)
@@ -89,4 +89,3 @@ unlink("methylDB",recursive=TRUE)
 \author{
 Alexander Gosdschan
 }
-

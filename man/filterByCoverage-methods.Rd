@@ -4,8 +4,8 @@
 \name{filterByCoverage}
 \alias{filterByCoverage}
 \alias{filterByCoverage,methylRaw-method}
-\alias{filterByCoverage,methylRawDB-method}
 \alias{filterByCoverage,methylRawList-method}
+\alias{filterByCoverage,methylRawDB-method}
 \alias{filterByCoverage,methylRawListDB-method}
 \title{Filter methylRaw, methylRawDB, methylRawList and methylRawListDB object 
 based on read coverage}
@@ -103,6 +103,7 @@ in-memory-calculation as flat file database or if the size of the database
 allows the calculation in-memory, 
 then you might change the value of this parameter.
 }
+
 \examples{
 data(methylKit)
 
@@ -127,4 +128,3 @@ rm(filtered3)
 unlink("methylDB",recursive=TRUE)
 
 }
-

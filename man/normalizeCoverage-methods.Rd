@@ -70,6 +70,7 @@ in-memory-calculation as flat file database or if the size of the
 database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 
 data(methylKit)
@@ -84,4 +85,3 @@ save.db=TRUE,dbdir="methylDB")
 \author{
 Altuna Akalin
 }
-

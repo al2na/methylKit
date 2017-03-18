@@ -2,8 +2,8 @@
 % Please edit documentation in R/diffMeth.R
 \docType{class}
 \name{methylDiff-class}
-\alias{methylDiff}
 \alias{methylDiff-class}
+\alias{methylDiff}
 \title{An S4 class that holds differential methylation information}
 \description{
 This class is designed to hold statistics and locations for differentially 
@@ -55,10 +55,10 @@ The following functions provides access to data slots of methylDiff:
 \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 \code{\link[methylKit]{getContext}}
 }
+
 \examples{
 data(methylKit)
 library(GenomicRanges)
 my.gr=as(methylDiff.obj,"GRanges")
 
 }
-

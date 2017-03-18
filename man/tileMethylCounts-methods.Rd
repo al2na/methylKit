@@ -3,12 +3,12 @@
 \docType{methods}
 \name{tileMethylCounts}
 \alias{tileMethylCounts}
-\alias{tileMethylCounts,methylBase-method}
-\alias{tileMethylCounts,methylBaseDB-method}
 \alias{tileMethylCounts,methylRaw-method}
-\alias{tileMethylCounts,methylRawDB-method}
 \alias{tileMethylCounts,methylRawList-method}
+\alias{tileMethylCounts,methylBase-method}
+\alias{tileMethylCounts,methylRawDB-method}
 \alias{tileMethylCounts,methylRawListDB-method}
+\alias{tileMethylCounts,methylBaseDB-method}
 \title{Get methylated/unmethylated base counts for tilling windows}
 \usage{
 tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,save.db,...)
@@ -81,6 +81,7 @@ while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{m
 in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 data(methylKit)
 
@@ -89,4 +90,3 @@ tiled.methylRaw=tileMethylCounts(object=methylRawList.obj,win.size=1000,
 
 
 }
-

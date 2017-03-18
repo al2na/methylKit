@@ -2,11 +2,11 @@
 % Please edit documentation in R/adjust.methylC.R, R/methylDBFunctions.R
 \docType{methods}
 \name{adjustMethylC}
-\alias{adjust.methylC}
 \alias{adjustMethylC}
 \alias{adjustMethylC,methylRaw,methylRaw-method}
-\alias{adjustMethylC,methylRawDB,methylRawDB-method}
 \alias{adjustMethylC,methylRawList,methylRawList-method}
+\alias{adjust.methylC}
+\alias{adjustMethylC,methylRawDB,methylRawDB-method}
 \alias{adjustMethylC,methylRawListDB,methylRawListDB-method}
 \title{Adjust measured 5mC levels using 5hmC levels}
 \usage{
@@ -92,6 +92,7 @@ in-memory-calculation as flat file database or if the size of the database
  allows the calculation in-memory, 
 then you might change the value of this parameter.
 }
+
 \examples{
 
 # read 5hmC and 5mC files
@@ -113,4 +114,3 @@ and 5-Hydroxymethylcytosine at Single-Base Resolution. Science, 934
 2. Yu, Hon, et al. (2012). Base-resolution analysis of 
 5-hydroxymethylcytosine in the Mammalian genome. Cell, 149(6), 1368-80.
 }
-

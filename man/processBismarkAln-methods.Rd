@@ -3,9 +3,9 @@
 \docType{methods}
 \name{processBismarkAln}
 \alias{processBismarkAln}
+\alias{read.bismark}
 \alias{processBismarkAln,character,character,character-method}
 \alias{processBismarkAln,list,list,character-method}
-\alias{read.bismark}
 \title{Get methylation percentage from sorted Bismark alignments}
 \usage{
 processBismarkAln(location, sample.id, assembly, save.folder = NULL,
@@ -129,4 +129,3 @@ package = "methylKit"),
              treatment=c(1,1,0,0))
 
 }
-

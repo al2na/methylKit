@@ -49,4 +49,3 @@ diffMethPerChr(methylDiff.obj, plot=FALSE,qvalue.cutoff=0.01,
                meth.cutoff=25,exclude=NULL)
 
 }
-

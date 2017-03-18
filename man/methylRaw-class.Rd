@@ -2,8 +2,8 @@
 % Please edit documentation in R/backbone.R
 \docType{class}
 \name{methylRaw-class}
-\alias{methylRaw}
 \alias{methylRaw-class}
+\alias{methylRaw}
 \title{An S4 class for holding raw methylation data from an alignment pipeline.}
 \description{
 This object stores the raw mehylation data that is read in through read 
@@ -47,6 +47,7 @@ The following functions provides access to data slots of methylRaw:
   \code{methylRaw} object can be coerced to 
   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
 }
+
 \examples{
 
 # example of a raw methylation data as a text file
@@ -66,4 +67,3 @@ library(GenomicRanges)
 my.gr=as(methylRawList.obj[[1]],"GRanges")
 
 }
-

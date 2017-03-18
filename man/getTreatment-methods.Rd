@@ -3,20 +3,25 @@
 \docType{methods}
 \name{getTreatment}
 \alias{getTreatment}
-\alias{getTreatment,getTreatment,methylDiffDB-method}
-\alias{getTreatment,methylBase-method}
-\alias{getTreatment,methylBaseDB-method}
-\alias{getTreatment,methylDiff-method}
-\alias{getTreatment,methylDiffDB-method}
-\alias{getTreatment,methylRawList-method}
-\alias{getTreatment,methylRawListDB-method}
 \alias{getTreatment<-}
-\alias{getTreatment<-,methylBase-method}
-\alias{getTreatment<-,methylBaseDB-method}
-\alias{getTreatment<-,methylDiff-method}
-\alias{getTreatment<-,methylDiffDB-method}
+\alias{getTreatment,methylRawList-method}
 \alias{getTreatment<-,methylRawList-method}
+\alias{getTreatment,methylRawList-method}
+\alias{getTreatment,methylBase-method}
+\alias{getTreatment<-,methylBase-method}
+\alias{getTreatment,methylBase-method}
+\alias{getTreatment,methylDiff-method}
+\alias{getTreatment<-,methylDiff-method}
+\alias{getTreatment,methylDiff-method}
+\alias{getTreatment,methylRawListDB-method}
 \alias{getTreatment<-,methylRawListDB-method}
+\alias{getTreatment,methylRawListDB-method}
+\alias{getTreatment,methylBaseDB-method}
+\alias{getTreatment<-,methylBaseDB-method}
+\alias{getTreatment,methylBaseDB-method}
+\alias{getTreatment,methylDiffDB-method}
+\alias{getTreatment<-,methylDiffDB-method}
+\alias{getTreatment,getTreatment,methylDiffDB-method}
 \title{Get or Set treatment vector of methylKit object}
 \usage{
 getTreatment(x)
@@ -73,4 +78,3 @@ getTreatment(newObj)
 
 
 }
-

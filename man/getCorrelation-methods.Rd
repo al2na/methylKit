@@ -48,6 +48,7 @@ If the scatter plot is plotted, the red line in the plot is from linear
 regression fit and the green line is from polynomial regression fit with 
 \code{stats::lowess}.
 }
+
 \examples{
 
 data(methylKit)
@@ -67,4 +68,3 @@ rm(methylBaseDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-
