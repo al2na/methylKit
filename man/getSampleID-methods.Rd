@@ -3,23 +3,31 @@
 \docType{methods}
 \name{getSampleID}
 \alias{getSampleID}
-\alias{getSampleID,methylBase-method}
-\alias{getSampleID,methylBaseDB-method}
-\alias{getSampleID,methylDiff-method}
-\alias{getSampleID,methylDiffDB-method}
-\alias{getSampleID,methylRaw-method}
-\alias{getSampleID,methylRawDB-method}
-\alias{getSampleID,methylRawList-method}
-\alias{getSampleID,methylRawListDB-method}
 \alias{getSampleID<-}
-\alias{getSampleID<-,methylBase-method}
-\alias{getSampleID<-,methylBaseDB-method}
-\alias{getSampleID<-,methylDiff-method}
-\alias{getSampleID<-,methylDiffDB-method}
-\alias{getSampleID<-,methylRaw-method}
-\alias{getSampleID<-,methylRawDB-method}
+\alias{getSampleID,methylRawList-method}
 \alias{getSampleID<-,methylRawList-method}
+\alias{getSampleID,methylRawList-method}
+\alias{getSampleID,methylBase-method}
+\alias{getSampleID<-,methylBase-method}
+\alias{getSampleID,methylBase-method}
+\alias{getSampleID,methylRaw-method}
+\alias{getSampleID<-,methylRaw-method}
+\alias{getSampleID,methylRaw-method}
+\alias{getSampleID,methylDiff-method}
+\alias{getSampleID<-,methylDiff-method}
+\alias{getSampleID,methylDiff-method}
+\alias{getSampleID,methylRawListDB-method}
 \alias{getSampleID<-,methylRawListDB-method}
+\alias{getSampleID,methylRawListDB-method}
+\alias{getSampleID,methylBaseDB-method}
+\alias{getSampleID<-,methylBaseDB-method}
+\alias{getSampleID,methylBaseDB-method}
+\alias{getSampleID,methylRawDB-method}
+\alias{getSampleID<-,methylRawDB-method}
+\alias{getSampleID,methylRawDB-method}
+\alias{getSampleID,methylDiffDB-method}
+\alias{getSampleID<-,methylDiffDB-method}
+\alias{getSampleID,methylDiffDB-method}
 \title{Get or Set Sample-IDs of the methylKit objects}
 \usage{
 getSampleID(x)
@@ -87,4 +95,3 @@ getSampleID(newObj)
 
 
 }
-

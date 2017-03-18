@@ -4,11 +4,11 @@
 \name{bedgraph}
 \alias{bedgraph}
 \alias{bedgraph,methylDiff-method}
-\alias{bedgraph,methylDiffDB-method}
 \alias{bedgraph,methylRaw-method}
-\alias{bedgraph,methylRawDB-method}
 \alias{bedgraph,methylRawList-method}
+\alias{bedgraph,methylRawDB-method}
 \alias{bedgraph,methylRawListDB-method}
+\alias{bedgraph,methylDiffDB-method}
 \title{Get bedgraph from methylRaw, methylRawList and methylDiff objects}
 \usage{
 bedgraph(methylObj, file.name = NULL, col.name, unmeth = FALSE,
@@ -99,6 +99,7 @@ Per default the chunk.size is set to 1M rows, which should work for
 have a high amount of memory available feel free to adjust the 
 \code{chunk.size}.
 }
+
 \examples{
 data(methylKit)
 
@@ -118,4 +119,3 @@ bedgraph(methylRawList.obj[[1]], file.name="test2.bed", col.name="perc.meth",
 unlink("test2.bed") # remove the file
 
 }
-

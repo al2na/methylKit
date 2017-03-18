@@ -13,7 +13,7 @@ pool(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
   save.db = FALSE, ...)
 
 \S4method{pool}{methylBaseDB}(obj, sample.ids, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+  save.db = TRUE, ...)
 }
 \arguments{
 \item{obj}{\code{methylBase} or \code{methylBaseDB} object with two groups
@@ -79,6 +79,7 @@ in-memory-calculation as flat file database or if the size of the
 database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 
 data(methylKit)
@@ -92,4 +93,3 @@ pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
 \author{
 Altuna Akalin
 }
-

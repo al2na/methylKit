@@ -12,4 +12,3 @@ information for bases that
 \code{methylBase}, \code{methylDiff} and \code{methylRawList}. 
  You can load the data using \code{data(methylKit)}
 }
-

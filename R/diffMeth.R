@@ -912,6 +912,7 @@ setAs("methylDiff", "GRanges", function(from)
   GRanges(seqnames=as.character(from$chr),ranges=IRanges(start=from$start, 
                                                          end=from$end),
           strand=from$strand, 
+          pvalue = from$pvalue,
           qvalue=from$qvalue,
           meth.diff=from$meth.diff
   )

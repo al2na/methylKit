@@ -2,8 +2,8 @@
 % Please edit documentation in R/methylDBClasses.R
 \docType{class}
 \name{methylDiffDB-class}
-\alias{methylDiffDB}
 \alias{methylDiffDB-class}
+\alias{methylDiffDB}
 \title{An S4 class that holds differential methylation information as flat file database}
 \description{
 This class is designed to hold statistics and locations for differentially 
@@ -59,6 +59,7 @@ The following functions provides access to data slots of methylDiffDB:
 \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
 \code{\link[methylKit]{getContext}}
 }
+
 \examples{
 data(methylKit)
 
@@ -72,4 +73,3 @@ rm(methylDiffDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-

@@ -78,6 +78,7 @@ in-memory-calculation as flat file database or if the size of the
 database allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 
 data(methylKit)
@@ -89,4 +90,3 @@ newObj=removeComp(methylBase.obj,comp=1)
 newObj=removeComp(methylBase.obj,comp=c(3,4))
 
 }
-

@@ -40,4 +40,3 @@ as=assocComp(mBase=methylBase.obj,sampleAnnotation)
 \author{
 Altuna Akalin
 }
-

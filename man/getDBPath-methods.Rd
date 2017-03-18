@@ -3,10 +3,10 @@
 \docType{methods}
 \name{getDBPath}
 \alias{getDBPath}
-\alias{getDBPath,methylBaseDB-method}
-\alias{getDBPath,methylDiffDB-method}
-\alias{getDBPath,methylRawDB-method}
 \alias{getDBPath,methylRawListDB-method}
+\alias{getDBPath,methylBaseDB-method}
+\alias{getDBPath,methylRawDB-method}
+\alias{getDBPath,methylDiffDB-method}
 \title{Get path to database of the methylDB objects}
 \usage{
 getDBPath(x)
@@ -45,4 +45,3 @@ rm(methylBaseDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-

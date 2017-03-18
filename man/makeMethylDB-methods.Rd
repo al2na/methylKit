@@ -5,10 +5,10 @@
 \alias{makeMethylDB}
 \alias{makeMethylDB,methylBase-method}
 \alias{makeMethylDB,methylBase-methods}
-\alias{makeMethylDB,methylDiff-method}
-\alias{makeMethylDB,methylDiff-methods}
 \alias{makeMethylDB,methylRaw-method}
 \alias{makeMethylDB,methylRaw-methods}
+\alias{makeMethylDB,methylDiff-method}
+\alias{makeMethylDB,methylDiff-methods}
 \alias{makeMethylDB,methylRawList-method}
 \alias{makeMethylDB,methylRawList-methods}
 \title{coerce methylKit objects from memory to flat file database objects}
@@ -47,4 +47,3 @@ makeMethylDB(methylBase.obj,"my/path")
 }
 
 }
-

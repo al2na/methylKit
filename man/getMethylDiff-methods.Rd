@@ -2,9 +2,9 @@
 % Please edit documentation in R/diffMeth.R, R/methylDBFunctions.R
 \docType{methods}
 \name{getMethylDiff}
-\alias{get.methylDiff}
 \alias{getMethylDiff}
 \alias{getMethylDiff,methylDiff-method}
+\alias{get.methylDiff}
 \alias{getMethylDiff,methylDiffDB-method}
 \title{get differentially methylated regions/bases based on cutoffs}
 \usage{
@@ -86,6 +86,7 @@ in-memory-calculation as flat file database or if the size of the database
 allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
+
 \examples{
 
 data(methylKit)
@@ -100,4 +101,3 @@ hyper=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hyper")
 hypo=getMethylDiff(methylDiff.obj,difference=25,qvalue=0.01,type="hypo")
 
 }
-

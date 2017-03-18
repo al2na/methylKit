@@ -45,6 +45,7 @@ Per default the chunk.size is set to 1M rows, which should work for
 have a high amount of memory available feel free to adjust the
  \code{chunk.size}.
 }
+
 \examples{
 
 data(methylKit)
@@ -52,4 +53,3 @@ mat=percMethylation(methylBase.obj)
 head(mat)
 
 }
-

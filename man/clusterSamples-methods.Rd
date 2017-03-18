@@ -76,6 +76,7 @@ most systems. If you encounter memory problems or
 have a high amount of memory available feel free to adjust the 
 \code{chunk.size}.
 }
+
 \examples{
 data(methylKit)
 
@@ -84,4 +85,3 @@ clusterSamples(methylBase.obj, dist="correlation", method="ward", plot=TRUE)
 
 
 }
-

@@ -434,8 +434,7 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
-  file.remove(filepath)
-  
+
   new("methylBaseDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,
@@ -585,8 +584,7 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
-  file.remove(filepath)
-  
+
   new("methylDiffDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,

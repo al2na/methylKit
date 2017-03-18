@@ -98,6 +98,7 @@ in-memory-calculation as flat file database or if the size of the database
 allows the calculation in-memory, 
 then you might change the value of this parameter.
 }
+
 \examples{
 
  data(methylKit)
@@ -107,4 +108,3 @@ then you might change the value of this parameter.
  
  
 }
-

@@ -2,8 +2,8 @@
 % Please edit documentation in R/backbone.R
 \docType{class}
 \name{methylRawList-class}
-\alias{methylRawList}
 \alias{methylRawList-class}
+\alias{methylRawList}
 \title{An S4 class for holding a list of methylRaw objects.}
 \description{
 This class stores the list of  \code{\link[methylKit]{methylRaw}} objects.
@@ -19,6 +19,7 @@ by \code{\link[methylKit]{read}} function.
                  \code{\link{methylRaw}} objects  } 
                }
 }
+
 \examples{
 data(methylKit)
 
@@ -26,4 +27,3 @@ data(methylKit)
 lapply(methylRawList.obj,"getAssembly")
 
 }
-

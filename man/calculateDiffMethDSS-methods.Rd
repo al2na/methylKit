@@ -47,4 +47,3 @@ detect differentially
  methylated loci from single nucleotide resolution sequencing 
  data. Nucleic acids research
 }
-

@@ -2,8 +2,8 @@
 % Please edit documentation in R/methylDBClasses.R
 \docType{class}
 \name{methylRawListDB-class}
-\alias{methylRawListDB}
 \alias{methylRawListDB-class}
+\alias{methylRawListDB}
 \title{An S4 class for holding a list of methylRawDB objects.}
 \description{
 This class stores the list of  \code{\link[methylKit]{methylRawDB}} objects.
@@ -18,6 +18,7 @@ by \code{\link[methylKit]{read}} function.
                  \item{\code{.Data}}{a list of \code{\link{methylRawDB}} objects  } 
                }
 }
+
 \examples{
 file.list=list( system.file("extdata", "test1.myCpG.txt", 
 package = "methylKit"),
@@ -42,4 +43,3 @@ rm(methylRawListDB.obj)
 unlink("methylDB",recursive=TRUE)
 
 }
-
