@@ -8,6 +8,7 @@ IMPROVEMENTS AND BUG FIXES
   added tests
 * fix osx related error when reading gzipped files with methRead
 * change deprecated function names in test files
+* fixed bug with dataSim() function updated the manual
 
 methylKit 1.1.6
 --------------
