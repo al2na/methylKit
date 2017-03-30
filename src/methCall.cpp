@@ -766,6 +766,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   while ( sam_read1(in,header,b) >=0 ) 
   {
 
+    //check wheter user wnats to interrupt runnning code
+    Rcpp::checkUserInterrupt();
     
     /** example paired-end reads in SAM format (2 consecutive lines)
     # 1_R1/1  67  5 103172224 255 40M = 103172417 233 AATATTTTTTTTATTTTAAAATGTGTATTGATTTAAATTT  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII  NM:i:4  XX:Z:4T1T24TT7  XM:Z:....h.h........................hh....... XR:Z:CT XG:Z:CT
@@ -1028,6 +1030,9 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   
   while(std::getline(*fh, line))
   {
+    
+    //check wheter user wnats to interrupt runnning code
+    Rcpp::checkUserInterrupt();
     
     //std::cout << line << std::endl;
     if(line.find("Bismark") != std::string::npos )  {std::getline(*fh, line);}  // step over the header line
