@@ -570,7 +570,8 @@ setMethod("methRead", signature(location = "character",sample.id="character",
           return(obj)
         }
       } else {
-        stop(paste("file",location,"is compressed,\nplease use dbtype 'tabix' or provide uncompressed file with supported pipeline."))
+        stop(paste("file",location,"is compressed,", "\nplease use dbtype='tabix' ",
+                   "or provide uncompressed file with supported pipeline."))
       }
     } else {
   
