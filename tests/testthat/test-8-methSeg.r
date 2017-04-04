@@ -11,9 +11,13 @@ test_that("check if methSeg works for methylRaw or methylDiff with resolution re
   expect_is(methSeg(tileDiff,diagnostic.plot = FALSE),"GRanges")
 })
 
-test_that("check if methSeg works for methylRaw or methylDiff with resolution base or methylBase objects" ,{
+test_that("check if methSeg works for methylRaw or methylDiff with resolution base " ,{
   expect_is(methSeg(methylRawList.obj[[1]],diagnostic.plot = FALSE),"GRanges")
   expect_is(methSeg(methylDiff.obj,diagnostic.plot = FALSE),"GRanges")
+})
+
+test_that("check if methSeg errors for a single ranged methylRaw" ,{
+  expect_error(methSeg(methylRawList.obj[[1]][1],diagnostic.plot = FALSE))
 })
 
 test_that("check if methSeg returns error for methylBase objects" ,{

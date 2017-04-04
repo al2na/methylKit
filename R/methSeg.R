@@ -82,9 +82,13 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
       ## use methylation difference as score, sort and destrand
       obj = sort(obj[,3],ignore.strand=TRUE)
   }else if (class(obj) != "GRanges"){
-    stop("only methylRaw or methylDiff with resolution=='region' ", 
+    stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
   }
+  
+  ## check wether obj contains at least two ranges else stop
+  if(length(obj)<=1)
+    stop("segmentation requires at least two ranges.")
   
   # match argument names to fastseg arguments
   args.fastseg=dots[names(dots) %in% names(formals(fastseg)[-1] ) ]  
