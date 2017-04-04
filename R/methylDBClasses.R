@@ -886,12 +886,12 @@ setMethod("show", "methylDiffDB", function(object) {
 setMethod("select", "methylRawDB",
           function(x, i)
           {
-            if( max(i) > nrow(x)  )
-              stop("subscript contains out-of-bounds indices")
-            
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
             .setMethylDBNames(df,"methylRawDB")
+            
+            if( max(i) > x@num.records  )
+              stop("subscript contains out-of-bounds indices")
             
             new("methylRaw",df[i,],
                 sample.id=x@sample.id,
@@ -907,12 +907,12 @@ setMethod("select", "methylRawDB",
 setMethod("select", "methylBaseDB",
           function(x, i)
           {
-            if( max(i) > nrow(x)  )
-              stop("subscript contains out-of-bounds indices")
-            
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
             .setMethylDBNames(df,"methylBaseDB")
+            
+            if( max(i) > x@num.records  )
+              stop("subscript contains out-of-bounds indices")
             
             new("methylBase",df[i,],
                 sample.ids = x@sample.ids, 
@@ -932,12 +932,12 @@ setMethod("select", "methylBaseDB",
 setMethod("select", "methylDiffDB",
           function(x, i)
           {
-            if( max(i) > nrow(x)  )
-              stop("subscript contains out-of-bounds indices")
-            
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
             .setMethylDBNames(df,"methylDiffDB")
+            
+            if( max(i) > x@num.records  )
+              stop("subscript contains out-of-bounds indices")
             
             new("methylDiff",df[i,],
                 sample.ids = x@sample.ids,
