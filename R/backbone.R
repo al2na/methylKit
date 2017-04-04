@@ -1938,6 +1938,8 @@ setGeneric("select", def=function(x,i) standardGeneric("select"))
 setMethod("select", "methylBase",
           function(x, i)
           {
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
 
             new("methylBase",getData(x)[i,],
                 sample.ids = x@sample.ids, 
@@ -1958,6 +1960,8 @@ setMethod("select", "methylBase",
 setMethod("select", "methylRaw",
           function(x, i)
           {
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
 
             new("methylRaw",getData(x)[i,],
                 sample.id=x@sample.id,
