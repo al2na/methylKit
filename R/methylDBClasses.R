@@ -886,6 +886,8 @@ setMethod("show", "methylDiffDB", function(object) {
 setMethod("select", "methylRawDB",
           function(x, i)
           {
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
             
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
@@ -905,6 +907,8 @@ setMethod("select", "methylRawDB",
 setMethod("select", "methylBaseDB",
           function(x, i)
           {
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
             
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
@@ -928,6 +932,8 @@ setMethod("select", "methylBaseDB",
 setMethod("select", "methylDiffDB",
           function(x, i)
           {
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
             
             if(missing(i)) { i <- 1:x@num.records }
             df <- headTabix(x@dbpath,nrow = max(i),return.type = "data.frame")
