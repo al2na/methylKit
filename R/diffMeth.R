@@ -929,7 +929,9 @@ setAs("methylDiff", "GRanges", function(from)
 setMethod("select", "methylDiff",
           function(x, i)
           {
-            
+            if( max(i) > nrow(x)  )
+              stop("subscript contains out-of-bounds indices")
+
             new("methylDiff",getData(x)[i,],
                 sample.ids = x@sample.ids,
                 assembly = x@assembly,
