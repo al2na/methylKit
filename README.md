@@ -12,6 +12,7 @@ Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=d
 
 
 #Introduction
+
 *methylKit* is an [R](http://en.wikipedia.org/wiki/R_%28programming_language%29) package 
 for DNA methylation analysis and annotation from high-throughput bisulfite sequencing. The 
 package is designed to deal with sequencing data from 
@@ -23,6 +24,7 @@ deal with base-pair resolution data for 5hmC obtained from Tab-seq or oxBS-seq. 
 handle whole-genome bisulfite sequencing data if proper input format is provided.
 
 ##Current Features
+
  * Coverage statistics
  * Methylation statistics
  * Sample correlation and clustering
@@ -42,6 +44,7 @@ handle whole-genome bisulfite sequencing data if proper input format is provided
 
 
 ##Staying up-to-date
+
 You can subscribe to our googlegroups page to get the latest information about new releases and features (low-frequency, only updates are posted)
 
 - https://groups.google.com/forum/#!forum/methylkit
@@ -66,6 +69,7 @@ install_github("al2na/methylKit", build_vignettes=FALSE,
   dependencies=TRUE)
 ```
 if this doesn't work, you might need to add `type="source"` argument.
+
 ### Install the development version
 ```r
 library(devtools)
@@ -79,6 +83,7 @@ if this doesn't work, you might need to add `type="source"` argument.
 -------
 
 #How to Use
+
 Typically, bisulfite converted reads are aligned to the genome and % methylation value per base is calculated by processing alignments. *`methylKit`* takes that  % methylation value per base information as input. Such input file may be obtained from [AMP pipeline](http://code.google.com/p/amp-errbs/) for aligning RRBS reads. A typical input file looks like this:
 
 ```
