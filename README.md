@@ -11,7 +11,7 @@ Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=d
 [![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
 
 
-#Introduction
+# Introduction
 
 *methylKit* is an [R](http://en.wikipedia.org/wiki/R_%28programming_language%29) package 
 for DNA methylation analysis and annotation from high-throughput bisulfite sequencing. The 
@@ -23,7 +23,7 @@ In addition, methylKit can
 deal with base-pair resolution data for 5hmC obtained from Tab-seq or oxBS-seq. It can also 
 handle whole-genome bisulfite sequencing data if proper input format is provided.
 
-##Current Features
+## Current Features
 
  * Coverage statistics
  * Methylation statistics
@@ -43,7 +43,7 @@ handle whole-genome bisulfite sequencing data if proper input format is provided
 
 
 
-##Staying up-to-date
+## Staying up-to-date
 
 You can subscribe to our googlegroups page to get the latest information about new releases and features (low-frequency, only updates are posted)
 
@@ -59,7 +59,7 @@ You can also check out the blogposts we make on using methylKit
 
 -------
 
-##Installation
+## Installation
 
 in R console,
 ```r
@@ -82,7 +82,7 @@ if this doesn't work, you might need to add `type="source"` argument.
 
 -------
 
-#How to Use
+# How to Use
 
 Typically, bisulfite converted reads are aligned to the genome and % methylation value per base is calculated by processing alignments. *`methylKit`* takes that  % methylation value per base information as input. Such input file may be obtained from [AMP pipeline](http://code.google.com/p/amp-errbs/) for aligning RRBS reads. A typical input file looks like this:
 
@@ -102,16 +102,16 @@ chr21.9853326	chr21	9853326	F	17	70.59	29.41
 
 Below, there are several options showing how to do basic analysis with *`methylKit`*.
 
-##Documentation##
+## Documentation##
  * You can look at the vignette [here](http://rpubs.com/al2na/methylKit)
  * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013
  * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012
  * You can see the code snippet below
 
 
-##Example analysis##
+## Example analysis##
 
-###Read methylation files###
+### Read methylation files###
 ```r
 library(methylKit)
 
@@ -131,7 +131,7 @@ myobj=read( file.list,
 
 ```
 
-###Get descriptive stats on methylation###
+### Get descriptive stats on methylation###
 ```r
 # get methylation statistics on second file "test2" in myobj which is a class of methylRawList
 getMethylationStats(myobj[[2]],plot=F,both.strands=F)
@@ -140,7 +140,7 @@ getMethylationStats(myobj[[2]],plot=F,both.strands=F)
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 ```
 
-###Get bases covered by all samples and cluster samples###
+### Get bases covered by all samples and cluster samples###
 ```r
 # see what the data looks like for sample 2 in myobj methylRawList
 head(myobj[[2]])
@@ -166,7 +166,7 @@ PCASamples(meth, screeplot=TRUE)
 # principal component anlaysis of all samples.
 PCASamples(meth)
 ```
-###Calculate differential methylation###
+### Calculate differential methylation###
 Before differential methylation calculation, consider filtering high coverage bases to remove potential PCR bias using `filterByCoverage()`. In addition, consider normalizing read coverages between samples to avoid bias introduced by systematically more sequenced samples, using `normalizeCoverage()`.
 
 ```r
@@ -186,7 +186,7 @@ myDiff25pHypo =get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
 myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 ```
 
-###Annotate differentially methylated bases/regions###
+### Annotate differentially methylated bases/regions###
 ```r
 # read-in transcript locations to be used in annotation
 # IMPORTANT: annotation files that come with the package (version >=0.5) are a subset of full annotation
@@ -200,7 +200,7 @@ annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
 
 SEE PACKAGE VIGNETTE and TUTORIAL (both hyper-linked above) FOR MORE
 
-##Downloading Annotation Files##
+## Downloading Annotation Files
 You can download annotation files from UCSC table browser for your genome of interest. Go to  [http://genome.ucsc.edu/cgi-bin/hgGateway]. On the top menu click on "tools" then "table browser". Select your "genome" of interest and "assembly" of interest from the drop down menus. Make sure you select the correct genome and assembly. Selecting wrong genome and/or assembly will return unintelligible results in downstream analysis. 
 
 From here on you can either download *gene annotation* or *CpG island annotation*.
@@ -215,11 +215,11 @@ In addition, you can check this tutorial to learn how to download any track from
 
 
 -------
-#R script for Genome Biology publication
+# R script for Genome Biology publication
 The most recent version of the R script in the Genome Biology manuscript is [here](http://code.google.com/p/methylkit/downloads/list?q=label:AdditionalFile4 ).
 
 -------
-#Citing methylKit
+# Citing methylKit
 If you used methylKit please cite:
 
 
@@ -231,7 +231,7 @@ and also consider citing the following publication as a use-case with specific c
  * Altuna Akalin, Francine E. Garrett-Bakelman, Matthias Kormaksson, Jennifer Busuttil, Lu Zhang, Irina Khrebtukova, Thomas A. Milne, Yongsheng Huang, Debabrata Biswas, Jay L. Hess, C. David Allis, Robert G. Roeder, Peter J. M. Valk, Bob Löwenberg, Ruud Delwel, Hugo F. Fernandez, Elisabeth Paietta, Martin S. Tallman, Gary P. Schroth, Christopher E. Mason, Ari Melnick, Maria E. Figueroa. _(2012)_. *"[Base-Pair Resolution DNA Methylation Sequencing Reveals Profoundly Divergent Epigenetic Landscapes in Acute Myeloid Leukemia.](http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1002781)"* _PLoS Genetics_ 8(6).
 
 -------
-#Contact & Questions
+# Contact & Questions
 e-mail to [methylkit_discussion@googlegroups.com](mailto:methylkit_discussion@googlegroups.com ) or post a question using [the web interface](https://groups.google.com/forum/#!forum/methylkit_discussion).
 
 if you are going to submit bug reports or ask questions, please send sessionInfo() output from R console as well.
@@ -239,7 +239,7 @@ if you are going to submit bug reports or ask questions, please send sessionInfo
 Questions are very welcome, although we suggest you read the paper, documentation(function help pages and the vignette) and [ blog entries](http://zvfak.blogspot.com/search/label/methylKit) first. The answer to your question might be there already.
 
 -------
-#Contribute to the development
+# Contribute to the development
 See the [trello board](https://trello.com/b/k2kv1Od7/methylkit) for methylKit development. You can contribute to the methylKit development via github ([http://github.com/al2na/methylKit/]) by checking out "development" branch, making your changes and doing a pull request (all of these should be done on the "development" branch NOT  on the "master" branch). In addition, you should:
 
  * Bump up the version in the DESCRIPTION file on the 4th number. For example, the master branch has the version numbering as in "X.Y.Z". If you make a change to the development branch you should bump up the version in the DESCRIPTION file to "X.Y.Z.1". If there are already changes done in the development just bump up the fourth number.
