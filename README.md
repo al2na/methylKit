@@ -6,6 +6,7 @@ methylKit
 <img src="https://dl.dropboxusercontent.com/u/1373164/methylKit_logo.png" alt="methylKit Logo"  width="60%" height="60%" ></img>
 </a>
 </div>
+
 Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=development)](https://travis-ci.org/al2na/methylKit)
 [![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
 
