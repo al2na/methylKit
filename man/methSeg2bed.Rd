@@ -5,9 +5,8 @@
 \alias{methSeg2bed}
 \title{Export segments to BED files}
 \usage{
-methSeg2bed(segments,
+methSeg2bed(segments, filename,
   trackLine = "track name='meth segments' description='meth segments' itemRgb=On",
-  filename = "data/H1.chr21.chr22.trial.seg.bed",
   colramp = colorRamp(c("gray", "green", "darkgreen")))
 }
 \arguments{
@@ -15,9 +14,9 @@ methSeg2bed(segments,
 classification and information. This should be the result of 
 \code{\link{methSeg}} function}
 
-\item{trackLine}{UCSC browser trackline}
-
 \item{filename}{name of the output data}
+
+\item{trackLine}{UCSC browser trackline}
 
 \item{colramp}{color scale to be used in the BED display
 defaults to gray,green, darkgreen scale.}

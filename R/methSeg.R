@@ -69,20 +69,26 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   dots <- list(...)  
   
+  
+  ##coerce object to granges
   if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
-    if(obj@resolution=="region" ){
       obj= as(obj,"GRanges")
-      mcols(obj)=100*obj$numCs/obj$coverage
-    }
+      ## calculate methylation score 
+      mcols(obj)$meth=100*obj$numCs/obj$coverage
+      ## sort and destrand
+      obj = sort(obj[,"meth"],ignore.strand=TRUE)
   }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
-    if( obj@resolution=="region" ){
       obj = as(obj,"GRanges")
-      obj = sort(obj[,-1])
-    }
+      ## use methylation difference as score, sort and destrand
+      obj = sort(obj[,3],ignore.strand=TRUE)
   }else if (class(obj) != "GRanges"){
-    stop("only methylRaw or methylDiff with resolution=='region' ", 
+    stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
   }
+  
+  ## check wether obj contains at least two ranges else stop
+  if(length(obj)<=1)
+    stop("segmentation requires at least two ranges.")
   
   # match argument names to fastseg arguments
   args.fastseg=dots[names(dots) %in% names(formals(fastseg)[-1] ) ]  
@@ -96,6 +102,13 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   #seg.res=fastseg(obj)
   seg.res <- do.call("fastseg", args.fastseg)
   #seg.res <- do.call("fastseg2", args.fastseg)
+  
+  # stop if segmentation produced only one range
+  if(length(seg.res)==1) {
+    warning("segmentation produced only one range, no mixture modeling possible")
+    seg.res$seg.group <- "1"
+    return(seg.res)
+  }
   
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
@@ -167,8 +180,8 @@ diagPlot<-function(dens,score.gr){
 #' @param segments \code{\link[GenomicRanges]{GRanges}} object with segment 
 #' classification and information. This should be the result of 
 #' \code{\link{methSeg}} function
-#' @param trackLine UCSC browser trackline
 #' @param filename name of the output data
+#' @param trackLine UCSC browser trackline
 #' @param colramp color scale to be used in the BED display
 #' defaults to gray,green, darkgreen scale.
 #' 
@@ -180,24 +193,30 @@ diagPlot<-function(dens,score.gr){
 #' @export
 #' @docType methods
 #' @rdname methSeg2bed
-methSeg2bed<-function(segments,
+methSeg2bed<-function(segments,filename,
 trackLine="track name='meth segments' description='meth segments' itemRgb=On",
-filename="data/H1.chr21.chr22.trial.seg.bed",
 colramp=colorRamp(c("gray","green", "darkgreen"))
                         ){
   if(class(segments)!="GRanges"){
     stop("segments object has to be of class GRanges")
   }
+  
+  ## case if only one line is exported
+  if(is.null(colramp) | length(segments)==1){
+    trackLine <- gsub(pattern = "itemRgb=On",replacement = "",x = trackLine)
+  } else {
+    #require(rtracklayer)
+    ramp <- colramp
+    mcols(segments)$name=as.character(segments$seg.group)
     
-  #require(rtracklayer)
-  ramp <- colramp
-  mcols(segments)$name=as.character(segments$seg.group)
+    #scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean))-(min(segments$seg.mean))
+    scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean)-
+                                                         min(segments$seg.mean))
+    
+    mcols(segments)$itemRgb= rgb(ramp(scores), maxColorValue = 255)     
+  }
   
-  #scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean))-(min(segments$seg.mean))
-  scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean)-
-                                                       min(segments$seg.mean))
   
-  mcols(segments)$itemRgb= rgb(ramp(scores), maxColorValue = 255) 
   #strand(segments)="."
   score(segments)=segments$seg.mean
   
