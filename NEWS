@@ -1,3 +1,12 @@
+methylKit 1.1.8
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix methSeg error when only one segment is returned from fastseg,
+  add case handling for methSeg2bed
+* check for user interruption in methCall to enable stop in execution
+* changes to select() function: check for out-of-bound indices to 
+  prevent downstream errors
+  
 methylKit 1.1.7
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -9,6 +18,11 @@ IMPROVEMENTS AND BUG FIXES
 * fix osx related error when reading gzipped files with methRead
 * change deprecated function names in test files
 * fixed bug with dataSim() function updated the manual
+* fix methSeg error when only one segment is returned from fastseg,
+  add case handling for methSeg2bed
+* check for user interruption in methCall to enable stop in execution
+* changes to select() function: check for out-of-bound indices to 
+  prevent downstream errors
 
 methylKit 1.1.6
 --------------
