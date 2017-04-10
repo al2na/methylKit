@@ -281,6 +281,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 # PRIVATE function:
 # creates a methylRawDB object from a flat file database
 # it is called from read function or whenever this functionality is needed
+# can load a database with or without header
 readMethylRawDB<-function(dbpath,dbtype,
                           sample.id, assembly ,context,
                           resolution,skip=0){
@@ -290,42 +291,73 @@ readMethylRawDB<-function(dbpath,dbtype,
     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
                           skip=skip, comment="#", zeroBased=FALSE)
   }
+  
+  # if the tabix file includes a header generated with obj2tabix,
+  # it can easily be parsed into the respective object
+  head <- tryCatch(expr  = readTabixHeader(dbpath),
+           error = function(cond){
+             message(cond)
+             message("Creating methylRawDB using supplied arguments.")
+             return(NA)
+           })
+  
+  if(!anyNA(head)) {
+
+  
+  if(! any(head$class == c("methylRaw", "methylRawDB") ) ) {
+    stop(
+      paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
+            "Please provide the correct class of data.")
+    )
+  }
+  
+  obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
+             num.records=head$num.records, sample.id = head$sample.ids, 
+             assembly = head$assembly,context=head$context, 
+             resolution=head$resolution,dbtype=head$dbtype)
+
+  } else {
+  # else we need to generate it from the supplied arguments
+  
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
   obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.id = sample.id, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype)
   
-  if(valid.methylRawDB(obj)) {return(obj)}   
-}
-
-# PRIVATE function:
-# creates a methylRawDB object from a flat file database and reads header content
-# it is called from read function or whenever this functionality is needed
-loadMethylRawDB<-function(dbpath,skip=0){
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
   }
   
-  h <- readTabixHeader(dbpath)
-  
-  if(! any(h$class == c("methylRaw", "methylRawDB") ) ) {
-    stop(
-      paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
-               "Please provide the correct class of data.")
-      )
-    }
-  
-  obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
-             num.records=h$num.records, sample.id = h$sample.ids, 
-             assembly = h$assembly,context=h$context, 
-             resolution=h$resolution,dbtype=h$dbtype)
-  
   if(valid.methylRawDB(obj)) {return(obj)}   
+  
 }
+
+# # PRIVATE function:
+# # creates a methylRawDB object from a flat file database and reads header content
+# # it is called from read function or whenever this functionality is needed
+# loadMethylRawDB<-function(dbpath,skip=0){
+#   
+#   if(!file.exists(paste0(dbpath,".tbi"))) 
+#   {  
+#     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+#                           skip=skip, comment="#", zeroBased=FALSE)
+#   }
+#   
+#   h <- readTabixHeader(dbpath)
+#   
+#   if(! any(h$class == c("methylRaw", "methylRawDB") ) ) {
+#     stop(
+#       paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
+#                "Please provide the correct class of data.")
+#       )
+#     }
+#   
+#   obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
+#              num.records=h$num.records, sample.id = h$sample.ids, 
+#              assembly = h$assembly,context=h$context, 
+#              resolution=h$resolution,dbtype=h$dbtype)
+#   
+#   if(valid.methylRawDB(obj)) {return(obj)}   
+# }
 
 # methylRawListDB
 
@@ -598,8 +630,33 @@ readMethylBaseDB<-function(dbpath,dbtype,
     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
                           skip=skip, comment="#", zeroBased=FALSE)
   }
-  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+
+  # if the tabix file includes a header generated with obj2tabix,
+  # it can easily be parsed into the respective object
+  head <- tryCatch(expr  = readTabixHeader(dbpath),
+                   error = function(cond){
+                     message(cond)
+                     message("Creating methylBaseDB using supplied arguments.")
+                     return(NA)
+                   })
   
+  if(!anyNA(head)) {
+    
+    if(! any(head$class == c("methylBase", "methylBaseDB") ) ) {
+      stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
+    }
+    
+    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=head$num.records,
+               sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
+               resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
+               coverage.index=head$coverage.ind,numCs.index=head$numCs.ind,numTs.index=head$numTs.ind,
+               destranded=head$destranded)
+    
+  } else {
+  # else we need to generate it from the supplied arguments
+    
+  num.records=Rsamtools::countTabix(dbpath)[[1]] ##   
+
   # determine postion of coverage/numCs/numTs indices
   df <- headTabix(dbpath)
   numsamples = (length(df)-4)/3
@@ -612,36 +669,37 @@ readMethylBaseDB<-function(dbpath,dbtype,
               resolution=resolution,dbtype=dbtype,treatment=treatment,
               coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
               destranded=destranded)
+  }
  
   if(valid.methylBaseDB(obj)) {return(obj)}   
     
 }
 
-# PRIVATE function:
-# creates a methylBaseDB object from a flat file database and reads header content
-# it is called from read function or whenever this functionality is needed
-loadMethylBaseDB<-function(dbpath,skip=0){
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
-  }
-  
-  h <- readTabixHeader(dbpath)
-  
-  if(! any(h$class == c("methylBase", "methylBaseDB") ) ) {
-    stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
-  }
-  
-  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
-             sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
-             resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
-             coverage.index=h$coverage.ind,numCs.index=h$numCs.ind,numTs.index=h$numTs.ind,
-             destranded=h$destranded)
-  
-  if(valid.methylBaseDB(obj)) {return(obj)}    
-}
+# # PRIVATE function:
+# # creates a methylBaseDB object from a flat file database and reads header content
+# # it is called from read function or whenever this functionality is needed
+# loadMethylBaseDB<-function(dbpath,skip=0){
+#   
+#   if(!file.exists(paste0(dbpath,".tbi"))) 
+#   {  
+#     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+#                           skip=skip, comment="#", zeroBased=FALSE)
+#   }
+#   
+#   h <- readTabixHeader(dbpath)
+#   
+#   if(! any(h$class == c("methylBase", "methylBaseDB") ) ) {
+#     stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
+#   }
+#   
+#   obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
+#              sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
+#              resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
+#              coverage.index=h$coverage.ind,numCs.index=h$numCs.ind,numTs.index=h$numTs.ind,
+#              destranded=h$destranded)
+#   
+#   if(valid.methylBaseDB(obj)) {return(obj)}    
+# }
 
 # methylDiffDB -------------------------------------------------------
 
@@ -781,40 +839,67 @@ readMethylDiffDB<-function(dbpath,dbtype,
     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
                           skip=skip, comment="#", zeroBased=FALSE)
   }
+
+  # if the tabix file includes a header generated with obj2tabix,
+  # it can easily be parsed into the respective object
+  head <- tryCatch(expr  = readTabixHeader(dbpath),
+           error = function(cond){
+             message(cond)
+             message("Creating methylDiffDB using supplied arguments.")
+             return(NA)
+           })
+  
+  if(!anyNA(head)) {
+
+
+  if(! any(head$class == c("methylDiff", "methylDiffDB") ) ) {
+    stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
+  }
+  
+  obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=head$num.records,
+               sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
+               resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
+               destranded=head$destranded)
+
+  } else {
+  # else we need to generate it from the supplied arguments
+
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
   obj <- new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,
       destranded=destranded)
+
+  }
   
   if(valid.methylDiffDB(obj)) {return(obj)} 
 }
 
-# PRIVATE function:
-# creates a methylDiffDB object from a flat file database and reads header content
-# it is called from read function or whenever this functionality is needed
-loadMethylDiffDB<-function(dbpath,skip=0){
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
-  }
-  
-  h <- readTabixHeader(dbpath)
-  
-  if(! any(h$class == c("methylDiff", "methylDiffDB") ) ) {
-    stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
-  }
-  
-  obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
-               sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
-               resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
-               destranded=h$destranded)
-  
-  if(valid.methylDiffDB(obj)) {return(obj)}    
-}
+# # PRIVATE function:
+# # creates a methylDiffDB object from a flat file database and reads header content
+# # it is called from read function or whenever this functionality is needed
+# loadMethylDiffDB<-function(dbpath,skip=0){
+#   
+#   if(!file.exists(paste0(dbpath,".tbi"))) 
+#   {  
+#     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+#                           skip=skip, comment="#", zeroBased=FALSE)
+#   }
+#   
+#   h <- readTabixHeader(dbpath)
+#   
+#   if(! any(h$class == c("methylDiff", "methylDiffDB") ) ) {
+#     stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
+#   }
+#   
+#   obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=h$num.records,
+#                sample.ids = h$sample.ids, assembly = h$assembly,context=h$context,
+#                resolution=h$resolution,dbtype=h$dbtype,treatment=h$treatment,
+#                destranded=h$destranded)
+#   
+#   if(valid.methylDiffDB(obj)) {return(obj)}    
+# }
 
 # coercion functions ------------------------------------------------------
 
