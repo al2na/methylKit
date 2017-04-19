@@ -450,7 +450,8 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
             
             id=.SD=numTs1=NULL
             # use data.table to sum up counts per region
-            sum.dt=dt[,c(lapply(.SD,sum),covered=length(numTs1)),by=id] 
+            # treat missing values as they had zero coverage
+            sum.dt=dt[,c(lapply(.SD,sum,na.rm=T),covered=length(numTs1)),by=id] 
             sum.dt=sum.dt[sum.dt$covered>=cov.bases,]
             temp.df=as.data.frame(regions) # get regions to a dataframe
             
@@ -458,8 +459,10 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
             # valuesList = names(values(regions))
             # nameid = valuesList[grep (valuesList, pattern="name")]
             
-            
-            
+            #set all zero coverage tiles to missing
+            for ( j in seq(2,ncol(sum.dt),by=3) ){
+              set(sum.dt, which(sum.dt[[j]]==0),j:(j+2),NA)
+            }
             
             #create a new methylBase object to return
             new.data=data.frame(#id      =new.ids,
@@ -467,7 +470,8 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
               start   =temp.df[sum.dt$id,"start"],
               end     =temp.df[sum.dt$id,"end"],
               strand  =temp.df[sum.dt$id,"strand"],
-              as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),stringsAsFactors=FALSE)
+              as.data.frame(sum.dt[,c(2:(ncol(sum.dt)-1)),with=FALSE]),
+              stringsAsFactors=FALSE)
             
             if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
             
