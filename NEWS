@@ -1,3 +1,12 @@
+methylKit 0.99.2.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+
+* Changed how the methylBase version of regionCounts handle missing values.
+  Before, a missing value made the whole region/tile missing. Now, a missing
+  value is treated as a site with zero coverage. Contributed by Karl Nordström
+
+
 methylKit 0.99.2
 --------------
 IMPROVEMENTS AND BUG FIXES
