@@ -1,3 +1,6 @@
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -310,11 +313,11 @@ int processnonCGmethHash2 ( std::map<std::string, std::vector<int> > &nonCGmethH
     int noOs= value[2];
     // double Cperc= 100*noCs/(double)(noTs + noCs + noOs) ;
     // double Tperc= 100*noTs/(double)(noTs + noCs + noOs) ;
-    if((( noTs + noCs)/(double)(noTs + noCs + noOs) > 0.9) && ((noTs+noCs+noOs)>=mincov) ){
+    if((( noTs + noCs)/(double)(noTs + noCs + noOs) > 0.95) && ((noTs+noCs+noOs)>=mincov) ){
     //print join("\t",($chr.".".$loc,$chr,$loc,$strand,$noCs+$noTs+$noOs,$Cperc,$Tperc)  ),"\n"; 
     //push @{$CTconvArray->{$strand}},(($noTs*100)/($noTs+$noCs+$noOs));
     CTconvArray[strand]["num"]++;
-    CTconvArray[strand]["total"] += ((noTs*100)/(noTs+noCs+noOs));
+    //CTconvArray[strand]["total"] += ((noTs*100)/(noTs+noCs+noOs));
     CTconvArray[strand]["total"] += ((noTs*100)/(double)(noTs+noCs+noOs));
 }
 }
@@ -349,6 +352,22 @@ return 0;
 }
 
 //# process the methylation call string
+// 
+//  The methylation call string contains:
+//  - a dot . for every position in the BS-read not involving a cytosine,
+//  - one of the following letters for the three different cytosine methylation contexts,
+//    where (UPPER CASE = METHYLATED, lower case = unmethylated):
+// 
+//     z - C in CpG context - unmethylated
+//     Z - C in CpG context - methylated
+//     x - C in CHG context - unmethylated
+//     X - C in CHG context - methylated
+//     h - C in CHH context - unmethylated
+//     H - C in CHH context - methylated
+//     u - C in Unknown context (CN or CHN) - unmethylated
+//     U - C in Unknown context (CN or CHN) - methylated
+//     . - not a C or irrelevant position
+//
 void process_call_string (std::string &mcalls, int &i, std::string &key, std::map<std::string, std::vector<int> > &CGmethHash, 
                           std::map<std::string, std::vector<int> > &nonCGmethHash, std::map<std::string, std::vector<int> > &CHHmethHash, 
                           std::map<std::string, std::vector<int> > &CHGmethHash) {
@@ -687,21 +706,16 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   int totCs = numF + numR;
 
    
-  Rcpp::Rcout 
-    <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
-    <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
-      //"median conversion rate = %.2f\n\n";              //$medconvRate
-    
-    <<  "total otherC considered (Forward) (>95%% C+T): " <<   std::setprecision(14)<< numF        << "\n"
-    <<  "average conversion rate (Forward) = "            <<   std::setprecision(14)<< AvFconvRate << "\n"
-      //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
-    
-    <<  "total otherC considered (Reverse) (>95%% C+T): " <<   std::setprecision(14)<< numR        << "\n"
-    <<  "average conversion rate (Reverse) = "            <<   std::setprecision(14)<< AvRconvRate << "\n";
-  
-  //open (my $hd,">".$prefix."_conversionRate.txt");
-  //print $hd $res;
-  //close $hd;
+   Rcpp::Rcout 
+     <<   std::setprecision(14) 
+     <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+     <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
+   
+   <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
+   <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
+   
+   <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
+   <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
   
   return 0;
   
@@ -747,8 +761,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     CHGstatus=1;
   }
   
-  //# check if the file looks like sam
-  //#read-in file to count C bases
+  // initialize maps to store intermediate data
   std::map<std::string, std::vector<int> > CGmethHash; 
   std::map<std::string, std::vector<int> > nonCGmethHash; 
   std::map<std::string, std::vector<int> > CHHmethHash;
@@ -784,11 +797,11 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
           len = b->core.l_qseq,     // length of query
           chrom = b->core.tid,      // chromosome id defined by bam_hdr_t, might differ from original names. Compare with ordering header in header!
           mtid = b ->core.mtid,     // chromosome id of next read in template
-          mposi = b->core.mpos;     // 0-based leftmost coordinate of next read in template
+          mpos = b->core.mpos;     // 0-based leftmost coordinate of next read in template
   
   // change pos and mposi to 1-based coordinates to get same results as for sam input  
   pos = pos + 1; 
-  mposi = mposi + 1;
+  mpos = (int) mpos + 1;
     
   
   uint32_t *cigar_pointer = bam_get_cigar(b), // pointer to cigar array
@@ -803,16 +816,17 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   std::string seq, qual;
   char cigar_buffer [len];
   
-  int i, n;
+  // initialize counter and cigar-buffer-storage
+  int i, c;
 
 
   // parse the first cigar operation
-  n = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
+  c = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
   // if further operations remain, append them to cigar_buffer
   if (len_cigar >= 2 ) { 
     for (i = 1; i < len_cigar; i++  ) {
-      char buffer [n];
-      n = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
+      char buffer [c];
+      c = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
       strcat(cigar_buffer,buffer);
     }
   }
@@ -828,15 +842,10 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
     // std::string qual              = cols[10];
     
-    // check wether the mate reference exists (mtid >= 0), 
-    // if not replace with '*'
-    std::string mrnm;
-    if(mtid != -1 ) {
-      mrnm              = header->target_name[mtid];  //get the "real" mate id
-    } else { mrnm = "*";}
     
-    int mpos                      = mposi;
-    int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
+
+    // // check BAM flag if read was paired in sequencing
+    // int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
     
     // process cigar string to get indels
     // if search finds nothing string::npos is returned
@@ -857,9 +866,15 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     else if( (xr_tag == "ZGA") && (xg_tag == "ZCT") ) {strand='+';} // complementary to original top strand, bismark says - strand to this
     else if( (xr_tag == "ZGA") && (xg_tag == "ZGA") ) {strand='-';} // complementary to original bottom strand, bismark says + strand to this
     
-    // if there is no_overlap trim the mcalls and $quals
-    // adjust the start
-    if( nolap && ( ( mrnm == chr) && paired ) ){
+    
+    // check wether read is proper paired (both mapped)
+    int proper_paired = (int) ((b)->core.flag&BAM_FPROPER_PAIR);
+    
+    // if is proper pair and no_overlap is set
+    // -> trim the mcalls and $quals
+    // -> adjust the start
+    if( nolap && proper_paired  ){
+      std::string mrnm = header->target_name[mtid];  //get the mate id
       if( ( start + slen - 1) > mpos) {
         if( ( mpos - start ) > 0 ) { //{continue;}
           mcalls.erase(mpos-start ,std::string::npos);
@@ -957,25 +972,21 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   //if( numR>0 ) { medRconvRate=median(pMeth_nonCG["R"]); }
   //double medconvRate = median(\@allesSchon);
   
-  //int totCs=allesSchon.size();
   int totCs = numF + numR;
 
    
   Rcpp::Rcout 
-    <<  "total otherC considered (>95%% C+T): "           <<   std::setprecision(14) << totCs       << "\n"
-    <<  "average conversion rate = "                      <<   std::setprecision(14)<< AvconvRate  << "\n"
+    <<   std::setprecision(14) 
+    <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+    <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
       //"median conversion rate = %.2f\n\n";              //$medconvRate
     
-    <<  "total otherC considered (Forward) (>95%% C+T): " <<   std::setprecision(14)<< numF        << "\n"
-    <<  "average conversion rate (Forward) = "            <<   std::setprecision(14)<< AvFconvRate << "\n"
+    <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
+    <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
       //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
     
-    <<  "total otherC considered (Reverse) (>95%% C+T): " <<   std::setprecision(14)<< numR        << "\n"
-    <<  "average conversion rate (Reverse) = "            <<   std::setprecision(14)<< AvRconvRate << "\n";
-  
-  //open (my $hd,">".$prefix."_conversionRate.txt");
-  //print $hd $res;
-  //close $hd;
+    <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
+    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
   
   bam_destroy1(b);
   bam_hdr_destroy(header);
@@ -1144,22 +1155,16 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   int totCs = numF + numR;
   
    
-  Rcpp::Rcout 
-    <<  "total otherC considered (>95%% C+T): "           << totCs       << "\n"
-    <<  "average conversion rate = "                      << AvconvRate  << "\n"
-      //"median conversion rate = %.2f\n\n";              //$medconvRate
-    
-    <<  "total otherC considered (Forward) (>95%% C+T): " << numF        << "\n"
-    <<  "average conversion rate (Forward) = "            << AvFconvRate << "\n"
-      //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
-    
-    <<  "total otherC considered (Reverse) (>95%% C+T): " << numR        << "\n"
-    <<  "average conversion rate (Reverse) = "            << AvRconvRate << "\n";
-      //"median conversion rate (Reverse) = %.2f\n";       //$medRconvRate
-  
-  //open (my $hd,">".$prefix."_conversionRate.txt");
-  //print $hd $res;
-  //close $hd;
+   Rcpp::Rcout 
+     <<   std::setprecision(14) 
+     <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+     <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
+   
+     <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
+     <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
+     
+     <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
+     <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
   
   return 0;
 }
