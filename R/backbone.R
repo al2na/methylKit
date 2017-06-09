@@ -1200,21 +1200,21 @@ setMethod("unite", "methylRawList",
     #print(names(as.list(match.call())))
     # catch additional args 
     args <- list(...)
-    #print(args)
+    # print(args)
     
     if( !( "dbdir" %in% names(args)) ){
       dbdir <- .check.dbdir(getwd())
     } else { dbdir <- .check.dbdir(args$dbdir) }
-    #                         if(!( "dbtype" %in% names(args) ) ){
-    #                           dbtype <- "tabix"
-    #                         } else { dbtype <- args$dbtype }
-#               if(!( "suffix" %in% names(args) ) ){
-#                 suffix <- paste0("_","base")
-#               } else { 
-#                 suffix <- args$suffix
-#                 suffix <- paste0("_",suffix)
-#               }
-    
+    if(!( "dbtype" %in% names(args) ) ){
+      dbtype <- "tabix"
+    } else { dbtype <- args$dbtype }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- NULL
+    } else {
+      suffix <- args$suffix
+      suffix <- paste0("_",suffix)
+    }
+
     # create methylBaseDB
     #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
     obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
@@ -1225,9 +1225,12 @@ setMethod("unite", "methylRawList",
                             coverage.index=coverage.ind,
                             numCs.index=numCs.ind,
                             numTs.index=numTs.ind,destranded=destrand,
-                            resolution=object[[1]]@resolution)#,
-                            #suffix=suffix)
+                            resolution=object[[1]]@resolution,
+                            suffix=suffix)
     obj@sample.ids <- sample.ids
+    
+    message(paste0("flatfile located at: ",obj@dbpath))
+    
     obj
 }
 }
