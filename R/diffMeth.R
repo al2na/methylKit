@@ -704,6 +704,12 @@ setMethod("calculateDiffMeth", "methylBase",
              "than two samples")
       }
       
+      if(! identical(sort(unique(.Object@treatment)), c(0,1)) ){
+        stop("treatment option should have 0 and 1 designating treatment ",
+             "and control samples")
+      }
+      
+      
       if(length(unique(.Object@treatment))<2 ){
         stop("can not do differential methylation calculation when there ",
              "is no control\n",
