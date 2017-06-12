@@ -504,7 +504,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(dir,"/",paste(obj@sample.ids,collapse = "_"),
+          filename <- paste0(dir,"/",paste(obj@sample.id,collapse = "_"),
                              suffix,".txt.bgz")
           #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = 
           # "",obj@dbpath)),suffix,".txt.bgz")
@@ -521,10 +521,10 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(paste(obj@sample.ids,collapse = "_")
-                             ,suffix,".txt.bgz")
-          #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
-          # suffix,".txt.bgz")
+          # filename <- paste0(dirname(obj@dbpath),paste(obj@sample.id,collapse = "_")
+                             # ,suffix,".txt.bgz")
+          filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
+                             suffix,".txt.bgz")
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -535,6 +535,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                                        resolution = obj@resolution)
         }
       }
+
     } else {
       
       for(i in 1:length(sample.ids)){
@@ -1306,10 +1307,12 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    overdispersion=overdispersion,effect=effect,
                    parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
         tmp <- as.data.frame(t(tmp))
-        #print(head(tmp))
+        # print(head(data))
+        # print(head(tmp))
         x=data.frame(data[,1:4],tmp$p.value,
                      p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                     meth.diff=tmp[,1],#$meth.diff.1,
+                     stringsAsFactors=FALSE)
         
         return(x)
       }
@@ -1413,15 +1416,15 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- paste0("_diffMeth_",type)
+      suffix <- "_type"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
     
-    filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+    filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
     
     dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
                               dir = dir, filename = filename, 

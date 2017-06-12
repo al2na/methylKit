@@ -586,10 +586,11 @@ setClass("methylDiff",representation(
 #'            \code{suffix}
 #'                  A character string to append to the name of the output 
 #'                  flat file database, 
-#'                  only used if save.db is true, default actions: append 
-#'                  \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  only used if save.db is true, default actions:  
+#'                  The default suffix is a 13-character random string appended 
+#'                  to the fixed prefix \dQuote{methylDiff}, e.g. 
+#'                  \dQuote{methylDiff_16d3047c1a254.txt.bgz}. 
+#'                  
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -745,8 +746,9 @@ setMethod("calculateDiffMeth", "methylBase",
                                                     conf.int = F)$p.value,
                             mc.cores=mc.cores,mc.preschedule = TRUE) ) 
           
-          set1.Cs=.Object@numCs.index[.Object@treatment==1]
-          set2.Cs=.Object@numCs.index[.Object@treatment==0]
+          # set1 is the high, set2 is the low level of the group 
+          set1.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[2]]
+          set2.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[1]]
           
           # calculate mean methylation change
           mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
@@ -1004,9 +1006,9 @@ setMethod("selectByOverlap", "methylDiff",
 #'                  A character string to append to the name of the output flat 
 #'                  file database, 
 #'                  only used if save.db is true, default actions: append 
-#'                  \dQuote{_filtered} to current filename 
+#'                  \dQuote{_type} to current filename 
 #'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  filename \dQuote{methylDiff_type}
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -1111,7 +1113,7 @@ setMethod(f="getMethylDiff", signature="methylDiff",
       suffix <- paste0("_",args$suffix)
     }
     
-    # create methylBaseDB
+    # create methylDiffDB
     if(type=="all"){
       new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
                          dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,

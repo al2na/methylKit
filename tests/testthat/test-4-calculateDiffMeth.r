@@ -17,16 +17,20 @@ mydblist = suppressMessages(methRead( file.list,
 # unite function
 methidh=unite(myobj)
 methidh2=unite(myobj,min.per.group=1L)
+methidh3=pool(methidh,sample.ids = c("test","control"))
 
 suppressMessages(methidhDB <- unite(mydblist))
 suppressMessages(methidh2DB <- unite(mydblist,min.per.group=1L))
+suppressMessages(methidh3DB <- pool(methidhDB,sample.ids = c("test","control")))
 
 # differential methylation
 myDiff =calculateDiffMeth(methidh)
 myDiff2=calculateDiffMeth(methidh2)
+myDiff3=calculateDiffMeth(methidh3)
 
 suppressMessages(myDiffDB <- calculateDiffMeth(methidhDB))
 suppressMessages(myDiff2DB <- calculateDiffMeth(methidh2DB))
+suppressMessages(myDiff3DB <- calculateDiffMeth(methidh3DB))
 
 hypo <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
 hyper <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
