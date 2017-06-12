@@ -24,7 +24,7 @@ test_that("test if output of unite is  methylBase object", {
 
 test_that("test if output of unite is  methylBaseDB object", {
   expect_is(pool(methidhDB,sample.ids=c("test","control")), 'methylBaseDB')
-  expect_is(pool(methidh,sample.ids=c("test","control"),save.db = TRUE), 'methylBaseDB')
+  expect_is(pool(methidh,sample.ids=c("test","control"),save.db = TRUE,dbdir="methylDB"), 'methylBaseDB')
 })
 
 
