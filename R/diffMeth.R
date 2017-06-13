@@ -789,7 +789,8 @@ setMethod("calculateDiffMeth", "methylBase",
         tmp <- as.data.frame(t(tmp))
         x=data.frame(subst[,1:4],tmp$p.value,
                      p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                     meth.diff=tmp[,1],
+                     stringsAsFactors=FALSE)
         colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
       }
       
