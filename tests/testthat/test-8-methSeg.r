@@ -12,7 +12,8 @@ test_that("check if methSeg works for methylRaw or methylDiff with resolution re
 })
 
 test_that("check if methSeg works for methylRaw or methylDiff with resolution base " ,{
-  expect_is(methSeg(methylRawList.obj[[1]],diagnostic.plot = FALSE),"GRanges")
+  expect_warning(methraw.gr <- methSeg(methylRawList.obj[[1]],diagnostic.plot = FALSE))
+  expect_is(methraw.gr,"GRanges")
   expect_is(methSeg(methylDiff.obj,diagnostic.plot = FALSE),"GRanges")
 })
 

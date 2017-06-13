@@ -426,10 +426,15 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
                            suffix=NULL
                            )
   {
+  # new tabix file is named by "metyhlBase"+tmpstring, works for now
+  # if additional suffix is passed, tmpstring is skipped 
+  filepath <- paste0(ifelse(is.null(suffix),
+                            yes = tempfile(pattern = "methylBase_",tmpdir = dbpath),
+                            no = paste0(dbpath,"/methylBase",suffix)),
+                     ".txt")
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  # additional suffix is possible
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
+  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
   #print(filepath)
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
@@ -579,8 +584,15 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
                            resolution,treatment,destranded,
                            suffix=NULL){
   
-  # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
+  # new tabix file is named by "metyhlBase"+tmpstring, works for now
+  # if additional suffix is passed, tmpstring is skipped 
+  filepath <- paste0(ifelse(is.null(suffix),
+                            yes = tempfile(pattern = "methylDiff",tmpdir = dbpath),
+                            no = paste0(dbpath,"/methylDiff",suffix)),
+                     ".txt")
+  
+  # # new tabix file is named by concatenation of sample.ids, works for now
+  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 

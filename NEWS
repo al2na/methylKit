@@ -1,3 +1,11 @@
+methylKit 1.3.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* quick fix for long filename issue: in unite() and calculateMethylDiff() 
+  instead of concatenated sample_ids, filename will be "methylBase" 
+  concatenated with either 13-char random string or provided suffix
+* updated vignette: added two short FAQs
+
 methylKit 1.3.1
 --------------
 IMPROVEMENTS AND BUG FIXES

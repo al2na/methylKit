@@ -504,7 +504,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(dir,"/",paste(obj@sample.ids,collapse = "_"),
+          filename <- paste0(dir,"/",paste(obj@sample.id,collapse = "_"),
                              suffix,".txt.bgz")
           #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = 
           # "",obj@dbpath)),suffix,".txt.bgz")
@@ -521,10 +521,10 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(paste(obj@sample.ids,collapse = "_")
-                             ,suffix,".txt.bgz")
-          #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
-          # suffix,".txt.bgz")
+          # filename <- paste0(dirname(obj@dbpath),paste(obj@sample.id,collapse = "_")
+                             # ,suffix,".txt.bgz")
+          filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
+                             suffix,".txt.bgz")
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -535,6 +535,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                                        resolution = obj@resolution)
         }
       }
+
     } else {
       
       for(i in 1:length(sample.ids)){
@@ -629,8 +630,27 @@ if(save.db) {
   } else {
     dir <- dirname(object[[1]]@dbpath)
   }
+  # if(!( "dbtype" %in% names(args) ) ){
+  #   dbtype <- "tabix"
+  # } else { dbtype <- args$dbtype }
+  if(!( "suffix" %in% names(args) ) ){
+    suffix <- NULL
+  } else {
+    suffix <- args$suffix
+    suffix <- paste0("_",suffix)
+  }
   
-  filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
+  # filename will be "methylBase" concatenated with either 13-char random string or suffix
+  filename <- paste0( ifelse(is.null(suffix),
+                             yes = tempfile(pattern = "methylBase_",tmpdir = "."),
+                             no = paste0("methylBase",suffix)),
+                      ".txt")
+  
+  # remove the "./" that tempfile prepends
+  filename <- basename(filename)
+
+  # filename <- tempfile(pattern = "methylBase",tmpdir = ".",fileext = ".txt")
+  #filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
   
   if(is.null(min.per.group)) {
     
@@ -673,10 +693,15 @@ if(save.db) {
     
     unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
   }
-  readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+  obj <- readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
                    sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
                    context = object[[1]]@context,resolution = object[[1]]@resolution,
                    treatment = object@treatment,destranded = destrand)
+  
+  message(paste0("flatfile located at: ",obj@dbpath))
+  
+  obj
+  
 } else {
   obj <- object
   class(obj) <- "methylRawList"
@@ -876,8 +901,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
-    #filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
+    # filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
     
     con <- file(methMat,open = "r") 
     
@@ -1130,13 +1155,14 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     } else { dir <- dirname(methylObj@dbpath) }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- NULL
+      suffix <- "_reorganized"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
-    # filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+    # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",methylObj@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,
                                  chunk.size = chunk.size, dir=dir,
@@ -1201,12 +1227,15 @@ setMethod("pool", "methylBaseDB",
         dir <- .check.dbdir(args$dbdir) }
     } else { dir <- dirname(obj@dbpath) }
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- NULL
+      suffix <- "_pooled"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    
+    filename <- paste0(basename(gsub(".txt.bgz","",obj@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size,
                                  dir=dir,filename = filename, 
@@ -1278,10 +1307,12 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    overdispersion=overdispersion,effect=effect,
                    parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
         tmp <- as.data.frame(t(tmp))
-        #print(head(tmp))
+        # print(head(data))
+        # print(head(tmp))
         x=data.frame(data[,1:4],tmp$p.value,
                      p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                     meth.diff=tmp[,1],#$meth.diff.1,
+                     stringsAsFactors=FALSE)
         
         return(x)
       }
@@ -1296,14 +1327,17 @@ setMethod("calculateDiffMeth", "methylBaseDB",
         }
       }
       if(!( "suffix" %in% names(args) ) ){
-        suffix <- "_diffMeth"
+        suffix <- NULL
       } else { 
         suffix <- paste0("_",args$suffix)
       }
       
-      filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+      # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
       
-      #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+      filename <- paste0(basename( gsub("methylBase","methylDiff",
+                                       gsub(".txt.bgz","",.Object@dbpath)
+                                       ))
+                        ,suffix,".txt")
       
       dbpath <- applyTbxByChunk(.Object@dbpath,dir = 
                                   dir,chunk.size = chunk.size,  
@@ -1323,6 +1357,9 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                            destranded=.Object@destranded,
                            treatment=.Object@treatment,
                            resolution=.Object@resolution)
+      
+      message(paste0("flatfile located at: ",obj@dbpath))
+      
       obj
       
     } else {
@@ -1379,15 +1416,15 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- paste0("_diffMeth_",type)
+      suffix <- "_type"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
     
-    filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+    filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
     
     dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
                               dir = dir, filename = filename, 
@@ -1547,12 +1584,13 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
       }
     } 
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- paste0("_","regions")
+      suffix <- "_regions"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                    ranges=regions,  dir=dir,filename = filename, 
@@ -1642,13 +1680,16 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
                 }
               } 
               if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","regions")
+                suffix <- "_regions"
               } else { 
                 suffix <- paste0("_",args$suffix)
               }
               
               
-              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              # filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+                                 ,suffix,".txt")
+              
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
@@ -1779,14 +1820,14 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
         dir <- .check.dbdir(args$dbdir) 
       } 
       if(!( "suffix" %in% names(args) ) ){
-        suffix <- paste0("_","regions")
+        suffix <- "_regions"
       } else { 
         suffix <- paste0("_",args$suffix)
       }
       
-      filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+      # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
       
-      #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+      filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
       
       newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                      ranges=regions,  dir=dir,
@@ -1885,9 +1926,9 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
                 suffix <- paste0("_",args$suffix)
               }
               
-              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+              # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
               
-              #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
@@ -1962,14 +2003,17 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
                 }
               } 
               if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","tiled")
+                suffix <- "_tiled"
               } else { 
                 suffix <- paste0("_",args$suffix)
               }
               
               
-              filename <- paste0(paste(object@sample.id,collapse = "_"),
-                                 suffix,".txt")
+              # filename <- paste0(paste(object@sample.id,collapse = "_"),
+              #                    suffix,".txt")
+              
+              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              
               
               newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                          dir = dir,filename = filename,
@@ -2080,7 +2124,10 @@ setMethod("tileMethylCounts", signature(object="methylBaseDB"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+    
+    filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+    
     
     newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                dir = dir,filename = filename,

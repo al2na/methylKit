@@ -102,16 +102,16 @@ chr21.9853326	chr21	9853326	F	17	70.59	29.41
 
 Below, there are several options showing how to do basic analysis with *`methylKit`*.
 
-## Documentation##
+## Documentation ##
  * You can look at the vignette [here](http://rpubs.com/al2na/methylKit)
  * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013
  * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012
  * You can see the code snippet below
 
 
-## Example analysis##
+## Example analysis ##
 
-### Read methylation files###
+### Read methylation files ###
 ```r
 library(methylKit)
 
@@ -131,7 +131,7 @@ myobj=read( file.list,
 
 ```
 
-### Get descriptive stats on methylation###
+### Get descriptive stats on methylation ###
 ```r
 # get methylation statistics on second file "test2" in myobj which is a class of methylRawList
 getMethylationStats(myobj[[2]],plot=F,both.strands=F)
@@ -140,7 +140,7 @@ getMethylationStats(myobj[[2]],plot=F,both.strands=F)
 getMethylationStats(myobj[[2]],plot=T,both.strands=F)
 ```
 
-### Get bases covered by all samples and cluster samples###
+### Get bases covered by all samples and cluster samples ###
 ```r
 # see what the data looks like for sample 2 in myobj methylRawList
 head(myobj[[2]])
@@ -166,7 +166,7 @@ PCASamples(meth, screeplot=TRUE)
 # principal component anlaysis of all samples.
 PCASamples(meth)
 ```
-### Calculate differential methylation###
+### Calculate differential methylation ###
 Before differential methylation calculation, consider filtering high coverage bases to remove potential PCR bias using `filterByCoverage()`. In addition, consider normalizing read coverages between samples to avoid bias introduced by systematically more sequenced samples, using `normalizeCoverage()`.
 
 ```r
@@ -186,7 +186,7 @@ myDiff25pHypo =get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
 myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
 ```
 
-### Annotate differentially methylated bases/regions###
+### Annotate differentially methylated bases/regions ###
 ```r
 # read-in transcript locations to be used in annotation
 # IMPORTANT: annotation files that come with the package (version >=0.5) are a subset of full annotation
