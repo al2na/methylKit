@@ -712,10 +712,19 @@ setMethod("calculateDiffMeth", "methylBase",
               "and control samples")
       }
       
+      if(length(unique(.Object@treatment))==2 ){
+        message("two groups detected: ",
+                "will do differential methylation calculation as difference of\n",
+                sprintf("treatment (group: %s) and control (group: %s)",
+                        levels(as.factor(.Object@treatment))[2],
+                        levels(as.factor(.Object@treatment))[1]))
+      }
+      
       if(length(unique(.Object@treatment))>2 ){
-        stop("can not do differential methylation calculation when there ",
-             "are more than\n
-             two groups, treatment vector indicates more than two groups")
+        message("more than two groups detected: ",
+                "will do differential methylation calculation for a region\n",
+                "as difference of max(x) - min(x), ",
+                "with x being a vector of mean methylation per group.")
       }
       
       # add backwards compatibility with old parameters
