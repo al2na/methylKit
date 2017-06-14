@@ -75,7 +75,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
       obj= as(obj,"GRanges")
       ## calculate methylation score 
       mcols(obj)$meth=100*obj$numCs/obj$coverage
-      ## sort and destrand
+      ## sort 
       obj = sort(obj[,"meth"],ignore.strand=TRUE)
   }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
       obj = as(obj,"GRanges")
@@ -85,6 +85,9 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
     stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
   }
+  
+  # destrand
+  strand(obj) <- "*"
   
   ## check wether obj contains at least one metacol 
   if(ncol(elementMetadata(obj))<1)
