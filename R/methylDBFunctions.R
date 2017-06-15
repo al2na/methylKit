@@ -1270,49 +1270,101 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
                    chunk.size,save.db=TRUE,...){
             
-    if(length(.Object@treatment)<2 ){
-      stop("can not do differential methylation calculation with less than two samples")
-    }
-    if(length(unique(.Object@treatment))<2 ){
-      stop("can not do differential methylation calculation when there is no control\n
-           treatment option should have 0 and 1 designating treatment and control samples")
-    }
-    if(length(unique(.Object@treatment))>2 ){
-      stop("can not do differential methylation calculation when there are more than\n
-           two groups, treatment vector indicates more than two groups")
-    }
-    #### check if covariates+intercept+treatment more than replicates ####
-    if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index))
-    {
-      stop("Too many covariates/too few replicates.")}
-    }
+      if(length(.Object@treatment)<2 ){
+        stop("can not do differential methylation calculation with less ",
+             "than two samples")
+      }
+      
+      if(length(unique(.Object@treatment))<2 ){
+        stop("can not do differential methylation calculation when there ",
+             "is no control\n",
+             "treatment option should have 0 and 1 designating treatment ",
+             "and control samples")
+      }
+      
+      if(length(unique(.Object@treatment))==2 ){
+        message("two groups detected:\n ",
+                "will calculate methylation difference as the difference of\n",
+                sprintf("treatment (group: %s) - control (group: %s)",
+                        levels(as.factor(.Object@treatment))[2],
+                        levels(as.factor(.Object@treatment))[1]))
+      }
+      
+      if(length(unique(.Object@treatment))>2 ){
+        message("more than two groups detected:\n ",
+                "will calculate methylation difference as the difference ",
+                "of max(x) - min(x),\n ",
+                "where x is vector of mean methylation per group per region,",
+                "but \n the statistical test will remain the same.")
+      }
+      
     
     if(save.db) {
-      
+
       # add backwards compatibility with old parameters
       if(slim==FALSE) adjust="BH" else adjust=adjust
       if(weighted.mean==FALSE) effect="mean" else effect=effect
       
       vars <- covariates
       
+      #### check if covariates+intercept+treatment more than replicates 
+      if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index)){
+        stop("Too many covariates/too few replicates.")}}
+      
       # function to apply the test to data
-      diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,
+      diffMeth <- function(subst,Ccols,Tcols,formula,vars,treatment,
                            overdispersion,effect,
                            parShrinkMN,test,adjust,mc.cores){
         
-        cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+        # get count matrix and make list
+        cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
         
-        tmp=simplify2array(
-          mclapply(cntlist,logReg,formula,vars,treatment=treatment,
-                   overdispersion=overdispersion,effect=effect,
-                   parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
-        tmp <- as.data.frame(t(tmp))
-        # print(head(data))
-        # print(head(tmp))
-        x=data.frame(data[,1:4],tmp$p.value,
-                     p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp[,1],#$meth.diff.1,
-                     stringsAsFactors=FALSE)
+        if(length(treatment)==2 )
+        {
+          fpval=unlist( mclapply( cntlist,
+                                  function(x) fast.fisher(matrix(as.numeric( x) ,
+                                                                 ncol=2,byrow=F),
+                                                          conf.int = F)$p.value,
+                                  mc.cores=mc.cores,mc.preschedule = TRUE) ) 
+          
+          # set1 is the high, set2 is the low level of the group 
+          set1.Cs=Ccols[treatment==levels(as.factor(treatment))[2]]
+          set2.Cs=Ccols[treatment==levels(as.factor(treatment))[1]]
+          
+          # calculate mean methylation change
+          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+          # get difference between percent methylations
+          mom.mean.diff=mom.meth1-mom.meth2 
+          x=data.frame(subst[,1:4],fpval,
+                       p.adjusted(fpval,method=adjust),
+                       meth.diff=mom.mean.diff,stringsAsFactors=FALSE)
+          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+          
+        }else{        
+          # call estimate shrinkage before logReg
+          if(overdispersion[1] == "shrinkMN"){
+            parShrinkMN<-estimateShrinkageMN(cntlist,
+                                             treatment=treatment,
+                                             covariates=vars,
+                                             sample.size=100000,
+                                             mc.cores=mc.cores)
+          }
+          
+          # get the result of tests
+          tmp=simplify2array(
+            mclapply(cntlist,logReg,formula,vars,treatment=treatment,
+                     overdispersion=overdispersion,effect=effect,
+                     parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+          
+          # return the data frame part of methylDiff
+          tmp <- as.data.frame(t(tmp))
+          x=data.frame(subst[,1:4],tmp$p.value,
+                       p.adjusted(tmp$q.value,method=adjust),
+                       meth.diff=tmp[,1],
+                       stringsAsFactors=FALSE)
+          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+        }
         
         return(x)
       }

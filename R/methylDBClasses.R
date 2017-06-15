@@ -587,7 +587,7 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
   # new tabix file is named by "metyhlBase"+tmpstring, works for now
   # if additional suffix is passed, tmpstring is skipped 
   filepath <- paste0(ifelse(is.null(suffix),
-                            yes = tempfile(pattern = "methylDiff",tmpdir = dbpath),
+                            yes = tempfile(pattern = "methylDiff_",tmpdir = dbpath),
                             no = paste0(dbpath,"/methylDiff",suffix)),
                      ".txt")
   

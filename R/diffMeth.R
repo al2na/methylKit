@@ -712,10 +712,20 @@ setMethod("calculateDiffMeth", "methylBase",
               "and control samples")
       }
       
+      if(length(unique(.Object@treatment))==2 ){
+        message("two groups detected:\n ",
+                "will calculate methylation difference as the difference of\n",
+                sprintf("treatment (group: %s) - control (group: %s)",
+                        levels(as.factor(.Object@treatment))[2],
+                        levels(as.factor(.Object@treatment))[1]))
+      }
+      
       if(length(unique(.Object@treatment))>2 ){
-        stop("can not do differential methylation calculation when there ",
-             "are more than\n
-             two groups, treatment vector indicates more than two groups")
+        message("more than two groups detected:\n ",
+                "will calculate methylation difference as the difference ",
+                "of max(x) - min(x),\n ",
+                "where x is vector of mean methylation per group per region,",
+                "but \n the statistical test will remain the same.")
       }
       
       # add backwards compatibility with old parameters
@@ -780,7 +790,8 @@ setMethod("calculateDiffMeth", "methylBase",
         tmp <- as.data.frame(t(tmp))
         x=data.frame(subst[,1:4],tmp$p.value,
                      p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                     meth.diff=tmp[,1],
+                     stringsAsFactors=FALSE)
         colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
       }
       

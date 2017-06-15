@@ -12,8 +12,8 @@
 #' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
 #' \code{\link{methylDiffDB}},
 #'            \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
-#'            \code{\link[GenomicRanges]{GRanges}}
-#'             it should have one meta column with methylation scores
+#'            \code{\link[GenomicRanges]{GRanges}} it should have one meta column 
+#'            with methylation scores and has to be sorted 
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
 #'        methylation and length statistics per segment group. In addition, it 
 #'        shows diagnostics from mixture modeling: the density function estimated 
@@ -75,7 +75,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
       obj= as(obj,"GRanges")
       ## calculate methylation score 
       mcols(obj)$meth=100*obj$numCs/obj$coverage
-      ## sort and destrand
+      ## sort 
       obj = sort(obj[,"meth"],ignore.strand=TRUE)
   }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
       obj = as(obj,"GRanges")
@@ -85,6 +85,17 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
     stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
   }
+  
+  # destrand
+  strand(obj) <- "*"
+  
+  ## check wether obj contains at least one metacol 
+  if(ncol(elementMetadata(obj))<1)
+    stop("GRanges does not have any meta column.")
+  
+  ## check wether obj contains is sorted
+  if(is.unsorted(obj))
+    stop("GRanges has to be sorted.")
   
   ## check wether obj contains at least two ranges else stop
   if(length(obj)<=1)

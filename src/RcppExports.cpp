@@ -23,3 +23,13 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"methylKit_methCall", (DL_FUNC) &methylKit_methCall, 9},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_methylKit(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

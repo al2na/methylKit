@@ -1,3 +1,14 @@
+methylKit 1.3.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* changes to calculateDiffMeth() function: add a message explaining 
+  the calculation procedure based on either two or more treatment groups, 
+  fixed bugs that prohibited the use of treatment groups other than 0/1 
+  in two group case, allow for more than two groups, update tests
+* changes in methSeg() function: update function documentation to 
+  inform that provided Granges has to be sorted, 
+  add check if granges is sorted and contains at least one meta.col
+
 methylKit 1.3.2
 --------------
 IMPROVEMENTS AND BUG FIXES
