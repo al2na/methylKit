@@ -971,6 +971,8 @@ setMethod("percMethylation", "methylBaseDB",
                                                 data[,numTs.index] )
               rownames(dat)=paste(as.character(data[,1]),
                                   data[,2],data[,3],sep=".")
+              return(dat)
+              
             }
             if (save.txt) {
               
