@@ -93,9 +93,11 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   if(ncol(elementMetadata(obj))<1)
     stop("GRanges does not have any meta column.")
   
-  ## check wether obj contains is sorted
-  if(is.unsorted(obj))
-    stop("GRanges has to be sorted.")
+  ## check wether obj contains is sorted by position
+  if(is.unsorted(obj,ignore.strand=TRUE)) {
+    obj <- sort(obj,ignore.strand=TRUE)
+    message("sorting GRanges by position.")
+  }
   
   ## check wether obj contains at least two ranges else stop
   if(length(obj)<=1)
