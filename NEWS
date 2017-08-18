@@ -1,3 +1,8 @@
+methylKit 1.3.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix problem with methSeg() error occurring when GRanges is not sorted by position
+
 methylKit 1.3.4
 --------------
 IMPROVEMENTS AND BUG FIXES
