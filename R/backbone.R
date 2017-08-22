@@ -1019,10 +1019,10 @@ setClass("methylBase",contains="data.frame",representation(
 #'            \code{suffix}
 #'                  A character string to append to the name of the output 
 #'                  flat file database, 
-#'                  only used if save.db is true, default actions: append 
-#'                  \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  only used if save.db is true, default actions: 
+#'                  The default suffix is a 13-character random string appended 
+#'                  to the fixed prefix \dQuote{methylBase}, e.g. 
+#'                  \dQuote{methylBase_16d3047c1a254.txt.bgz}. 
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -1063,7 +1063,7 @@ setClass("methylBase",contains="data.frame",representation(
 #' allows the calculation in-memory, 
 #' then you might change the value of this parameter.
 #' 
-#'  
+#'   
 #' @docType methods
 #' @rdname unite-methods
 setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,
@@ -1200,21 +1200,21 @@ setMethod("unite", "methylRawList",
     #print(names(as.list(match.call())))
     # catch additional args 
     args <- list(...)
-    #print(args)
+    # print(args)
     
     if( !( "dbdir" %in% names(args)) ){
       dbdir <- .check.dbdir(getwd())
     } else { dbdir <- .check.dbdir(args$dbdir) }
-    #                         if(!( "dbtype" %in% names(args) ) ){
-    #                           dbtype <- "tabix"
-    #                         } else { dbtype <- args$dbtype }
-#               if(!( "suffix" %in% names(args) ) ){
-#                 suffix <- paste0("_","base")
-#               } else { 
-#                 suffix <- args$suffix
-#                 suffix <- paste0("_",suffix)
-#               }
-    
+    if(!( "dbtype" %in% names(args) ) ){
+      dbtype <- "tabix"
+    } else { dbtype <- args$dbtype }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- NULL
+    } else {
+      suffix <- args$suffix
+      suffix <- paste0("_",suffix)
+    }
+
     # create methylBaseDB
     #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
     obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
@@ -1225,9 +1225,12 @@ setMethod("unite", "methylRawList",
                             coverage.index=coverage.ind,
                             numCs.index=numCs.ind,
                             numTs.index=numTs.ind,destranded=destrand,
-                            resolution=object[[1]]@resolution)#,
-                            #suffix=suffix)
+                            resolution=object[[1]]@resolution,
+                            suffix=suffix)
     obj@sample.ids <- sample.ids
+    
+    message(paste0("flatfile located at: ",obj@dbpath))
+    
     obj
 }
 }
