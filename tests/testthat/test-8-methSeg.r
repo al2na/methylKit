@@ -25,6 +25,21 @@ test_that("check if methSeg returns error for methylBase objects" ,{
   expect_error(methSeg(methylBase.obj,diagnostic.plot = FALSE))
 })
 
+
+gr = as(methylRawList.obj[[1]],"GRanges")
+mcols(gr)$meth=100*gr$numCs/gr$coverage
+
+test_that("check if methSeg works for GRanges object" ,{
+  expect_message(methSeg(gr,diagnostic.plot = FALSE))
+})
+
+gr_2 <- gr
+mcols(gr_2) <- NULL
+test_that("check if methSeg errors for GRanges object without meta columns" ,{
+  expect_error(methSeg(gr_2,diagnostic.plot = FALSE))
+})
+
+
 seg <- methSeg(tileRaw,diagnostic.plot = FALSE)
 methSeg2bed(segments = seg, filename = "test.bed")
 
