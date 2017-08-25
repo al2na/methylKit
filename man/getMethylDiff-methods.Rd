@@ -43,9 +43,9 @@ saved as flat file database or not, default: see Details}
       A character string to append to the name of the output flat 
       file database, 
       only used if save.db is true, default actions: append 
-      \dQuote{_filtered} to current filename 
+      \dQuote{_type} to current filename 
       if database already exists or generate new file with 
-      filename \dQuote{sampleID_filtered}
+      filename \dQuote{methylDiff_type}
       
 \code{dbdir} 
       The directory where flat file database(s) should be stored, 

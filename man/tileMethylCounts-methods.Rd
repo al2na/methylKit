@@ -52,14 +52,19 @@ saved as flat file database or not, default: explained in Details sections}
 \item{...}{optional Arguments used when save.db is TRUE
 
 \code{suffix}
-      A character string to append to the name of the output flat file database, 
-      only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-      if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+      A character string to append to the name of the output flat 
+      file database, 
+      only used if save.db is true, 
+      default actions: append \dQuote{_tiled} to current filename 
+      if database already exists or generate new file with 
+      filename \dQuote{sampleID_tiled} or 
+      \dQuote{methylBase_tiled} dependent on input object
       
 \code{dbdir} 
-      The directory where flat file database(s) should be stored, defaults
-      to getwd(), working directory for newly stored databases
-      and to same directory for already existing database}
+      The directory where flat file database(s) should be stored,
+      defaults to getwd(), working directory for newly stored
+      databases and to same directory for already existing
+      database}
 }
 \value{
 \code{methylRaw},\code{methylBase} or \code{methylRawList} object
@@ -71,14 +76,20 @@ methylated analysis is preferable to tilling windows instead of base pairs.
 }
 \section{Details}{
 
-The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
-as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+The parameter \code{chunk.size} is only used when working with 
+\code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+as they are read in chunk by chunk to enable processing large-sized objects 
+which are stored as flat file database.
+Per default the chunk.size is set to 1M rows, which should work for most 
+systems. If you encounter memory problems or 
 have a high amount of memory available feel free to adjust the \code{chunk.size}.
 
-The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
-while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{methylRawList}. If you wish to save the result of an 
-in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+The parameter \code{save.db} is per default TRUE for methylDB objects as 
+\code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
+while being per default FALSE for \code{methylRaw}, \code{methylBase} or
+ \code{methylRawList}. If you wish to save the result of an 
+in-memory-calculation as flat file database or if the size of the database 
+allows the calculation in-memory, 
 then you might want to change the value of this parameter.
 }
 
