@@ -66,7 +66,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
     outfile= file.path(path.expand(dir),filename) 
   }
   
-  #df=data.table::fread(outfile,header=FALSE)
+  #df=fread(outfile,header=FALSE)
   
   # after iterations end
   # zip and index the text file
@@ -181,7 +181,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   
   # order rows
   V1=V2=V3=NULL
-  data.table::setorder(res, V1,V2,V3)
+  setorder(res, V1,V2,V3)
   
   if(!parallel){
   # write out append TRUE
@@ -314,7 +314,7 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
 #' @noRd
 tabix2dt<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+    fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                        stringsAsFactors=TRUE)
   
 }
@@ -324,7 +324,7 @@ tabix2dt<-function(tabixRes){
 #' @noRd
 tabix2df<-function(tabixRes){
 
-    data.table::fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+    fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                        stringsAsFactors=TRUE,data.table = FALSE)
     
 }
@@ -335,7 +335,7 @@ tabix2df<-function(tabixRes){
 #' @noRd
 tabix2gr<-function(tabixRes){
   
-    from <- data.table::fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
+    from <- fread(paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
                               stringsAsFactors=TRUE, data.table = FALSE)
     
   GRanges(seqnames=as.character(from$V1),
@@ -478,7 +478,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
   
     
     # collect and return
-    data.table::rbindlist(res)
+    rbindlist(res)
   }
   
 }

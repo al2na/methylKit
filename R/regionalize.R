@@ -126,7 +126,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
     # create a temporary data.table row ids from regions and counts from object
     coverage=numCs=numTs=id=covered=NULL
     df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
-    dt=data.table::data.table(df)
+    dt=data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
 
@@ -228,7 +228,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
             #require(data.table)
             # create a temporary data.table row ids from regions and counts from object
             df=data.frame(id = mat[, 1], getData(object)[mat[, 2], 5:ncol(object) ])
-            dt=data.table::data.table(df)
+            dt=data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
             coverage=.SD=numTs=id=numTs1=covered=NULL
@@ -338,7 +338,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
     #require(data.table)
     # create a temporary data.table row ids from regions and counts from object
     df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
-    dt=data.table::data.table(df)
+    dt=data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
     coverage=NULL
@@ -446,7 +446,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
             #require(data.table)
             # create a temporary data.table row ids from regions and counts from object
             df=data.frame(id = mat[, 1], getData(object)[mat[, 2], 5:ncol(object) ])
-            dt=data.table::data.table(df)
+            dt=data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
             id=.SD=numTs1=NULL

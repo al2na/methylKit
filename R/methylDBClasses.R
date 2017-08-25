@@ -14,17 +14,17 @@
   if(missing(methylDBclass)){
         
     if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "coverage","numCs","numTs"))
       
     } else if( length(df) == 7 & unique(sapply(df,class)[5:7])=="numeric"){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "pvalue","qvalue","meth.diff")) 
 
     } else if( length(df) > 7){
-      data.table::setnames(x = df,old = names(df)[1:4], 
+      setnames(x = df,old = names(df)[1:4], 
                            new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -33,11 +33,11 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], 
+      setnames(df,names(df)[coverage.ind], 
                            paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], 
+      setnames(df,names(df)[numCs.ind], 
                            paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], 
+      setnames(df,names(df)[numTs.ind], 
                            paste(c("numTs"),1:numsamples,sep="" ))
       
     } 
@@ -47,12 +47,12 @@
   } else {
     
     if( methylDBclass == "methylRawDB" ){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "coverage","numCs","numTs"))
     
     } else if ( methylDBclass == "methylBaseDB"){
-      data.table::setnames(x = df,old = names(df)[1:4], 
+      setnames(x = df,old = names(df)[1:4], 
                            new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -61,15 +61,15 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], 
+      setnames(df,names(df)[coverage.ind], 
                            paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], 
+      setnames(df,names(df)[numCs.ind], 
                            paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], 
+      setnames(df,names(df)[numTs.ind], 
                            paste(c("numTs"),1:numsamples,sep="" ))
       
     } else if( methylDBclass == "methylDiffDB" ){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "pvalue","qvalue","meth.diff"))
     
