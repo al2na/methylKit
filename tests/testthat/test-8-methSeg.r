@@ -30,13 +30,29 @@ gr = as(methylRawList.obj[[1]],"GRanges")
 mcols(gr)$meth=100*gr$numCs/gr$coverage
 
 test_that("check if methSeg works for GRanges object" ,{
-  expect_message(methSeg(gr,diagnostic.plot = FALSE))
+  expect_is(methSeg(gr,diagnostic.plot = FALSE),"GRanges")
 })
 
 gr_2 <- gr
 mcols(gr_2) <- NULL
 test_that("check if methSeg errors for GRanges object without meta columns" ,{
   expect_error(methSeg(gr_2,diagnostic.plot = FALSE))
+})
+
+
+gr.list <- lapply(methylRawList.obj, FUN = function(obj){ 
+  obj= as(obj,"GRanges")
+  mcols(obj)$meth=100*obj$numCs/obj$coverage
+  obj = obj[,"meth"]
+})
+large.gr <- do.call("c",gr.list)
+
+res1 <- methSeg(large.gr)
+res2 <- methSeg(large.gr,join.neighbours = TRUE)
+
+test_that("check if joining neighbours works" ,{
+  expect_false(all(rle(res1$seg.group)$lengths == 1))
+  expect_true(all(rle(res2$seg.group)$lengths == 1))
 })
 
 
