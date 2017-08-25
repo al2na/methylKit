@@ -76,10 +76,11 @@ Details section.}
  \code{suffix}
        A character string to append to the name of the output 
        flat file database, 
-       only used if save.db is true, default actions: append 
-       \dQuote{_filtered} to current filename 
-       if database already exists or generate new file with 
-       filename \dQuote{sampleID_filtered}
+       only used if save.db is true, default actions:  
+       The default suffix is a 13-character random string appended 
+       to the fixed prefix \dQuote{methylDiff}, e.g. 
+       \dQuote{methylDiff_16d3047c1a254.txt.bgz}. 
+       
        
  \code{dbdir} 
        The directory where flat file database(s) should be stored, 
