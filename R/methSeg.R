@@ -371,7 +371,7 @@ joinSegmentNeighbours <- function(res) {
     
     ## now we just merge ranges, that had a non-zero value in l
     for (i in which(l!=0)) {
-      res_dt[k[i]:(k[i]+l[i]),`:=`(seqnames=unique(seqnames),
+      res_dt[k[i]:(k[i]+l[i]),":="(seqnames=unique(seqnames),
                                    start=min(start),
                                    end=max(end),
                                    strand = "*",
