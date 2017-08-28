@@ -141,7 +141,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
   # if joining, show clustering after joining
   if(join.neighbours) {
       message("joining neighbouring segments")
-      seg.res <- .joinSegmentNeighbours(seg.res)
+      seg.res <- joinSegmentNeighbours(seg.res)
       diagnostic.plot=TRUE
       
       # get the new density
@@ -308,10 +308,13 @@ colramp=colorRamp(c("gray","green", "darkgreen"))
 #}
 
 
-#' Join directly neighbouring segments of same class
+#' Join directly neighbouring segments produced by methSeg
 #' 
 #'
-# @param res object returned from a methSeg call
+#' Segmentation and clustering are two distinct steps in methSeg(), 
+#' leading to adjacent segments of the same class. 
+#' This leads to a bias segment length distributions, 
+#' which is removed by joining those neighbours.
 #'
 #' @param res A \code{\link[GenomicRanges]{GRanges}} object with segment 
 #'         classification and information prudoced by \code{\link{methSeg}} 
@@ -325,13 +328,13 @@ colramp=colorRamp(c("gray","green", "darkgreen"))
 #' @importFrom data.table copy ":="
 # @noRd
 # @examples
-.joinSegmentNeighbours <- function(res) {
+joinSegmentNeighbours <- function(res) {
   
   # require(data.table)
   
   if (length(unique(seqnames(res))) > 1 ) {
     ## call recursively for multiple chromosomes
-    gr <- lapply(split(res,seqnames(res)),.joinSegmentNeighbours)
+    gr <- lapply(split(res,seqnames(res)),joinSegmentNeighbours)
     gr <- do.call(c, unlist(gr,use.names = FALSE) )
     return( gr )
   } 
