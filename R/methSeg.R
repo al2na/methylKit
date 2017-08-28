@@ -64,7 +64,7 @@
 #' 
 #' @author Altuna Akalin, contributions by Arsene Wabo
 #' 
-#' @seealso \code{\link{methSeg2bed}}
+#' @seealso \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}} 
 #' 
 #' @export
 #' @docType methods
@@ -313,7 +313,16 @@ colramp=colorRamp(c("gray","green", "darkgreen"))
 #'
 # @param res object returned from a methSeg call
 #'
-# @return res object
+#' @param res A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#'         classification and information prudoced by \code{\link{methSeg}} 
+#'
+#' @return A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#'         classification and information. 
+#' 
+#' @seealso \code{\link{methSeg}}
+#' 
+#' @export
+#' @importFrom data.table copy ":="
 # @noRd
 # @examples
 .joinSegmentNeighbours <- function(res) {
