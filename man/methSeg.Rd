@@ -75,7 +75,7 @@ unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 
 }
 \seealso{
-\code{\link{methSeg2bed}}
+\code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}}
 }
 \author{
 Altuna Akalin, contributions by Arsene Wabo
