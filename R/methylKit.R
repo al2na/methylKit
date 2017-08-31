@@ -11,7 +11,8 @@
 #' 
 #' @importFrom Rsamtools TabixFile scanTabix yieldSize "yieldSize<-"
 #' 
-#' @importFrom data.table data.table fread setnames setcolorder as.data.table tables setkey setkeyv key "key<-" haskey CJ SJ copy rbindlist
+#' @importFrom data.table data.table fread setnames setcolorder as.data.table tables 
+#'             setkey setkeyv key "key<-" haskey CJ SJ copy rbindlist setorder
 #' 
 #' @importFrom mclust  densityMclust Mclust
 #' 

@@ -586,10 +586,11 @@ setClass("methylDiff",representation(
 #'            \code{suffix}
 #'                  A character string to append to the name of the output 
 #'                  flat file database, 
-#'                  only used if save.db is true, default actions: append 
-#'                  \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  only used if save.db is true, default actions:  
+#'                  The default suffix is a 13-character random string appended 
+#'                  to the fixed prefix \dQuote{methylDiff}, e.g. 
+#'                  \dQuote{methylDiff_16d3047c1a254.txt.bgz}. 
+#'                  
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -711,10 +712,20 @@ setMethod("calculateDiffMeth", "methylBase",
               "and control samples")
       }
       
+      if(length(unique(.Object@treatment))==2 ){
+        message("two groups detected:\n ",
+                "will calculate methylation difference as the difference of\n",
+                sprintf("treatment (group: %s) - control (group: %s)",
+                        levels(as.factor(.Object@treatment))[2],
+                        levels(as.factor(.Object@treatment))[1]))
+      }
+      
       if(length(unique(.Object@treatment))>2 ){
-        stop("can not do differential methylation calculation when there ",
-             "are more than\n
-             two groups, treatment vector indicates more than two groups")
+        message("more than two groups detected:\n ",
+                "will calculate methylation difference as the difference ",
+                "of max(x) - min(x),\n ",
+                "where x is vector of mean methylation per group per region,",
+                "but \n the statistical test will remain the same.")
       }
       
       # add backwards compatibility with old parameters
@@ -745,8 +756,9 @@ setMethod("calculateDiffMeth", "methylBase",
                                                     conf.int = F)$p.value,
                             mc.cores=mc.cores,mc.preschedule = TRUE) ) 
           
-          set1.Cs=.Object@numCs.index[.Object@treatment==1]
-          set2.Cs=.Object@numCs.index[.Object@treatment==0]
+          # set1 is the high, set2 is the low level of the group 
+          set1.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[2]]
+          set2.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[1]]
           
           # calculate mean methylation change
           mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
@@ -778,7 +790,8 @@ setMethod("calculateDiffMeth", "methylBase",
         tmp <- as.data.frame(t(tmp))
         x=data.frame(subst[,1:4],tmp$p.value,
                      p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+                     meth.diff=tmp[,1],
+                     stringsAsFactors=FALSE)
         colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
       }
       
@@ -800,18 +813,22 @@ setMethod("calculateDiffMeth", "methylBase",
         #                           dbtype <- "tabix"
         #                         } else { dbtype <- args$dbtype }
         if(!( "suffix" %in% names(args) ) ){
-          suffix <- "_diffMeth"
+          suffix <- NULL
         } else { 
           suffix <- paste0("_",args$suffix)
         }
         
         # create methylDiffDB
-        makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
+        obj <- makeMethylDiffDB(df=x,dbpath=dbdir,dbtype="tabix",
                          sample.ids=.Object@sample.ids,
                          assembly=.Object@assembly,context=.Object@context,
                          destranded=.Object@destranded,
                          treatment=.Object@treatment,
                          resolution=.Object@resolution,suffix=suffix )
+        
+        message(paste0("flatfile located at: ",obj@dbpath))
+        
+        obj
       }
   
   }
@@ -1000,9 +1017,9 @@ setMethod("selectByOverlap", "methylDiff",
 #'                  A character string to append to the name of the output flat 
 #'                  file database, 
 #'                  only used if save.db is true, default actions: append 
-#'                  \dQuote{_filtered} to current filename 
+#'                  \dQuote{_type} to current filename 
 #'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  filename \dQuote{methylDiff_type}
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -1064,31 +1081,22 @@ setMethod(f="getMethylDiff", signature="methylDiff",
   if(!save.db) {
   
     if(type=="all"){
-      new.obj=new("methylDiff",
-                  .Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution)
-      return(new.obj)
+      idx <- which((.Object$qvalue < qvalue) & (abs(.Object$meth.diff) > difference))
     }else if(type=="hyper"){
-      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution)
-      return(new.obj)
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) > difference)
     }else if(type=="hypo"){
-      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution) 
-      return(new.obj)
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference)
     }else{
       stop("Wrong 'type' argument supplied for the function, it can be ",
            "'hypo', 'hyper' or 'all' ")
     }
+    
+    new.obj=new("methylDiff",.Object[idx,],
+                sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                context=.Object@context,
+                treatment=.Object@treatment,destranded=.Object@destranded,
+                resolution=.Object@resolution) 
+    return(new.obj)
   
   } else {
     
@@ -1107,29 +1115,23 @@ setMethod(f="getMethylDiff", signature="methylDiff",
       suffix <- paste0("_",args$suffix)
     }
     
-    # create methylBaseDB
+    # create methylDiffDB
     if(type=="all"){
-      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference)
     }else if(type=="hyper"){
-    new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) > difference)
     }else if(type=="hypo"){
-      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference)
     }else{
       stop("Wrong 'type' argument supplied for the function, it can be ",
            "'hypo', 'hyper' or 'all' ")
     }
+    
+    new.obj= makeMethylDiffDB(df=.Object[idx,],
+                              dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                              assembly=.Object@assembly,context=.Object@context,
+                              destranded=.Object@destranded,treatment=.Object@treatment,
+                              resolution=.Object@resolution,suffix=suffix )
     return(new.obj) 
   }
 }) 

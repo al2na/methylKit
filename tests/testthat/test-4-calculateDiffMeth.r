@@ -17,16 +17,24 @@ mydblist = suppressMessages(methRead( file.list,
 # unite function
 methidh=unite(myobj)
 methidh2=unite(myobj,min.per.group=1L)
+methidh3=pool(methidh,sample.ids = c("test","control"))
+methidh4 <- methidh; getTreatment(methidh4) <- c(1,1,2,3)
 
 suppressMessages(methidhDB <- unite(mydblist))
 suppressMessages(methidh2DB <- unite(mydblist,min.per.group=1L))
+suppressMessages(methidh3DB <- pool(methidhDB,sample.ids = c("test","control")))
+suppressMessages(methidh4DB <- makeMethylDB(obj = methidh4,dbdir="methylDB"))
 
 # differential methylation
 myDiff =calculateDiffMeth(methidh)
 myDiff2=calculateDiffMeth(methidh2)
+myDiff3=calculateDiffMeth(methidh3)
+myDiff4=calculateDiffMeth(methidh4)
 
 suppressMessages(myDiffDB <- calculateDiffMeth(methidhDB))
 suppressMessages(myDiff2DB <- calculateDiffMeth(methidh2DB))
+suppressMessages(myDiff3DB <- calculateDiffMeth(methidh3DB))
+suppressMessages(myDiff4DB <- calculateDiffMeth(methidh4DB))
 
 hypo <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
 hyper <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
@@ -57,12 +65,32 @@ test_that("check if calculateDiffMeth output is a methylDiffDB object", {
 
 
 test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiff object", {
-    expect_is(myDiff2, 'methylDiff')
+  expect_is(myDiff2, 'methylDiff')
 })
 
 test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiffDB object", {
   expect_is(myDiff2DB, 'methylDiffDB')
 })
+
+
+test_that("check if calculateDiffMeth output from pooled methylBase is a methylDiff object", {
+    expect_is(myDiff3, 'methylDiff')
+})
+
+test_that("check if calculateDiffMeth output from pooled methylBaseDB is a methylDiffDB object", {
+  expect_is(myDiff3DB, 'methylDiffDB')
+})
+
+
+test_that("check if calculateDiffMeth output with three treatment groups is a methylDiff object", {
+  expect_is(myDiff4, 'methylDiff')
+})
+
+test_that("check if calculateDiffMeth output from three treatment groups is a methylDiffDB object", {
+  expect_is(myDiff4DB, 'methylDiffDB')
+})
+
+
 
 
 test_that("check getting hypo/hyper meth works with methylDiff", {

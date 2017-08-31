@@ -504,7 +504,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(dir,"/",paste(obj@sample.ids,collapse = "_"),
+          filename <- paste0(dir,"/",paste(obj@sample.id,collapse = "_"),
                              suffix,".txt.bgz")
           #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = 
           # "",obj@dbpath)),suffix,".txt.bgz")
@@ -521,10 +521,10 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(paste(obj@sample.ids,collapse = "_")
-                             ,suffix,".txt.bgz")
-          #filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
-          # suffix,".txt.bgz")
+          # filename <- paste0(dirname(obj@dbpath),paste(obj@sample.id,collapse = "_")
+                             # ,suffix,".txt.bgz")
+          filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
+                             suffix,".txt.bgz")
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -535,6 +535,7 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                                        resolution = obj@resolution)
         }
       }
+
     } else {
       
       for(i in 1:length(sample.ids)){
@@ -629,8 +630,27 @@ if(save.db) {
   } else {
     dir <- dirname(object[[1]]@dbpath)
   }
+  # if(!( "dbtype" %in% names(args) ) ){
+  #   dbtype <- "tabix"
+  # } else { dbtype <- args$dbtype }
+  if(!( "suffix" %in% names(args) ) ){
+    suffix <- NULL
+  } else {
+    suffix <- args$suffix
+    suffix <- paste0("_",suffix)
+  }
   
-  filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
+  # filename will be "methylBase" concatenated with either 13-char random string or suffix
+  filename <- paste0( ifelse(is.null(suffix),
+                             yes = tempfile(pattern = "methylBase_",tmpdir = "."),
+                             no = paste0("methylBase",suffix)),
+                      ".txt")
+  
+  # remove the "./" that tempfile prepends
+  filename <- basename(filename)
+
+  # filename <- tempfile(pattern = "methylBase",tmpdir = ".",fileext = ".txt")
+  #filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
   
   if(is.null(min.per.group)) {
     
@@ -673,10 +693,15 @@ if(save.db) {
     
     unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
   }
-  readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+  obj <- readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
                    sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
                    context = object[[1]]@context,resolution = object[[1]]@resolution,
                    treatment = object@treatment,destranded = destrand)
+  
+  message(paste0("flatfile located at: ",obj@dbpath))
+  
+  obj
+  
 } else {
   obj <- object
   class(obj) <- "methylRawList"
@@ -876,8 +901,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
-    #filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
+    # filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
     
     con <- file(methMat,open = "r") 
     
@@ -946,6 +971,8 @@ setMethod("percMethylation", "methylBaseDB",
                                                 data[,numTs.index] )
               rownames(dat)=paste(as.character(data[,1]),
                                   data[,2],data[,3],sep=".")
+              return(dat)
+              
             }
             if (save.txt) {
               
@@ -1130,13 +1157,14 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     } else { dir <- dirname(methylObj@dbpath) }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- NULL
+      suffix <- "_reorganized"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
-    # filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),suffix,".txt")
+    # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",methylObj@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,
                                  chunk.size = chunk.size, dir=dir,
@@ -1201,12 +1229,15 @@ setMethod("pool", "methylBaseDB",
         dir <- .check.dbdir(args$dbdir) }
     } else { dir <- dirname(obj@dbpath) }
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- NULL
+      suffix <- "_pooled"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
+    
+    filename <- paste0(basename(gsub(".txt.bgz","",obj@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size,
                                  dir=dir,filename = filename, 
@@ -1241,47 +1272,101 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    test=c("F","Chisq"),mc.cores=1,slim=TRUE,weighted.mean=TRUE,
                    chunk.size,save.db=TRUE,...){
             
-    if(length(.Object@treatment)<2 ){
-      stop("can not do differential methylation calculation with less than two samples")
-    }
-    if(length(unique(.Object@treatment))<2 ){
-      stop("can not do differential methylation calculation when there is no control\n
-           treatment option should have 0 and 1 designating treatment and control samples")
-    }
-    if(length(unique(.Object@treatment))>2 ){
-      stop("can not do differential methylation calculation when there are more than\n
-           two groups, treatment vector indicates more than two groups")
-    }
-    #### check if covariates+intercept+treatment more than replicates ####
-    if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index))
-    {
-      stop("Too many covariates/too few replicates.")}
-    }
+      if(length(.Object@treatment)<2 ){
+        stop("can not do differential methylation calculation with less ",
+             "than two samples")
+      }
+      
+      if(length(unique(.Object@treatment))<2 ){
+        stop("can not do differential methylation calculation when there ",
+             "is no control\n",
+             "treatment option should have 0 and 1 designating treatment ",
+             "and control samples")
+      }
+      
+      if(length(unique(.Object@treatment))==2 ){
+        message("two groups detected:\n ",
+                "will calculate methylation difference as the difference of\n",
+                sprintf("treatment (group: %s) - control (group: %s)",
+                        levels(as.factor(.Object@treatment))[2],
+                        levels(as.factor(.Object@treatment))[1]))
+      }
+      
+      if(length(unique(.Object@treatment))>2 ){
+        message("more than two groups detected:\n ",
+                "will calculate methylation difference as the difference ",
+                "of max(x) - min(x),\n ",
+                "where x is vector of mean methylation per group per region,",
+                "but \n the statistical test will remain the same.")
+      }
+      
     
     if(save.db) {
-      
+
       # add backwards compatibility with old parameters
       if(slim==FALSE) adjust="BH" else adjust=adjust
       if(weighted.mean==FALSE) effect="mean" else effect=effect
       
       vars <- covariates
       
+      #### check if covariates+intercept+treatment more than replicates 
+      if(!is.null(covariates)){if(ncol(covariates)+2 >= length(.Object@numTs.index)){
+        stop("Too many covariates/too few replicates.")}}
+      
       # function to apply the test to data
-      diffMeth <- function(data,Ccols,Tcols,formula,vars,treatment,
+      diffMeth <- function(subst,Ccols,Tcols,formula,vars,treatment,
                            overdispersion,effect,
                            parShrinkMN,test,adjust,mc.cores){
         
-        cntlist=split(as.matrix(data[,c(Ccols,Tcols)]),1:nrow(data))
+        # get count matrix and make list
+        cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
         
-        tmp=simplify2array(
-          mclapply(cntlist,logReg,formula,vars,treatment=treatment,
-                   overdispersion=overdispersion,effect=effect,
-                   parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
-        tmp <- as.data.frame(t(tmp))
-        #print(head(tmp))
-        x=data.frame(data[,1:4],tmp$p.value,
-                     p.adjusted(tmp$q.value,method=adjust),
-                     meth.diff=tmp$meth.diff.1,stringsAsFactors=FALSE)
+        if(length(treatment)==2 )
+        {
+          fpval=unlist( mclapply( cntlist,
+                                  function(x) fast.fisher(matrix(as.numeric( x) ,
+                                                                 ncol=2,byrow=F),
+                                                          conf.int = F)$p.value,
+                                  mc.cores=mc.cores,mc.preschedule = TRUE) ) 
+          
+          # set1 is the high, set2 is the low level of the group 
+          set1.Cs=Ccols[treatment==levels(as.factor(treatment))[2]]
+          set2.Cs=Ccols[treatment==levels(as.factor(treatment))[1]]
+          
+          # calculate mean methylation change
+          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+          # get difference between percent methylations
+          mom.mean.diff=mom.meth1-mom.meth2 
+          x=data.frame(subst[,1:4],fpval,
+                       p.adjusted(fpval,method=adjust),
+                       meth.diff=mom.mean.diff,stringsAsFactors=FALSE)
+          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+          
+        }else{        
+          # call estimate shrinkage before logReg
+          if(overdispersion[1] == "shrinkMN"){
+            parShrinkMN<-estimateShrinkageMN(cntlist,
+                                             treatment=treatment,
+                                             covariates=vars,
+                                             sample.size=100000,
+                                             mc.cores=mc.cores)
+          }
+          
+          # get the result of tests
+          tmp=simplify2array(
+            mclapply(cntlist,logReg,formula,vars,treatment=treatment,
+                     overdispersion=overdispersion,effect=effect,
+                     parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+          
+          # return the data frame part of methylDiff
+          tmp <- as.data.frame(t(tmp))
+          x=data.frame(subst[,1:4],tmp$p.value,
+                       p.adjusted(tmp$q.value,method=adjust),
+                       meth.diff=tmp[,1],
+                       stringsAsFactors=FALSE)
+          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+        }
         
         return(x)
       }
@@ -1296,14 +1381,17 @@ setMethod("calculateDiffMeth", "methylBaseDB",
         }
       }
       if(!( "suffix" %in% names(args) ) ){
-        suffix <- "_diffMeth"
+        suffix <- NULL
       } else { 
         suffix <- paste0("_",args$suffix)
       }
       
-      filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+      # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
       
-      #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+      filename <- paste0(basename( gsub("methylBase","methylDiff",
+                                       gsub(".txt.bgz","",.Object@dbpath)
+                                       ))
+                        ,suffix,".txt")
       
       dbpath <- applyTbxByChunk(.Object@dbpath,dir = 
                                   dir,chunk.size = chunk.size,  
@@ -1323,6 +1411,9 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                            destranded=.Object@destranded,
                            treatment=.Object@treatment,
                            resolution=.Object@resolution)
+      
+      message(paste0("flatfile located at: ",obj@dbpath))
+      
       obj
       
     } else {
@@ -1379,15 +1470,15 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- paste0("_diffMeth_",type)
+      suffix <- "_type"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
     
-    filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    #filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+    filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
     
     dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
                               dir = dir, filename = filename, 
@@ -1547,12 +1638,13 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
       }
     } 
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- paste0("_","regions")
+      suffix <- "_regions"
     } else { 
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+    filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+                       ,suffix,".txt")
     
     newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                    ranges=regions,  dir=dir,filename = filename, 
@@ -1642,13 +1734,16 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
                 }
               } 
               if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","regions")
+                suffix <- "_regions"
               } else { 
                 suffix <- paste0("_",args$suffix)
               }
               
               
-              filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              # filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
+              filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+                                 ,suffix,".txt")
+              
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
@@ -1779,14 +1874,14 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
         dir <- .check.dbdir(args$dbdir) 
       } 
       if(!( "suffix" %in% names(args) ) ){
-        suffix <- paste0("_","regions")
+        suffix <- "_regions"
       } else { 
         suffix <- paste0("_",args$suffix)
       }
       
-      filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+      # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
       
-      #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+      filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
       
       newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                      ranges=regions,  dir=dir,
@@ -1885,9 +1980,9 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
                 suffix <- paste0("_",args$suffix)
               }
               
-              filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+              # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
               
-              #filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
@@ -1962,14 +2057,17 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
                 }
               } 
               if(!( "suffix" %in% names(args) ) ){
-                suffix <- paste0("_","tiled")
+                suffix <- "_tiled"
               } else { 
                 suffix <- paste0("_",args$suffix)
               }
               
               
-              filename <- paste0(paste(object@sample.id,collapse = "_"),
-                                 suffix,".txt")
+              # filename <- paste0(paste(object@sample.id,collapse = "_"),
+              #                    suffix,".txt")
+              
+              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              
               
               newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                          dir = dir,filename = filename,
@@ -2080,7 +2178,10 @@ setMethod("tileMethylCounts", signature(object="methylBaseDB"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+    # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
+    
+    filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+    
     
     newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                dir = dir,filename = filename,

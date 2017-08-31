@@ -14,17 +14,17 @@
   if(missing(methylDBclass)){
         
     if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "coverage","numCs","numTs"))
       
     } else if( length(df) == 7 & unique(sapply(df,class)[5:7])=="numeric"){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "pvalue","qvalue","meth.diff")) 
 
     } else if( length(df) > 7){
-      data.table::setnames(x = df,old = names(df)[1:4], 
+      setnames(x = df,old = names(df)[1:4], 
                            new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -33,11 +33,11 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], 
+      setnames(df,names(df)[coverage.ind], 
                            paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], 
+      setnames(df,names(df)[numCs.ind], 
                            paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], 
+      setnames(df,names(df)[numTs.ind], 
                            paste(c("numTs"),1:numsamples,sep="" ))
       
     } 
@@ -47,12 +47,12 @@
   } else {
     
     if( methylDBclass == "methylRawDB" ){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "coverage","numCs","numTs"))
     
     } else if ( methylDBclass == "methylBaseDB"){
-      data.table::setnames(x = df,old = names(df)[1:4], 
+      setnames(x = df,old = names(df)[1:4], 
                            new = c("chr","start","end","strand"))
       # get indices of coverage,numCs and numTs in the data frame 
       numsamples = (length(df)-4)/3
@@ -61,15 +61,15 @@
       numTs.ind   =coverage.ind+2
       
       # change column names
-      data.table::setnames(df,names(df)[coverage.ind], 
+      setnames(df,names(df)[coverage.ind], 
                            paste(c("coverage"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numCs.ind], 
+      setnames(df,names(df)[numCs.ind], 
                            paste(c("numCs"),1:numsamples,sep="" ))
-      data.table::setnames(df,names(df)[numTs.ind], 
+      setnames(df,names(df)[numTs.ind], 
                            paste(c("numTs"),1:numsamples,sep="" ))
       
     } else if( methylDBclass == "methylDiffDB" ){
-      data.table::setnames(x = df,old = names(df), 
+      setnames(x = df,old = names(df), 
                            new = c("chr","start","end","strand",
                                    "pvalue","qvalue","meth.diff"))
     
@@ -426,10 +426,15 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
                            suffix=NULL
                            )
   {
+  # new tabix file is named by "metyhlBase"+tmpstring, works for now
+  # if additional suffix is passed, tmpstring is skipped 
+  filepath <- paste0(ifelse(is.null(suffix),
+                            yes = tempfile(pattern = "methylBase_",tmpdir = dbpath),
+                            no = paste0(dbpath,"/methylBase",suffix)),
+                     ".txt")
   
   # new tabix file is named by concatenation of sample.ids, works for now
-  # additional suffix is possible
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
+  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
   #print(filepath)
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
@@ -579,8 +584,15 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
                            resolution,treatment,destranded,
                            suffix=NULL){
   
-  # new tabix file is named by concatenation of sample.ids, works for now
-  filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
+  # new tabix file is named by "metyhlBase"+tmpstring, works for now
+  # if additional suffix is passed, tmpstring is skipped 
+  filepath <- paste0(ifelse(is.null(suffix),
+                            yes = tempfile(pattern = "methylDiff_",tmpdir = dbpath),
+                            no = paste0(dbpath,"/methylDiff",suffix)),
+                     ".txt")
+  
+  # # new tabix file is named by concatenation of sample.ids, works for now
+  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
   df <- df[with(df,order(chr,start,end)),]
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 

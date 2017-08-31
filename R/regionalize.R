@@ -37,9 +37,10 @@
 #'                  A character string to append to the name of the output flat 
 #'                  file database, 
 #'                  only used if save.db is true, 
-#'                  default actions: append \dQuote{_filtered} to current filename 
+#'                  default actions: append \dQuote{_regions} to current filename 
 #'                  if database already exists or generate new file with 
-#'                  filename \dQuote{sampleID_filtered}
+#'                  filename \dQuote{sampleID_regions} or 
+#'                  \dQuote{methylBase_filtered} dependent on input object
 #'                  
 #'            \code{dbdir} 
 #'                  The directory where flat file database(s) should be stored, 
@@ -125,7 +126,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRanges"),
     # create a temporary data.table row ids from regions and counts from object
     coverage=numCs=numTs=id=covered=NULL
     df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
-    dt=data.table::data.table(df)
+    dt=data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
 
@@ -227,7 +228,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRanges"),
             #require(data.table)
             # create a temporary data.table row ids from regions and counts from object
             df=data.frame(id = mat[, 1], getData(object)[mat[, 2], 5:ncol(object) ])
-            dt=data.table::data.table(df)
+            dt=data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
             coverage=.SD=numTs=id=numTs1=covered=NULL
@@ -341,7 +342,7 @@ setMethod("regionCounts", signature(object="methylRaw",regions="GRangesList"),
     #require(data.table)
     # create a temporary data.table row ids from regions and counts from object
     df=data.frame(id = mat[, 1], getData(object)[mat[, 2], c(5, 6, 7)])
-    dt=data.table::data.table(df)
+    dt=data.table(df)
     #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
     
     coverage=NULL
@@ -449,7 +450,7 @@ setMethod("regionCounts", signature(object="methylBase",regions="GRangesList"),
             #require(data.table)
             # create a temporary data.table row ids from regions and counts from object
             df=data.frame(id = mat[, 1], getData(object)[mat[, 2], 5:ncol(object) ])
-            dt=data.table::data.table(df)
+            dt=data.table(df)
             #dt=data.table(id=mat[,1],object[mat[,2],c(6,7,8)] ) worked with data.table 1.7.7
             
             id=.SD=numTs1=NULL
@@ -605,18 +606,23 @@ setMethod("regionCounts", signature(object="methylRawList",
 #' @param ... optional Arguments used when save.db is TRUE
 #'            
 #'            \code{suffix}
-#'                  A character string to append to the name of the output flat file database, 
-#'                  only used if save.db is true, default actions: append \dQuote{_filtered} to current filename 
-#'                  if database already exists or generate new file with filename \dQuote{sampleID_filtered}
+#'                  A character string to append to the name of the output flat 
+#'                  file database, 
+#'                  only used if save.db is true, 
+#'                  default actions: append \dQuote{_tiled} to current filename 
+#'                  if database already exists or generate new file with 
+#'                  filename \dQuote{sampleID_tiled} or 
+#'                  \dQuote{methylBase_tiled} dependent on input object
 #'                  
 #'            \code{dbdir} 
-#'                  The directory where flat file database(s) should be stored, defaults
-#'                  to getwd(), working directory for newly stored databases
-#'                  and to same directory for already existing database
+#'                  The directory where flat file database(s) should be stored,
+#'                  defaults to getwd(), working directory for newly stored
+#'                  databases and to same directory for already existing
+#'                  database
 #'                  
 #            \code{dbtype}
-#                  The type of the flat file database, currently only option is "tabix"
-#                  (only used for newly stored databases)
+#                  The type of the flat file database, currently only option is
+#                  "tabix" (only used for newly stored databases)
 #'
 #' @usage tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,save.db,...)
 #' @return \code{methylRaw},\code{methylBase} or \code{methylRawList} object
@@ -629,14 +635,20 @@ setMethod("regionCounts", signature(object="methylRawList",
 #' 
 #' 
 #' @section Details:
-#' The parameter \code{chunk.size} is only used when working with \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
-#' as they are read in chunk by chunk to enable processing large-sized objects which are stored as flat file database.
-#' Per default the chunk.size is set to 1M rows, which should work for most systems. If you encounter memory problems or 
+#' The parameter \code{chunk.size} is only used when working with 
+#' \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
+#' as they are read in chunk by chunk to enable processing large-sized objects 
+#' which are stored as flat file database.
+#' Per default the chunk.size is set to 1M rows, which should work for most 
+#' systems. If you encounter memory problems or 
 #' have a high amount of memory available feel free to adjust the \code{chunk.size}.
 #' 
-#' The parameter \code{save.db} is per default TRUE for methylDB objects as \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
-#' while being per default FALSE for \code{methylRaw}, \code{methylBase} or \code{methylRawList}. If you wish to save the result of an 
-#' in-memory-calculation as flat file database or if the size of the database allows the calculation in-memory, 
+#' The parameter \code{save.db} is per default TRUE for methylDB objects as 
+#' \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB}, 
+#' while being per default FALSE for \code{methylRaw}, \code{methylBase} or
+#'  \code{methylRawList}. If you wish to save the result of an 
+#' in-memory-calculation as flat file database or if the size of the database 
+#' allows the calculation in-memory, 
 #' then you might want to change the value of this parameter.
 #' 
 #' @docType methods

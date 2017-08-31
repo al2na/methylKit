@@ -5,14 +5,15 @@
 \alias{methSeg}
 \title{Segment methylation or differential methylation profile}
 \usage{
-methSeg(obj, diagnostic.plot = TRUE, ...)
+methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE, ...)
 }
 \arguments{
 \item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
-\code{\link{methylDiffDB}},
-           \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
-           \code{\link[GenomicRanges]{GRanges}}
-            it should have one meta column with methylation scores}
+\code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
+\code{\link{methylRawDB}} . If the object is a 
+\code{\link[GenomicRanges]{GRanges}} it should have one meta column 
+with methylation scores and has to be sorted by position, 
+i.e. ignoring the strand information.}
 
 \item{diagnostic.plot}{if TRUE a diagnostic plot is plotted. The plot shows
 methylation and length statistics per segment group. In addition, it 
@@ -20,15 +21,19 @@ shows diagnostics from mixture modeling: the density function estimated
 and BIC criterion used to decide the optimum number of components
 in mixture modeling.}
 
+\item{join.neighbours}{if TRUE neighbouring segments that cluster to the same 
+seg.group are joined by extending the ranges, summing up num.marks and
+averaging over seg.means.}
+
 \item{...}{arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 package, or to \code{\link[mclust]{densityMclust}}
-       in Mclust package, could be used to fine tune the segmentation algorithm.
-       E.g. Increasing "alpha" will give more segments. 
-       Increasing "cyberWeight" will give also more segments."maxInt" controls
-       the segment extension around a breakpoint. "minSeg" controls the minimum
-       segment length. "G" argument
-       denotes number of components used in BIC selection in mixture modeling.
-       For more details see fastseg and Mclust documentation.}
+in Mclust package, could be used to fine tune the segmentation algorithm.
+E.g. Increasing "alpha" will give more segments. 
+Increasing "cyberWeight" will give also more segments."maxInt" controls
+the segment extension around a breakpoint. "minSeg" controls the minimum
+segment length. "G" argument
+denotes number of components used in BIC selection in mixture modeling.
+For more details see fastseg and Mclust documentation.}
 }
 \value{
 A \code{\link[GenomicRanges]{GRanges}} object with segment 
@@ -70,7 +75,7 @@ unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 
 }
 \seealso{
-\code{\link{methSeg2bed}}
+\code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}}
 }
 \author{
 Altuna Akalin, contributions by Arsene Wabo

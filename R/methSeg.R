@@ -10,17 +10,21 @@
 #' as high or low methylated regions.
 #' 
 #' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
-#' \code{\link{methylDiffDB}},
-#'            \code{\link{methylRaw}} or \code{\link{methylRawDB}} . If the object is a 
-#'            \code{\link[GenomicRanges]{GRanges}}
-#'             it should have one meta column with methylation scores
+#'        \code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
+#'        \code{\link{methylRawDB}} . If the object is a 
+#'        \code{\link[GenomicRanges]{GRanges}} it should have one meta column 
+#'        with methylation scores and has to be sorted by position, 
+#'        i.e. ignoring the strand information.
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
 #'        methylation and length statistics per segment group. In addition, it 
 #'        shows diagnostics from mixture modeling: the density function estimated 
 #'        and BIC criterion used to decide the optimum number of components
 #'        in mixture modeling.
+#' @param join.neighbours if TRUE neighbouring segments that cluster to the same 
+#'        seg.group are joined by extending the ranges, summing up num.marks and
+#'        averaging over seg.means.
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
-#' package, or to \code{\link[mclust]{densityMclust}}
+#'        package, or to \code{\link[mclust]{densityMclust}}
 #'        in Mclust package, could be used to fine tune the segmentation algorithm.
 #'        E.g. Increasing "alpha" will give more segments. 
 #'        Increasing "cyberWeight" will give also more segments."maxInt" controls
@@ -60,12 +64,12 @@
 #' 
 #' @author Altuna Akalin, contributions by Arsene Wabo
 #' 
-#' @seealso \code{\link{methSeg2bed}}
+#' @seealso \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}} 
 #' 
 #' @export
 #' @docType methods
 #' @rdname methSeg       
-methSeg<-function(obj, diagnostic.plot=TRUE, ...){
+methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
   
   dots <- list(...)  
   
@@ -75,15 +79,28 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
       obj= as(obj,"GRanges")
       ## calculate methylation score 
       mcols(obj)$meth=100*obj$numCs/obj$coverage
-      ## sort and destrand
-      obj = sort(obj[,"meth"],ignore.strand=TRUE)
+      ## select only required mcol
+      obj = obj[,"meth"]
   }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
       obj = as(obj,"GRanges")
-      ## use methylation difference as score, sort and destrand
-      obj = sort(obj[,3],ignore.strand=TRUE)
+      ## use methylation difference as score
+      obj = obj[,"meth.diff"]
   }else if (class(obj) != "GRanges"){
     stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
+  }
+  
+  # destrand
+  strand(obj) <- "*"
+  
+  ## check wether obj contains at least one metacol 
+  if(ncol(elementMetadata(obj))<1)
+    stop("GRanges does not have any meta column.")
+  
+  ## check wether obj contains is sorted by position
+  if(is.unsorted(obj,ignore.strand=TRUE)) {
+    obj <- sort(obj,ignore.strand=TRUE)
+    message("Object not sorted by position, sorting now.")
   }
   
   ## check wether obj contains at least two ranges else stop
@@ -110,6 +127,9 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
     return(seg.res)
   }
   
+  # if joining, do not show first clustering
+  if(join.neighbours) diagnostic.plot=FALSE
+  
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
   args.Mclust[["diagnostic.plot"]]=diagnostic.plot
@@ -117,6 +137,21 @@ methSeg<-function(obj, diagnostic.plot=TRUE, ...){
   
   # add components/group ids 
   mcols(seg.res)$seg.group=as.character(dens$classification)
+  
+  # if joining, show clustering after joining
+  if(join.neighbours) {
+      message("joining neighbouring segments")
+      seg.res <- joinSegmentNeighbours(seg.res)
+      diagnostic.plot=TRUE
+      
+      # get the new density
+      args.Mclust[["score.gr"]]=seg.res
+      args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+      # skip second progress bar
+      args.Mclust[["verbose"]]=FALSE
+      dens=do.call("densityFind", args.Mclust  )
+      
+  }
   
   seg.res
 }
@@ -177,13 +212,13 @@ diagPlot<-function(dens,score.gr){
 #' and the score in the BED file is obtained from 'seg.mean' column of segments
 #' object.
 #' 
-#' @param segments \code{\link[GenomicRanges]{GRanges}} object with segment 
-#' classification and information. This should be the result of 
+#' @param segments \code{\link[GenomicRanges]{GRanges}} object with segment
+#'        classification and information. This should be the result of 
 #' \code{\link{methSeg}} function
 #' @param filename name of the output data
 #' @param trackLine UCSC browser trackline
 #' @param colramp color scale to be used in the BED display
-#' defaults to gray,green, darkgreen scale.
+#'        defaults to gray,green, darkgreen scale.
 #' 
 #' @return A BED files with the segmented data
 #' which can be visualized in the UCSC browser 
@@ -271,3 +306,88 @@ colramp=colorRamp(c("gray","green", "darkgreen"))
 #                      endRow = res03$endRow)
 #  return(finalRes)
 #}
+
+
+#' Join directly neighbouring segments produced by methSeg
+#' 
+#'
+#' Segmentation and clustering are two distinct steps in methSeg(), 
+#' leading to adjacent segments of the same class. 
+#' This leads to a bias segment length distributions, 
+#' which is removed by joining those neighbours.
+#'
+#' @param res A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#'         classification and information prudoced by \code{\link{methSeg}} 
+#'
+#' @return A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#'         classification and information. 
+#' 
+#' @seealso \code{\link{methSeg}}
+#' 
+#' @export
+#' @importFrom data.table copy ":="
+# @noRd
+# @examples
+joinSegmentNeighbours <- function(res) {
+  
+  # require(data.table)
+  
+  if (length(unique(seqnames(res))) > 1 ) {
+    ## call recursively for multiple chromosomes
+    gr <- lapply(split(res,seqnames(res)),joinSegmentNeighbours)
+    gr <- do.call(c, unlist(gr,use.names = FALSE) )
+    return( gr )
+  } 
+  else if (length(res)<=1) {
+    ## return object if it has only one range
+    return(res)
+  }
+  else{
+    ## compute run-length-enconding of groups, 
+    ## which is higher than 1 if neighbours are in same group
+    group.neighbours <- rle(res$seg.group)
+    N = length(group.neighbours$lengths)
+    # res_joined <- vector(mode="list", length=N)
+    
+    ## k[i] is supposed to store the orginal index of the range i in res  
+    k <- numeric(N)
+    k[1] <- 1
+    
+    ## l[i] is either 0 if adjacent groups are distinct and 
+    ## higher or equal to 1 if groups are the same 
+    l <- group.neighbours$lengths - 1
+    
+    ## for some positions k[j] we have to skip l[j] index positions 
+    ## since neighbouring ranges can be merged
+    for ( i in 2:N ) { k[i] = k[i-1] + l[ i -1] + 1 }
+    #toJoin <- l==0
+    
+    # print(paste("k=",k,"l=",l))
+    
+    res_dt <- copy(as.data.table(res))
+    
+    ## initialize "global variables" to silence R CMD check
+    ID=endRow=num.mark=seg.group=seg.mean=startRow=NULL
+    
+    ## now we just merge ranges, that had a non-zero value in l
+    for (i in which(l!=0)) {
+      res_dt[k[i]:(k[i]+l[i]),":="(seqnames=unique(seqnames),
+                                   start=min(start),
+                                   end=max(end),
+                                   strand = "*",
+                                   width = sum(as.numeric(width)),
+                                   ID = unique(ID),
+                                   num.mark = sum(as.numeric(num.mark)),
+                                   seg.mean = mean(seg.mean),
+                                   startRow = min(startRow),
+                                   endRow = max(endRow),
+                                   seg.group = unique(seg.group))]
+    }
+    
+    res_dt <- unique(res_dt)
+    
+    return(makeGRangesFromDataFrame(res_dt,keep.extra.columns = TRUE))
+  }
+}
+
+
