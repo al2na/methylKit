@@ -4,6 +4,10 @@ IMPROVEMENTS AND BUG FIXES
 * if methylDiff object contains NA in a qvalue/meth.diff column 
   the getMethylDiff function returns an error. This is now fixed:
   https://github.com/al2na/methylKit/issues/83
+* Changed how the methylBase version of regionCounts handle missing values.
+  Before, a missing value made the whole region/tile missing. Now, a missing
+  value is treated as a site with zero coverage. Contributed by Karl Nordström:
+  https://github.com/al2na/methylKit/pull/77
 
 methylKit 1.3.6
 --------------
