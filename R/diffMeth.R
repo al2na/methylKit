@@ -1081,31 +1081,22 @@ setMethod(f="getMethylDiff", signature="methylDiff",
   if(!save.db) {
   
     if(type=="all"){
-      new.obj=new("methylDiff",
-                  .Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution)
-      return(new.obj)
+      idx <- which((.Object$qvalue < qvalue) & (abs(.Object$meth.diff) > difference))
     }else if(type=="hyper"){
-      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution)
-      return(new.obj)
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) > difference)
     }else if(type=="hypo"){
-      new.obj=new("methylDiff",.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                  sample.ids=.Object@sample.ids,assembly=.Object@assembly,
-                  context=.Object@context,
-                  treatment=.Object@treatment,destranded=.Object@destranded,
-                  resolution=.Object@resolution) 
-      return(new.obj)
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference)
     }else{
       stop("Wrong 'type' argument supplied for the function, it can be ",
            "'hypo', 'hyper' or 'all' ")
     }
+    
+    new.obj=new("methylDiff",.Object[idx,],
+                sample.ids=.Object@sample.ids,assembly=.Object@assembly,
+                context=.Object@context,
+                treatment=.Object@treatment,destranded=.Object@destranded,
+                resolution=.Object@resolution) 
+    return(new.obj)
   
   } else {
     
@@ -1126,27 +1117,21 @@ setMethod(f="getMethylDiff", signature="methylDiff",
     
     # create methylDiffDB
     if(type=="all"){
-      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & abs(.Object$meth.diff) > difference)
     }else if(type=="hyper"){
-    new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) > difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) > difference)
     }else if(type=="hypo"){
-      new.obj= makeMethylDiffDB(df=.Object[.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference,],
-                         dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
-                         assembly=.Object@assembly,context=.Object@context,
-                         destranded=.Object@destranded,treatment=.Object@treatment,
-                         resolution=.Object@resolution,suffix=suffix )
+      idx <- which(.Object$qvalue<qvalue & (.Object$meth.diff) < -1*difference)
     }else{
       stop("Wrong 'type' argument supplied for the function, it can be ",
            "'hypo', 'hyper' or 'all' ")
     }
+    
+    new.obj= makeMethylDiffDB(df=.Object[idx,],
+                              dbpath=dbdir,dbtype="tabix",sample.ids=.Object@sample.ids,
+                              assembly=.Object@assembly,context=.Object@context,
+                              destranded=.Object@destranded,treatment=.Object@treatment,
+                              resolution=.Object@resolution,suffix=suffix )
     return(new.obj) 
   }
 }) 
