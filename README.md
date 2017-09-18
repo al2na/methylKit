@@ -2,7 +2,7 @@
 
 <a name="logo"/>
 <div align="center">
-<img src="https://dl.dropboxusercontent.com/u/1373164/methylKit_logo.png" alt="methylKit Logo"  ></img>
+<img src="https://www.dropbox.com/s/b5twlbb7jyexizf/methylKit_logo.png" alt="methylKit Logo"  ></img>
 </a>
 </div>
 
