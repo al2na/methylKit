@@ -2,7 +2,7 @@
 
 <a name="logo"/>
 <div align="center">
-<img src="https://www.dropbox.com/s/b5twlbb7jyexizf/methylKit_logo.png?dl=1" alt="methylKit Logo"  ></img>
+<img src="https://github.com/Bioconductor/BiocStickers/blob/master/methylKit/methylKit.png" alt="methylKit Logo"  ></img>
 </a>
 </div>
 
