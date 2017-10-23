@@ -735,8 +735,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
    
   header = sam_hdr_read(in);
   if ( (header ==NULL) || (header->l_text == 0)) { 
+    Rcpp::Rcerr << "Failed to read header, falling back.\n" << std::endl ; 
     return 2;
-    //Rcpp::stop("fail to open bam header, is there any?\n");
     }
 
   
@@ -1217,16 +1217,20 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
     // type is "bam" per default (reads both sam or bam), but if the header is missing, 
     // the file will be treated as paired_sam
     if( type == "bam"){
+      Rcpp::Rcerr << "Trying to process:" << std::endl << read1 << std::endl << " using htslib.\n"  << std::endl;
       res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
       // std::cout << res;
     }
     if( (res==2)  || (type == "paired_sam")){
+      Rcpp::Rcerr << "Trying to process: " << std::endl<< read1 << std::endl << " paired sam.\n"  << std::endl;
       process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
     }
     else if(type == "single_sam"){
+      Rcpp::Rcerr << "Trying to process " << std::endl << read1 << std::endl<< " single sam.\n"  << std::endl;
       process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
     }
     else if( type == "single_bismark" ){
+      Rcpp::Rcerr << "Trying to process " << std::endl<< read1 << std::endl<< " single bismark.\n"  << std::endl;
       process_single_bismark(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
     }
     else if( type =="paired_bismark"){
@@ -1236,7 +1240,7 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
 
   }
   
-  
+  Rcpp::Rcerr << "Done.\n" << std::endl;
   
   if(file.is_open()) file.close();
 
