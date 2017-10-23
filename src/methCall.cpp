@@ -439,7 +439,7 @@ double median(std::vector<double> vec) {
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
-  int position = 0, len;
+  int position = 0, len, i = 0;
   std::string insertion;
   std::string ops ("MIDS"); // allowed operations
   
@@ -508,7 +508,7 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
   // if there are insertions remove it from the mcalls and 
   if(insPos.size()>0){
-    for(int i=0;i < insPos.size();i++){
+    for( i=0; ((unsigned) i) < insPos.size(); i++){
       methc.erase(insPos[i],insLen[i]);
       qual.erase(insPos[i],insLen[i]);
     }
@@ -551,6 +551,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
   
   int lastPos  =-1, startPre = -1 ;
+  int i = 0; 
   std::string lastChrom="null", chrPre;
 
   std::string line;  
@@ -596,7 +597,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     int slen   = mcalls.length(); // aligned sequence length
     
     // get strand
-    char strand;
+    char strand = ' ';
     if( (cols[14] == "XR:Z:CT") && (cols[15] == "XG:Z:CT") ) {strand='+';} // original top strand
     else if( (cols[14] == "XR:Z:CT") && (cols[15] == "XG:Z:GA") ) {strand='-';} // original bottom strand
     else if( (cols[14] == "XR:Z:GA") && (cols[15] == "XG:Z:CT") ) {strand='+';} // complementary to original top strand, bismark says - strand to this
@@ -651,7 +652,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for( i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
@@ -817,14 +818,15 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   char cigar_buffer [len];
   
   // initialize counter and cigar-buffer-storage
-  int i, c;
+  int i = 0;
+  int c;
 
 
   // parse the first cigar operation
   c = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
   // if further operations remain, append them to cigar_buffer
   if (len_cigar >= 2 ) { 
-    for (i = 1; i < len_cigar; i++  ) {
+    for (i = 1; ((unsigned) i) < len_cigar; i++  ) {
       char buffer [c];
       c = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
       strcat(cigar_buffer,buffer);
@@ -857,7 +859,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     int slen   = mcalls.length(); // aligned sequence length
     
     // get strand
-    char strand;
+    char strand = ' ';
     std::string xr_tag = (char*) bam_aux_get(b, "XR"); //get "XR:Z:CT" from bam/sam, 
     std::string xg_tag = (char*) bam_aux_get(b, "XG");   // but returns "ZCT" as string
 
@@ -921,7 +923,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for(  i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
@@ -1033,7 +1035,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   
   
   
-  
+  int i = 0;
   int lastPos  =-1, startPre = -1 ;
   std::string lastChrom="null", chrPre;
 
@@ -1097,11 +1099,11 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for( i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       //if last base is a C and it is a part of CCGG motif, don't call for meth
-      if( ( (gbases[i] == 'C') && (i==quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
+      if( ( (gbases[i] == 'C') && ( ((unsigned) i) == quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
       std::string key; // initilaize the hash key
       if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
       else { key = "R|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
