@@ -553,6 +553,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   int lastPos  =-1, startPre = -1 ;
   int i = 0; 
   std::string lastChrom="null", chrPre;
+  std::vector<std::string> pastChrom; 
 
   std::string line;  
   
@@ -574,11 +575,14 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
 
     std::vector<std::string> cols = split(line,'\t');
+    for( i=0; ((unsigned) i)<cols.size(); ++i)
+      Rcpp::Rcout << cols[i] << ' ';
+    Rcpp::Rcout  << std::endl;  
     int start                     = atoi(cols[3].c_str()); 
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
     std::string cigar             = cols[5];
-    std::string methc             = cols[13]; 
+    std::string methc             = cols[13];
     if(methc.find("XM:Z:")==std::string::npos) {Rcpp::stop("no methylation tag found.");}
     methc.erase(methc.begin(),methc.begin()+ 5 ); //  remove "XM:Z:"
     std::string qual              = cols[10];
@@ -620,17 +624,33 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        Rcpp::stop(  "The sam file is not sorted properly; "
-                     "you can sort the file in unix-like machines using:\n" 
-                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
+        Rcpp::stop(  "The sam file is not sorted properly on positions :\n"
+                     "\tchr: %s  pos: %i is followed by chr: %s  pos: %i \n"
+                     "You can sort the file in unix-like machines using:\n" 
+                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                     ,chrPre, startPre, chr,start);
         return -1;
         // ########################
       }
       chrPre=chr;
       startPre=start;
     } else {
+      if ( std::find(pastChrom.begin(), pastChrom.end(), chr) != pastChrom.end() ) {
+        // ####################### 
+        Rcpp::stop(  "The sam file is not sorted properly on chromosomes:\n"
+                       "\tchr: %s occured in two or more fragments.\n"
+                       "You can sort the file in unix-like machines using:\n" 
+                       " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                       ,chr);
+        return -1;
+        // ########################
+      }
       startPre=start;
       chrPre=chr;
+      pastChrom.push_back(chr);
+      // for( i=0; ((unsigned) i)<pastChrom.size(); ++i)
+      //   Rcpp::Rcout << pastChrom[i] << ' ';
+      // Rcpp::Rcout  << std::endl;  
     }
     
     
