@@ -1,3 +1,11 @@
+methylKit 1.3.8
+--------------
+IMPROVEMENTS AND BUG FIXES
+* changes to methCall(): more verbose output, reduce -Wunsigned warnings,
+  check for fragmented chromosome order, write conversion stats to extra file
+* add Tests to check for chromosome disorder 
+
+
 methylKit 1.3.7
 --------------
 IMPROVEMENTS AND BUG FIXES
