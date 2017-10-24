@@ -6,6 +6,11 @@ test_that("expect that there is an error when reading an unsorted sam file", {
         throws_error())
 })
 
+test_that("expect that there is an error when reading an unsorted sam file II", {
+    expect_that( suppressMessages(processBismarkAln(location=system.file("extdata", "test.fastq_bismark.unsorted_chr.min.sam", package = "methylKit"),sample.id="test1",assembly="hg18")) , 
+        throws_error())
+})
+
 
 
 test_that("check that CpG context can be read from bismark single-end bam as methylRaw", {
