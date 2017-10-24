@@ -439,7 +439,7 @@ double median(std::vector<double> vec) {
 // processes the cigar string and remove and delete elements from mcalls and quality scores
 void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
-  int position = 0, len;
+  int position = 0, len, i = 0;
   std::string insertion;
   std::string ops ("MIDS"); // allowed operations
   
@@ -508,7 +508,7 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
   // if there are insertions remove it from the mcalls and 
   if(insPos.size()>0){
-    for(int i=0;i < insPos.size();i++){
+    for( i=0; ((unsigned) i) < insPos.size(); i++){
       methc.erase(insPos[i],insLen[i]);
       qual.erase(insPos[i],insLen[i]);
     }
@@ -551,7 +551,9 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
   
   int lastPos  =-1, startPre = -1 ;
+  int i = 0; 
   std::string lastChrom="null", chrPre;
+  std::vector<std::string> pastChrom; 
 
   std::string line;  
   
@@ -573,11 +575,14 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
 
     std::vector<std::string> cols = split(line,'\t');
+    for( i=0; ((unsigned) i)<cols.size(); ++i)
+      Rcpp::Rcout << cols[i] << ' ';
+    Rcpp::Rcout  << std::endl;  
     int start                     = atoi(cols[3].c_str()); 
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
     std::string cigar             = cols[5];
-    std::string methc             = cols[13]; 
+    std::string methc             = cols[13];
     if(methc.find("XM:Z:")==std::string::npos) {Rcpp::stop("no methylation tag found.");}
     methc.erase(methc.begin(),methc.begin()+ 5 ); //  remove "XM:Z:"
     std::string qual              = cols[10];
@@ -596,7 +601,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     int slen   = mcalls.length(); // aligned sequence length
     
     // get strand
-    char strand;
+    char strand = ' ';
     if( (cols[14] == "XR:Z:CT") && (cols[15] == "XG:Z:CT") ) {strand='+';} // original top strand
     else if( (cols[14] == "XR:Z:CT") && (cols[15] == "XG:Z:GA") ) {strand='-';} // original bottom strand
     else if( (cols[14] == "XR:Z:GA") && (cols[15] == "XG:Z:CT") ) {strand='+';} // complementary to original top strand, bismark says - strand to this
@@ -619,17 +624,33 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        Rcpp::stop(  "The sam file is not sorted properly; "
-                     "you can sort the file in unix-like machines using:\n" 
-                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
+        Rcpp::stop(  "The sam file is not sorted properly on positions :\n"
+                     "\tchr: %s  pos: %i is followed by chr: %s  pos: %i \n"
+                     "You can sort the file in unix-like machines using:\n" 
+                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                     ,chrPre, startPre, chr,start);
         return -1;
         // ########################
       }
       chrPre=chr;
       startPre=start;
     } else {
+      if ( std::find(pastChrom.begin(), pastChrom.end(), chr) != pastChrom.end() ) {
+        // ####################### 
+        Rcpp::stop(  "The sam file is not sorted properly on chromosomes:\n"
+                       "\tchr: %s occured in two or more fragments.\n"
+                       "You can sort the file in unix-like machines using:\n" 
+                       " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                       ,chr);
+        return -1;
+        // ########################
+      }
       startPre=start;
       chrPre=chr;
+      pastChrom.push_back(chr);
+      // for( i=0; ((unsigned) i)<pastChrom.size(); ++i)
+      //   Rcpp::Rcout << pastChrom[i] << ' ';
+      // Rcpp::Rcout  << std::endl;  
     }
     
     
@@ -651,7 +672,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for( i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
@@ -735,8 +756,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
    
   header = sam_hdr_read(in);
   if ( (header ==NULL) || (header->l_text == 0)) { 
+    Rcpp::Rcerr << "Failed to read header, falling back.\n" << std::endl ; 
     return 2;
-    //Rcpp::stop("fail to open bam header, is there any?\n");
     }
 
   
@@ -817,14 +838,15 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   char cigar_buffer [len];
   
   // initialize counter and cigar-buffer-storage
-  int i, c;
+  int i = 0;
+  int c;
 
 
   // parse the first cigar operation
   c = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
   // if further operations remain, append them to cigar_buffer
   if (len_cigar >= 2 ) { 
-    for (i = 1; i < len_cigar; i++  ) {
+    for (i = 1; ((unsigned) i) < len_cigar; i++  ) {
       char buffer [c];
       c = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
       strcat(cigar_buffer,buffer);
@@ -857,7 +879,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     int slen   = mcalls.length(); // aligned sequence length
     
     // get strand
-    char strand;
+    char strand = ' ';
     std::string xr_tag = (char*) bam_aux_get(b, "XR"); //get "XR:Z:CT" from bam/sam, 
     std::string xg_tag = (char*) bam_aux_get(b, "XG");   // but returns "ZCT" as string
 
@@ -921,7 +943,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for(  i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       std::string key; // initialize the hash key
@@ -1033,7 +1055,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   
   
   
-  
+  int i = 0;
   int lastPos  =-1, startPre = -1 ;
   std::string lastChrom="null", chrPre;
 
@@ -1097,11 +1119,11 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
     }
     
     // iterate over the mapped sequence
-    for( int i=0; i < quals.length(); i++) 
+    for( i=0; ((unsigned) i) < quals.length(); i++) 
     {
       if ( ( ( (int) quals[i] - offset ) <  minqual ) || ( mcalls[i] == '.') ){ continue;}
       //if last base is a C and it is a part of CCGG motif, don't call for meth
-      if( ( (gbases[i] == 'C') && (i==quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
+      if( ( (gbases[i] == 'C') && ( ((unsigned) i) == quals.length()) ) && ( gbases.substr(i-1,4) == "CCGG" ) ) { continue;} 
       std::string key; // initilaize the hash key
       if( strand == '+') { key = "F|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
       else { key = "R|"+ chr+"|"+std::to_string(static_cast<long long>(start+i)); }
@@ -1217,16 +1239,20 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
     // type is "bam" per default (reads both sam or bam), but if the header is missing, 
     // the file will be treated as paired_sam
     if( type == "bam"){
+      Rcpp::Rcerr << "Trying to process:" << std::endl << read1 << std::endl << " using htslib.\n"  << std::endl;
       res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
       // std::cout << res;
     }
     if( (res==2)  || (type == "paired_sam")){
+      Rcpp::Rcerr << "Trying to process: " << std::endl<< read1 << std::endl << " paired sam.\n"  << std::endl;
       process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
     }
     else if(type == "single_sam"){
+      Rcpp::Rcerr << "Trying to process " << std::endl << read1 << std::endl<< " single sam.\n"  << std::endl;
       process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
     }
     else if( type == "single_bismark" ){
+      Rcpp::Rcerr << "Trying to process " << std::endl<< read1 << std::endl<< " single bismark.\n"  << std::endl;
       process_single_bismark(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
     }
     else if( type =="paired_bismark"){
@@ -1236,7 +1262,7 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
 
   }
   
-  
+  Rcpp::Rcerr << "Done.\n" << std::endl;
   
   if(file.is_open()) file.close();
 
