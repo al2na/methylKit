@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // methCall
 void methCall(std::string read1, std::string type, bool nolap, int minqual, int mincov, bool phred64, std::string CpGfile, std::string CHHfile, std::string CHGfile);
-RcppExport SEXP methylKit_methCall(SEXP read1SEXP, SEXP typeSEXP, SEXP nolapSEXP, SEXP minqualSEXP, SEXP mincovSEXP, SEXP phred64SEXP, SEXP CpGfileSEXP, SEXP CHHfileSEXP, SEXP CHGfileSEXP) {
+RcppExport SEXP _methylKit_methCall(SEXP read1SEXP, SEXP typeSEXP, SEXP nolapSEXP, SEXP minqualSEXP, SEXP mincovSEXP, SEXP phred64SEXP, SEXP CpGfileSEXP, SEXP CHHfileSEXP, SEXP CHGfileSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type read1(read1SEXP);
@@ -25,7 +25,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"methylKit_methCall", (DL_FUNC) &methylKit_methCall, 9},
+    {"_methylKit_methCall", (DL_FUNC) &_methylKit_methCall, 9},
     {NULL, NULL, 0}
 };
 
