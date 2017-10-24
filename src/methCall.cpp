@@ -61,6 +61,17 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 
+// small function to replace a substring
+std::string find_and_replace(std::string source, std::string const& find, std::string const& replace)
+{
+    for(std::string::size_type i = 0; (i = source.find(find, i)) != std::string::npos;)
+    {
+        source.replace(i, find.length(), replace);
+        i += replace.length();
+    }
+
+    return(source);
+}
 
 
 // void print_usage() {
@@ -516,6 +527,8 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
   
 }
 
+
+
 // processed sam file without header
 int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual, int nolap, int paired) {
 
@@ -523,6 +536,8 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 // check the file status produce flags 
   int CpGstatus = 0, CHHstatus = 0, CHGstatus = 0;
   FILE *out, *CHHout, *CHGout;
+  FILE *out_stats, *CHHout_stats, *CHGout_stats;
+  std::string tempString ;
   
   
   if( !(CpGfile.empty()  )) {
@@ -575,9 +590,9 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
 
     std::vector<std::string> cols = split(line,'\t');
-    for( i=0; ((unsigned) i)<cols.size(); ++i)
-      Rcpp::Rcout << cols[i] << ' ';
-    Rcpp::Rcout  << std::endl;  
+    // for( i=0; ((unsigned) i)<cols.size(); ++i)
+    //   Rcpp::Rcout << cols[i] << ' ';
+    // Rcpp::Rcout  << std::endl;  
     int start                     = atoi(cols[3].c_str()); 
     int end                       = start + cols[9].length()-1;
     std::string chr               = cols[2];
@@ -638,10 +653,10 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
       if ( std::find(pastChrom.begin(), pastChrom.end(), chr) != pastChrom.end() ) {
         // ####################### 
         Rcpp::stop(  "The sam file is not sorted properly on chromosomes:\n"
-                       "\tchr: %s occured in two or more fragments.\n"
+                       "\tchr: %s occured before and after %s.\n"
                        "You can sort the file in unix-like machines using:\n" 
                        " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
-                       ,chr);
+                       ,chr,chrPre);
         return -1;
         // ########################
       }
@@ -726,21 +741,50 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
   //int totCs=allesSchon.size();
   int totCs = numF + numR;
 
-   
-   Rcpp::Rcout 
-     <<   std::setprecision(14) 
-     <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
-     <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
+  std::stringstream sout;
+  
+  sout   <<   "Conversion Statistics:\n\n" 
+   <<  std::setprecision(14) 
+   <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+   <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
    
    <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
    <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
    
    <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
+
+
+   Rcpp::Rcout << sout.str() << std::endl;
   
+
+  if( !(CpGfile.empty()  )) {
+    tempString = CpGfile; 
+    tempString.append("_conversionStats.txt");
+    out_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (out_stats, "%s", sout.str().c_str());
+    std::fclose(out_stats);
+  }
+  if( !(CHHfile.empty())) {
+    tempString = CHHfile; 
+    tempString.append("_conversionStats.txt");
+    CHHout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHHout_stats, "%s", sout.str().c_str());
+    std::fclose(CHHout_stats);
+  }
+  if( !(CHGfile.empty())) {
+    tempString = CHGfile; 
+    tempString.append("_conversionStats.txt");
+    CHGout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHGout_stats, "%s", sout.str().c_str());
+    std::fclose(CHGout_stats);
+  }
+
+
   return 0;
   
 }
+
 
 
 // processed  single-end bam/sam file !! with header !!
@@ -764,6 +808,8 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
 // check the file status produce flags 
   int CpGstatus = 0, CHHstatus = 0, CHGstatus = 0;
   FILE *out, *CHHout, *CHGout;
+  FILE *out_stats, *CHHout_stats, *CHGout_stats;
+  std::string tempString;
   
 
   if( !(CpGfile.empty()  )) {
@@ -792,6 +838,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   
   int lastPos  =-1, startPre = -1 ;
   std::string lastChrom="null", chrPre;
+  std::vector<std::string> pastChrom; 
 
   // initialize bam  
   b = bam_init1();
@@ -911,17 +958,33 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        Rcpp::stop ( "The sam file is not sorted properly; "
-                     "you can sort the file in unix-like machines using:\n" 
-                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
+        Rcpp::stop(  "The sam file is not sorted properly on positions :\n"
+                     "\tchr: %s  pos: %i is followed by chr: %s  pos: %i \n"
+                     "You can sort the file in unix-like machines using:\n" 
+                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                     ,chrPre, startPre, chr,start);
         return -1;
         // ########################
       }
       chrPre=chr;
       startPre=start;
     } else {
+      if ( std::find(pastChrom.begin(), pastChrom.end(), chr) != pastChrom.end() ) {
+        // ####################### 
+        Rcpp::stop(  "The sam file is not sorted properly on chromosomes:\n"
+                       "\tchr: %s occured before and after %s.\n"
+                       "You can sort the file in unix-like machines using:\n" 
+                       " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                       ,chr,chrPre);
+        return -1;
+        // ########################
+      }
       startPre=start;
       chrPre=chr;
+      pastChrom.push_back(chr);
+      // for( i=0; ((unsigned) i)<pastChrom.size(); ++i)
+      //   Rcpp::Rcout << pastChrom[i] << ' ';
+      // Rcpp::Rcout  << std::endl;  
     }
     
     
@@ -995,20 +1058,46 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
   //double medconvRate = median(\@allesSchon);
   
   int totCs = numF + numR;
-
    
-  Rcpp::Rcout 
-    <<   std::setprecision(14) 
-    <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
-    <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
-      //"median conversion rate = %.2f\n\n";              //$medconvRate
-    
-    <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
-    <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
-      //"median conversion rate (Forward) = %.2f\n\n"        //$medFconvRate 
-    
-    <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
-    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
+  std::stringstream sout;
+  
+  sout   <<   "Conversion Statistics:\n\n" 
+   <<  std::setprecision(14) 
+   <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+   <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
+   
+   <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
+   <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
+   
+   <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
+   <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
+
+
+   Rcpp::Rcout << sout.str() << std::endl;
+  
+
+  if( !(CpGfile.empty()  )) {
+    tempString = CpGfile; 
+    tempString.append("_conversionStats.txt");
+    out_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (out_stats, "%s", sout.str().c_str());
+    std::fclose(out_stats);
+  }
+  if( !(CHHfile.empty())) {
+    tempString = CHHfile; 
+    tempString.append("_conversionStats.txt");
+    CHHout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHHout_stats, "%s", sout.str().c_str());
+    std::fclose(CHHout_stats);
+  }
+  if( !(CHGfile.empty())) {
+    tempString = CHGfile; 
+    tempString.append("_conversionStats.txt");
+    CHGout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHGout_stats, "%s", sout.str().c_str());
+    std::fclose(CHGout_stats);
+  }
+
   
   bam_destroy1(b);
   bam_hdr_destroy(header);
@@ -1027,6 +1116,8 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
 // check the file status produce flags 
   int CpGstatus = 0, CHHstatus = 0, CHGstatus = 0;
   FILE *out, *CHHout, *CHGout;
+  FILE *out_stats, *CHHout_stats, *CHGout_stats;
+  std::string tempString;
   
   
   if( !(CpGfile.empty()  )) {
@@ -1058,6 +1149,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   int i = 0;
   int lastPos  =-1, startPre = -1 ;
   std::string lastChrom="null", chrPre;
+  std::vector<std::string> pastChrom; 
 
   std::string line;  
   
@@ -1089,15 +1181,33 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
     if( chr == chrPre) {
       if( startPre > start ) {
         // ####################### 
-        Rcpp::stop( "The sam file is not sorted properly; you can sort the file in unix-like machines using:\n"
-                    "grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n");
+        Rcpp::stop(  "The sam file is not sorted properly on positions :\n"
+                     "\tchr: %s  pos: %i is followed by chr: %s  pos: %i \n"
+                     "You can sort the file in unix-like machines using:\n" 
+                     " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                     ,chrPre, startPre, chr,start);
         return -1;
+        // ########################
       }
       chrPre=chr;
       startPre=start;
     } else {
+      if ( std::find(pastChrom.begin(), pastChrom.end(), chr) != pastChrom.end() ) {
+        // ####################### 
+        Rcpp::stop(  "The sam file is not sorted properly on chromosomes:\n"
+                       "\tchr: %s occured before and after %s.\n"
+                       "You can sort the file in unix-like machines using:\n" 
+                       " grep -v \\'^[[:space:]]*\\@\\' test.sam | sort -k3,3 -k4,4n  > test.sorted.sam \n"
+                       ,chr,chrPre);
+        return -1;
+        // ########################
+      }
       startPre=start;
       chrPre=chr;
+      pastChrom.push_back(chr);
+      // for( i=0; ((unsigned) i)<pastChrom.size(); ++i)
+      //   Rcpp::Rcout << pastChrom[i] << ' ';
+      // Rcpp::Rcout  << std::endl;  
     }
     
     
@@ -1177,16 +1287,45 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
   int totCs = numF + numR;
   
    
-   Rcpp::Rcout 
-     <<   std::setprecision(14) 
-     <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
-     <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
+  std::stringstream sout;
+  
+  sout   <<   "Conversion Statistics:\n\n" 
+   <<  std::setprecision(14) 
+   <<  "total otherC considered (>95% C+T): "            <<   totCs       << "\n"
+   <<  "average conversion rate = "                      <<   AvconvRate  << "\n"
    
-     <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
-     <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
-     
-     <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
-     <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
+   <<  "total otherC considered (Forward) (>95% C+T): "  <<   numF        << "\n"
+   <<  "average conversion rate (Forward) = "            <<   AvFconvRate << "\n"
+   
+   <<  "total otherC considered (Reverse) (>95% C+T): "  <<   numR        << "\n"
+   <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
+
+
+   Rcpp::Rcout << sout.str() << std::endl;
+  
+
+  if( !(CpGfile.empty()  )) {
+    tempString = CpGfile; 
+    tempString.append("_conversionStats.txt");
+    out_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (out_stats, "%s", sout.str().c_str());
+    std::fclose(out_stats);
+  }
+  if( !(CHHfile.empty())) {
+    tempString = CHHfile; 
+    tempString.append("_conversionStats.txt");
+    CHHout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHHout_stats, "%s", sout.str().c_str());
+    std::fclose(CHHout_stats);
+  }
+  if( !(CHGfile.empty())) {
+    tempString = CHGfile; 
+    tempString.append("_conversionStats.txt");
+    CHGout_stats = fopen(find_and_replace( tempString, ".txt_", "_").c_str(),"w");
+    fprintf (CHGout_stats, "%s", sout.str().c_str());
+    std::fclose(CHGout_stats);
+  }
+
   
   return 0;
 }
