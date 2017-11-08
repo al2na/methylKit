@@ -34,7 +34,7 @@ handle whole-genome bisulfite sequencing data if proper input format is provided
  * Feature annotation and accessor/coercion functions 
  * Multiple visualization options  
  * Regional and tiling windows analysis
- * (Almost) proper [documentation](http://rpubs.com/al2na/methylKit)
+ * (Almost) proper [documentation](https://bioconductor.org/packages/release/bioc/vignettes/methylKit/inst/doc/methylKit.html)
  * Reading methylation calls directly from [Bismark(Bowtie/Bowtie2](http://www.bioinformatics.bbsrc.ac.uk/projects/bismark/) alignment files
  * Batch effect control
  * Multithreading support (for faster differential methylation calculations) 
@@ -106,8 +106,8 @@ Below, there are several options showing how to do basic analysis with *`methylK
 
 ## Documentation ##
  * You can look at the vignette [here](https://bioconductor.org/packages/release/bioc/vignettes/methylKit/inst/doc/methylKit.html). This is the primary source of documentation. It includes detailed examples.
- * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013. This works with older versions of methylKit, you may need to update the function names.
- * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012. This works with older versions of methylKit, you may need to update the function names.
+ * You can check out the [slides](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/methylkit/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013. This works with older versions of methylKit, you may need to update the function names.
+ * You can check out the [tutorial](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/methylkit/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012. This works with older versions of methylKit, you may need to update the function names.
 
 
 
