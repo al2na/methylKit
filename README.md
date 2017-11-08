@@ -105,105 +105,18 @@ chr21.9853326	chr21	9853326	F	17	70.59	29.41
 Below, there are several options showing how to do basic analysis with *`methylKit`*.
 
 ## Documentation ##
- * You can look at the vignette [here](http://rpubs.com/al2na/methylKit)
- * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013
- * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012
- * You can see the code snippet below
+ * You can look at the vignette [here](https://bioconductor.org/packages/release/bioc/vignettes/methylKit/inst/doc/methylKit.html). This is the primary source of documentation. It includes detailed examples.
+ * You can check out the [slides](http://methylkit.googlecode.com/files/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013. This works with older versions of methylKit, you may need to update the function names.
+ * You can check out the [tutorial](http://methylkit.googlecode.com/files/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012. This works with older versions of methylKit, you may need to update the function names.
 
 
-## Example analysis ##
-
-### Read methylation files ###
-```r
-library(methylKit)
 
 
-# this is a list of example files, ships with the package
-# for your own analysis you will just need to provide set of paths to files
-# you will not need the "system.file(..."  part
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
 
 
-# read the files to a methylRawList object: myobj
-myobj=read( file.list,
-           sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",treatment=c(1,1,0,0))
-
-```
-
-### Get descriptive stats on methylation ###
-```r
-# get methylation statistics on second file "test2" in myobj which is a class of methylRawList
-getMethylationStats(myobj[[2]],plot=F,both.strands=F)
-
-# plot methylation statistics on second file "test2" in myobj which is a class of methylRawList
-getMethylationStats(myobj[[2]],plot=T,both.strands=F)
-```
-
-### Get bases covered by all samples and cluster samples ###
-```r
-# see what the data looks like for sample 2 in myobj methylRawList
-head(myobj[[2]])
-
-# merge all samples to one table by using base-pair locations that are covered in all samples
-# setting destrand=TRUE, will merge reads on both strans of a CpG dinucleotide. This provides better 
-# coverage, but only advised when looking at CpG methylation
-meth=unite(myobj,destrand=TRUE)
-
-# merge all samples to one table by using base-pair locations that are covered in all samples
-# 
-meth=unite(myobj)
-
-# cluster all samples using correlation distance and return a tree object for plclust
-hc = clusterSamples(meth, dist="correlation", method="ward", plot=FALSE)
-
-# cluster all samples using correlation distance and plot hiarachical clustering
-clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
-
-# screeplot of principal component analysis.
-PCASamples(meth, screeplot=TRUE)
-
-# principal component anlaysis of all samples.
-PCASamples(meth)
-```
-### Calculate differential methylation ###
-Before differential methylation calculation, consider filtering high coverage bases to remove potential PCR bias using `filterByCoverage()`. In addition, consider normalizing read coverages between samples to avoid bias introduced by systematically more sequenced samples, using `normalizeCoverage()`.
-
-```r
-# calculate differential methylation p-values and q-values
-myDiff=calculateDiffMeth(meth)
-
-# check how data part of methylDiff object looks like
-head( myDiff )
-
-# get differentially methylated regions with 25% difference and qvalue<0.01
-myDiff25p=get.methylDiff(myDiff,difference=25,qvalue=0.01)
-
-# get differentially hypo methylated regions with 25% difference and qvalue<0.01
-myDiff25pHypo =get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hypo") 
-
-# get differentially hyper methylated regions with 25% difference and qvalue<0.01
-myDiff25pHyper=get.methylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
-```
-
-### Annotate differentially methylated bases/regions ###
-```r
-# read-in transcript locations to be used in annotation
-# IMPORTANT: annotation files that come with the package (version >=0.5) are a subset of full annotation
-# files. Download appropriate annotation files from UCSC (or other sources) in BED format
-library(genomation) # install from BioC
-gene.obj=readTranscriptFeatures(system.file("extdata", "refseq.hg18.bed.txt", package = "methylKit"))
-
-# annotate differentially methylated Cs with promoter/exon/intron using annotation data
-annotateWithGeneParts(as(myDiff25p,"GRanges"),gene.obj)
-```
-
-SEE PACKAGE VIGNETTE and TUTORIAL (both hyper-linked above) FOR MORE
 
 ## Downloading Annotation Files
-You can download annotation files from UCSC table browser for your genome of interest. Go to  [http://genome.ucsc.edu/cgi-bin/hgGateway]. On the top menu click on "tools" then "table browser". Select your "genome" of interest and "assembly" of interest from the drop down menus. Make sure you select the correct genome and assembly. Selecting wrong genome and/or assembly will return unintelligible results in downstream analysis. 
+Annotation files in BED format are needed for annotating your differentially methylated regions. You can download annotation files from UCSC table browser for your genome of interest. Go to  [http://genome.ucsc.edu/cgi-bin/hgGateway]. On the top menu click on "tools" then "table browser". Select your "genome" of interest and "assembly" of interest from the drop down menus. Make sure you select the correct genome and assembly. Selecting wrong genome and/or assembly will return unintelligible results in downstream analysis. 
 
 From here on you can either download *gene annotation* or *CpG island annotation*.
 
@@ -242,9 +155,9 @@ Questions are very welcome, although we suggest you read the paper, documentatio
 
 -------
 # Contribute to the development
-See the [trello board](https://trello.com/b/k2kv1Od7/methylkit) for methylKit development. You can contribute to the methylKit development via github ([http://github.com/al2na/methylKit/]) by checking out "development" branch, making your changes and doing a pull request (all of these should be done on the "development" branch NOT  on the "master" branch). In addition, you should:
+See the [trello board](https://trello.com/b/k2kv1Od7/methylkit) for methylKit development. You can contribute to the methylKit development via github ([http://github.com/al2na/methylKit/]) by opening an issue and discussing what you want to contribute, we will guide you from there. In addition, you should:
 
- * Bump up the version in the DESCRIPTION file on the 4th number. For example, the master branch has the version numbering as in "X.Y.Z". If you make a change to the development branch you should bump up the version in the DESCRIPTION file to "X.Y.Z.1". If there are already changes done in the development just bump up the fourth number.
+ * Bump up the version in the DESCRIPTION file on the 3rd number. For example, the master branch has the version numbering as in "X.Y.1". If you make a change to master branch you should bump up the version in the DESCRIPTION file to "X.Y.2".
 
  * Add your changes to the NEWS file as well under the correct version and appropriate section. Attribute the changes to yourself, such as "Contributed by X"
  
