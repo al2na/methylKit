@@ -497,7 +497,7 @@ The differential methylation calculation speed can be increased substantially by
 The following piece of code will run differential methylation calculation using 2 cores.
 
 ```{r, eval=FALSE}
-myDiff=calculateDiffMeth(meth,num.cores=2)
+myDiff=calculateDiffMeth(meth,mc.cores=2)
 ```
 
 
