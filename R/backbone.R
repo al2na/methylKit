@@ -1736,7 +1736,7 @@ setMethod("show", "methylRawList", function(object) {
   cat("methylRawList object with",length(object),"methylRaw objects\n\n")
   
   lapply(object,show)
-  cat("treament:", object@treatment,"\n")
+  cat("treatment:", object@treatment,"\n")
   
 })
 
