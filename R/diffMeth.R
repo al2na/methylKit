@@ -902,7 +902,7 @@ setReplaceMethod("getTreatment", signature = "methylDiff", function(x, value) {
 #' @rdname getSampleID-methods
 #' @aliases getSampleID,methylDiff-method
 setMethod("getSampleID", signature = "methylDiff", function(x) {
-  return(x@sample.id)
+  return(x@sample.ids)
 })
 
 #' @rdname getSampleID-methods
