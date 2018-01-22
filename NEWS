@@ -1,3 +1,11 @@
+methylKit 1.5.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* updated links to vignette and presentations in README 
+* fixed missspelling in show method of methylRawList object
+* fixed getSampleID method for methylDiff object
+* correct a not working code snippet in the vignette
+
 methylKit 1.3.8
 --------------
 IMPROVEMENTS AND BUG FIXES
