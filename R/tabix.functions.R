@@ -236,6 +236,23 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
 #' @noRd
 obj2tabix <- function(obj,filename,rm.txt=TRUE){
   
+
+#' function to check wether tabix header exists 
+#' and exit with message instead of error
+#'
+#' @param tbxFile tabix file
+#' @param message text to print instead of default
+#' @noRd
+checkTabixHeader <- function(tbxFile,message=NULL) {
+  if(is.null(message)) message <- paste("Could not read header of file",tbxFile)
+  tryCatch(expr  = readTabixHeader(tbxFile),
+                   error = function(cond){
+                     message(cond)
+                     message(message)
+                     return(NA)
+                   })
+  
+}
   # first we query each slots and ... 
   tabixHead <- sapply(slotNames(obj),
                       FUN = function(i) {
