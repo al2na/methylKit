@@ -294,13 +294,10 @@ readMethylRawDB<-function(dbpath,dbtype,
   
   # if the tabix file includes a header generated with obj2tabix,
   # it can easily be parsed into the respective object
-  head <- tryCatch(expr  = readTabixHeader(dbpath),
-           error = function(cond){
-             message(cond)
-             message("Creating methylRawDB using supplied arguments.")
-             return(NA)
-           })
-  
+  head <- checkTabixHeader(tbxFile = dbpath,
+                           message = paste("No Tabix Header Found,",
+                           "trying to create methylRawDB from supplied arguments."))
+
   if(!anyNA(head)) {
 
   
@@ -633,12 +630,10 @@ readMethylBaseDB<-function(dbpath,dbtype,
 
   # if the tabix file includes a header generated with obj2tabix,
   # it can easily be parsed into the respective object
-  head <- tryCatch(expr  = readTabixHeader(dbpath),
-                   error = function(cond){
-                     message(cond)
-                     message("Creating methylBaseDB using supplied arguments.")
-                     return(NA)
-                   })
+  head <- checkTabixHeader(tbxFile = dbpath,
+                           message = paste(
+                             "No Tabix Header Found,",
+                             "\nCreating methylBaseDB using supplied arguments."))
   
   if(!anyNA(head)) {
     
@@ -842,12 +837,10 @@ readMethylDiffDB<-function(dbpath,dbtype,
 
   # if the tabix file includes a header generated with obj2tabix,
   # it can easily be parsed into the respective object
-  head <- tryCatch(expr  = readTabixHeader(dbpath),
-           error = function(cond){
-             message(cond)
-             message("Creating methylDiffDB using supplied arguments.")
-             return(NA)
-           })
+  head <- checkTabixHeader(tbxFile = dbpath,
+                           message = paste(
+                             "No Tabix Header Found,",
+                             "\nCreating methylDiffDB using supplied arguments."))
   
   if(!anyNA(head)) {
 
