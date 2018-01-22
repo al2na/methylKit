@@ -625,7 +625,7 @@ methylRawList <- function(...,treatment) {
 setGeneric("methRead", function(location,sample.id,assembly,dbtype=NA,
                             pipeline="amp",header=TRUE,skip=0,sep="\t",
                             context="CpG",resolution="base",
-                            treatment,dbdir=getwd(),mincov=10) 
+                            treatment=NA,dbdir=getwd(),mincov=10) 
   standardGeneric("methRead"))
 
 #' @rdname methRead-methods
@@ -635,6 +635,9 @@ setMethod("methRead", signature(location = "character",sample.id="character",
           
           function(location,sample.id,assembly,dbtype,pipeline,header,skip,
                    sep,context,resolution,dbdir,mincov){ 
+
+    message("Received single location.")            
+
     if(! file.exists(location)){
       stop(location,", That file doesn't exist !!!")}
     
@@ -690,6 +693,45 @@ setMethod("methRead", signature(location = "character",sample.id="character",
   }
 )
 
+
+## if only the location given we assume the file is compressed and contains header,
+## if this is not the case error is returned
+# @return returns a methylRawDB object
+#' @rdname methRead-methods
+#' @aliases methRead,character-method
+setMethod("methRead", signature(location = "character"),
+          
+          function(location,sample.id,assembly,dbtype,pipeline,header,skip,
+                   sep,context,resolution,dbdir,mincov){ 
+            
+            message("Received single location.")
+            
+            if(! file.exists(location)){
+              stop(location,", That file doesn't exist !!!")}
+            
+            if(  tools::file_ext(location)=="bgz" ) {
+              if(!is.na(dbtype)) {
+                if(dbtype == "tabix") {
+                  obj = readMethylRawDB(dbpath = location,dbtype = dbtype, 
+                                        sample.id = sample.id, 
+                                        assembly = assembly, context = context, 
+                                        resolution = resolution)
+                  return(obj)
+                }
+              } else {
+                stop(paste("dbtype unspecified but file is compressed:\n",location,
+                           "\n\nPlease use dbtype='tabix' or",
+                           "\nprovide uncompressed file with supported pipeline."))
+              }
+            } else {
+              
+              stop(paste("Cannot directly load uncompressed file:\n",location,"\n\nPlease provide sample.id",
+                         "and assembly."))
+            }
+            obj 
+          }
+)
+
 # @param dbtype type of the flat file database, currently only option is "tabix"
 # @param dbdir directory where flat file database(s) should be stored, defaults
 # @return returns a methylRawListDB object
@@ -699,6 +741,11 @@ setMethod("methRead", signature(location = "list",sample.id="list",
                             assembly="character"),
           function(location,sample.id,assembly,dbtype,pipeline,header,
                    skip,sep,context,resolution,treatment,dbdir,mincov){ 
+            
+  message("Received list of locations.")
+            
+  if(any(is.na(treatment))) 
+    stop("Treatment vector is missing.")
             
   #check if the given arugments makes sense
   if(length(location) != length(sample.id)){
@@ -794,6 +841,57 @@ setMethod("methRead", signature(location = "list",sample.id="list",
     
     myobj
   }
+}
+)
+
+## if only the location given we assume the file is compressed and contains header,
+## if this is not the case error is returned
+# @return returns a methylRawDB object
+#' @rdname methRead-methods
+#' @aliases methRead,list,list,character-method read
+setMethod("methRead", signature(location = "list"),
+          function(location,sample.id,assembly,dbtype,pipeline,header,
+                   skip,sep,context,resolution,treatment,dbdir,mincov){
+            
+            message("Received list of locations.")
+            
+            if(is.na(treatment)) 
+              stop("Treatment vector is missing.")
+
+            if( (length(treatment) != length(location)) & (length(treatment) !=0) ){
+              stop("length of 'treatment', 'name' and 'location' should be same\n")
+            }
+
+            if(all(tools::file_ext(location)=="bgz")) {
+              
+              if(!is.na(dbtype)) {
+                if(dbtype == "tabix") {
+                  outList=list()
+                  for(i in 1:length(location))
+                  {
+                    obj = readMethylRawDB(dbpath = location[[i]],dbtype = dbtype, 
+                                          sample.id = sample.id[[i]], 
+                                          assembly = assembly, context = context, 
+                                          resolution = resolution)
+                    outList[[i]]=obj
+                  }
+                  myobj=new("methylRawListDB",outList,treatment=treatment)
+                  return(myobj)
+                  }
+
+                } else {
+                  stop(paste("dbtype unspecified but files are compressed.",
+                             "\n\nPlease use dbtype='tabix' or",
+                             "\nprovide uncompressed file with supported pipeline."))
+                }
+            } else if( any(tools::file_ext(location)=="bgz") ) {
+
+              stop("one or more files are compressed,\nplease process uncompressed files beforehand and provide only either only compressed or only uncompressed files.")
+
+            }  else {
+              stop(paste("file",location,"is uncompressed,", "\nplease provide sample.id",
+                         "and assembly."))
+            }
 }
 )
 
