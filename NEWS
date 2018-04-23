@@ -1,3 +1,9 @@
+methylKit 1.5.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* resolve absolute paths for dbdir argument
+* initial check if output tabix file already exists and if yes rename output file
+
 methylKit 1.5.2
 --------------
 IMPROVEMENTS AND BUG FIXES
