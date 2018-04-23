@@ -1,3 +1,29 @@
+# Helper Functions ---------------------------------------------------
+
+## function checks wether a tabix file already exists and 
+## appends number if file already exists  
+.checkTabixFileExists <- function(tabixfile) {
+  message("checking wether tabix file already exists:")
+  tabixfile <- paste0(tabixfile,".bgz")
+  message(tabixfile)
+  if(file.exists(tabixfile) ) {
+    message("tabix file already exists, renaming output file.")
+    i = 1
+    filename2 = tabixfile
+    while(file.exists(filename2) ) {
+      filename2 = gsub(".txt.bgz",paste0("_",i,".txt.bgz"),tabixfile)
+      i = i + 1
+    }
+    tabixfile <- gsub(".bgz","",filename2)
+  } else message("tabix file is new.")
+  message("continuing now ...")
+    
+  return(tabixfile)
+  
+}
+
+
+
 
 # MethylRawDB and MethylRawListDB -----------------------------------------
 
@@ -45,9 +71,14 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(paste(methylObj@sample.id,collapse = "_"),suffix,".txt")
-    #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",methylObj@dbpath)),
-    # suffix,".txt")
+    # filename <- paste0(paste(methylObj@sample.id,collapse = "_"),suffix,".txt")
+    # tabixfile
+    filename <- paste0(gsub(".txt.bgz",replacement = "",methylObj@dbpath),
+    suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     #print(filename)
     
@@ -322,8 +353,12 @@ setMethod("adjustMethylC", c("methylRawDB","methylRawDB"),
     }
     
     
-    filename <- paste0(paste(mc@sample.id,collapse = "_"),suffix,".txt")
-    #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",mc@dbpath)),suffix,".txt")
+    # filename <- paste0(paste(mc@sample.id,collapse = "_"),suffix,".txt")
+    filename <- paste0(gsub(".txt.bgz",replacement = "",mc@dbpath),suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, 
                                  dir=dir,filename = filename, 
@@ -439,10 +474,14 @@ setMethod("normalizeCoverage", "methylRawListDB",
               
               for(i in 1:length(obj)){
                 
-                filename <- paste0(paste(obj[[i]]@sample.id,collapse = "_"),
-                                   suffix,".txt")
-                #filename <- paste0(basename(gsub(".txt.bgz",replacement = "",
-                #obj[[i]]@dbpath)),suffix,".txt")
+                # filename <- paste0(paste(obj[[i]]@sample.id,collapse = "_"),
+                #                    suffix,".txt")
+                filename <- paste0(gsub(".txt.bgz",replacement = "",
+                obj[[i]]@dbpath),suffix,".txt")
+                
+                filename <- .checkTabixFileExists(filename)
+                
+                filename <- basename(filename)
                 
                 newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,
                                              chunk.size = chunk.size, 
@@ -504,10 +543,15 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
         
         for(i in 1:length(sample.ids)){
           obj <- methylObj[[ col.ord[i]  ]]
-          filename <- paste0(dir,"/",paste(obj@sample.id,collapse = "_"),
-                             suffix,".txt.bgz")
-          #filename <- paste0(dir,"/",basename(gsub(".txt.bgz",replacement = 
-          # "",obj@dbpath)),suffix,".txt.bgz")
+          # filename <- paste0(dir,"/",paste(obj@sample.id,collapse = "_"),
+                             # suffix,".txt.bgz")
+          filename <- paste0(dir,"/",gsub(".txt.bgz",replacement =
+          "",obj@dbpath),suffix,".txt.bgz")
+          
+          filename <- .checkTabixFileExists(filename)
+          
+          filename <- basename(filename)
+          
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -525,6 +569,11 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
                              # ,suffix,".txt.bgz")
           filename <- paste0(gsub(".txt.bgz",replacement = "",obj@dbpath),
                              suffix,".txt.bgz")
+          
+          filename <- .checkTabixFileExists(filename)
+          
+          filename <- basename(filename)
+          
           file.copy(obj@dbpath,filename)
           
           outList[[i]]=readMethylRawDB(dbpath = filename,
@@ -594,8 +643,13 @@ if(save.db) {
       
       if(obj@resolution == "base") {
         dir <- dirname(obj@dbpath)
-        filename <- paste(basename(gsub(".txt.bgz","",obj@dbpath)),
+        filename <- paste(gsub(".txt.bgz","",obj@dbpath),
                           "destrand.txt",sep="_")
+        
+        filename <- .checkTabixFileExists(filename)
+        
+        filename <- basename(filename)
+        
         # need to use .CpG.dinuc.unifyOld because output needs to be ordered
         newdbpath <- applyTbxByChunk(obj@dbpath,
                                      chunk.size = chunk.size, 
@@ -902,7 +956,11 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     }
     
     # filename <- paste0(paste(mBase@sample.ids,collapse = "_"),suffix,".txt")
-    filename <- paste0(basename(gsub(".txt.bgz","",mBase@dbpath)),suffix,".txt")
+    filename <- paste0(gsub(".txt.bgz","",mBase@dbpath),suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     con <- file(methMat,open = "r") 
     
@@ -1163,8 +1221,12 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     }
     
     # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
-    filename <- paste0(basename(gsub(".txt.bgz","",methylObj@dbpath))
+    filename <- paste0(gsub(".txt.bgz","",methylObj@dbpath)
                        ,suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,
                                  chunk.size = chunk.size, dir=dir,
@@ -1236,8 +1298,14 @@ setMethod("pool", "methylBaseDB",
     
     # filename <- paste0(paste(sample.ids,collapse = "_"),suffix,".txt")
     
-    filename <- paste0(basename(gsub(".txt.bgz","",obj@dbpath))
+    filename <- paste0(gsub(".txt.bgz","",obj@dbpath)
                        ,suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
+    
+    # if(file.exists(paste0(filename,".bgz"))) message("overwriting file.")
     
     newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size,
                                  dir=dir,filename = filename, 
@@ -1388,10 +1456,13 @@ setMethod("calculateDiffMeth", "methylBaseDB",
       
       # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
       
-      filename <- paste0(basename( gsub("methylBase","methylDiff",
-                                       gsub(".txt.bgz","",.Object@dbpath)
-                                       ))
-                        ,suffix,".txt")
+      filename <- paste0(gsub("methylBase","methylDiff",
+                              gsub(".txt.bgz","",.Object@dbpath)
+                              ),suffix,".txt")
+      
+      filename <- .checkTabixFileExists(filename)
+      
+      filename <- basename(filename)
       
       dbpath <- applyTbxByChunk(.Object@dbpath,dir = 
                                   dir,chunk.size = chunk.size,  
@@ -1478,7 +1549,11 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     
     # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    filename <- paste(basename(gsub(".txt.bgz","",.Object@dbpath)),suffix,".txt")
+    filename <- paste(gsub(".txt.bgz","",.Object@dbpath),suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
                               dir = dir, filename = filename, 
@@ -1643,8 +1718,12 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
       suffix <- paste0("_",args$suffix)
     }
     
-    filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+    filename <- paste0(gsub(".txt.bgz","",object@dbpath)
                        ,suffix,".txt")
+    
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                    ranges=regions,  dir=dir,filename = filename, 
@@ -1741,8 +1820,12 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
               
               
               # filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
-              filename <- paste0(basename(gsub(".txt.bgz","",object@dbpath))
+              filename <- paste0(gsub(".txt.bgz","",object@dbpath)
                                  ,suffix,".txt")
+              
+              filename <- .checkTabixFileExists(filename)
+              
+              filename <- basename(filename)
               
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
@@ -1881,7 +1964,11 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
       
       # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
       
-      filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+      filename <- paste0(gsub(".txt.bgz","",object@dbpath),suffix,".txt")
+      
+      filename <- .checkTabixFileExists(filename)
+      
+      filename <- basename(filename)
       
       newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                      ranges=regions,  dir=dir,
@@ -1982,7 +2069,11 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
               
               # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
               
-              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              filename <- paste0(gsub(".txt.bgz","",object@dbpath),suffix,".txt")
+              
+              filename <- .checkTabixFileExists(filename)
+              
+              filename <- basename(filename)
               
               newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
                                              return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
@@ -2066,8 +2157,11 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
               # filename <- paste0(paste(object@sample.id,collapse = "_"),
               #                    suffix,".txt")
               
-              filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+              filename <- paste0(gsub(".txt.bgz","",object@dbpath),suffix,".txt")
               
+              filename <- .checkTabixFileExists(filename)
+              
+              filename <- basename(filename)
               
               newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                          dir = dir,filename = filename,
@@ -2180,8 +2274,11 @@ setMethod("tileMethylCounts", signature(object="methylBaseDB"),
     
     # filename <- paste0(paste(object@sample.ids,collapse = "_"),suffix,".txt")
     
-    filename <- paste(basename(gsub(".txt.bgz","",object@dbpath)),suffix,".txt")
+    filename <- paste0(gsub(".txt.bgz","",object@dbpath),suffix,".txt")
     
+    filename <- .checkTabixFileExists(filename)
+    
+    filename <- basename(filename)
     
     newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                dir = dir,filename = filename,
