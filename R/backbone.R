@@ -129,12 +129,12 @@ fread.gzipped<-function(filepath,...){
     message(paste("creating directory ",getwd(),"/",tabixDir,sep = ""))
   }
   else{
-    tempdir <- paste(getwd(),"/",dir,sep = "")
-    if(! file.exists(tempdir)){
-      message(paste("creating directory ","/",dir,sep = "","..."))
-      dir.create(tempdir,recursive = TRUE)
-    }
-    dir <- tempdir
+    
+    dir <- normalizePath(dir)
+    if(!dir.exists(dir)){
+        message(paste("creating directory",dir,"..."))
+        dir.create(dir,recursive = TRUE)
+      }
   }
   return(dir)
 }
