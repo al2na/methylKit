@@ -12,8 +12,8 @@
 #include <string>
 #include <map>
 //#include <getopt.h>
-#include "sam.h"
-#include "bgzf.h"
+#include "htslib/sam.h"
+#include "htslib/bgzf.h"
 #include "zlib.h"
 #include <Rcpp.h>
 

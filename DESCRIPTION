@@ -2,7 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 1.7.0
+Version: 1.7.1
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
                     email = "aakalin@gmail.com"),
 	           person("Matthias","Kormaksson", role = "aut"),
@@ -26,7 +26,7 @@ License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
 NeedsCompilation: yes
-LinkingTo: Rcpp, Rhtslib, zlibbioc
+LinkingTo: Rcpp, Rhtslib (>= 1.13.1), zlibbioc
 biocViews: DNAMethylation, Sequencing, MethylSeq
 Depends:
     R (>= 3.3.0),
