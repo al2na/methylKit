@@ -368,6 +368,12 @@ setClass("methylRaw", contains= "data.frame",representation(
 #'                  \code{\link{methylRaw}} objects  } 
 #'                }
 #'                
+#' @section Constructor:\describe{
+#'                  \item{\code{methylRawList(...)}}{combine multiple methylRaw
+#'                  objects supplied in ... into a methylRawList object.}
+#'                }
+#'                
+#'                
 #' @examples
 #' data(methylKit)
 #' 
@@ -380,6 +386,48 @@ setClass("methylRaw", contains= "data.frame",representation(
 #' @rdname methylRawList-class
 #' @export
 setClass("methylRawList", representation(treatment = "numeric"),contains = "list")
+
+### validity
+
+valid.methylRawListObj <- function(object) {
+  
+  
+  # if all elements are methyl
+  if(!all(sapply(object,class) == "methylRaw")){
+    FALSE
+  }
+  else if ( length(object) != length(object@treatment) ){
+    message("The number of samples is different from the number of treatments, ","
+            check the length of 'treatment'")
+    FALSE
+  }
+  else{
+    TRUE
+  }
+  
+}
+
+### constructor function
+
+methylRawList <- function(...,treatment) {
+  
+  listData <- list(...)
+
+  ## check if input is really of type methylRaw 
+  if (length(listData) == 0L) {
+    stop("no methylRaw object given.")
+  } else {
+    if (length(listData) == 1L && is.list(listData[[1L]]))
+      listData <- listData[[1L]]
+    if (!all(sapply(listData, is, "methylRaw")))
+      stop("all elements in '...' must be methylRaw objects")
+  
+  ## just merge if valid
+  mrl <- new("methylRawList", listData, treatment = treatment)
+  if(valid.methylRawListObj(mrl)) return(mrl)
+  }
+}
+  
 
 #' read file(s) to methylRaw or methylRawList objects
 #'

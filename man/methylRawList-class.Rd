@@ -20,6 +20,13 @@ by \code{\link[methylKit]{read}} function.
                }
 }
 
+\section{Constructor}{
+\describe{
+                 \item{\code{methylRawList(...)}}{combine multiple methylRaw
+                 objects supplied in ... into a methylRawList object.}
+               }
+}
+
 \examples{
 data(methylKit)
 
