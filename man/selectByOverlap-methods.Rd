@@ -32,20 +32,22 @@ selectByOverlap(object,ranges)
 \S4method{selectByOverlap}{methylDiffDB}(object, ranges)
 }
 \arguments{
-\item{object}{an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object}
+\item{object}{an \code{\link{methylRaw}},\code{\link{methylRawDB}}, 
+\code{\link{methylRawList}}, \code{\link{methylRawListDB}},
+\code{\link{methylBase}}, \code{\link{methylBaseDB}}, 
+\code{\link{methylDiff}} or \code{\link{methylDiffDB}} object}
 
 \item{ranges}{a GRanges object specifying the regions of interest}
 }
 \value{
-a \code{\link{methylBase}},\code{\link{methylRaw}} or 
-          \code{\link{methylDiff}} object depending on the input object.
+a \code{\link{methylBase}},\code{\link{methylRaw}}, 
+\code{\link{methylRawList}} or \code{\link{methylDiff}} object 
+depending on the input object.
 }
 \description{
-The function selects records from a \code{\link{methylBaseDB}}, 
-\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
-that lie inside the regions given by \code{ranges} of class \code{GRanges} 
-and returns an object of class 
-\code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}}
+The function selects records from any \code{methylKit} object that lie
+inside the regions given by \code{ranges} of class \code{\link{GRanges}} and returns
+an in-memory equivalent of this object
 }
 \examples{
 data(methylKit)
@@ -78,6 +80,18 @@ myBase <- selectByOverlap(methylBaseDB.obj,my.win)
 
 # selects the records that lie inside the regions
 myDiff <- selectByOverlap(methylDiffDB.obj,my.win)
+
+# selects the records that lie inside the regions
+myRaw2 <- selectByOverlap(methylRawList.obj[[1]],my.win)
+
+# selects the records that lie inside the regions
+myRawList2 <- selectByOverlap(methylRawList.obj,my.win)
+
+# selects the records that lie inside the regions
+myBase2 <- selectByOverlap(methylBase.obj,my.win)
+
+# selects the records that lie inside the regions
+myDiff2 <- selectByOverlap(methylDiff.obj,my.win)
 
 
 rm(methylRawListDB.obj)

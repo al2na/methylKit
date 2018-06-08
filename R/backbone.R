@@ -2099,13 +2099,14 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 
 #' selects records of methylDB objects lying inside a GRanges range
 #'
-#' The function selects records from a \code{\link{methylBaseDB}}, 
-#' \code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object 
-#' that lie inside the regions given by \code{ranges} of class \code{GRanges} 
-#' and returns an object of class 
-#' \code{\link{methylBase}}, \code{\link{methylRaw}} or \code{\link{methylDiff}} 
-#' 
-#' @param object an \code{\link{methylBaseDB}},\code{\link{methylRawDB}} or \code{\link{methylDiffDB}} object
+#' The function selects records from any \code{methylKit} object that lie
+#' inside the regions given by \code{ranges} of class \code{\link{GRanges}} and returns
+#' an in-memory equivalent of this object 
+#'
+#' @param object an \code{\link{methylRaw}},\code{\link{methylRawDB}}, 
+#' \code{\link{methylRawList}}, \code{\link{methylRawListDB}},
+#' \code{\link{methylBase}}, \code{\link{methylBaseDB}}, 
+#' \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object
 #' @param ranges a GRanges object specifying the regions of interest
 #' 
 #' @usage selectByOverlap(object,ranges)
@@ -2141,16 +2142,29 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 #' # selects the records that lie inside the regions
 #' myDiff <- selectByOverlap(methylDiffDB.obj,my.win)
 #' 
+#' # selects the records that lie inside the regions
+#' myRaw2 <- selectByOverlap(methylRawList.obj[[1]],my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myRawList2 <- selectByOverlap(methylRawList.obj,my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myBase2 <- selectByOverlap(methylBase.obj,my.win)
+#' 
+#' # selects the records that lie inside the regions
+#' myDiff2 <- selectByOverlap(methylDiff.obj,my.win)
+#' 
 #' 
 #' rm(methylRawListDB.obj)
 #' rm(methylBaseDB.obj)
 #' rm(methylDiffDB.obj)
 #' unlink("methylDB",recursive=TRUE)
-#' 
-#' @return a \code{\link{methylBase}},\code{\link{methylRaw}} or 
-#'           \code{\link{methylDiff}} object depending on the input object.
-#'           
-#' @author Alexander Gosdschan           
+#'
+#' @return a \code{\link{methylBase}},\code{\link{methylRaw}}, 
+#' \code{\link{methylRawList}} or \code{\link{methylDiff}} object 
+#' depending on the input object.
+#'
+#' @author Alexander Gosdschan
 #' @export
 #' @docType methods
 #' @rdname selectByOverlap-methods
