@@ -122,13 +122,16 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
   
   # stop if segmentation produced only one range
   if(length(seg.res)==1) {
-    warning("segmentation produced only one range, no mixture modeling possible")
+    warning("segmentation produced only one range, no mixture modeling possible.")
     seg.res$seg.group <- "1"
     return(seg.res)
   }
   
   # if joining, do not show first clustering
-  if(join.neighbours) diagnostic.plot=FALSE
+  if(join.neighbours) {
+    diagnostic.plot.old = diagnostic.plot
+    diagnostic.plot = FALSE
+  }
   
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
@@ -140,9 +143,9 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
   
   # if joining, show clustering after joining
   if(join.neighbours) {
-      message("joining neighbouring segments")
+      message("joining neighbouring segments and repeating clustering.")
       seg.res <- joinSegmentNeighbours(seg.res)
-      diagnostic.plot=TRUE
+      diagnostic.plot <- diagnostic.plot.old
       
       # get the new density
       args.Mclust[["score.gr"]]=seg.res
