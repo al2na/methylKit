@@ -1,3 +1,20 @@
+methylKit 1.7.2
+--------------
+NEW FUNCTIONS AND FEATURES
+
+* New constructor method methylRawList() can be used to combine 
+  list of methylRaw objects into a methylRawList
+
+IMPROVEMENTS AND BUG FIXES
+* fix bug in methSeg: when joinSegments was activated, 
+  diagnostic plot would always be plotted
+* fixes in selectByOverlap() function: update description, to show that any 
+  methylKit object (tabix or not) can be used with it ;
+  fixed broken method after @subjectHits was not available anymore 
+* fix error in .checkTabixFileExists function, that lead to overwriting of files
+  
+  
+
 methylKit 1.5.3
 --------------
 IMPROVEMENTS AND BUG FIXES
