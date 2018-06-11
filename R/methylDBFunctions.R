@@ -3,7 +3,7 @@
 ## function checks wether a tabix file already exists and 
 ## appends number if file already exists  
 .checkTabixFileExists <- function(tabixfile) {
-  message("checking wether tabix file already exists:")
+  message("\nchecking wether tabix file already exists:")
   tabixfile <- paste0(tabixfile,".bgz")
   message(tabixfile)
   if(file.exists(tabixfile) ) {
@@ -14,9 +14,12 @@
       filename2 = gsub(".txt.bgz",paste0("_",i,".txt.bgz"),tabixfile)
       i = i + 1
     }
-    tabixfile <- gsub(".bgz","",filename2)
+    tabixfile <- filename2
+    message(paste("HINT: consider using 'suffix' argument to write",
+                  "different function calls to different files"))
   } else message("tabix file is new.")
-  message("continuing now ...")
+  tabixfile <- gsub(".bgz","",tabixfile)
+  message("continuing now ...\n")
     
   return(tabixfile)
   
