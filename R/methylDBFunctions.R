@@ -638,6 +638,11 @@ if(save.db) {
     stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")
   }
   
+  if( any(min.per.group > min(table(object@treatment)))  )
+    {
+      stop("min.per.group can not be higher than number of samples in smallest group\n")
+    }
+  
   if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
   # destrand single objects contained in methylRawListDB
   if(destrand) { 

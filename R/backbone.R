@@ -1148,6 +1148,12 @@ setMethod("unite", "methylRawList",
   if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){
     stop("min.per.group should be an integer\n",
          "try providing integers as 1L, 2L,3L etc.\n")}
+            
+  if( min.per.group > min(table(object@treatment))  ){
+    stop("min.per.group can not be higher than\n",
+         "number of samples in smallest group\n")}
+          
+            
   
   #merge raw methylation calls together
   df=getData(object[[1]])
