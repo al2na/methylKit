@@ -2167,54 +2167,43 @@ setMethod("[",signature(x="methylBase", i = "ANY", j="ANY"),
 #' @author Alexander Gosdschan
 #' @export
 #' @docType methods
+#' @importFrom S4Vectors subjectHits
+#' @importFrom IRanges findOverlaps
 #' @rdname selectByOverlap-methods
 setGeneric("selectByOverlap", def=function(object,ranges) 
   standardGeneric("selectByOverlap"))
 
+.selectByOverlap <- function(object, ranges){
+  if( missing(ranges) | (class(ranges) != "GRanges") ) {
+    stop("No ranges specified or given ranges object not of class ", 
+         "GRanges, please check your input!")            }
+  hits <- S4Vectors::subjectHits(IRanges::findOverlaps(ranges,as(object,"GRanges")))
+  
+  return(object[hits])
+}
+
 #' @aliases selectByOverlap,methylRaw-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylRaw",
-          function(object, ranges){
-            
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class ", 
-                   "GRanges, please check your input!")            }
-            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
-            
-            return(object[hits])
-          }
+setMethod("selectByOverlap", c("methylRaw","GRanges"),
+          .selectByOverlap
 )
 
 #' @aliases selectByOverlap,methylRawList-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylRawList",
+setMethod("selectByOverlap", c("methylRawList","GRanges"),
           function(object, ranges){
+
+            new.list <- lapply(object,.selectByOverlap,ranges)
             
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class ", 
-                   "GRanges, please check your input!")
-            }
-            
-            new.list <- lapply(object,selectByOverlap,ranges)
-            
-            new("methylRawList",new.list,treatment=object@treatment)
+            new("methylRawList", new.list, treatment=object@treatment)
             
           }
 )
 
 #' @aliases selectByOverlap,methylBase-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylBase",
-          function(object, ranges){
-            
-            if(missing(ranges) | class(ranges)!="GRanges") {
-              stop("No ranges specified or given ranges object not of class",
-                   "GRanges, please check your input!")
-            }
-            hits <- findOverlaps(ranges,as(object,"GRanges"))@subjectHits
-            
-            return(object[hits])
-          }
+setMethod("selectByOverlap", c("methylBase","GRanges"),
+          .selectByOverlap
 )
 
 
