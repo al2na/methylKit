@@ -3,33 +3,41 @@
 \docType{methods}
 \name{selectByOverlap}
 \alias{selectByOverlap}
+\alias{selectByOverlap,methylRaw,GRanges-method}
 \alias{selectByOverlap,methylRaw-method}
+\alias{selectByOverlap,methylRawList,GRanges-method}
 \alias{selectByOverlap,methylRawList-method}
+\alias{selectByOverlap,methylBase,GRanges-method}
 \alias{selectByOverlap,methylBase-method}
+\alias{selectByOverlap,methylDiff,GRanges-method}
 \alias{selectByOverlap,methylDiff-method}
+\alias{selectByOverlap,methylRawDB,ANY-method}
 \alias{selectByOverlap,methylRawDB-method}
+\alias{selectByOverlap,methylRawListDB,ANY-method}
 \alias{selectByOverlap,methylRawListDB-method}
+\alias{selectByOverlap,methylBaseDB,ANY-method}
 \alias{selectByOverlap,methylBaseDB-method}
+\alias{selectByOverlap,methylDiffDB,ANY-method}
 \alias{selectByOverlap,methylDiffDB-method}
 \title{selects records of methylDB objects lying inside a GRanges range}
 \usage{
 selectByOverlap(object,ranges)
 
-\S4method{selectByOverlap}{methylRaw}(object, ranges)
+\S4method{selectByOverlap}{methylRaw,GRanges}(object, ranges)
 
-\S4method{selectByOverlap}{methylRawList}(object, ranges)
+\S4method{selectByOverlap}{methylRawList,GRanges}(object, ranges)
 
-\S4method{selectByOverlap}{methylBase}(object, ranges)
+\S4method{selectByOverlap}{methylBase,GRanges}(object, ranges)
 
-\S4method{selectByOverlap}{methylDiff}(object, ranges)
+\S4method{selectByOverlap}{methylDiff,GRanges}(object, ranges)
 
-\S4method{selectByOverlap}{methylRawDB}(object, ranges)
+\S4method{selectByOverlap}{methylRawDB,ANY}(object, ranges)
 
-\S4method{selectByOverlap}{methylRawListDB}(object, ranges)
+\S4method{selectByOverlap}{methylRawListDB,ANY}(object, ranges)
 
-\S4method{selectByOverlap}{methylBaseDB}(object, ranges)
+\S4method{selectByOverlap}{methylBaseDB,ANY}(object, ranges)
 
-\S4method{selectByOverlap}{methylDiffDB}(object, ranges)
+\S4method{selectByOverlap}{methylDiffDB,ANY}(object, ranges)
 }
 \arguments{
 \item{object}{an \code{\link{methylRaw}},\code{\link{methylRawDB}}, 
