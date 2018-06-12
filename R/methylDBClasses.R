@@ -1017,7 +1017,7 @@ setMethod("[",signature(x="methylDiffDB", i="ANY", j="ANY"),
 
 #' @aliases selectByOverlap,methylRawDB-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylRawDB",
+setMethod("selectByOverlap", c("methylRawDB","GRanges"),
           function(object, ranges){
             
     if(missing(ranges) | class(ranges)!="GRanges") {
@@ -1042,7 +1042,7 @@ setMethod("selectByOverlap", "methylRawDB",
 
 #' @aliases selectByOverlap,methylRawListDB-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylRawListDB",
+setMethod("selectByOverlap", c("methylRawListDB","GRanges"),
           function(object, ranges){
             
     if(missing(ranges) | class(ranges)!="GRanges") {
@@ -1059,7 +1059,7 @@ setMethod("selectByOverlap", "methylRawListDB",
 
 #' @aliases selectByOverlap,methylBaseDB-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylBaseDB",
+setMethod("selectByOverlap", c("methylBaseDB","GRanges"),
           function(object, ranges){
   
 if(missing(ranges) | class(ranges)!="GRanges") {
@@ -1086,7 +1086,7 @@ new("methylBase",.setMethylDBNames(df,"methylBaseDB"),
 
 #' @aliases selectByOverlap,methylDiffDB-method
 #' @rdname selectByOverlap-methods
-setMethod("selectByOverlap", "methylDiffDB",
+setMethod("selectByOverlap", c("methylDiffDB","GRanges"),
           function(object, ranges){
             
   if(missing(ranges) | class(ranges)!="GRanges") {
