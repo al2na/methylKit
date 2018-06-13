@@ -1,3 +1,11 @@
+methylKit 1.7.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* selectByOverlap(): update description; refine method signatures to 
+  only support GRanges as range argument; update NAMESPACE to import 
+  subjectHits() method from S4Vectors 
+
+
 methylKit 1.7.2
 --------------
 NEW FUNCTIONS AND FEATURES
