@@ -23,6 +23,13 @@
 #' @param join.neighbours if TRUE neighbouring segments that cluster to the same 
 #'        seg.group are joined by extending the ranges, summing up num.marks and
 #'        averaging over seg.means.
+#' @param estimate.params.density a numeric value indicating percentage of regions
+#'        to sample and then estimate initial parameters (G and modelName) for a
+#'        function to calculate density (\code{\link[mclust]{densityMclust}}). 
+#'        The value can be between 0 and 1, e.g. 0.1 means that 10% of data will 
+#'        be used for sampling, otherwise it uses the whole dataset (Default: 1) 
+#'        and it's time consuming on large datasets. If 0 or 1 then the function 
+#'        will be executed without sampling. 
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 #'        package, or to \code{\link[mclust]{densityMclust}}
 #'        in Mclust package, could be used to fine tune the segmentation algorithm.
@@ -62,14 +69,15 @@
 #' 
 #' unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 #' 
-#' @author Altuna Akalin, contributions by Arsene Wabo
+#' @author Altuna Akalin, contributions by Arsene Waboand Katarzyna Wreczycka
 #' 
 #' @seealso \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}} 
 #' 
 #' @export
 #' @docType methods
 #' @rdname methSeg       
-methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
+methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
+                  estimate.params.density=1, ...){
   
   dots <- list(...)  
   
@@ -133,10 +141,25 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
     diagnostic.plot = FALSE
   }
   
-  # decide on number of components/groups
-  args.Mclust[["score.gr"]]=seg.res
-  args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-  dens=do.call("densityFind", args.Mclust  )
+  if(estimate.params.density>0 & estimate.params.density<1 ){
+    
+    nbr.sample = floor(length(seg.res) * estimate.params.density)
+    # estimate parameters for mclust
+    args.Mclust.esti = args.Mclust
+    args.Mclust.esti[["score.gr"]]=seg.res[ sample(1:length(seg.res), nbr.sample) ]
+    args.Mclust.esti[["diagnostic.plot"]]=FALSE
+    dens_estimate=do.call("densityFind", args.Mclust.esti)
+
+    args.Mclust[["modelName"]] = dens_estimate$modelName
+    args.Mclust[["G"]] = 1:dens_estimate$G
+   }  
+  
+  if(!join.neighbours) {
+    # decide on number of components/groups
+    args.Mclust[["score.gr"]]=seg.res
+    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+    dens=do.call("densityFind", args.Mclust  )
+  }
   
   # add components/group ids 
   mcols(seg.res)$seg.group=as.character(dens$classification)
