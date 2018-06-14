@@ -55,6 +55,12 @@ test_that("check if joining neighbours works" ,{
   expect_true(all(rle(res2$seg.group)$lengths == 1))
 })
 
+test_that("check if initialization works" ,{
+  expect_is(methSeg(methylDiff.obj,diagnostic.plot = FALSE,verbose=FALSE),"GRanges")
+  expect_is(methSeg(methylDiff.obj,diagnostic.plot = FALSE,verbose=FALSE,initialization=list(subset = sample(1:13,9,replace = FALSE))),"GRanges")
+  expect_error(methSeg(methylDiff.obj,diagnostic.plot = FALSE,verbose=FALSE,initialize.on.subset = 0.6))
+  expect_is(methSeg(methylDiff.obj,diagnostic.plot = FALSE,verbose=FALSE,initialize.on.subset = 10),"GRanges")
+})
 
 seg <- methSeg(tileRaw,diagnostic.plot = FALSE)
 methSeg2bed(segments = seg, filename = "test.bed")
