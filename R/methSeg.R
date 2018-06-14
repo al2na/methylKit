@@ -69,7 +69,8 @@
 #' 
 #' unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 #' 
-#' @author Altuna Akalin, contributions by Arsene Wabo
+#' @author Altuna Akalin, contributions by Arsene Wabo and Katarzyna
+#' Wreczycka
 #' 
 #' @seealso \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}} 
 #' 
