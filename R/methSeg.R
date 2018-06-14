@@ -23,6 +23,13 @@
 #' @param join.neighbours if TRUE neighbouring segments that cluster to the same 
 #'        seg.group are joined by extending the ranges, summing up num.marks and
 #'        averaging over seg.means.
+#' @param estimate.params.density a numeric value indicating percentage of regions
+#'        to sample and then estimate initial parameters (G and modelName) for a
+#'        function to calculate density (\code{\link[mclust]{densityMclust}}). 
+#'        The value can be between 0 and 1, e.g. 0.1 means that 10% of data will 
+#'        be used for sampling, otherwise it uses the whole dataset (Default: 1) 
+#'        and it's time consuming on large datasets. If 0 or 1 then the function 
+#'        will be executed without sampling. 
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 #'        package, or to \code{\link[mclust]{densityMclust}}
 #'        in Mclust package, could be used to fine tune the segmentation algorithm.
@@ -69,22 +76,23 @@
 #' @export
 #' @docType methods
 #' @rdname methSeg       
-methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
+methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
+                  estimate.params.density=1, ...){
   
   dots <- list(...)  
   
   
   ##coerce object to granges
   if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
-      obj= as(obj,"GRanges")
-      ## calculate methylation score 
-      mcols(obj)$meth=100*obj$numCs/obj$coverage
-      ## select only required mcol
-      obj = obj[,"meth"]
+    obj= as(obj,"GRanges")
+    ## calculate methylation score 
+    mcols(obj)$meth=100*obj$numCs/obj$coverage
+    ## select only required mcol
+    obj = obj[,"meth"]
   }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
-      obj = as(obj,"GRanges")
-      ## use methylation difference as score
-      obj = obj[,"meth.diff"]
+    obj = as(obj,"GRanges")
+    ## use methylation difference as score
+    obj = obj[,"meth.diff"]
   }else if (class(obj) != "GRanges"){
     stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
@@ -133,27 +141,42 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,  ...){
     diagnostic.plot = FALSE
   }
   
+  if(estimate.params.density>0 & estimate.params.density<1 ){
+    
+    nbr.sample = floor(length(seg.res) * estimate.params.density)
+    # estimate parameters for mclust
+    args.Mclust.esti = args.Mclust
+    args.Mclust.esti[["score.gr"]]=seg.res[ sample(1:length(seg.res), nbr.sample) ]
+    args.Mclust.esti[["diagnostic.plot"]]=FALSE
+    dens_estimate=do.call("densityFind", args.Mclust.esti)
+    
+    args.Mclust[["modelName"]] = dens_estimate$modelName
+    args.Mclust[["G"]] = 1:dens_estimate$G
+  }  
+  
+  
   # decide on number of components/groups
   args.Mclust[["score.gr"]]=seg.res
   args.Mclust[["diagnostic.plot"]]=diagnostic.plot
   dens=do.call("densityFind", args.Mclust  )
+  
   
   # add components/group ids 
   mcols(seg.res)$seg.group=as.character(dens$classification)
   
   # if joining, show clustering after joining
   if(join.neighbours) {
-      message("joining neighbouring segments and repeating clustering.")
-      seg.res <- joinSegmentNeighbours(seg.res)
-      diagnostic.plot <- diagnostic.plot.old
-      
-      # get the new density
-      args.Mclust[["score.gr"]]=seg.res
-      args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-      # skip second progress bar
-      args.Mclust[["verbose"]]=FALSE
-      dens=do.call("densityFind", args.Mclust  )
-      
+    message("joining neighbouring segments and repeating clustering.")
+    seg.res <- joinSegmentNeighbours(seg.res)
+    diagnostic.plot <- diagnostic.plot.old
+    
+    # get the new density
+    args.Mclust[["score.gr"]]=seg.res
+    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+    # skip second progress bar
+    args.Mclust[["verbose"]]=FALSE
+    dens=do.call("densityFind", args.Mclust  )
+    
   }
   
   seg.res
@@ -232,9 +255,9 @@ diagPlot<-function(dens,score.gr){
 #' @docType methods
 #' @rdname methSeg2bed
 methSeg2bed<-function(segments,filename,
-trackLine="track name='meth segments' description='meth segments' itemRgb=On",
-colramp=colorRamp(c("gray","green", "darkgreen"))
-                        ){
+                      trackLine="track name='meth segments' description='meth segments' itemRgb=On",
+                      colramp=colorRamp(c("gray","green", "darkgreen"))
+){
   if(class(segments)!="GRanges"){
     stop("segments object has to be of class GRanges")
   }
