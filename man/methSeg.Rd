@@ -5,7 +5,8 @@
 \alias{methSeg}
 \title{Segment methylation or differential methylation profile}
 \usage{
-methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE, ...)
+methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
+  estimate.params.density = 1, ...)
 }
 \arguments{
 \item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
@@ -24,6 +25,14 @@ in mixture modeling.}
 \item{join.neighbours}{if TRUE neighbouring segments that cluster to the same 
 seg.group are joined by extending the ranges, summing up num.marks and
 averaging over seg.means.}
+
+\item{estimate.params.density}{a numeric value indicating percentage of regions
+to sample and then estimate initial parameters (G and modelName) for a
+function to calculate density (\code{\link[mclust]{densityMclust}}). 
+The value can be between 0 and 1, e.g. 0.1 means that 10% of data will 
+be used for sampling, otherwise it uses the whole dataset (Default: 1) 
+and it's time consuming on large datasets. If 0 or 1 then the function 
+will be executed without sampling.}
 
 \item{...}{arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 package, or to \code{\link[mclust]{densityMclust}}
