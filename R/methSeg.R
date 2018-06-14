@@ -69,7 +69,7 @@
 #' 
 #' unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 #' 
-#' @author Altuna Akalin, contributions by Arsene Wabo
+#' @author Altuna Akalin, contributions by Arsene Waboand Katarzyna Wreczycka
 #' 
 #' @seealso \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}} 
 #' 
@@ -149,6 +149,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     args.Mclust.esti[["score.gr"]]=seg.res[ sample(1:length(seg.res), nbr.sample) ]
     args.Mclust.esti[["diagnostic.plot"]]=FALSE
     dens_estimate=do.call("densityFind", args.Mclust.esti)
+<<<<<<< HEAD
     
     args.Mclust[["modelName"]] = dens_estimate$modelName
     args.Mclust[["G"]] = 1:dens_estimate$G
@@ -159,6 +160,19 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
   args.Mclust[["score.gr"]]=seg.res
   args.Mclust[["diagnostic.plot"]]=diagnostic.plot
   dens=do.call("densityFind", args.Mclust  )
+=======
+
+    args.Mclust[["modelName"]] = dens_estimate$modelName
+    args.Mclust[["G"]] = 1:dens_estimate$G
+   }  
+  
+  if(!join.neighbours) {
+    # decide on number of components/groups
+    args.Mclust[["score.gr"]]=seg.res
+    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+    dens=do.call("densityFind", args.Mclust  )
+  }
+>>>>>>> 7b26e193a53e45123d393e892effc41e2168da3d
   
   
   # add components/group ids 
