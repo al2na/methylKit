@@ -87,5 +87,6 @@ unlink(list.files(pattern="H1.chr21.chr22",full.names=TRUE))
 \code{\link{methSeg2bed}}, \code{\link{joinSegmentNeighbours}}
 }
 \author{
-Altuna Akalin, contributions by Arsene Wabo
+Altuna Akalin, contributions by Arsene Wabo and Katarzyna
+Wreczycka
 }
