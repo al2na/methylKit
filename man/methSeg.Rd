@@ -56,7 +56,7 @@ To be sure that the algorithm will work on your data,
 \examples{
 
 \donttest{
- download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
+ download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
                destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")
