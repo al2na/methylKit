@@ -167,7 +167,6 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     message(paste("initializing clustering with",nbr.sample,"out of",length(seg.res),"total segments."))
     # estimate parameters for mclust
     sub <- sample(1:length(seg.res), nbr.sample,replace = FALSE)
-    if(length(sub) < 9 ){stop("too few samples, increase the size of subset.") }
     args.Mclust[["initialization"]]=list(subset = sub)
   }  
   
