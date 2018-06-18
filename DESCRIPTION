@@ -2,14 +2,15 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(person("Altuna", "Akalin", role = c("aut", "cre"),
                     email = "aakalin@gmail.com"),
 	           person("Matthias","Kormaksson", role = "aut"),
 	           person("Sheng","Li", role = "aut"),
 	           person("Arsene", "Wabo", role = "ctb"),
 	           person("Adrian", "Bierling", role= "aut"),
-	           person("Alexander","Gosdschan", role="aut"))
+	           person("Alexander","Gosdschan", role="aut"),
+	           person("Katarzyna","Wreczycka", role="ctb"))
 Author: Altuna Akalin [aut, cre], Matthias Kormaksson [aut], 
     Sheng Li [aut], Arsene Wabo [ctb], Adrian Bierling [aut], 
     Alexander Gosdschan [aut]
