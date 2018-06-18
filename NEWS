@@ -1,7 +1,14 @@
+methylKit 1.7.6
+--------------
+NEW FUNCTIONS AND FEATURES
+* methSeg(): introduce parameter `initialize.on.subset` to subset data
+  for initialization of mixture modeling; update description; add tests
+
 methylKit 1.7.4
 --------------
 IMPROVEMENTS AND BUG FIXES
 * update link to test-file for methSeg() function
+
 
 methylKit 1.7.3
 --------------
