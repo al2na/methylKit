@@ -61,6 +61,15 @@ as high or low methylated regions.
 \details{
 To be sure that the algorithm will work on your data, 
        the object should have at least 5000 records
+
+After initial segmentation with fastseg(), segments are clustered 
+       into self-similar groups based on their mean methylation profile 
+       using mixture modeling. Mixture modeling estimates the initial 
+       parameters of the distributions by using the whole dataset. 
+       If "initialize.on.subset" argument set as described, the function 
+       will use a subset of the data to initialize the parameters of the 
+       mixture modeling prior to the Expectation-maximization (EM) algorithm 
+       used by \code{\link{Mclust}} package.
 }
 \examples{
 
