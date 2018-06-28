@@ -484,7 +484,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 }
 
 
-# applyTbxByCHr
+# applyTbxByChr
 #' Apply a function on tabix files chromosome by chromosome 
 #' 
 #' The function reads a tabix file chromosome by chromosome and applies 
@@ -511,7 +511,8 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @return either a path to a tabix or text file, or a data frame or data.table
 #' @noRd
 applyTbxByChr<-function(tbxFile,chrs,dir,filename,
-                        return.type=c("tabix","data.frame","data.table"),
+                        return.type=c("tabix","data.frame","data.table",
+                                      "GRanges"),
                         FUN,...,mc.cores=1){
   
   return.type <- match.arg(return.type)
@@ -519,7 +520,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
   if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
   if(missing(chrs)) { chrs = Rsamtools::seqnamesTabix(tbxFile)}
   if(return.type =="tabix"){
-   
+    
     # create a custom function that contains the function
     # to be applied
     myFunc<-function(chr,tbxFile,dir,filename,FUN,...){
@@ -539,11 +540,11 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
     res=mclapply(chrs,myFunc,tbxFile,dir,filename2,FUN,...,mc.cores = mc.cores)
     
     # collect & cat temp files,then make tabix
-
+    
     path <- catsub2tabix(dir,filename2,filename)
     
     return(gsub(".tbi","",path))
-
+    
     
   }else if(return.type=="data.frame"){
     
@@ -558,7 +559,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
     
     # collect and return
     data.frame(rbindlist(res))
-  }else{
+  }else if(return.type=="data.table"){
     
     myFunc3<-function(chr,tbxFile,FUN,...){
       data=getTabixByChr(chr = chr,tbxFile,return.type="data.table")
@@ -569,6 +570,17 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
     
     # collect and return
     rbindlist(res)
+  }else{
+    myFunc4<-function(chr,tbxFile,FUN,...){
+      data=getTabixByChr(chr = chr,tbxFile,return.type="GRanges") 
+      res=FUN(data,...)  
+    }
+    
+    res=mclapply(chrs,myFunc4,tbxFile,FUN,...,mc.cores = mc.cores)
+    
+    # collect and return
+    # suppressWarnings -> combined objs dont have chrs in common
+    suppressWarnings( do.call("c", res) )
   }
 }
 
