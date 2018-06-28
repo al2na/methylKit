@@ -6,7 +6,7 @@
 \title{Segment methylation or differential methylation profile}
 \usage{
 methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
-  initialize.on.subset = 1, ...)
+  initialize.on.subset = 1, cores = 1, ...)
 }
 \arguments{
 \item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
@@ -33,6 +33,9 @@ e.g. 0.1 means that 10% of data will be used for sampling, or be an
 integer higher than 1 to define the number of regions to sample. 
 By default uses the whole dataset, which can be time consuming on 
 large datasets. (Default: 1)}
+
+\item{cores}{number of cores. The function is parallelized per chromosome
+(default: 1).}
 
 \item{...}{arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 package, or to \code{\link[mclust]{densityMclust}}
@@ -74,7 +77,7 @@ After initial segmentation with fastseg(), segments are clustered
 \examples{
 
 \donttest{
- download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+ download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
                destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")
