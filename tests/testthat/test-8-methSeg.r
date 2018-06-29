@@ -37,9 +37,9 @@ test_that("check if methSeg with cores > 1 is the same as cores=1 (non-tabix fil
   expect_equal(a,b)
 })
 
-methylRawDB.obj <- methRead(
+methylRawDB.obj <- suppressMessages( methRead(
   system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-  sample.id = "ctrl1", assembly = "hg18")
+  sample.id = "ctrl1", assembly = "hg18", dbtype="tabix") )
 
 test_that("check if methSeg with cores > 1 is the same as cores=1 (tabix file)" ,{
   a=methSeg(methylRawDB.obj,diagnostic.plot = FALSE)

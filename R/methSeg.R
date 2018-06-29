@@ -31,7 +31,6 @@
   if(length(seg.res)==1) {
     warning("segmentation produced only one range, no mixture modeling possible.")
     seg.res$seg.group <- "1"
-    return(seg.res)
   }
   return(seg.res)
 }
@@ -135,7 +134,7 @@
 #'        integer higher than 1 to define the number of regions to sample. 
 #'        By default uses the whole dataset, which can be time consuming on 
 #'        large datasets. (Default: 1)
-#' @param cores number of cores. The function is parallelized per chromosome
+#' @param mc.cores number of cores. The function is parallelized per chromosome
 #'        (default: 1).
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 #'        package, or to \code{\link[mclust]{densityMclust}}
@@ -196,11 +195,11 @@
 #' @rdname methSeg       
 methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
                   initialize.on.subset=1,
-                  cores=1, ...){
+                  mc.cores=1, ...){
   
   # 1. Run segmentation
   
-  if(cores==1){
+  if(mc.cores==1){
     
     ##coerce object to granges
     if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
@@ -225,7 +224,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     seg.res = .run.fastseg(obj)
   }
   
-  if(cores>1){
+  if(mc.cores>1){
     
     ## Non-tabix files  
     if (class(obj)=="methylDiff" | class(obj)=="methylRaw" | 
@@ -254,7 +253,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       # run methSeg on chromosomes (Could be in parallel or not)
       seg.res.list <- mclapply(chrs, function(chr){
         seg.res = .run.fastseg(obj[seqnames(obj)==chr])
-      }, mc.cores=cores)
+      }, mc.cores=mc.cores)
       
       # Merge resulting segments again to whole genome.
       # suppressWarnings -> combined objs dont have chrs in common
@@ -263,24 +262,16 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       ## Tabix files
     } else if(class(obj)=="methylDiffDB" | class(obj)=="methylRawDB"){
       
-      .run.fastseg.tabix = function(gr0, ...){
+      .run.fastseg.tabix = function(gr0, class0, ...){
         
         # adjust colnames of input GRanges to 
         # methylKit naming convention
         df2getcolnames = as.data.frame(gr0[1])
         df2getcolnames$width = NULL 
-        methylKit:::.setMethylDBNames(df2getcolnames)
+        print(class0)
+        .setMethylDBNames(df2getcolnames, class0)
         names(mcols(gr0)) = colnames(df2getcolnames)[5:ncol(df2getcolnames)]
         
-        if("coverage" %in% names(mcols(gr0))){
-          gr0$meth = 100*gr0$numCs/gr0$coverage
-          gr0 = gr0[,"meth"]
-        }else if("meth.diff" %in% names(mcols(gr0))){
-          gr0 = gr0[,"meth.diff"]
-        }else if (class(obj) != "GRanges"){
-          stop("only methylRaw or methylDiff objects ", 
-               "or GRanges objects can be used in this function")
-        }
         # destrand
         strand(gr0) <- "*"
         
@@ -290,8 +281,9 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       seg.res <- applyTbxByChr(obj@dbpath,
                                return.type = "GRanges",
                                FUN = .run.fastseg.tabix,
+                               class = class(obj),
                                ...,
-                               mc.cores = cores)
+                               mc.cores = mc.cores)
     }
   }
   
@@ -302,7 +294,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
                           diagnostic.plot=diagnostic.plot, 
                           join.neighbours=join.neighbours,
                           initialize.on.subset=initialize.on.subset,
-                          cores=cores, ...)
+                          ...)
   }
   return(seg.res)
 }

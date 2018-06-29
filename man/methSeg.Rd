@@ -6,7 +6,7 @@
 \title{Segment methylation or differential methylation profile}
 \usage{
 methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
-  initialize.on.subset = 1, cores = 1, ...)
+  initialize.on.subset = 1, mc.cores = 1, ...)
 }
 \arguments{
 \item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
@@ -34,7 +34,7 @@ integer higher than 1 to define the number of regions to sample.
 By default uses the whole dataset, which can be time consuming on 
 large datasets. (Default: 1)}
 
-\item{cores}{number of cores. The function is parallelized per chromosome
+\item{mc.cores}{number of cores. The function is parallelized per chromosome
 (default: 1).}
 
 \item{...}{arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
