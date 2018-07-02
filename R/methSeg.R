@@ -1,5 +1,8 @@
 # segmentation functions 
 
+#' # Segment methylation calls. 
+#' Run fastseg GRanges object `obj`
+#' with additional parameters in `...`.
 .run.fastseg = function(obj, ...){
   
   dots <- list(...)
@@ -35,7 +38,12 @@
   return(seg.res)
 }
 
-
+#' # Use mixture modeling for the density function estimated 
+#' # and BIC criterion used to decide the optimum number of components
+#' # in mixture modeling.
+#' Run mclust::densityMclust using GRanges object `seg.res`, look for description
+#' of `join.neighbours`, `initialize.on.subset` and other parameters
+#' in methylKit methSeg.
 .run.mclust = function(seg.res, diagnostic.plot=TRUE, join.neighbours=FALSE,
                        initialize.on.subset=1, ...){
   
@@ -197,7 +205,7 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
                   initialize.on.subset=1,
                   mc.cores=1, ...){
   
-  # 1. Run segmentation
+  # 1. Run segmentation using fastseg
   
   if(mc.cores==1){
     
@@ -252,6 +260,8 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       # Split the input object based on chromosome
       # run methSeg on chromosomes (Could be in parallel or not)
       seg.res.list <- mclapply(chrs, function(chr){
+        
+        # Run segmentation
         seg.res = .run.fastseg(obj[seqnames(obj)==chr])
       }, mc.cores=mc.cores)
       
@@ -264,8 +274,8 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       
       .run.fastseg.tabix = function(gr0, class0, ...){
         
-        # adjust colnames of input GRanges to 
-        # methylKit naming convention
+        # rename names of meta columns of input GRanges `gr0` to 
+        # methylKit naming convention (such as e.g. coverage, numCs, numTs)
         df2getcolnames = as.data.frame(gr0[1])
         df2getcolnames$width = NULL 
         print(class0)
@@ -275,9 +285,11 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
         # destrand
         strand(gr0) <- "*"
         
+        # Run segmentation
         .run.fastseg(gr0, ...)
       }
       
+      # Run segmentation for each chromosome
       seg.res <- applyTbxByChr(obj@dbpath,
                                return.type = "GRanges",
                                FUN = .run.fastseg.tabix,
@@ -287,7 +299,8 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     }
   }
   
-  # 2. Density Estimation via Model-Based Clustering
+  # 2. Density Estimation via Model-Based Clustering using
+  #     mclust::densityMclust function
   
   if( length(seg.res) > 1 ){
     seg.res = .run.mclust(seg.res,
