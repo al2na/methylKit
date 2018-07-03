@@ -58,6 +58,7 @@
     diagnostic.plot = FALSE
   }
   
+  # Run subsampling of segments before performing the mixture modeling
   if("initialization" %in% names(args.Mclust)){
     if("subset" %in% names(args.Mclust[["initialization"]])) {
       if(length(args.Mclust[["initialization"]][["subset"]]) < 9 ){
@@ -105,6 +106,9 @@
     args.Mclust[["diagnostic.plot"]]=diagnostic.plot
     # skip second progress bar
     args.Mclust[["verbose"]]=FALSE
+    # do not run subsampling of segments
+    args.Mclust[["initialization"]]<-NULL
+    
     dens=do.call("densityFind", args.Mclust  )
     
   }
