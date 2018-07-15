@@ -259,7 +259,9 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
       }
       # destrand
       strand(obj) <- "*"
-      
+
+      # keep only seqlevels that are non-empty
+      seqlevels(obj) <- seqlevelsInUse(obj)
       chrs = seqlevels(obj)
       # Split the input object based on chromosome
       # run methSeg on chromosomes (Could be in parallel or not)
