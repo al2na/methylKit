@@ -25,6 +25,27 @@ test_that("check if methSeg returns error for methylBase objects" ,{
   expect_error(methSeg(methylBase.obj,diagnostic.plot = FALSE))
 })
 
+test_that("check if methSeg with cores > 1 is the same as cores=1" ,{
+  a=methSeg(methylRawList.obj[[3]],diagnostic.plot = FALSE)
+  b=methSeg(methylRawList.obj[[3]],diagnostic.plot = FALSE, cores=2)
+  expect_equal(a,b)
+})
+
+test_that("check if methSeg with cores > 1 is the same as cores=1 (non-tabix file)" ,{
+  a=methSeg(methylRawList.obj[[3]],diagnostic.plot = FALSE)
+  b=methSeg(methylRawList.obj[[3]],diagnostic.plot = FALSE, cores=2)
+  expect_equal(a,b)
+})
+
+methylRawDB.obj <- suppressMessages( methRead(
+  system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
+  sample.id = "ctrl1", assembly = "hg18", dbtype="tabix") )
+
+test_that("check if methSeg with cores > 1 is the same as cores=1 (tabix file)" ,{
+  a=methSeg(methylRawDB.obj,diagnostic.plot = FALSE)
+  b=methSeg(methylRawDB.obj,diagnostic.plot = FALSE, cores=2)
+  expect_equal(a,b)
+})
 
 gr = as(methylRawList.obj[[1]],"GRanges")
 mcols(gr)$meth=100*gr$numCs/gr$coverage

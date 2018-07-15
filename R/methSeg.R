@@ -1,5 +1,121 @@
 # segmentation functions 
 
+#' # Segment methylation calls. 
+#' Run fastseg GRanges object `obj`
+#' with additional parameters in `...`.
+.run.fastseg = function(obj, ...){
+  
+  dots <- list(...)
+  
+  ## check wether obj contains at least one metacol 
+  if(ncol(elementMetadata(obj))<1)
+    stop("GRanges does not have any meta column.")
+  
+  ## check wether obj contains is sorted by position
+  if(is.unsorted(obj,ignore.strand=TRUE)) {
+    obj <- sort(obj,ignore.strand=TRUE)
+    message("Object not sorted by position, sorting now.")
+  }
+  
+  ## check wether obj contains at least two ranges else stop
+  if(length(obj)<=1)
+    stop("segmentation requires at least two ranges.")
+  
+  # match argument names to fastseg arguments
+  args.fastseg=dots[names(dots) %in% names(formals(fastseg)[-1] ) ]  
+  
+  args.fastseg[["x"]]=obj
+  
+  # do the segmentation
+  #seg.res=fastseg(obj)
+  seg.res <- do.call("fastseg", args.fastseg)
+  
+  # stop if segmentation produced only one range
+  if(length(seg.res)==1) {
+    warning("segmentation produced only one range, no mixture modeling possible.")
+    seg.res$seg.group <- "1"
+  }
+  return(seg.res)
+}
+
+#' # Use mixture modeling for the density function estimated 
+#' # and BIC criterion used to decide the optimum number of components
+#' # in mixture modeling.
+#' Run mclust::densityMclust using GRanges object `seg.res`, look for description
+#' of `join.neighbours`, `initialize.on.subset` and other parameters
+#' in methylKit methSeg.
+.run.mclust = function(seg.res, diagnostic.plot=TRUE, join.neighbours=FALSE,
+                       initialize.on.subset=1, ...){
+  
+  dots <- list(...)
+  
+  # match argument names to Mclust
+  args.Mclust=dots[names(dots) %in% names(formals(Mclust)[-1])  ]
+  
+  # if joining, do not show first clustering
+  if(join.neighbours) {
+    diagnostic.plot.old = diagnostic.plot
+    diagnostic.plot = FALSE
+  }
+  
+  # Run subsampling of segments before performing the mixture modeling
+  if("initialization" %in% names(args.Mclust)){
+    if("subset" %in% names(args.Mclust[["initialization"]])) {
+      if(length(args.Mclust[["initialization"]][["subset"]]) < 9 ){
+        stop("too few samples, increase the size of subset.") 
+      }
+      message(paste("initializing clustering with",
+                    length(args.Mclust[["initialization"]][["subset"]]),
+                    "segments."))
+      initialize.on.subset = 1
+    }
+  }
+  
+  if(initialize.on.subset != 1 && initialize.on.subset > 0 ) {
+    
+    if( initialize.on.subset > 0 & initialize.on.subset < 1 )
+      nbr.sample = floor(length(seg.res) * initialize.on.subset)
+    
+    if( initialize.on.subset > 1) 
+      nbr.sample = initialize.on.subset
+    
+    if( nbr.sample < 9 ){stop("too few samples, increase the size of subset.") }
+    
+    message(paste("initializing clustering with",nbr.sample,"out of",length(seg.res),"total segments."))
+    # estimate parameters for mclust
+    sub <- sample(1:length(seg.res), nbr.sample,replace = FALSE)
+    args.Mclust[["initialization"]]=list(subset = sub)
+  }  
+  
+  # decide on number of components/groups
+  args.Mclust[["score.gr"]]=seg.res
+  args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+  dens=do.call("densityFind", args.Mclust  )
+  
+  # add components/group ids 
+  mcols(seg.res)$seg.group=as.character(dens$classification)
+  
+  # if joining, show clustering after joining
+  if(join.neighbours) {
+    message("joining neighbouring segments and repeating clustering.")
+    seg.res <- joinSegmentNeighbours(seg.res)
+    diagnostic.plot <- diagnostic.plot.old
+    
+    # get the new density
+    args.Mclust[["score.gr"]]=seg.res
+    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+    # skip second progress bar
+    args.Mclust[["verbose"]]=FALSE
+    # do not run subsampling of segments
+    args.Mclust[["initialization"]]<-NULL
+    
+    dens=do.call("densityFind", args.Mclust  )
+    
+  }
+  return(seg.res)
+}
+
+
 #' Segment methylation or differential methylation profile
 #' 
 #' The function uses a segmentation algorithm (\code{\link[fastseg]{fastseg}}) 
@@ -30,6 +146,8 @@
 #'        integer higher than 1 to define the number of regions to sample. 
 #'        By default uses the whole dataset, which can be time consuming on 
 #'        large datasets. (Default: 1)
+#' @param mc.cores number of cores. The function is parallelized per chromosome
+#'        (default: 1).
 #' @param ... arguments to \code{\link[fastseg]{fastseg}} function in fastseg 
 #'        package, or to \code{\link[mclust]{densityMclust}}
 #'        in Mclust package, could be used to fine tune the segmentation algorithm.
@@ -88,125 +206,118 @@
 #' @docType methods
 #' @rdname methSeg       
 methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
-                  initialize.on.subset=1, ...){
+                  initialize.on.subset=1,
+                  mc.cores=1, ...){
   
-  dots <- list(...)  
+  # 1. Run segmentation using fastseg
   
-  
-  ##coerce object to granges
-  if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
-    obj= as(obj,"GRanges")
-    ## calculate methylation score 
-    mcols(obj)$meth=100*obj$numCs/obj$coverage
-    ## select only required mcol
-    obj = obj[,"meth"]
-  }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
-    obj = as(obj,"GRanges")
-    ## use methylation difference as score
-    obj = obj[,"meth.diff"]
-  }else if (class(obj) != "GRanges"){
-    stop("only methylRaw or methylDiff objects ", 
-         "or GRanges objects can be used in this function")
+  if(mc.cores==1){
+    
+    ##coerce object to granges
+    if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
+      obj= as(obj,"GRanges")
+      ## calculate methylation score 
+      mcols(obj)$meth=100*obj$numCs/obj$coverage
+      ## select only required mcol
+      obj = obj[,"meth"]
+    }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
+      obj = as(obj,"GRanges")
+      ## use methylation difference as score
+      obj = obj[,"meth.diff"]
+    }else if (class(obj) != "GRanges"){
+      stop("only methylRaw or methylDiff objects ", 
+           "or GRanges objects can be used in this function")
+    }
+    
+    # destrand
+    strand(obj) <- "*"
+    
+    # Run segmentation
+    seg.res = .run.fastseg(obj)
   }
   
-  # destrand
-  strand(obj) <- "*"
-  
-  ## check wether obj contains at least one metacol 
-  if(ncol(elementMetadata(obj))<1)
-    stop("GRanges does not have any meta column.")
-  
-  ## check wether obj contains is sorted by position
-  if(is.unsorted(obj,ignore.strand=TRUE)) {
-    obj <- sort(obj,ignore.strand=TRUE)
-    message("Object not sorted by position, sorting now.")
-  }
-  
-  ## check wether obj contains at least two ranges else stop
-  if(length(obj)<=1)
-    stop("segmentation requires at least two ranges.")
-  
-  # match argument names to fastseg arguments
-  args.fastseg=dots[names(dots) %in% names(formals(fastseg)[-1] ) ]  
-  
-  # match argument names to Mclust
-  args.Mclust=dots[names(dots) %in% names(formals(Mclust)[-1])  ]
-  
-  args.fastseg[["x"]]=obj
-  
-  # do the segmentation
-  #seg.res=fastseg(obj)
-  seg.res <- do.call("fastseg", args.fastseg)
-  #seg.res <- do.call("fastseg2", args.fastseg)
-  
-  # stop if segmentation produced only one range
-  if(length(seg.res)==1) {
-    warning("segmentation produced only one range, no mixture modeling possible.")
-    seg.res$seg.group <- "1"
-    return(seg.res)
-  }
-  
-  # if joining, do not show first clustering
-  if(join.neighbours) {
-    diagnostic.plot.old = diagnostic.plot
-    diagnostic.plot = FALSE
-  }
-  
-  if("initialization" %in% names(args.Mclust)){
-    if("subset" %in% names(args.Mclust[["initialization"]])) {
-      if(length(args.Mclust[["initialization"]][["subset"]]) < 9 ){
-        stop("too few samples, increase the size of subset.") 
-        }
-      message(paste("initializing clustering with",
-                    length(args.Mclust[["initialization"]][["subset"]]),
-                    "segments."))
-      initialize.on.subset = 1
+  if(mc.cores>1){
+    
+    ## Non-tabix files  
+    if (class(obj)=="methylDiff" | class(obj)=="methylRaw" | 
+        class(obj)=="GRanges"){
+      
+      ##coerce object to granges
+      if(class(obj)=="methylRaw") {
+        obj= as(obj,"GRanges")
+        ## calculate methylation score 
+        mcols(obj)$meth=100*obj$numCs/obj$coverage
+        ## select only required mcol
+        obj = obj[,"meth"]
+      } else if(class(obj)=="methylDiff") {
+        obj = as(obj,"GRanges")
+        ## use methylation difference as score
+        obj = obj[,"meth.diff"]
+      }else if (class(obj) != "GRanges"){
+        stop("only methylRaw or methylDiff objects ", 
+             "or GRanges objects can be used in this function")
+      }
+      # destrand
+      strand(obj) <- "*"
+
+      # keep only seqlevels that are non-empty
+      seqlevels(obj) <- seqlevelsInUse(obj)
+      chrs = seqlevels(obj)
+      # Split the input object based on chromosome
+      # run methSeg on chromosomes (Could be in parallel or not)
+      seg.res.list <- mclapply(chrs, function(chr){
+        
+        # Run segmentation
+        seg.res = .run.fastseg(obj[seqnames(obj)==chr])
+      }, mc.cores=mc.cores)
+      
+      # Merge resulting segments again to whole genome.
+      # suppressWarnings -> combined objs dont have chrs in common
+      seg.res = suppressWarnings( do.call("c", seg.res.list) )
+      
+      ## Tabix files
+    } else if(class(obj)=="methylDiffDB" | class(obj)=="methylRawDB"){
+      
+      .run.fastseg.tabix = function(gr0, class0, ...){
+        
+        # rename names of meta columns of input GRanges `gr0` to 
+        # methylKit naming convention (such as e.g. coverage, numCs, numTs)
+        df2getcolnames = as.data.frame(gr0[1])
+        df2getcolnames$width = NULL 
+        print(class0)
+        .setMethylDBNames(df2getcolnames, class0)
+        names(mcols(gr0)) = colnames(df2getcolnames)[5:ncol(df2getcolnames)]
+        
+        # destrand
+        strand(gr0) <- "*"
+        
+        # Run segmentation
+        .run.fastseg(gr0, ...)
+      }
+      
+      # Run segmentation for each chromosome
+      seg.res <- applyTbxByChr(obj@dbpath,
+                               return.type = "GRanges",
+                               FUN = .run.fastseg.tabix,
+                               class = class(obj),
+                               ...,
+                               mc.cores = mc.cores)
     }
   }
   
-  if(initialize.on.subset != 1 && initialize.on.subset > 0 ) {
-    
-    if( initialize.on.subset > 0 & initialize.on.subset < 1 )
-      nbr.sample = floor(length(seg.res) * initialize.on.subset)
-    
-    if( initialize.on.subset > 1) 
-      nbr.sample = initialize.on.subset
-    
-    if( nbr.sample < 9 ){stop("too few samples, increase the size of subset.") }
-    
-    message(paste("initializing clustering with",nbr.sample,"out of",length(seg.res),"total segments."))
-    # estimate parameters for mclust
-    sub <- sample(1:length(seg.res), nbr.sample,replace = FALSE)
-    args.Mclust[["initialization"]]=list(subset = sub)
-  }  
+  # 2. Density Estimation via Model-Based Clustering using
+  #     mclust::densityMclust function
   
-  
-  # decide on number of components/groups
-  args.Mclust[["score.gr"]]=seg.res
-  args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-  dens=do.call("densityFind", args.Mclust  )
-  
-  
-  # add components/group ids 
-  mcols(seg.res)$seg.group=as.character(dens$classification)
-  
-  # if joining, show clustering after joining
-  if(join.neighbours) {
-    message("joining neighbouring segments and repeating clustering.")
-    seg.res <- joinSegmentNeighbours(seg.res)
-    diagnostic.plot <- diagnostic.plot.old
-    
-    # get the new density
-    args.Mclust[["score.gr"]]=seg.res
-    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-    # skip second progress bar
-    args.Mclust[["verbose"]]=FALSE
-    dens=do.call("densityFind", args.Mclust  )
-    
+  if( length(seg.res) > 1 ){
+    seg.res = .run.mclust(seg.res,
+                          diagnostic.plot=diagnostic.plot, 
+                          join.neighbours=join.neighbours,
+                          initialize.on.subset=initialize.on.subset,
+                          ...)
   }
-  
-  seg.res
+  return(seg.res)
 }
+
 
 # not needed
 .methSeg<-function(score.gr,score.cols=NULL,...){

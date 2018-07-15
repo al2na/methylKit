@@ -1,3 +1,10 @@
+methylKit 1.7.6
+--------------
+NEW FUNCTIONS AND FEATURES
+* methSeg(): introduce parameter `cores` to run fastseg in parallel
+  per chromosome; update description; add tests
+
+
 methylKit 1.7.5
 --------------
 NEW FUNCTIONS AND FEATURES
