@@ -7,13 +7,14 @@
   tabixfile <- paste0(tabixfile,".bgz")
   message(tabixfile)
   if(file.exists(tabixfile) ) {
-    message("tabix file already exists, renaming output file.")
+    message("tabix file already exists, renaming output file:")
     i = 1
     filename2 = tabixfile
     while(file.exists(filename2) ) {
       filename2 = gsub(".txt.bgz",paste0("_",i,".txt.bgz"),tabixfile)
       i = i + 1
     }
+    message(filename2)
     tabixfile <- filename2
     message(paste("HINT: consider using 'suffix' argument to write",
                   "different function calls to different files"))
@@ -647,6 +648,8 @@ if(save.db) {
   # destrand single objects contained in methylRawListDB
   if(destrand) { 
     
+    message("destranding...")
+    
     destrandFun <- function(obj){
       
       if(obj@resolution == "base") {
@@ -654,7 +657,7 @@ if(save.db) {
         filename <- paste(gsub(".txt.bgz","",obj@dbpath),
                           "destrand.txt",sep="_")
         
-        filename <- .checkTabixFileExists(filename)
+        # filename <- .checkTabixFileExists(filename)
         
         filename <- basename(filename)
         
@@ -671,18 +674,20 @@ if(save.db) {
                         sample.id = obj@sample.id,
                         assembly = obj@assembly, context = obj@context,
                         resolution = obj@resolution)
+        
       }else {obj}
       
     }
-    new.list=lapply(object,destrandFun)
+    new.list=suppressMessages(lapply(object,destrandFun))
     object <- new("methylRawListDB", new.list,treatment=object@treatment)
     
-    on.exit(unlink(list.files(dirname(dbpath),pattern = "destrand",
-                              full.names = TRUE)))    
+    on.exit(unlink(c(getDBPath(object),paste0(getDBPath(object),".tbi"))),add = TRUE)
   }
   #merge raw methylation calls together
   
-  objList <- sapply(object,FUN = function(x) x@dbpath)
+  message("uniting...")
+  
+  objList <- getDBPath(object)
   
   args <- list(...)
   #print(args)
