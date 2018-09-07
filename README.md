@@ -67,7 +67,7 @@ in R console,
 ```r
 library(devtools)
 install_github("al2na/methylKit", build_vignettes=FALSE, 
-  repos=BiocInstaller::biocinstallRepos(),
+  repos=BiocManager::repositories(),
   dependencies=TRUE)
 ```
 if this doesn't work, you might need to add `type="source"` argument.
@@ -76,7 +76,7 @@ if this doesn't work, you might need to add `type="source"` argument.
 ```r
 library(devtools)
 install_github("al2na/methylKit", build_vignettes=FALSE, 
-  repos=BiocInstaller::biocinstallRepos(),ref="development",
+  repos=BiocManager::repositories(),ref="development",
   dependencies=TRUE)
 ```
 if this doesn't work, you might need to add `type="source"` argument.
