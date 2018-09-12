@@ -1,3 +1,8 @@
+methylKit 1.7.7
+--------------
+IMPROVEMENTS AND BUG FIXES
+* unite(): skip checking if destranded tabix file exist 
+
 methylKit 1.7.6
 --------------
 NEW FUNCTIONS AND FEATURES
