@@ -677,7 +677,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
       }
     }
     
-    res=lapply(1:chunk.num,myFunc2,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,region.split,tbxFile,FUN,...)
     
     # collect and return
     data.frame(rbindlist(res))
@@ -689,12 +689,12 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
                                     granges = region.split[[chunk.num]],
                                     return.type="data.table"),silent = TRUE)
       
-      if( !(class(data)== "try-error") ) {
+      if( !(class(data)[1] == "try-error") ) { ## class of data.table is both "data.table" and "data.frame
       res=FUN(data,...)  
       }
     }
     
-    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,region.split,tbxFile,FUN,...)
     
     
     # collect and return
