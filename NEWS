@@ -1,3 +1,10 @@
+methylKit 1.7.8
+--------------
+IMPROVEMENTS AND BUG FIXES
+* internal applyTbxByOverlap(): did not work correctly for return.type set to
+  "data.frame" or"data.table", due to missing argument.
+  https://github.com/al2na/methylKit/issues/131
+
 methylKit 1.7.7
 --------------
 IMPROVEMENTS AND BUG FIXES
