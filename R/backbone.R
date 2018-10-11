@@ -130,11 +130,16 @@ fread.gzipped<-function(filepath,...){
   }
   else{
     
-    dir <- normalizePath(dir)
-    if(!dir.exists(dir)){
-        message(paste("creating directory",dir,"..."))
-        dir.create(dir,recursive = TRUE)
-      }
+    if(!dir.exists(dir)) 
+      tryCatch(expr = { dir <- normalizePath(dir) },
+               warning = { 
+                 message(paste("creating directory",dir,"..."))
+                 dir.create(dir,recursive = TRUE,showWarnings = FALSE) },
+               error = function(e) {
+                 stop(paste("given directory cannot be created:\n",e))
+                 }
+               )
+               
   }
   return(dir)
 }
