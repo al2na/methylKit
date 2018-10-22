@@ -1,3 +1,14 @@
+methylKit 1.7.10
+--------------
+IMPROVEMENTS AND BUG FIXES
+* update man: update object and function descriptions to resolve 
+  the 'file link treated as topic' warning under windows 
+
+methylKit 1.7.9
+--------------
+IMPROVEMENTS AND BUG FIXES
+* bug fix: make internal function .checkdbdir more error proof
+
 methylKit 1.7.8
 --------------
 IMPROVEMENTS AND BUG FIXES
