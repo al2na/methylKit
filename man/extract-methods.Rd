@@ -35,7 +35,7 @@ subset the data.}
 \item{j}{This argument can not be used for the extraction of columns.
 As unintentional extraction of the columns will cause an error in
 the downstream analysis. Using this argument will cause an error.
- Use \code{\link[methylKit]{getData}} to access the data part of 
+ Use \code{\link{getData}} to access the data part of 
  the objects.}
 }
 \description{

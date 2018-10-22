@@ -7,11 +7,11 @@
 joinSegmentNeighbours(res)
 }
 \arguments{
-\item{res}{A \code{\link[GenomicRanges]{GRanges}} object with segment 
+\item{res}{A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
 classification and information prudoced by \code{\link{methSeg}}}
 }
 \value{
-A \code{\link[GenomicRanges]{GRanges}} object with segment 
+A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
         classification and information.
 }
 \description{

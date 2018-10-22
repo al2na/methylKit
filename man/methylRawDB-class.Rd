@@ -42,16 +42,17 @@ space in memory.
 }
 
 \section{Accessors}{
-
-The following functions provides access to data slots of methylRawDB:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-\code{\link[methylKit]{getContext}}
+ 
+The following functions provides access to data slots of methylDiffDB:
+- \code{\link{getData}}: get the data slot from the methylKit objects,
+- \code{\link{getAssembly}}: get assembly of the genome,
+- \code{\link{getContext}}: get the context of methylation
 }
 
 \section{Coercion}{
 
   \code{methylRawDB} object can be coerced to:
-  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
   \code{\link{methylRaw}} object via \code{\link{as}} function.
 }
 

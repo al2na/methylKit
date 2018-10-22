@@ -16,7 +16,7 @@ pool(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
   save.db = TRUE, ...)
 }
 \arguments{
-\item{obj}{\code{methylBase} or \code{methylBaseDB} object with two groups
+\item{obj}{\link{methylBase} or \link{methylBaseDB} object with two groups
  or more and each group 
 should have multiple samples}
 
@@ -52,7 +52,7 @@ saved as flat file database or not, default: explained in Details sections}
        (only used for newly stored databases)}
 }
 \value{
-a  \code{methylBase} or \code{methylBaseDB} object depending 
+a  \link{methylBase} or \link{methylBaseDB} object depending 
 on class of input object
 }
 \description{

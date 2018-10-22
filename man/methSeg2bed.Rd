@@ -10,7 +10,7 @@ methSeg2bed(segments, filename,
   colramp = colorRamp(c("gray", "green", "darkgreen")))
 }
 \arguments{
-\item{segments}{\code{\link[GenomicRanges]{GRanges}} object with segment
+\item{segments}{\code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment
        classification and information. This should be the result of 
 \code{\link{methSeg}} function}
 

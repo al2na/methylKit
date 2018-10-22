@@ -9,10 +9,10 @@ methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
   initialize.on.subset = 1, ...)
 }
 \arguments{
-\item{obj}{\code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
+\item{obj}{\code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link{methylDiff}}, 
 \code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
 \code{\link{methylRawDB}} . If the object is a 
-\code{\link[GenomicRanges]{GRanges}} it should have one meta column 
+\code{\link[GenomicRanges:GRanges-class]{GRanges}} it should have one meta column 
 with methylation scores and has to be sorted by position, 
 i.e. ignoring the strand information.}
 
@@ -45,7 +45,7 @@ denotes number of components used in BIC selection in mixture modeling.
 For more details see fastseg and Mclust documentation.}
 }
 \value{
-A \code{\link[GenomicRanges]{GRanges}} object with segment 
+A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
         classification and information. 
        'seg.mean' column shows the mean methylation per segment.
        'seg.group' column shows the segment groups obtained by mixture modeling
@@ -74,7 +74,7 @@ After initial segmentation with fastseg(), segments are clustered
 \examples{
 
 \donttest{
- download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+ download.file("https://dl.dropboxusercontent.com/u/1373164/H1.chr21.chr22.rds",
                destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")

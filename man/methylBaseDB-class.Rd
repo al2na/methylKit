@@ -64,16 +64,17 @@ but the data is saved in a flat database file and therefore allocates
 }
 
 \section{Accessors}{
-
-The following functions provides access to data slots of \code{methylBaseDB}:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-\code{\link[methylKit]{getContext}}
+ 
+The following functions provides access to data slots of methylDiffDB:
+- \code{\link{getData}}: get the data slot from the methylKit objects,
+- \code{\link{getAssembly}}: get assembly of the genome,
+- \code{\link{getContext}}: get the context of methylation
 }
 
 \section{Coercion}{
 
   \code{methylBaseDB} object can be coerced to:
-  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
   \code{\link{methylBase}} object via \code{\link{as}} function.
 }
 

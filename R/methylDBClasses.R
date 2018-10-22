@@ -139,14 +139,15 @@ valid.methylRawDB <- function(object) {
 #'  downstream analysis. see ?methylKit[ .
 #'  \code{x[]} will return the \code{methylRawDB} object as new \code{methylRaw} object
 #' 
-#' @section Accessors:
-#' The following functions provides access to data slots of methylRawDB:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiffDB:
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' @section Coercion:
 #'   \code{methylRawDB} object can be coerced to:
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #'   \code{\link{methylRaw}} object via \code{\link{as}} function.
 #' 
 #' @examples
@@ -249,10 +250,10 @@ valid.methylRawListDB <- function(object) {
 
 #' An S4 class for holding a list of methylRawDB objects.
 #'
-#' This class stores the list of  \code{\link[methylKit]{methylRawDB}} objects.
+#' This class stores the list of  \code{\link{methylRawDB}} objects.
 #' Functions such as \code{lapply} can be used on this list. It extends
 #'  \code{\link[base]{list}} class. This object is primarily produced
-#' by \code{\link[methylKit]{read}} function.
+#' by \code{\link{methRead}} function.
 #'
 #' @section Slots:\describe{
 #'                  \item{\code{treatment}}{numeric vector denoting control
@@ -376,15 +377,16 @@ valid.methylBaseDB <- function(object) {
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
-#' @section Accessors:
-#' The following functions provides access to data slots of \code{methylBaseDB}:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiffDB:
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' 
 #' @section Coercion:
 #'   \code{methylBaseDB} object can be coerced to:
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #'   \code{\link{methylBase}} object via \code{\link{as}} function. 
 #' 
 #' @examples
@@ -512,7 +514,7 @@ valid.methylDiffDB <- function(object) {
 #'
 #' This class is designed to hold statistics and locations for differentially 
 #' methylated regions/bases as flat file database.
-#' \code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+#' \code{\link{calculateDiffMeth}} function returns an object 
 #' with \code{methylDiffDB} class.
 #'          
 #' @section Slots:\describe{
@@ -547,13 +549,14 @@ valid.methylDiffDB <- function(object) {
 #' 
 #' @section Coercion:
 #'   \code{methylDiffDB} object can be coerced to:
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #'   \code{\link{methylDiff}} object via \code{\link{as}} function.
 #'    
 #' @section Accessors: 
 #' The following functions provides access to data slots of methylDiffDB:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' @examples
 #' data(methylKit)

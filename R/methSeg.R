@@ -9,10 +9,10 @@
 #' component ideally indicates quantitative classification of segments, such
 #' as high or low methylated regions.
 #' 
-#' @param obj \code{\link[GenomicRanges]{GRanges}}, \code{\link{methylDiff}}, 
+#' @param obj \code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link{methylDiff}}, 
 #'        \code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
 #'        \code{\link{methylRawDB}} . If the object is a 
-#'        \code{\link[GenomicRanges]{GRanges}} it should have one meta column 
+#'        \code{\link[GenomicRanges:GRanges-class]{GRanges}} it should have one meta column 
 #'        with methylation scores and has to be sorted by position, 
 #'        i.e. ignoring the strand information.
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
@@ -41,7 +41,7 @@
 #'        For more details see fastseg and Mclust documentation.    
 #'        
 #'               
-#' @return A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#' @return A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
 #'         classification and information. 
 #'        'seg.mean' column shows the mean methylation per segment.
 #'        'seg.group' column shows the segment groups obtained by mixture modeling
@@ -264,7 +264,7 @@ diagPlot<-function(dens,score.gr){
 #' and the score in the BED file is obtained from 'seg.mean' column of segments
 #' object.
 #' 
-#' @param segments \code{\link[GenomicRanges]{GRanges}} object with segment
+#' @param segments \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment
 #'        classification and information. This should be the result of 
 #' \code{\link{methSeg}} function
 #' @param filename name of the output data
@@ -368,10 +368,10 @@ methSeg2bed<-function(segments,filename,
 #' This leads to a bias segment length distributions, 
 #' which is removed by joining those neighbours.
 #'
-#' @param res A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#' @param res A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
 #'         classification and information prudoced by \code{\link{methSeg}} 
 #'
-#' @return A \code{\link[GenomicRanges]{GRanges}} object with segment 
+#' @return A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment 
 #'         classification and information. 
 #' 
 #' @seealso \code{\link{methSeg}}

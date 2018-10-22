@@ -22,10 +22,10 @@ calculateDiffMeth(.Object, covariates = NULL, overdispersion = c("none",
   weighted.mean = TRUE, chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
-\item{.Object}{a methylBase or methylBaseDB object to calculate differential
+\item{.Object}{a \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to calculate differential
 methylation}
 
-\item{covariates}{a data.frame containing covariates, which should be 
+\item{covariates}{a \code{\link{data.frame}} containing covariates, which should be 
 included in the test.}
 
 \item{overdispersion}{If set to "none"(default), no overdispersion correction 
@@ -94,7 +94,7 @@ Details section.}
        (only used for newly stored databases)}
 }
 \value{
-a methylDiff object containing the differential methylation 
+a \code{\link{methylDiff}} object containing the differential methylation 
                      statistics and locations for regions or bases
 }
 \description{
@@ -176,6 +176,6 @@ Altuna Akalin, Matthias Kormaksson, Sheng Li,
             and Hall. London New York.
 }
 \seealso{
-\code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
-         \code{\link[methylKit]{dataSim}}
+\code{\link{pool}}, \code{\link{reorganize}}
+         \code{\link{dataSim}}
 }

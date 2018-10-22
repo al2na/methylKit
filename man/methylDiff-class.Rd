@@ -8,7 +8,7 @@
 \description{
 This class is designed to hold statistics and locations for differentially 
 methylated regions/bases. It extends \code{\link{data.frame}} class.
-\code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+\code{\link{calculateDiffMeth}} function returns an object 
 with \code{methylDiff} class.
 }
 \section{Slots}{
@@ -37,7 +37,7 @@ with \code{methylDiff} class.
 
 \section{Subsetting}{
 
- In the following code snippets, \code{x} is a \code{methylDiff}.
+ In the following code snippets, \code{x} is a \code{methylDiff} object.
  Subsetting by \code{x[i,]} will produce a new object if subsetting is done 
  on rows. Column subsetting is not directly allowed to prevent errors in the 
  downstream analysis. see ?methylKit[ .
@@ -46,14 +46,15 @@ with \code{methylDiff} class.
 \section{Coercion}{
 
   \code{methylDiff} object can be coerced to 
-  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 }
 
 \section{Accessors}{
  
-The following functions provides access to data slots of methylDiff:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-\code{\link[methylKit]{getContext}}
+The following functions provides access to data slots of methylDiffDB:
+- \code{\link{getData}}: get the data slot from the methylKit objects,
+- \code{\link{getAssembly}}: get assembly of the genome,
+- \code{\link{getContext}}: get the context of methylation
 }
 
 \examples{

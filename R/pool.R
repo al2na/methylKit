@@ -3,7 +3,7 @@
 #' The function sums up coverage, numCs and numTs values within each group so 
 #' one representative sample for each group will be created in a new methylBase
 #'  object
-#' @param obj  \code{methylBase} or \code{methylBaseDB} object with two groups
+#' @param obj  \link{methylBase} or \link{methylBaseDB} object with two groups
 #'  or more and each group 
 #' should have multiple samples
 #' @param sample.ids  a character vector of new sample.ids ex:c("test","control"), 
@@ -34,7 +34,7 @@
 #'                   The type of the flat file database, currently only option is "tabix"
 #'                   (only used for newly stored databases)
 #' 
-#' @return a  \code{methylBase} or \code{methylBaseDB} object depending 
+#' @return a  \link{methylBase} or \link{methylBaseDB} object depending 
 #' on class of input object
 #'
 #' @section Details:

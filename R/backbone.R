@@ -322,14 +322,15 @@ valid.methylRawObj <- function(object) {
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
-#' @section Accessors:
-#' The following functions provides access to data slots of methylRaw:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiffDB:
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' @section Coercion:
 #'   \code{methylRaw} object can be coerced to 
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' @examples
 #' 
@@ -361,10 +362,10 @@ setClass("methylRaw", contains= "data.frame",representation(
 
 #' An S4 class for holding a list of methylRaw objects.
 #'
-#' This class stores the list of  \code{\link[methylKit]{methylRaw}} objects.
+#' This class stores the list of  \code{\link{methylRaw}} objects.
 #' Functions such as \code{lapply} can be used on this list. It extends
 #'  \code{\link[base]{list}} class. This object is primarily produced
-#' by \code{\link[methylKit]{read}} function.
+#' by \code{\link{methRead}} function.
 #'
 #' @section Slots:\describe{
 #'                  \item{\code{treatment}}{numeric vector denoting control 
@@ -1008,15 +1009,16 @@ setMethod("filterByCoverage", signature(methylObj="methylRawList"),
 #'  rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
-#' @section Accessors:
-#' The following functions provides access to data slots of methylBase:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' @section Accessors: 
+#' The following functions provides access to data slots of methylDiffDB:
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' 
 #' @section Coercion:
 #'   \code{methylBase} object can be coerced to 
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' 
 #' @examples
@@ -2049,7 +2051,7 @@ setMethod("select", "methylRaw",
 #' @param j This argument can not be used for the extraction of columns.
 #'          As unintentional extraction of the columns will cause an error in
 #'          the downstream analysis. Using this argument will cause an error.
-#'           Use \code{\link[methylKit]{getData}} to access the data part of 
+#'           Use \code{\link{getData}} to access the data part of 
 #'           the objects. 
 #' 
 #'

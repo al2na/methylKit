@@ -8,7 +8,7 @@
 \description{
 This class is designed to hold statistics and locations for differentially 
 methylated regions/bases as flat file database.
-\code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+\code{\link{calculateDiffMeth}} function returns an object 
 with \code{methylDiffDB} class.
 }
 \section{Slots}{
@@ -49,15 +49,16 @@ allocates less space in memory.
 \section{Coercion}{
 
   \code{methylDiffDB} object can be coerced to:
-  \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+  \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
   \code{\link{methylDiff}} object via \code{\link{as}} function.
 }
 
 \section{Accessors}{
  
 The following functions provides access to data slots of methylDiffDB:
-\code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-\code{\link[methylKit]{getContext}}
+- \code{\link{getData}}: get the data slot from the methylKit objects,
+- \code{\link{getAssembly}}: get assembly of the genome,
+- \code{\link{getContext}}: get the context of methylation
 }
 
 \examples{

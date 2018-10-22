@@ -6,10 +6,10 @@
 \alias{methylRawListDB}
 \title{An S4 class for holding a list of methylRawDB objects.}
 \description{
-This class stores the list of  \code{\link[methylKit]{methylRawDB}} objects.
+This class stores the list of  \code{\link{methylRawDB}} objects.
 Functions such as \code{lapply} can be used on this list. It extends
  \code{\link[base]{list}} class. This object is primarily produced
-by \code{\link[methylKit]{read}} function.
+by \code{\link{methRead}} function.
 }
 \section{Slots}{
 \describe{

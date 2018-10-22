@@ -477,7 +477,7 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #'
 #' This class is designed to hold statistics and locations for differentially 
 #' methylated regions/bases. It extends \code{\link{data.frame}} class.
-#' \code{\link[methylKit]{calculateDiffMeth}} function returns an object 
+#' \code{\link{calculateDiffMeth}} function returns an object 
 #' with \code{methylDiff} class.
 #'          
 #' @section Slots:\describe{
@@ -501,19 +501,20 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 #'  well known and ubiquitous in many R packages.
 #' 
 #' @section Subsetting:
-#'  In the following code snippets, \code{x} is a \code{methylDiff}.
+#'  In the following code snippets, \code{x} is a \code{methylDiff} object.
 #'  Subsetting by \code{x[i,]} will produce a new object if subsetting is done 
 #'  on rows. Column subsetting is not directly allowed to prevent errors in the 
 #'  downstream analysis. see ?methylKit[ .
 #' 
 #' @section Coercion:
 #'   \code{methylDiff} object can be coerced to 
-#'   \code{\link[GenomicRanges]{GRanges}} object via \code{\link{as}} function.
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object via \code{\link{as}} function.
 #' 
 #' @section Accessors: 
-#' The following functions provides access to data slots of methylDiff:
-#' \code{\link[methylKit]{getData}},\code{\link[methylKit]{getAssembly}},
-#' \code{\link[methylKit]{getContext}}
+#' The following functions provides access to data slots of methylDiffDB:
+#' - \code{\link{getData}}: get the data slot from the methylKit objects,
+#' - \code{\link{getAssembly}}: get assembly of the genome,
+#' - \code{\link{getContext}}: get the context of methylation
 #' 
 #' @examples
 #' data(methylKit)
@@ -544,9 +545,9 @@ setClass("methylDiff",representation(
 #' See the rest of the help page and 
 #' references for detailed explanation on statistics.
 #' 
-#' @param .Object a methylBase or methylBaseDB object to calculate differential
+#' @param .Object a \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to calculate differential
 #'  methylation                    
-#' @param covariates a data.frame containing covariates, which should be 
+#' @param covariates a \code{\link{data.frame}} containing covariates, which should be 
 #' included in the test.                   
 #' @param overdispersion If set to "none"(default), no overdispersion correction 
 #' will be attempted.
@@ -635,7 +636,7 @@ setClass("methylDiff",representation(
 #'                                 covariates=covariates,
 #'                                 overdispersion="MN",test="Chisq",mc.cores=1)
 #'                                
-#' @return a methylDiff object containing the differential methylation 
+#' @return a \code{\link{methylDiff}} object containing the differential methylation 
 #'                      statistics and locations for regions or bases
 #' @section Details:
 #' Covariates can be included in the analysis. The function will then try to 
@@ -672,8 +673,8 @@ setClass("methylDiff",representation(
 #'             
 #'             McCullagh and Nelder. (1989). Generalized Linear Models. Chapman
 #'             and Hall. London New York.
-#' @seealso \code{\link[methylKit]{pool}}, \code{\link[methylKit]{reorganize}}
-#'          \code{\link[methylKit]{dataSim}}
+#' @seealso \code{\link{pool}}, \code{\link{reorganize}}
+#'          \code{\link{dataSim}}
 #' 
 #' @export
 #' @docType methods
