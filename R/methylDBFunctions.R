@@ -799,98 +799,14 @@ setMethod("getCorrelation", "methylBaseDB",
   }
   
   names(meth.mat)=object@sample.ids
+  
+  method <- match.arg(method)
   print( cor(meth.mat,method=method) )
-  panel.cor.pearson <- function(x, y, digits=2, prefix="", cex.cor, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="pearson"))
-    txt <- format(c(r, 0.123456789), digits=digits)[1]
-    txt <- paste(prefix, txt, sep="")
-    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    text(0.5, 0.5, txt, cex = cex.cor * r)
-  }
   
-  panel.cor.kendall <- function(x, y, digits=2, prefix="", cex.cor, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="kendall"))
-    txt <- format(c(r, 0.123456789), digits=digits)[1]
-    txt <- paste(prefix, txt, sep="")
-    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    text(0.5, 0.5, txt, cex = cex.cor * r)
-  }
-  
-  panel.cor.spearman <- function(x, y, digits=2, prefix="", cex.cor, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="spearman"))
-    txt <- format(c(r, 0.123456789), digits=digits)[1]
-    txt <- paste(prefix, txt, sep="")
-    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    text(0.5, 0.5, txt, cex = cex.cor * r)
-  }
-  
-  panel.my.smooth2<-function(x, y, col = par("col"), 
-                             bg = NA, pch = par("pch"), cex = 1, 
-                             col.smooth = "darkgreen", span = 2/3, 
-                             iter = 3, ...) 
-  {
-    par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
-    smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
-    ok <- is.finite(x) & is.finite(y)
-    if (any(ok)) 
-      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...)
-    abline(lm(y[ok]~x[ok]), col="red")
-  }
-  
-  panel.my.smooth<-function(x, y, col = par("col"), bg = NA, 
-                            pch = par("pch"), cex = 0.3, 
-                            col.smooth = "green", span = 2/3, iter = 3, ...) 
-  {
-    points(x, y, pch = 20, col = densCols(x,y,
-                                          colramp=colorRampPalette(topo.colors(20))), 
-           bg = bg, cex = 0.1)
-    ok <- is.finite(x) & is.finite(y)
-    if (any(ok)){
-      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),col = col.smooth, ...);
-      abline(lm(y[ok]~x[ok]), col="red")}
-  }
-  panel.hist <- function(x, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5) )
-    h <- hist(x, plot = FALSE)
-    breaks <- h$breaks; nB <- length(breaks)
-    y <- h$counts; y <- y/max(y)
-    rect(breaks[-nB], 0, breaks[-1], y, col="cyan", ...)
-  }
-  
-  if(plot)
-  {  
-    if(method=="spearman")
-    { pairs(meth.mat, 
-            lower.panel=panel.my.smooth2, 
-            upper.panel=panel.cor.spearman,
-            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
-                                             method,"cor.") )
-    }
-    if(method=="kendall")
-    { pairs(meth.mat, 
-            lower.panel=panel.my.smooth2, 
-            upper.panel=panel.cor.kendall,
-            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
-                                             method,"cor.") )
-    }
-    if(method=="pearson")
-    { pairs(meth.mat, 
-            lower.panel=panel.my.smooth2, 
-            upper.panel=panel.cor.pearson,
-            diag.panel=panel.hist,main=paste(object@context, object@resolution ,
-                                             method,"cor.") )
-    }
+  if(plot) {
+    .plotCorrelation(meth.mat = meth.mat,
+                     title = paste(object@context, object@resolution ,method,"cor."),
+                     method = method)
   }
 }  
 )

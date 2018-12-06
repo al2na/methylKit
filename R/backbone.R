@@ -1306,7 +1306,9 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
 
 #' @rdname unite-methods
 #' @aliases unite,methylRawList-method
-setMethod("unite", "methylRawList",unite.methylRawList)           
+setMethod("unite", "methylRawList",unite.methylRawList)       
+
+#### getCorrelation #### 
 
 #' get correlation between samples in methylBase or methylBaseDB object
 #' 
@@ -1358,122 +1360,106 @@ setMethod("unite", "methylRawList",unite.methylRawList)
 #' @export
 #' @docType methods
 #' @rdname getCorrelation-methods
-setGeneric("getCorrelation", function(object,method="pearson",
-                                      plot=FALSE,nrow="numeric") 
-   standardGeneric("getCorrelation"))
+setGeneric("getCorrelation", function(object, method = "pearson",
+                                      plot = FALSE, nrow = "numeric") 
+  standardGeneric("getCorrelation"))
 
-#' @rdname getCorrelation-methods
-#' @aliases getCorrelation,methylBase-method
-setMethod("getCorrelation", "methylBase",
-                    function(object,method,plot){
-  meth.mat = getData(object)[, object@numCs.index]/
-    (getData(object)[,object@numCs.index] + 
-       getData(object)[,object@numTs.index] )                                      
-  names(meth.mat)=object@sample.ids
+## simple S3 function gets called by S4 mthod
+.plotCorrelation <- function(meth.mat,
+                             title,
+                             method=c("pearson","kendall","spearman"),
+                             plot=FALSE ){
   
-  print( cor(meth.mat,method=method) )
-
-  
-  panel.cor.pearson <- function(x, y, digits=2, prefix="", cex.cor, ...)
+  ## define dynamic correlation panel  
+  .panel.cor <- function(x, y, digits=2, prefix="", cex.cor, method,...)
   {
     usr <- par("usr"); on.exit(par(usr))
     par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="pearson"))
+    r <- abs(cor(x, y, method=method))
     txt <- format(c(r, 0.123456789), digits=digits)[1]
     txt <- paste(prefix, txt, sep="")
     if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
     text(0.5, 0.5, txt, cex = cex.cor * r)
   }
-
-  panel.cor.kendall <- function(x, y, digits=2, prefix="", cex.cor, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="kendall"))
-    txt <- format(c(r, 0.123456789), digits=digits)[1]
-    txt <- paste(prefix, txt, sep="")
-    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    text(0.5, 0.5, txt, cex = cex.cor * r)
-  }
-  
-  panel.cor.spearman <- function(x, y, digits=2, prefix="", cex.cor, ...)
-  {
-    usr <- par("usr"); on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y,method="spearman"))
-    txt <- format(c(r, 0.123456789), digits=digits)[1]
-    txt <- paste(prefix, txt, sep="")
-    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    text(0.5, 0.5, txt, cex = cex.cor * r)
-  }
-  
-  
   
   panel.my.smooth2<-function(x, y, col = par("col"), bg = NA, pch = par("pch"),
                              cex = 1, col.smooth = "darkgreen", span = 2/3, 
                              iter = 3, ...) 
   {
-       par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
-      smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
-      ok <- is.finite(x) & is.finite(y)
-      if (any(ok)) 
-          lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
-                col = col.smooth, ...)
-          abline(lm(y[ok]~x[ok]), col="red")
+    par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
+    smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok)) 
+      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
+            col = col.smooth, ...)
+    abline(lm(y[ok]~x[ok]), col="red")
   }
   
   panel.my.smooth<-function(x, y, col = par("col"), bg = NA, pch = par("pch"), 
                             cex = 0.3, col.smooth = "green", 
                             span = 2/3, iter = 3, ...) 
   {
-      points(x, y, pch = 20, col = densCols(x,y,
-                             colramp=colorRampPalette(topo.colors(20))), 
-             bg = bg, cex = 0.1)
-      ok <- is.finite(x) & is.finite(y)
-      if (any(ok)){
-          lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
-                col = col.smooth, ...);
-          abline(lm(y[ok]~x[ok]), col="red")}
+    points(x, y, pch = 20, col = densCols(x,y,
+                                          colramp=colorRampPalette(topo.colors(20))), 
+           bg = bg, cex = 0.1)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok)){
+      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
+            col = col.smooth, ...);
+      abline(lm(y[ok]~x[ok]), col="red")}
   }
   panel.hist <- function(x, ...)
   {
-      usr <- par("usr"); on.exit(par(usr))
-      par(usr = c(usr[1:2], 0, 1.5) )
-      h <- hist(x, plot = FALSE)
-      breaks <- h$breaks; nB <- length(breaks)
-      y <- h$counts; y <- y/max(y)
-      rect(breaks[-nB], 0, breaks[-1], y, col="cyan", ...)
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col="cyan", ...)
   }
   
-  if(plot)
-  {  
-   
-    if(method=="spearman")
-    { pairs(meth.mat, 
-        lower.panel=panel.my.smooth2, 
-        upper.panel=panel.cor.spearman,
-        diag.panel=panel.hist,main=paste(object@context, 
-                                         object@resolution ,method,"cor.") )
-    }
-    if(method=="kendall")
-    { pairs(meth.mat, 
-            lower.panel=panel.my.smooth2, 
-            upper.panel=panel.cor.kendall,
-            diag.panel=panel.hist,main=paste(object@context, 
-                                             object@resolution ,method,"cor.") )
-    }
-    if(method=="pearson")
-    { pairs(meth.mat, 
-            lower.panel=panel.my.smooth2, 
-            upper.panel=panel.cor.pearson,
-            diag.panel=panel.hist,main=paste(object@context, 
-                                             object@resolution ,method,"cor.") )
-    }
-    
-    
+  ## fix correlation panel with given method
+  panel.cor <- function(...,mymethod=method) {
+    .panel.cor(..., method = mymethod)
+  }  
+  
+  pairs(meth.mat, 
+        lower.panel = panel.my.smooth2, 
+        upper.panel = panel.cor,
+        diag.panel = panel.hist,
+        main = title#,
+        #oma=c(4,4,6,12) ## if legend is required
+        )
+  
+  # # allow plotting of the legend outside the figure region 
+  # # (ie within the space left by making the margins big)
+  # par(xpd=TRUE)
+  # legend(0.85, 0.7, as.vector(unique(iris$Species)),  
+  #        fill=c("red", "green3", "blue"))
+  #       legend("topright",legend = c("hah"))
+  # 
+}  
+
+#' @rdname getCorrelation-methods
+#' @aliases getCorrelation,methylBase-method
+setMethod("getCorrelation", "methylBase",
+                    function(object,method = c("pearson","kendall","spearman"),plot){
+  meth.mat = getData(object)[, object@numCs.index]/
+    (getData(object)[,object@numCs.index] + 
+       getData(object)[,object@numTs.index] )                                      
+  names(meth.mat)=object@sample.ids
+  
+  print( cor(meth.mat,method=method) )
+  
+  if (plot) {
+    .plotCorrelation(meth.mat = meth.mat,
+                     title = paste(object@context, object@resolution ,method,"cor."),
+                     method = method)
   }
+  
 }  
  )
+
 
 
 

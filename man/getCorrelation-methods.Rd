@@ -9,7 +9,8 @@
 \usage{
 getCorrelation(object,method="pearson",plot=FALSE,nrow)
 
-\S4method{getCorrelation}{methylBase}(object, method, plot)
+\S4method{getCorrelation}{methylBase}(object, method = c("pearson",
+  "kendall", "spearman"), plot)
 
 \S4method{getCorrelation}{methylBaseDB}(object, method = "pearson",
   plot = FALSE, nrow = 2e+06)
