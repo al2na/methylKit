@@ -21,8 +21,8 @@ Description: methylKit is an R package for DNA methylation analysis and
     designed to deal with sequencing data from RRBS and its variants, but also
     target-capture methods and whole genome bisulfite sequencing. It also has
     functions to analyze base-pair resolution 5hmC data from experimental
-    protocols such as oxBS-Seq and TAB-Seq. Perl is needed to read SAM files
-    only.
+    protocols such as oxBS-Seq and TAB-Seq. Methylation calling can be 
+    performed directly from Bismark aligned BAM files.
 License: Artistic-2.0
 URL: http://code.google.com/p/methylkit/
 LazyLoad: yes
@@ -82,4 +82,4 @@ Collate:
     'diffMethDSS.R'
     'deprecated_defunct.R'
     'onUnload.R'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
