@@ -1125,12 +1125,8 @@ setGeneric("unite", function(object,destrand=FALSE,min.per.group=NULL,
                              chunk.size=1e6,mc.cores=1,save.db=FALSE,...)
   standardGeneric("unite"))
 
-#' @rdname unite-methods
-#' @aliases unite,methylRawList-method
-setMethod("unite", "methylRawList",
-          function(object,destrand,min.per.group,save.db=FALSE,...){
-  
-  
+unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
+                                chunk.size=1e6,mc.cores=1,save.db=FALSE,...){
   
   
   #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
@@ -1155,12 +1151,12 @@ setMethod("unite", "methylRawList",
   if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  ){
     stop("min.per.group should be an integer\n",
          "try providing integers as 1L, 2L,3L etc.\n")}
-            
+  
   if( any(min.per.group > min(table(object@treatment)))  ){
     stop("min.per.group can not be higher than\n",
          "number of samples in smallest group\n")}
-          
-            
+  
+  
   
   #merge raw methylation calls together
   df=getData(object[[1]])
@@ -1247,7 +1243,7 @@ setMethod("unite", "methylRawList",
   names(df)[numTs.ind]   =paste(c("numTs"),1:length(object),sep="" )
   
   if(!save.db) {
-  
+    
     #make methylbase object and return the object
     obj=new("methylBase",(df),sample.ids=sample.ids,
             assembly=unique(assemblies),context=unique(contexts),
@@ -1255,9 +1251,9 @@ setMethod("unite", "methylRawList",
             numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,
             resolution=object[[1]]@resolution )
     obj
-  
+    
   } else {
-  
+    
     #print(names(as.list(match.call())))
     # catch additional args 
     args <- list(...)
@@ -1275,7 +1271,7 @@ setMethod("unite", "methylRawList",
       suffix <- args$suffix
       suffix <- paste0("_",suffix)
     }
-
+    
     # create methylBaseDB
     #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
     obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
@@ -1293,9 +1289,12 @@ setMethod("unite", "methylRawList",
     message(paste0("flatfile located at: ",obj@dbpath))
     
     obj
+  }
 }
-}
-)           
+
+#' @rdname unite-methods
+#' @aliases unite,methylRawList-method
+setMethod("unite", "methylRawList",unite.methylRawList)           
 
 #' get correlation between samples in methylBase or methylBaseDB object
 #' 

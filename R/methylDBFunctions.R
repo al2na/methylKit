@@ -614,168 +614,169 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
 
 # MethylBaseDB ------------------------------------------------------------
 
-#' @rdname unite-methods
-#' @aliases unite,methylRawListDB-method
-setMethod("unite", "methylRawListDB",
-          function(object,destrand,min.per.group,chunk.size,mc.cores,save.db=TRUE,...){
-            
-if(save.db) {
+unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
+                                  chunk.size=1e6,mc.cores=1,save.db=TRUE,...){
   
-  #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
-  if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
-  {
-    stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
-  }
-  if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
-  {
-    stop("supplied methylRawList object have different genome assemblies")
-  }                     
-  if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
-  {
-    stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
-  } 
-  if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  )
-  {
-    stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")
-  }
-  
-  if( any(min.per.group > min(table(object@treatment)))  )
+  if(save.db) {
+    
+    #check if assemblies,contexts and resolutions are same type NOT IMPLEMENTED   
+    if( length(unique(vapply(object,function(x) x@context,FUN.VALUE="character"))) > 1)
+    {
+      stop("supplied methylRawList object have different methylation contexts:not all methylation events from the same bases")
+    }
+    if( length(unique(vapply(object,function(x) x@assembly,FUN.VALUE="character"))) > 1)
+    {
+      stop("supplied methylRawList object have different genome assemblies")
+    }                     
+    if( length(unique(vapply(object,function(x) x@resolution,FUN.VALUE="character"))) > 1)
+    {
+      stop("supplied methylRawList object have different methylation resolutions:some base-pair some regional")
+    } 
+    if( (!is.null(min.per.group)) &  ( ! is.integer( min.per.group ) )  )
+    {
+      stop("min.per.group should be an integer\ntry providing integers as 1L, 2L,3L etc.\n")
+    }
+    
+    if( any(min.per.group > min(table(object@treatment)))  )
     {
       stop("min.per.group can not be higher than number of samples in smallest group\n")
     }
-  
-  if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
-  # destrand single objects contained in methylRawListDB
-  if(destrand) { 
     
-    message("destranding...")
-    
-    destrandFun <- function(obj){
+    if(Sys.info()['sysname']=="Windows") {mc.cores = 1}
+    # destrand single objects contained in methylRawListDB
+    if(destrand) { 
       
-      if(obj@resolution == "base") {
-        dir <- dirname(obj@dbpath)
-        filename <- paste(gsub(".txt.bgz","",obj@dbpath),
-                          "destrand.txt",sep="_")
-        
-        # filename <- .checkTabixFileExists(filename)
-        
-        filename <- basename(filename)
-        
-        # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-        newdbpath <- applyTbxByChunk(obj@dbpath,
-                                     chunk.size = chunk.size, 
-                                     dir=dir,filename = filename,
-                                     return.type = "tabix", 
-                                     FUN = function(x) { 
-                                       .CpG.dinuc.unifyOld(.setMethylDBNames(x,
-                                                            "methylRawDB") )})
-        
-        readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
-                        sample.id = obj@sample.id,
-                        assembly = obj@assembly, context = obj@context,
-                        resolution = obj@resolution)
-        
-      }else {obj}
+      message("destranding...")
       
-    }
-    new.list=suppressMessages(lapply(object,destrandFun))
-    object <- new("methylRawListDB", new.list,treatment=object@treatment)
-    
-    on.exit(unlink(c(getDBPath(object),paste0(getDBPath(object),".tbi"))),add = TRUE)
-  }
-  #merge raw methylation calls together
-  
-  message("uniting...")
-  
-  objList <- getDBPath(object)
-  
-  args <- list(...)
-  #print(args)
-  if( ( "dbdir" %in% names(args)) )
-  { 
-    dir <- .check.dbdir(args$dbdir) 
-  } else {
-    dir <- dirname(object[[1]]@dbpath)
-  }
-  # if(!( "dbtype" %in% names(args) ) ){
-  #   dbtype <- "tabix"
-  # } else { dbtype <- args$dbtype }
-  if(!( "suffix" %in% names(args) ) ){
-    suffix <- NULL
-  } else {
-    suffix <- args$suffix
-    suffix <- paste0("_",suffix)
-  }
-  
-  # filename will be "methylBase" concatenated with either 13-char random string or suffix
-  filename <- paste0( ifelse(is.null(suffix),
-                             yes = tempfile(pattern = "methylBase_",tmpdir = "."),
-                             no = paste0("methylBase",suffix)),
-                      ".txt")
-  
-  # remove the "./" that tempfile prepends
-  filename <- basename(filename)
-
-  # filename <- tempfile(pattern = "methylBase",tmpdir = ".",fileext = ".txt")
-  #filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
-  
-  if(is.null(min.per.group)) {
-    
-    dbpath <- mergeTabix(tabixList = objList ,dir = dir,
-                         filename = filename,mc.cores = mc.cores) 
-    dbpath <- gsub(".tbi","",dbpath)
-    
-  } else {
-    # if the the min.per.group argument is supplied, remove the rows
-    # that doesn't have enough coverage
-    
-    # keep rows with no matching in all samples  
-    tmpPath <- mergeTabix(tabixList = objList ,dir = dir,
-                          filename = paste0(filename,".tmp"),
-                          mc.cores = mc.cores,all=TRUE) 
-    tmpPath <- gsub(".tbi","",tmpPath)
-    
-    # get indices of coverage in the data frame 
-    coverage.ind=seq(5,by=3,length.out=length(object))
-    
-    filter <- function(df, coverage.ind, treatment,min.per.group){
-      
-      df <- as.data.table(df)
-      for(i in unique(treatment) ){
+      destrandFun <- function(obj){
         
-        my.ind=coverage.ind[treatment==i]
-        ldat = !is.na(df[,my.ind,with=FALSE])
-        if(  is.null(dim(ldat))  ){  # if there is only one dimension
-          df=df[ldat>=min.per.group,]
-        }else{
-          df=df[rowSums(ldat)>=min.per.group,]
-        }
+        if(obj@resolution == "base") {
+          dir <- dirname(obj@dbpath)
+          filename <- paste(gsub(".txt.bgz","",obj@dbpath),
+                            "destrand.txt",sep="_")
+          
+          # filename <- .checkTabixFileExists(filename)
+          
+          filename <- basename(filename)
+          
+          # need to use .CpG.dinuc.unifyOld because output needs to be ordered
+          newdbpath <- applyTbxByChunk(obj@dbpath,
+                                       chunk.size = chunk.size, 
+                                       dir=dir,filename = filename,
+                                       return.type = "tabix", 
+                                       FUN = function(x) { 
+                                         .CpG.dinuc.unifyOld(.setMethylDBNames(x,
+                                                                               "methylRawDB") )})
+          
+          readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                          sample.id = obj@sample.id,
+                          assembly = obj@assembly, context = obj@context,
+                          resolution = obj@resolution)
+          
+        }else {obj}
+        
       }
-      return(as.data.frame(df))
+      new.list=suppressMessages(lapply(object,destrandFun))
+      object <- new("methylRawListDB", new.list,treatment=object@treatment)
+      
+      on.exit(unlink(c(getDBPath(object),paste0(getDBPath(object),".tbi"))),add = TRUE)
+    }
+    #merge raw methylation calls together
+    
+    message("uniting...")
+    
+    objList <- getDBPath(object)
+    
+    args <- list(...)
+    #print(args)
+    if( ( "dbdir" %in% names(args)) )
+    { 
+      dir <- .check.dbdir(args$dbdir) 
+    } else {
+      dir <- dirname(object[[1]]@dbpath)
+    }
+    # if(!( "dbtype" %in% names(args) ) ){
+    #   dbtype <- "tabix"
+    # } else { dbtype <- args$dbtype }
+    if(!( "suffix" %in% names(args) ) ){
+      suffix <- NULL
+    } else {
+      suffix <- args$suffix
+      suffix <- paste0("_",suffix)
     }
     
-    dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
-                              return.type = "tabix", FUN = filter,treatment=object@treatment,
-                              coverage.ind=coverage.ind,min.per.group=min.per.group)
+    # filename will be "methylBase" concatenated with either 13-char random string or suffix
+    filename <- paste0( ifelse(is.null(suffix),
+                               yes = tempfile(pattern = "methylBase_",tmpdir = "."),
+                               no = paste0("methylBase",suffix)),
+                        ".txt")
     
-    unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
+    # remove the "./" that tempfile prepends
+    filename <- basename(filename)
+    
+    # filename <- tempfile(pattern = "methylBase",tmpdir = ".",fileext = ".txt")
+    #filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
+    
+    if(is.null(min.per.group)) {
+      
+      dbpath <- mergeTabix(tabixList = objList ,dir = dir,
+                           filename = filename,mc.cores = mc.cores) 
+      dbpath <- gsub(".tbi","",dbpath)
+      
+    } else {
+      # if the the min.per.group argument is supplied, remove the rows
+      # that doesn't have enough coverage
+      
+      # keep rows with no matching in all samples  
+      tmpPath <- mergeTabix(tabixList = objList ,dir = dir,
+                            filename = paste0(filename,".tmp"),
+                            mc.cores = mc.cores,all=TRUE) 
+      tmpPath <- gsub(".tbi","",tmpPath)
+      
+      # get indices of coverage in the data frame 
+      coverage.ind=seq(5,by=3,length.out=length(object))
+      
+      filter <- function(df, coverage.ind, treatment,min.per.group){
+        
+        df <- as.data.table(df)
+        for(i in unique(treatment) ){
+          
+          my.ind=coverage.ind[treatment==i]
+          ldat = !is.na(df[,my.ind,with=FALSE])
+          if(  is.null(dim(ldat))  ){  # if there is only one dimension
+            df=df[ldat>=min.per.group,]
+          }else{
+            df=df[rowSums(ldat)>=min.per.group,]
+          }
+        }
+        return(as.data.frame(df))
+      }
+      
+      dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
+                                return.type = "tabix", FUN = filter,treatment=object@treatment,
+                                coverage.ind=coverage.ind,min.per.group=min.per.group)
+      
+      unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
+    }
+    obj <- readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+                            sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                            context = object[[1]]@context,resolution = object[[1]]@resolution,
+                            treatment = object@treatment,destranded = destrand)
+    
+    message(paste0("flatfile located at: ",obj@dbpath))
+    
+    obj
+    
+  } else {
+    obj <- object
+    class(obj) <- "methylRawList"
+    unite(obj,destrand,min.per.group,chunk.size,mc.cores,save.db=FALSE,...)
   }
-  obj <- readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
-                   sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
-                   context = object[[1]]@context,resolution = object[[1]]@resolution,
-                   treatment = object@treatment,destranded = destrand)
-  
-  message(paste0("flatfile located at: ",obj@dbpath))
-  
-  obj
-  
-} else {
-  obj <- object
-  class(obj) <- "methylRawList"
-  unite(obj,destrand,min.per.group,chunk.size,mc.cores,save.db=FALSE,...)
 }
-}
-) 
+
+#' @rdname unite-methods
+#' @aliases unite,methylRawListDB-method
+setMethod("unite", "methylRawListDB",unite.methylRawListDB) 
 
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation,methylBaseDB-method
