@@ -283,16 +283,21 @@ valid.methylRawObj <- function(object) {
     data=getData(object)
     check1=( (object@resolution == "base") | (object@resolution == "region") )
     check2=(ncol(data)==7)
-    if(check1 & check2){
+    check3=(length(object@sample.id) == 1)
+    if(all(check1, check2, check3) ) {
       return(TRUE)
     }
     else if (! check1 ){
         cat("resolution slot has to be either 'base' or 'region':",
-              "other values not allowed")
+              "other values not allowed\n")
     }
     else if(! check2){
         cat("data part of methylRaw have",ncol(data),
-            "columns, expected 7 columns")
+            "columns, expected 7 columns\n")
+    }
+    else if (! check3 ){
+      cat("object has more than one sample id:",object@sample.id,"\n",
+          "only one allowed\n")
     }
 
 }

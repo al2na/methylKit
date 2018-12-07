@@ -93,6 +93,7 @@ valid.methylRawDB <- function(object) {
   #data=getData(object,nrow=5)
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
+  check3=(length(object@sample.id) == 1)
   if(check1 & check2){
     return(TRUE)
   }
@@ -103,6 +104,11 @@ valid.methylRawDB <- function(object) {
   }
   else if(! check2){
     message("The DB file can not be found, check the value of 'dbpath'")
+    FALSE
+  }
+  else if (! check3 ){
+    cat("object has more than one sample id:",object@sample.id,"\n",
+        "only one allowed\n")
     FALSE
   }
   
