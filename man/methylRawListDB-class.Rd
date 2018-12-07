@@ -19,6 +19,13 @@ by \code{\link{methRead}} function.
                }
 }
 
+\section{Constructor}{
+\describe{
+                 \item{\code{methylRawListDB(...)}}{combine multiple methylRawDB
+                 objects supplied in ... into a methylRawListDB object.}
+               }
+}
+
 \examples{
 file.list=list( system.file("extdata", "test1.myCpG.txt", 
 package = "methylKit"),

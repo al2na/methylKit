@@ -7,8 +7,8 @@
 \alias{unite,methylRawListDB-method}
 \title{unite methylRawList to a single table}
 \usage{
-unite(object, destrand = FALSE, min.per.group = NULL, chunk.size = 1e+06,
-  mc.cores = 1, save.db = FALSE, ...)
+unite(object, destrand = FALSE, min.per.group = NULL,
+  chunk.size = 1e+06, mc.cores = 1, save.db = FALSE, ...)
 
 \S4method{unite}{methylRawList}(object, destrand = FALSE,
   min.per.group = NULL, chunk.size = 1e+06, mc.cores = 1,

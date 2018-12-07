@@ -11,24 +11,24 @@
 based on read coverage}
 \usage{
 filterByCoverage(methylObj, lo.count = NULL, lo.perc = NULL,
-  hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06, save.db = FALSE,
-  ...)
+  hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
+  save.db = FALSE, ...)
 
 \S4method{filterByCoverage}{methylRaw}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
+  chunk.size = 1e+06, save.db = FALSE, ...)
 
 \S4method{filterByCoverage}{methylRawList}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
+  chunk.size = 1e+06, save.db = FALSE, ...)
 
 \S4method{filterByCoverage}{methylRawDB}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
+  chunk.size = 1e+06, save.db = TRUE, ...)
 
 \S4method{filterByCoverage}{methylRawListDB}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
+  chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} 

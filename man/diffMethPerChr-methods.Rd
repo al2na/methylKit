@@ -7,11 +7,11 @@
 \alias{diffMethPerChr,methylDiffDB-method}
 \title{Get and plot the number of hyper/hypo methylated regions/bases per chromosome}
 \usage{
-diffMethPerChr(x, plot = TRUE, qvalue.cutoff = 0.01, meth.cutoff = 25,
-  exclude = NULL, ...)
-
-\S4method{diffMethPerChr}{methylDiff}(x, plot = TRUE, qvalue.cutoff = 0.01,
+diffMethPerChr(x, plot = TRUE, qvalue.cutoff = 0.01,
   meth.cutoff = 25, exclude = NULL, ...)
+
+\S4method{diffMethPerChr}{methylDiff}(x, plot = TRUE,
+  qvalue.cutoff = 0.01, meth.cutoff = 25, exclude = NULL, ...)
 
 \S4method{diffMethPerChr}{methylDiffDB}(x, plot = TRUE,
   qvalue.cutoff = 0.01, meth.cutoff = 25, exclude = NULL, ...)

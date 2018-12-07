@@ -13,13 +13,13 @@ methRead(location, sample.id, assembly, dbtype = NA, pipeline = "amp",
   resolution = "base", treatment, dbdir = getwd(), mincov = 10)
 
 \S4method{methRead}{character,character,character}(location, sample.id,
-  assembly, dbtype, pipeline, header, skip, sep, context, resolution, dbdir,
-  mincov)
+  assembly, dbtype, pipeline, header, skip, sep, context, resolution,
+  dbdir, mincov)
 
 \S4method{methRead}{list,list,character}(location, sample.id, assembly,
-  dbtype = NA, pipeline = "amp", header = TRUE, skip = 0, sep = "\\t",
-  context = "CpG", resolution = "base", treatment, dbdir = getwd(),
-  mincov = 10)
+  dbtype = NA, pipeline = "amp", header = TRUE, skip = 0,
+  sep = "\\t", context = "CpG", resolution = "base", treatment,
+  dbdir = getwd(), mincov = 10)
 }
 \arguments{
 \item{location}{file location(s), either a list of locations (each a 
