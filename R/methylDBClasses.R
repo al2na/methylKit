@@ -267,6 +267,11 @@ valid.methylRawListDB <- function(object) {
 #'                  \item{\code{.Data}}{a list of \code{\link{methylRawDB}} objects  } 
 #'                }
 #'                
+#' @section Constructor:\describe{
+#'                  \item{\code{methylRawListDB(...)}}{combine multiple methylRawDB
+#'                  objects supplied in ... into a methylRawListDB object.}
+#'                }
+#'                
 #' @examples
 #' file.list=list( system.file("extdata", "test1.myCpG.txt", 
 #' package = "methylKit"),
@@ -297,6 +302,26 @@ valid.methylRawListDB <- function(object) {
 #' @export
 setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
          validity=valid.methylRawListDB)
+
+
+### constructor function
+methylRawListDB <- function(...,treatment) {
+  
+  listData <- list(...)
+  ## check if input is really of type methylRaw 
+  if (length(listData) == 0L) {
+    stop("no methylRawDB object given.")
+  } else {
+    if (length(listData) == 1L && is.list(listData[[1L]]))
+      listData <- listData[[1L]]
+    if (!all(sapply(listData, is, "methylRawDB")))
+      stop("all elements in '...' must be methylRawDB objects")
+    
+    ## just merge if valid
+    mrl <- new("methylRawListDB", listData, treatment = treatment)
+    if(valid.methylRawListDB(mrl)) return(mrl)
+  }
+}
 
 # methylBaseDB ------------------------------------------------------------
 
