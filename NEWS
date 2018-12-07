@@ -1,3 +1,13 @@
+methylKit 1.9.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+* add methylRawListDB constructor
+  fixes https://github.com/al2na/methylKit/issues/134
+* update validation functions for methylRaw/methylRawDB: check for single sample id
+* unite: write S3 functions for class methylRawList and methylRawListDB
+  Fixes https://github.com/al2na/methylKit/issues/132
+
+
 methylKit 1.7.10
 --------------
 IMPROVEMENTS AND BUG FIXES
