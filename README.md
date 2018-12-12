@@ -140,6 +140,9 @@ If you used methylKit please cite:
 
  * Altuna Akalin, Matthias Kormaksson, Sheng Li, Francine E. Garrett-Bakelman, Maria E. Figueroa, Ari Melnick, Christopher E. Mason. _(2012)_. *"[methylKit: A comprehensive R package for the analysis of genome-wide DNA methylation profiles.](http://genomebiology.com/2012/13/10/R87/)"* _Genome Biology_ , 13:R87.
 
+If you used flat-file objects or over-dispersion corrected tests please consider citing:
+
+* Wreczycka K, Gosdschan A, Yusuf D, Grüning B, Assenov Y, Akalin A. *"[Strategies for analyzing bisulfite sequencing data.](https://linkinghub.elsevier.com/retrieve/pii/S0168-1656(17)31593-6)"* J Biotechnol., 2017
 
 and also consider citing the following publication as a use-case with specific cutoffs:
 
