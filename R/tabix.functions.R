@@ -268,14 +268,20 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 #' tbxFile=methylRawListDB[[1]]@dbpath
 #' headTabix(tbxFile)
 #' @noRd
-headTabix<-function(tbxFile,nrow=10,return.type="data.table"){
+headTabix <- function(tbxFile, nrow = 10,
+                    return.type = c("data.table","data.frame","GRanges") ){
   
-  if( class(tbxFile) != "TabixFile" ){
-    tbxFile <- TabixFile(tbxFile)
-    open(tbxFile)
+  returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
+  df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = TRUE, data.table = returnDt)
+  
+  if(return.type[1] == "GRanges"){
+    return( GRanges(seqnames=as.character(df$V1),
+            ranges=IRanges(start=df$V2, end=df$V3),
+            strand=df$V4, df[,5:ncol(df)]) )
+  } else {
+    return(df)
   }
   
-  getTabixByChunk( tbxFile,chunk.size=nrow,return.type)
 }
 
 
