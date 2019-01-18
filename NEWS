@@ -1,3 +1,11 @@
+methylKit 1.9.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fread.gzipped: update function to check compression based on file content 
+  and allow to decompress .bgz files
+* headTabix: use fread.gzipped directly on the tabix file
+  fixes issue https://github.com/al2na/methylKit/issues/141
+
 methylKit 1.9.1
 --------------
 IMPROVEMENTS AND BUG FIXES
