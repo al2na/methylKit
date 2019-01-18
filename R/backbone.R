@@ -4,34 +4,35 @@
 
 # reads gzipped files with data.table::fread
 fread.gzipped<-function(filepath,...){
-  #require(R.utils)
-  #require(data.table)
   
-  
-  
-  # decompress first, fread can't read gzipped files
+  # check if file is gzipped (either gz or bgz)
   if (R.utils::isGzipped(filepath, method = "content")){
     
     if(.Platform$OS.type == "unix") {
       # being on unix we can pass comand
       cmd = paste("gunzip -c",filepath)  
-      ## Read in the file
-      fread(cmd = cmd,...)
+      ## and read in the file
+      df <- data.table::fread(cmd = cmd,...) 
+      
     } else {
-      # on windows we have to decompress first
-      ext = if( endsWith(filepath,".bgz") )  "bgz" else "gz"
-      filepath <- R.utils::gunzip(filepath,temporary = FALSE, overwrite = TRUE,
-                                  remove = FALSE, ext = ext, FUN = gzfile)
-      ## Read in the file
-      fread(file = filepath,...)
+      # on windows we have to decompress first ... 
+      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
+      R.utils::gunzip(filepath,temporary = FALSE, overwrite = TRUE,
+                      remove = FALSE, ext = ext, FUN = gzfile)
+      filepath <- gsub(paste0(".",ext),"",filepath)
+      ## and then read in the uncompressed file  
+      df <- data.table::fread(file = filepath,...)
     }
     
-    
+  } else {
+    ## Or we directly read in the uncompressed file  
+    df <- data.table::fread(file = filepath,...)
   }
   
-
-  
+    
+  return(df)
 }
+
 # reads a table in a fast way to a dataframe
 .readTableFast<-function(filename,header=TRUE,skip=0,sep="auto")
 {
