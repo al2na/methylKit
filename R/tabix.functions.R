@@ -271,16 +271,20 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 headTabix <- function(tbxFile, nrow = 10,
                     return.type = c("data.table","data.frame","GRanges") ){
   
-  returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
-  df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = TRUE, data.table = returnDt)
+  # returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
+  # df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = TRUE, data.table = returnDt)
+  # 
+  # if(return.type[1] == "GRanges"){
+  #   return( GRanges(seqnames=as.character(df$V1),
+  #           ranges=IRanges(start=df$V2, end=df$V3),
+  #           strand=df$V4, df[,5:ncol(df)]) )
+  # } else {
+  #   return(df)
+  # }
   
-  if(return.type[1] == "GRanges"){
-    return( GRanges(seqnames=as.character(df$V1),
-            ranges=IRanges(start=df$V2, end=df$V3),
-            strand=df$V4, df[,5:ncol(df)]) )
-  } else {
-    return(df)
-  }
+  getTabixByChunkFread(tbxFile = tbxFile,
+                       chunk.size = nrow,
+                       return.type = return.type)
   
 }
 
@@ -312,6 +316,42 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
   }else {
     tabix2gr(scanTabix(tbxFile))
   }
+}
+
+#' get data from tabixfile for a given chunkSize
+#'
+# @example
+# tbxFile=methylRawListDB[[1]]@dbpath
+#  getTabixByChunkFread( tbxFile,chunk.size=10)
+#' @noRd
+getTabixByChunkFread<-function(tbxFile,chunk.num = 1, chunk.size=1e6,
+                           return.type=c("data.table","data.frame","GRanges")){
+  
+  if( class(tbxFile) == "TabixFile" ){
+    tbxFile <- tbxFile$path
+  }
+  
+  ## do we want data.table ?
+  returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
+  
+  ## read the chunk
+  chunk.skip <- ( chunk.num - 1 ) * chunk.size
+  ## read the chunk
+  df <- fread.gzipped(tbxFile, nrow = chunk.size, 
+                      skip = chunk.skip, stringsAsFactors = TRUE, 
+                      data.table = returnDt)
+  
+  
+  if(return.type[1] == "GRanges"){
+    ## convert to Granges if necessary
+    return( GRanges(seqnames=as.character(df$V1),
+                    ranges=IRanges(start=df$V2, end=df$V3),
+                    strand=df$V4, df[,5:ncol(df)]) )
+  } else {
+    ## else return data.frame/table
+    return(df)
+  }
+  
 }
 
 
@@ -349,6 +389,11 @@ tabix2gr<-function(tabixRes){
           strand=from$V4, from[,5:ncol(from)])
 
 }
+
+
+## !!!!! NOTES !!!!
+## The new idea is to read always with fread, but skip lines. 
+## Like for each chunk skip by chunk.num * chunk.size 
 
 # applyTbxByChunk
 #' Serially apply a function on chunks of tabix files
@@ -400,8 +445,10 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc<-function(chunk.num,tbxFile,dir,filename,FUN,...){
-      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+    myFunc<-function(chunk.num,tbxFile,dir,filename,FUN,chunk.size,...){
+      # data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+      data=getTabixByChunkFread(tbxFile = tbxFile, chunk.num=chunk.num,
+                                chunk.size=chunk.size, return.type="data.frame")
       res=FUN(data,...)  
       
       # for tabix
@@ -415,7 +462,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     filename2=paste(rndFile,filename,sep="_")
     
     # apply function to chunks
-    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
+    res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,chunk.size,...)
     
     # collect & cat temp files,then make tabix
     path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE)
@@ -426,8 +473,10 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc2<-function(chunk.num,tbxFile,dir,filename,FUN,...){
-      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+    myFunc2<-function(chunk.num,tbxFile,dir,filename,FUN,chunk.size,...){
+      # data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+      data=getTabixByChunkFread(tbxFile = tbxFile, chunk.num=chunk.num,
+                                chunk.size=chunk.size, return.type="data.frame")
       res=FUN(data,...)  
       
       # for text
@@ -441,7 +490,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     filename2=paste(rndFile,filename,sep="_")
     
     # apply function to chunks
-    res=lapply(1:chunk.num,myFunc2,tbxFile,dir,filename2,FUN,...)
+    res=lapply(1:chunk.num,myFunc2,tbxFile,dir,filename2,FUN,chunk.size,...)
     
     
     outfile= file.path(path.expand(dir),filename) # get file name 
@@ -464,23 +513,27 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     
     # create a custom function that contains the function
     # to be applied
-    myFunc3<-function(chunk.num,tbxFile,FUN,...){
-      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+    myFunc3<-function(chunk.num,tbxFile,FUN,chunk.size,...){
+      # data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.frame")
+      data=getTabixByChunkFread(tbxFile = tbxFile, chunk.num=chunk.num,
+                                chunk.size=chunk.size, return.type="data.frame")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc3,tbxFile,FUN,chunk.size,...)
     
     # collect and return
     data.frame(rbindlist(res))
   }else{
     
-    myFunc4<-function(chunk.num,tbxFile,FUN,...){
-      data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.table")
+    myFunc4<-function(chunk.num,tbxFile,FUN,chunk.size,...){
+      # data=getTabixByChunk(tbxFile,chunk.size=NULL,return.type="data.table")
+      data=getTabixByChunkFread(tbxFile = tbxFile, chunk.num=chunk.num,
+                                chunk.size=chunk.size, return.type="data.table")
       FUN(data,...)    
     }
     
-    res=lapply(1:chunk.num,myFunc4,tbxFile,FUN,...)
+    res=lapply(1:chunk.num,myFunc4,tbxFile,FUN,chunk.size,...)
   
     
     # collect and return
