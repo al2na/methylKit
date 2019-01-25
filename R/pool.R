@@ -79,7 +79,9 @@ setMethod("pool", "methylBase",
 
   treat=unique(obj@treatment)
   
-  if(length(treat) != length(sample.ids)) {stop("Length of sample.ids should be equal to length of the unique treatment vector")}
+  if(length(treat) != length(sample.ids)) {
+    stop("Length of sample.ids should be equal to \n",
+         "length of the unique treatment vector")}
   res=df[,1:4]
   for(i in 1:length(treat) ){
 
