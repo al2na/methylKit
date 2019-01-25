@@ -94,22 +94,29 @@ valid.methylRawDB <- function(object) {
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
   check3=(length(object@sample.id) == 1)
-  if(check1 & check2){
-    return(TRUE)
-  }
-  else if (! check1 ){
-    message("resolution slot has to be either 'base' or 'region':",
+  if (check2) check4 = ( ncol(headTabix(object@dbpath)) == 7 )
+  if (! check1 ){
+    cat("resolution slot has to be either 'base' or 'region':",
             "other values not allowed")
     FALSE
   }
   else if(! check2){
-    message("The DB file can not be found, check the value of 'dbpath'")
+    cat("The DB file can not be found, check the value of 'dbpath'")
     FALSE
   }
   else if (! check3 ){
     cat("object has more than one sample id:",object@sample.id,"\n",
         "only one allowed\n")
     FALSE
+  }
+  else if (! check4 ){
+    cat("object does not have 7 columns, but has", 
+        ncol(headTabix(object@dbpath)), "columns.",
+        "This cannot be a methylRawDB Tabix file.\n")
+    FALSE
+  } 
+  else {
+    TRUE
   }
   
 }
@@ -209,9 +216,11 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
   df2tabix(df,filepath)
   num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
   
-  new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
+  object <- new("methylRawDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
   sample.id = sample.id, assembly = assembly,context=context,
   resolution=resolution,dbtype=dbtype)
+  
+  if(valid.methylRawDB(object)) return(object)
 }
 
 # PRIVATE function:
@@ -228,9 +237,11 @@ readMethylRawDB<-function(dbpath,dbtype,
   }
   num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
   
-  new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
+  object <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
       sample.id = sample.id, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype)
+  
+  if(valid.methylRawDB(object)) return(object)
 }
 
 # methylRawListDB
@@ -243,7 +254,7 @@ valid.methylRawListDB <- function(object) {
     FALSE
   }
   else if ( length(object) != length(object@treatment) ){
-    message("The number of samples is different from the number of treatments, ","
+    cat("The number of samples is different from the number of treatments, ","
             check the length of 'treatment'")
     FALSE
   }
@@ -332,23 +343,34 @@ valid.methylBaseDB <- function(object) {
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
   check3=( length(object@sample.ids) == length(object@treatment) )
-  
-  if(check1 & check2 & check3 ){
-    return(TRUE)
+  numsamples = (length(df)-4)/3
+  if (check2) {
+    df <- headTabix(object@dbpath)
+    numsamples = (length(df)-4)/3
+    check4 = ( numsamples == length(object@sample.ids) )
   }
-  else if (! check1 ){
-    message("resolution slot has to be either 'base' or 'region':",
+  
+  if (! check1 ){
+    cat("resolution slot has to be either 'base' or 'region':",
             "other values not allowed")
     FALSE
   }
   else if(! check2){
-    message("The DB file can not be found, check the value of 'dbpath'")
+    cat("The DB file can not be found, check the value of 'dbpath'")
     FALSE
   }
   else if(! check3){
-    message("The number of samples is different from the number of treatments,",
-            " check the length of 'treatment'")
+    cat("The number of samples is different from the number of treatments,",
+            " check the length of 'sample.ids' & 'treatment'")
     FALSE
+  }
+  else if(! check4){
+    cat("The number of samples is different from the number of sample names,",
+            " check the length of 'sample.ids' & 'treatment'")
+    FALSE
+  }
+  else {
+    TRUE
   }
   
 }
@@ -525,16 +547,16 @@ valid.methylDiffDB <- function(object) {
     return(TRUE)
   }
   else if (! check1 ){
-    message("resolution slot has to be either 'base' or 'region':",
+    cat("resolution slot has to be either 'base' or 'region':",
             "other values not allowed")
     FALSE
   }
   else if(! check2){
-    message("The DB file can not be found, check the value of 'dbpath'")
+    cat("The DB file can not be found, check the value of 'dbpath'")
     FALSE
   }
   else if(! check3){
-    message("The number of samples is different from the number of treatments, ",
+    cat("The number of samples is different from the number of treatments, ",
             "check the length of 'treatment'")
     FALSE
   }
