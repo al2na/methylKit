@@ -11,7 +11,7 @@ methylKit
 
 Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=development)](https://travis-ci.org/al2na/methylKit)
 [![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
-
+[![codecov](https://codecov.io/github/codecov/methylKit/branch/master/graphs/badge.svg)](https://codecov.io/github/codecov/methylKit) 
 
 # Introduction
 
