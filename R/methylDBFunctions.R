@@ -1182,11 +1182,18 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
 setMethod("pool", "methylBaseDB",
           function(obj,sample.ids,chunk.size,save.db=TRUE,...){
             
+            
+  treat = unique(obj@treatment)
+  if(length(treat) != length(sample.ids)) {
+        stop("Length of sample.ids should be equal to \n",
+                 "length of the unique treatment vector")}
+  
   if(save.db) {
     
     mypool <- function(df,treatment,numCs.index){
       
       treat=unique(treatment)
+
       res=df[,1:4]
       for(i in 1:length(treat) ){
         
@@ -1210,7 +1217,6 @@ setMethod("pool", "methylBaseDB",
       return(res)
     }
     
-    treat = unique(obj@treatment)
     coverage.ind=3*(1:length(treat)) + 2
     
     # catch additional args 
