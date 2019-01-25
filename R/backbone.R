@@ -3,37 +3,45 @@
 # regular R functions to be used in S4 functions
 
 # reads gzipped files with data.table::fread
-fread.gzipped<-function(filepath,...){
+#' @noRd
+fread.gzipped<-function(filepath, ..., runShell=TRUE){
   
   # check if file is gzipped (either gz or bgz)
   if (R.utils::isGzipped(filepath, method = "content")){
     
-    if(.Platform$OS.type == "unix") {
-      # being on unix we can pass comand
-      cmd = paste("gunzip -c",filepath)  
-      ## and read in the file
-      df <- data.table::fread(cmd = cmd,...) 
+    if( runShell && ( .Platform$OS.type == "unix" ) ) {
+      # being on unix we can run shell comands to uncompress the file
+      if(!file.exists(filepath) ) 
+        # to protect against exploits
+        stop("No such file: ", filepath)
+      # run the command
+      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
+      tmpFile <- paste0(tempdir(),"/",gsub(ext,"",basename(filepath)))
+      if(!file.exists(tmpFile)) {
+        system2("gunzip",args = c("-c",shQuote(filepath)), stdout = tmpFile)
+      }
+      filepath <- tmpFile
+      # on.exit(unlink( tmpFile ), add = TRUE)
       
     } else {
       # on windows we have to decompress first ... 
       ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
-      R.utils::gunzip(filepath,temporary = FALSE, overwrite = TRUE,
-                      remove = FALSE, ext = ext, FUN = gzfile)
-      filepath <- gsub(paste0(".",ext),"",filepath)
-      ## and then read in the uncompressed file  
-      df <- data.table::fread(file = filepath,...)
+      tmpFile <- R.utils::gunzip(filepath,temporary = TRUE, overwrite = TRUE,
+                                 remove = FALSE, ext = ext, FUN = gzfile)
+      filepath <- tmpFile
+      # on.exit(unlink( tmpFile ), add = TRUE)
     }
     
-  } else {
-    ## Or we directly read in the uncompressed file  
-    df <- data.table::fread(file = filepath,...)
   }
+    ## finally we read in the uncompressed file  
+    df <- data.table::fread(file = filepath,...)
   
     
   return(df)
 }
 
 # reads a table in a fast way to a dataframe
+#' @noRd
 .readTableFast<-function(filename,header=TRUE,skip=0,sep="auto")
 {
   #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
@@ -57,6 +65,7 @@ fread.gzipped<-function(filepath,...){
 
 # reformats a data.frame to a standard methylraw data.frame
 # no matter what the alignment pipeline
+#' @noRd
 .structureAMPoutput<-function(data,mincov)
 {  
   
@@ -80,6 +89,7 @@ fread.gzipped<-function(filepath,...){
 
 # reformats a generic structure data.frame to a standard methylraw data.frame
 # based on the column number assignment and if freqC is fraction or not.
+#' @noRd
 .structureGeneric<-function(data, pipeline,mincov)
 {
     fraction=pipeline$fraction
@@ -229,6 +239,7 @@ fread.gzipped<-function(filepath,...){
 #' below this value will be removed.
 #' 
 #' @return data.frame
+#' @noRd
 .procBismarkCoverage<-function( df,mincov=10)
 {
 
@@ -264,6 +275,7 @@ fread.gzipped<-function(filepath,...){
 #' below this value will be removed.
 #' 
 #' @return data.frame
+#' @noRd
 .procBismarkCytosineReport<-function(df,mincov=10){
 
     # remove low coverage stuff
