@@ -1,3 +1,15 @@
+methylKit 1.9.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* getCorrelation: reduce code duplication and overhead by 
+  introducing S3 functions to be called by S4 methods
+* fread.gzipped: rewrite building of shell command with 
+  system2 to mimic R.Utils::gunzip
+* improve validity checks for methylDB objects
+* pool: check length of treatment and number of sample is same
+* new function getTabixByChunkFread: read from compressed tabix 
+  file in chunks, will be used instead of getTabixByChunk
+
 methylKit 1.9.2
 --------------
 IMPROVEMENTS AND BUG FIXES
