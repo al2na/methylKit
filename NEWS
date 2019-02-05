@@ -1,3 +1,21 @@
+methylKit 1.9.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* getCorrelation: reduce code duplication and overhead by 
+  introducing S3 functions to be called by S4 methods
+* fread.gzipped: rewrite building of shell command with 
+  system2 to mimic R.Utils::gunzip
+* improve validity checks for methylDB objects
+* pool: check length of treatment and number of sample is same
+* headTabix: use fread.gzipped only when user wants to get more than 1e6 rows
+* test-1-read: check if methylRawDB is same when directory is given or not,
+   i.e. test wether directory affects object
+* methylRaw: check for content in tabix file, break if not
+* calculateDiffMeth: dealing with case of full model not being different
+  from reduced model; print warning and set NaN to 1
+* pool: check length of treatment and number of sample is same
+* improve validity checks for methylDB objects
+
 methylKit 1.9.2
 --------------
 IMPROVEMENTS AND BUG FIXES
