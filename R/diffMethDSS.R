@@ -96,33 +96,39 @@ setMethod("calculateDiffMethDSS", "methylBase",
   }
 )
 
-# wrapper function for SLIM, p.adjust, qvalue-package
-p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
-                                      "bonferroni","BH","BY","fdr","none","qvalue"),
-                       n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,
-                       Divi=10,Pz=0.05,B=100,Bplot=FALSE){
-  
-  method <- match.arg(method)
-  
-  qvals=switch(method,
-               # SLIM function
-               SLIM={QValuesfun(pvals,
-                                SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,
-                                         B=B,Bplot=Bplot)$pi0_Est)
-               },
-               # r-base/p-adjust functions
-               holm={p.adjust(pvals,method=method,n)},
-               hochberg={p.adjust(pvals,method=method,n)},
-               hommel={p.adjust(pvals,method=method,n)},
-               bonferroni={p.adjust(pvals,method=method,n)},
-               BH={p.adjust(pvals,method=method,n)},
-               BY={p.adjust(pvals,method=method,n)},
-               fdr={p.adjust(pvals,method=method,n)},
-               none={p.adjust(pvals,method=method,n)},
-               # r-bioconductor/qvalue-package function
-               qvalue={qvalue(pvals,fdr.level,pfdr)$qvalues}
-  )
-}
+
+# ### NOTE: Code duplicate of diffMeth.R:8 ###
+# # wrapper function for SLIM, p.adjust, qvalue-package
+# p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
+#                                       "bonferroni","BH","BY","fdr","none","qvalue"),
+#                        n=length(pvals),fdr.level=NULL,pfdr=FALSE,STA=.1,
+#                        Divi=10,Pz=0.05,B=100,Bplot=FALSE){
+# 
+#   method <- match.arg(method)
+# 
+#   # print(pvals)
+#   # validPvals <- which(!is.na(pvals))
+#   # n=length(validPvals)
+# 
+#   qvals=switch(method,
+#                # SLIM function
+#                SLIM={QValuesfun(pvals,
+#                                 SLIMfunc(pvals,STA=STA,Divi=Divi,Pz=Pz,
+#                                          B=B,Bplot=Bplot)$pi0_Est)
+#                },
+#                # r-base/p-adjust functions
+#                holm={p.adjust(pvals,method=method,n)},
+#                hochberg={p.adjust(pvals,method=method,n)},
+#                hommel={p.adjust(pvals,method=method,n)},
+#                bonferroni={p.adjust(pvals,method=method,n)},
+#                BH={p.adjust(pvals,method=method,n)},
+#                BY={p.adjust(pvals,method=method,n)},
+#                fdr={p.adjust(pvals,method=method,n)},
+#                none={p.adjust(pvals,method=method,n)},
+#                # r-bioconductor/qvalue-package function
+#                qvalue={qvalue(pvals,fdr.level,pfdr)$qvalues}
+#   )
+# }
 
 #methylBaseToBSeq<-function(meth, use_samples=NULL, use_sites=NULL, 
 # remove.na=TRUE ) {
