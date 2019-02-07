@@ -483,6 +483,8 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 ##############################################################################
 
 
+# methylDiff --------------------------------------------------------------
+
 #' An S4 class that holds differential methylation information
 #'
 #' This class is designed to hold statistics and locations for differentially 
@@ -543,9 +545,10 @@ setClass("methylDiff",representation(
 
 
 ##############################################################################
-## S4 FUNCTIONS
+#### S4 FUNCTIONS #### 
 ##############################################################################
 
+# calculateDiffMeth ----------------------------------------------------------
 
 #' Calculate differential methylation statistics
 #' 
