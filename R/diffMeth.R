@@ -13,6 +13,7 @@ p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
   
   method <- match.arg(method)
   
+  ## perform adjustment
   qvals=switch(method,
                # SLIM function
                SLIM={QValuesfun(pvals,
@@ -31,6 +32,9 @@ p.adjusted <- function(pvals,method=c("SLIM","holm","hochberg","hommel",
                # r-bioconductor/qvalue-package function
                qvalue={qvalue(pvals,fdr.level,pfdr)$qvalues}
   )
+  
+  return(qvals)
+  
 }
 
 # SLIM
@@ -256,6 +260,7 @@ logReg<-function(counts, formula, vars, treatment,
   
   if(ncol(vars)>1){
     deviance <- objCov$deviance - obj$deviance
+    if(deviance==0) warning("Full model does not deviate from Reduced model.")
     ddf=objCov$df.residual-obj$df.residual
   }else{
     deviance <- obj$null.deviance - obj$deviance
@@ -274,6 +279,11 @@ logReg<-function(counts, formula, vars, treatment,
                  Chisq={
                    pchisq(deviance/phi, 1, lower.tail = FALSE)
                  })
+  if(is.na(p.value)) {
+    warning("Replacing NaN with 1.")
+    p.value <- 1
+  }
+  
   
   #calculate effect size
   effect <- match.arg(effect)
@@ -337,9 +347,9 @@ estimateShrinkageMN<-function(cntlist,treatment,covariates,
 
 estimatePhi<-function(counts,modelMat,treatment){
   
-  # correct counts and treatment factor for NAs in counts
-  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
-  treatment<-treatment[!is.na(treatment)]
+  # correct modelMat, counts and treatment factor for NAs in counts
+  treatment<-treatment[!is.na(counts)[1:length(treatment)]]
+  modelMat <- modelMat[!is.na(counts)[1:nrow(modelMat)],]
   counts<-counts[!is.na(counts)]
   
   n=counts[1:(length(counts)/2)]+counts[((length(counts)/2)+1):length(counts)]
