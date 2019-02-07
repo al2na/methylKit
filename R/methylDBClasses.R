@@ -11,6 +11,8 @@
                               methylDBclass=c("methylDB","methylBaseDB",
                                               "methylDiffDB")){
   
+  if(nrow(df) == 0) return(df)
+  
   if(missing(methylDBclass)){
         
     if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
@@ -94,9 +96,11 @@ valid.methylRawDB <- function(object) {
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
   check3=(length(object@sample.id) == 1)
-  if (check2) check4 = ( ncol(headTabix(object@dbpath)) == 7 )
+  if (check2) check4 = (nrow(headTabix(object@dbpath)) != 0)
+  if (check2) check5 = ( ncol(headTabix(object@dbpath)) == 7 )
+  
   if (! check1 ){
-    cat("resolution slot has to be either 'base' or 'region':",
+    message("resolution slot has to be either 'base' or 'region':",
             "other values not allowed")
     FALSE
   }
@@ -105,11 +109,19 @@ valid.methylRawDB <- function(object) {
     FALSE
   }
   else if (! check3 ){
-    cat("object has more than one sample id:",object@sample.id,"\n",
+    message("object has more than one sample id:",object@sample.id,"\n",
         "only one allowed\n")
     FALSE
+  } 
+  else if(! check4) {
+    
+    ## NOTE: this check is done to hinder further issues with empty tabix files
+    message("The tabix file for sample ",object@sample.id,
+            " does not contain any data.\n",
+            "Consider deleting file and associated index:\n",object@dbpath)
+    FALSE
   }
-  else if (! check4 ){
+  else if (! check5 ){
     cat("object does not have 7 columns, but has", 
         ncol(headTabix(object@dbpath)), "columns.",
         "This cannot be a methylRawDB Tabix file.\n")
@@ -251,6 +263,7 @@ valid.methylRawListDB <- function(object) {
   
   # if all elements are methyl
   if(!all(sapply(object,class)=="methylRawDB")){
+    message("It seems one the methylRawDB objects is invalid.")
     FALSE
   }
   else if ( length(object) != length(object@treatment) ){
