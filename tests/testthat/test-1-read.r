@@ -11,6 +11,10 @@ myobj=methRead( file.list,
 mydblist = suppressMessages(methRead( file.list,
                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
 
+mydblist2 = suppressMessages(methRead( file.list,
+                                      sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix"))
+
+
 mydb = suppressMessages(methRead( mydblist[[1]]@dbpath,
                                   sample.id="test1",assembly="hg18",dbtype = "tabix",dbdir="methylDB"))
 
@@ -25,6 +29,10 @@ test_that("if methRead return a methylRawlist", {
 
 test_that("if methRead return a methylRawListDB", {
   expect_is(mydblist, 'methylRawListDB')
+})
+
+test_that("if methRead without given dir return same methylRawListDB", {
+  expect_identical(mydblist,mydblist2)
 })
 
 test_that("if methRead of database return a methylRawDB", {
