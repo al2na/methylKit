@@ -56,3 +56,43 @@ test_that("getMethylationStats on methylRaw works", {
 })
 
 
+
+## dummy data containing NA in the counts
+missingData <- 
+  "chrBase            chr       base     strand   coverage          freqC    freqT
+chr1.662657      chr1     662657 F          53        100       0
+chr1.662678      chr1     662678 F          106       1.88679245283019        98.1132075471698
+chr1.662692      chr1     662692 F          106       100       0
+chr1.662694      chr1     662694 F          106       100       0
+chr1.680125      chr1     680125 F          NA       NA       NA
+chr1.680466      chr1     680466 F          NA       NA       NA
+chr1.714259      chr1     714259 R          NA       NA       NA
+chr1.714262      chr1     714262 R          NA       NA       NA
+chr1.714265      chr1     714265 R          NA       NA       NA
+chr1.714278      chr1     714278 R          NA       NA       NA
+chr1.714293      chr1     714293 R          NA       NA       NA
+chr1.714544      chr1     714544 R          178       0          100
+chr1.714547      chr1     714547 R          178       78.6516853932584        21.3483146067416
+chr1.714566      chr1     714566 R          178       0.561797752808989      99.438202247191"
+
+## dump dummy data in file
+write(missingData,file = "missingData.txt")
+issue <- "missingData.txt"
+
+# read the files to a methylRawList object: myobj
+## NA's are propagated, which should not happen
+test_that("check if methRead stops with NA in Input", {
+  expect_error(methRead(issue,sample.id="test",assembly="hg19",
+                         context="CpG",header = TRUE,sep = " ",
+                         mincov = 0))
+})
+# --> leads to same issue 
+test_that("check if methRead to tabix stops with NA in Input", {
+  expect_error(methRead(issue,sample.id="test",assembly="hg19",
+                        context="CpG",header = TRUE,sep = " ",
+                        mincov = 0,dbtype = "tabix"))
+})
+
+## clean up
+unlink("missingData.txt")
+
