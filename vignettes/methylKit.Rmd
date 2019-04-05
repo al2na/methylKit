@@ -921,7 +921,7 @@ package to analyse their data.
 ### My data comes from Methylation arrays, can I use methylKit to analyse my data ?
 
 The package methylKit is designed for analysing methylation data from bisulfite
-sequencing (such as WGBS or RRBS) and as such dos not provide any preprocessing
+sequencing (such as WGBS or RRBS) and as such does not provide any preprocessing
 methods required for array based methods (like Illumina Methylation arrays 
 (27K, 450k or EPIC (850k))), please check Bioconductor
 (https://bioconductor.org/packages/release/BiocViews.html#___MethylationArray)
