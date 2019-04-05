@@ -42,7 +42,7 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
 
 # reads a table in a fast way to a dataframe
 #' @noRd
-.readTableFast<-function(filename,header=TRUE,skip=0,sep="auto",check.NA=TRUE)
+.readTableFast<-function(filename,header=TRUE,skip=0,sep="auto", na.omit=TRUE)
 {
   #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
   #                       nrows = 100,stringsAsFactors=FALSE)
@@ -60,13 +60,16 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
   #return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
   #                   )  )
   
-  data <- fread.gzipped(filename,header=header,skip=skip,sep=sep,data.table=FALSE)
+  data <- fread.gzipped(filename,header=header,skip=skip,sep=sep,data.table=TRUE)
   
-  if(check.NA && anyNA(data)) 
-    stop("Input Data contains NA in rows: ",paste(which(apply(X = data, MARGIN = 1, FUN = "anyNA")),collapse = " "),
-         "\nplease remove respective rows before using methRead.")
+  if(na.omit && anyNA(data)) {
+    warning(sprintf("Omitting %i rows with NA in %s", 
+                    sum(rowSums(is.na(dt))>0),filename))
+    data <- na.omit(data)
+    
+  }
   
-  return(data)
+  return(as.data.frame(data))
   
 }
 
