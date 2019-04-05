@@ -86,7 +86,9 @@
 #' 
 #' @export
 #' @docType methods
-#' @rdname methSeg       
+#' @rdname methSeg
+#' 
+#' @importFrom GenomeInfoDb seqlevels
 methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
                   initialize.on.subset=1, ...){
   
@@ -94,13 +96,13 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
   
   
   ##coerce object to granges
-  if(class(obj)=="methylRaw" | class(obj)=="methylRawDB") {
+  if( class(obj) %in% c("methylRaw", "methylRawDB") ) {
     obj= as(obj,"GRanges")
     ## calculate methylation score 
     mcols(obj)$meth=100*obj$numCs/obj$coverage
     ## select only required mcol
     obj = obj[,"meth"]
-  }else if (class(obj)=="methylDiff" | class(obj)=="methylDiffDB") {
+  }else if ( class(obj) %in% c("methylDiff", "methylDiffDB") ) {
     obj = as(obj,"GRanges")
     ## use methylation difference as score
     obj = obj[,"meth.diff"]
@@ -125,6 +127,21 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
   ## check wether obj contains at least two ranges else stop
   if(length(obj)<=1)
     stop("segmentation requires at least two ranges.")
+  
+  ## if these ranges are on different chroms, 
+  ## repeat check for any chroms
+  length_check <- sapply(split(obj,f = seqnames(obj)),length)
+  if( any(length_check <= 1) ) {
+    warning(paste("some chromosomes do not have at least two ranges.\n",
+                  "will ignore these for segmentation:", 
+                  paste(names(length_check[length_check <= 1]),collapse = ", ")
+                  )
+            )
+    ## removing those chroms from the granges
+    seqlevels(obj, pruning.mode = "coarse") <-  names(length_check[length_check > 1])
+  }
+  
+  
   
   # match argument names to fastseg arguments
   args.fastseg=dots[names(dots) %in% names(formals(fastseg)[-1] ) ]  

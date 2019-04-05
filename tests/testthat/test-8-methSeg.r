@@ -6,6 +6,9 @@ tileRaw <- tileMethylCounts(methylRawList.obj[[1]])
 tileBase <- tileMethylCounts(methylBase.obj)
 tileDiff <- calculateDiffMeth(tileBase)
 
+MethDiff_multiChrom <- methylDiff.obj
+MethDiff_multiChrom$chr <- rep(paste0("chr",1:5), c(nrow(MethDiff_multiChrom)-10,1,3,1,5))
+
 test_that("check if methSeg works for methylRaw or methylDiff with resolution region" ,{
   expect_is(methSeg(tileRaw,diagnostic.plot = FALSE),"GRanges")
   expect_is(methSeg(tileDiff,diagnostic.plot = FALSE),"GRanges")
@@ -24,6 +27,12 @@ test_that("check if methSeg errors for a single ranged methylRaw" ,{
 test_that("check if methSeg returns error for methylBase objects" ,{
   expect_error(methSeg(methylBase.obj,diagnostic.plot = FALSE))
 })
+
+test_that("check if methSeg warns for on single ranged chrom" ,{
+  expect_warning(MethDiff_multiChrom.gr <- methSeg(MethDiff_multiChrom, diagnostic.plot = FALSE))
+  expect_is(MethDiff_multiChrom.gr,"GRanges")
+})
+
 
 
 gr = as(methylRawList.obj[[1]],"GRanges")

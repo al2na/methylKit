@@ -1,6 +1,6 @@
 #' @import methods GenomicRanges qvalue emdbook
 #' 
-#' @importMethodsFrom GenomeInfoDb seqnames seqlengths sortSeqlevels
+#' @importMethodsFrom GenomeInfoDb seqnames seqlengths sortSeqlevels seqlevels
 #'
 #' @importClassesFrom IRanges RangedSelection
 #' @importMethodsFrom IRanges nearest as.data.frame
