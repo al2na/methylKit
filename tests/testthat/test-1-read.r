@@ -77,6 +77,8 @@ chr1.714566      chr1     714566 R          178       0.561797752808989      99.
 
 ## dump dummy data in file
 write(missingData,file = "missingData.txt")
+## clean up
+on.exit(unlink("missingData.txt"))
 issue <- "missingData.txt"
 
 # read the files to a methylRawList object: myobj
@@ -93,6 +95,4 @@ test_that("check if methRead to tabix stops with NA in Input", {
                         mincov = 0,dbtype = "tabix"))
 })
 
-## clean up
-unlink("missingData.txt")
 
