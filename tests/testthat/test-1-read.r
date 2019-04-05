@@ -84,13 +84,13 @@ issue <- "missingData.txt"
 # read the files to a methylRawList object: myobj
 ## NA's are propagated, which should not happen
 test_that("check if methRead stops with NA in Input", {
-  expect_error(methRead(issue,sample.id="test",assembly="hg19",
+  expect_warning(methRead(issue,sample.id="test",assembly="hg19",
                          context="CpG",header = TRUE,sep = " ",
                          mincov = 0))
 })
 # --> leads to same issue 
 test_that("check if methRead to tabix stops with NA in Input", {
-  expect_error(methRead(issue,sample.id="test",assembly="hg19",
+  expect_warning(methRead(issue,sample.id="test",assembly="hg19",
                         context="CpG",header = TRUE,sep = " ",
                         mincov = 0,dbtype = "tabix"))
 })

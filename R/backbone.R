@@ -64,7 +64,7 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
   
   if(na.omit && anyNA(data)) {
     warning(sprintf("Omitting %i rows with NA in %s", 
-                    sum(rowSums(is.na(dt))>0),filename))
+                    sum(rowSums(is.na(data)) > 0), filename))
     data <- na.omit(data)
     
   }
