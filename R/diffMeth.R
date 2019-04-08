@@ -447,6 +447,8 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
                          sum(d[d <= d[x - lo + 1] * relErr])
                        }
                      })
+      if (PVAL > 1)
+        PVAL = floor(PVAL)
       RVAL <- list(p.value = PVAL)
     }
     mle <- function(x) {
