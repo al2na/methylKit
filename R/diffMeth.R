@@ -474,6 +474,20 @@ fast.fisher<-function (x, y = NULL, workspace = 2e+05, hybrid = FALSE, control =
 }
 
 
+## suggested by @zellerivo https://github.com/al2na/methylKit/issues/96
+midPval <- function (cntg_table) # very fast fisher
+{
+  q <- cntg_table[1, 1]
+  m <- cntg_table[1, 1] + cntg_table[2, 1]
+  n <- cntg_table[1, 2] + cntg_table[2, 2]
+  k <- cntg_table[1, 1] + cntg_table[1, 2]
+  pval_right <- phyper(q = q, m = m, n = n, k = k, lower.tail = FALSE) + 
+    (0.5 * dhyper(q, m, n, k))
+  pval_left <- phyper(q = q - 1, m = m, n = n, k = k, lower.tail = TRUE) + 
+    (0.5 * dhyper(q, m, n, k))
+  return(ifelse(test = pval_right > pval_left, yes = pval_left * 
+                  2, no = pval_right * 2))
+}
 
 
 # end of S3 functions
@@ -582,7 +596,10 @@ setClass("methylDiff",representation(
 #' @param parShrinkMN a list for squeezeVar(). (NOT IMPLEMENTED)
 #' @param test the statistical test used to determine the methylation differences. 
 #'              The Chisq-test is used by default, while the F-test can be chosen 
-#'              if overdispersion control ist applied.
+#'              if overdispersion control ist applied. If there is one sample per 
+#'              group the Fisher's exact test will be applied and users can 
+#'              choose of two implementations, "fast.fisher" or "midPval". 
+#'              See details section for more information.  
 #' @param mc.cores integer denoting how many cores should be used for parallel
 #'              differential methylation calculations (can only be used in
 #'              machines with multiple cores).
@@ -661,7 +678,15 @@ setClass("methylDiff",representation(
 #' to the 
 #' F-test. The Chisq-test can be manually chosen in this case as well, but the 
 #' F-test only 
-#' works with overdispersion correction switched on.
+#' works with overdispersion correction switched on. \cr
+#' If there is one sample in each group, e.g. after applying the pooling samples, 
+#' the Fisher's exact test will be applied for differential methylation. 
+#' methyKit offers two implementations to perform this test, which yield 
+#' slightly different results but differ much in computation time. 
+#' "fast.fisher" is a cut down version `fisher.test()` that should produce 
+#' the exact same results as the base implementation, while "midPval" 
+#' will produce marginaly different p-values, but offers a large boost in 
+#' calculation speed. 
 #' 
 #' The parameter \code{chunk.size} is only used when working with 
 #' \code{methylBaseDB} objects, as they are read in chunk by chunk to enable 
@@ -686,6 +711,11 @@ setClass("methylDiff",representation(
 #'             
 #'             McCullagh and Nelder. (1989). Generalized Linear Models. Chapman
 #'             and Hall. London New York.
+#'             
+#'             Barnard. (1989). On alleged gains in power from lower P-values.
+#'             Statistics in Medicine. 
+#'             Armitage and Berry. (1994) Statistical Methods in Medical Research (3rd
+#'             edition). Blackwell.
 #' @seealso \code{\link{pool}}, \code{\link{reorganize}}
 #'          \code{\link{dataSim}}
 #' 
@@ -701,7 +731,7 @@ setGeneric("calculateDiffMeth", function(.Object,covariates=NULL,
                                                   "none","qvalue"),
                                          effect=c("wmean","mean","predicted"),
                                          parShrinkMN=list(),
-                                         test=c("F","Chisq"),mc.cores=1,slim=TRUE,
+                                         test=c("F","Chisq","fast.fisher","midPval"),mc.cores=1,slim=TRUE,
                                          weighted.mean=TRUE,
                                          chunk.size=1e6,save.db=FALSE,...) 
   standardGeneric("calculateDiffMeth"))
@@ -745,10 +775,7 @@ setMethod("calculateDiffMeth", "methylBase",
       # add backwards compatibility with old parameters
       if(slim==FALSE) adjust="BH" else adjust=adjust
       if(weighted.mean==FALSE) effect="mean" else effect=effect
-      
 
-      
-      
         vars <- covariates
         
         # get C and T cols from methylBase data.frame-part
@@ -759,32 +786,84 @@ setMethod("calculateDiffMeth", "methylBase",
         if(!is.null(covariates)){if(ncol(covariates)+2 >= length(Tcols)){
           stop("Too many covariates/too few replicates.")}}
         
-        # get count matrix and make list
-        cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
+        # if mgcv available we can speed things up a bit
+        if (requireNamespace("mgcv", quietly = TRUE)) {
+          
+          message("\n NOTE: Found 'mgcv' package, using lookup table for fisher test.")
+          # matrix of contingency tables instead of list
+          cnt_matrix <- as.matrix(subst[, c(Ccols, Tcols)])
+          # unique rows in matrix; output indices in cnt_matrix as well
+          un_cnt <- mgcv::uniquecombs(cnt_matrix)
+          index <- attr(un_cnt, "index")
+          
+          message(sprintf(" lookup table reduced number of calculations by %.2f %%",
+                          (1-nrow(un_cnt)/nrow(cnt_matrix))*100 ) )
+          
+          if( length(index) == 1 ) 
+            un_cnt <- matrix(un_cnt,ncol = 4,byrow = TRUE)
+          # split count matrix
+          cntlist = split(un_cnt,
+                          f = 1:nrow(un_cnt))
+          
+        } else {
+          # get count matrix and make list
+          cntlist = split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
+        }
+        
 
-      if(length(.Object@treatment)==2 )
-      {
-          fpval=unlist( mclapply( cntlist,
-                            function(x) fast.fisher(matrix(as.numeric( x) ,
-                                                           ncol=2,byrow=F),
-                                                    conf.int = F)$p.value,
-                            mc.cores=mc.cores,mc.preschedule = TRUE) ) 
-          
-          # set1 is the high, set2 is the low level of the group 
-          set1.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[2]]
-          set2.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[1]]
-          
-          # calculate mean methylation change
-          mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
-          mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
-          # get difference between percent methylations
-          mom.mean.diff=mom.meth1-mom.meth2 
-          x=data.frame(subst[,1:4],fpval,
-                     p.adjusted(fpval,method=adjust),
-                     meth.diff=mom.mean.diff,stringsAsFactors=FALSE)
-          colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
+      if(length(.Object@treatment)==2 ){
+        
+        
+        # do fast.fisher by default
+        if(test %in% c("F", "Chisq")) {
+          warning(sprintf("\n performed '%s' instead of '%s' for two groups testing.",
+                          "fast.fisher",test))
+          test = "fast.fisher" 
+        }
+        
+        fpval <- switch(test, 
+                        fast.fisher={
+                          unlist( mclapply( cntlist, 
+                                            function(x) fast.fisher(
+                                              matrix(as.numeric( x),
+                                                     ncol=2,byrow=F),
+                                              conf.int = F)$p.value,
+                                            mc.cores=mc.cores,
+                                            mc.preschedule = TRUE) )
+                          },
+                        midPval = {
+                          unlist( mclapply( cntlist, 
+                                            function(x) midPval(
+                                              matrix(as.numeric( x),
+                                                     ncol=2,byrow=F)),
+                                            mc.cores=mc.cores,
+                                            mc.preschedule = TRUE) )
+                          } 
+        )
+        
+        if (requireNamespace("mgcv", quietly = TRUE))
+          # map pvals back to whole set of cytosine positions
+          fpval <- fpval[index] 
+      
+        # set1 is the high, set2 is the low level of the group 
+        set1.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[2]]
+        set2.Cs=.Object@numCs.index[.Object@treatment==levels(as.factor(.Object@treatment))[1]]
+        
+        # calculate mean methylation change
+        mom.meth1    = 100*(subst[,set1.Cs]/subst[,set1.Cs-1]) # get % methylation
+        mom.meth2    = 100*(subst[,set2.Cs]/subst[,set2.Cs-1])
+        # get difference between percent methylations
+        mom.mean.diff=mom.meth1-mom.meth2 
+        x=data.frame(subst[,1:4],fpval,
+                   p.adjusted(fpval,method=adjust),
+                   meth.diff=mom.mean.diff,stringsAsFactors=FALSE)
+        colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
           
       }else{        
+        
+        # get count matrix and make list
+        cntlist=split(as.matrix(subst[,c(Ccols,Tcols)]),1:nrow(subst))
+        
         # call estimate shrinkage before logReg
         if(overdispersion[1] == "shrinkMN"){
           parShrinkMN<-estimateShrinkageMN(cntlist,

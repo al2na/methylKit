@@ -55,7 +55,7 @@ Imports:
     stats, 
     utils
 Suggests:
-    testthat,knitr, rmarkdown, genomation, BiocManager
+    testthat,knitr, rmarkdown, genomation, BiocManager, mgcv
 VignetteBuilder: knitr
 Collate:
     'methylKit.R'
