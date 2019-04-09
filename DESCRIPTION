@@ -47,6 +47,7 @@ Imports:
     fastseg,
     rtracklayer,
     mclust,
+    mgcv,
     Rcpp,
     R.utils,
     limma, 
@@ -55,7 +56,7 @@ Imports:
     stats, 
     utils
 Suggests:
-    testthat,knitr, rmarkdown, genomation, BiocManager, mgcv
+    testthat,knitr, rmarkdown, genomation, BiocManager
 VignetteBuilder: knitr
 Collate:
     'methylKit.R'
