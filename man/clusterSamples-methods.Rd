@@ -31,7 +31,8 @@ clusterSamples(.Object, dist="correlation", method="ward",
 Any unambiguous abbreviation can be given. (default:"\code{correlation}")}
 
 \item{method}{the agglomeration method to be used. This should be 
-(an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", 
+(an unambiguous abbreviation of) one of "\code{ward.D}", 
+"\code{ward.D}", "\code{single}", 
 "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" 
 or "\code{centroid}". (default:"\code{ward}")}
 

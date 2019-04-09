@@ -74,13 +74,13 @@ colSds <- function(x, ...) {
 # dist.method method to get the distance between samples
 # hclust.method the agglomeration method to be used
 # plot if TRUE, plot the hierarchical clustering
-.cluster=function(x, dist.method="correlation", hclust.method="ward", plot=TRUE,
+.cluster=function(x, dist.method="correlation", hclust.method="ward.D", plot=TRUE,
                   treatment=treatment,sample.ids=sample.ids,context){
   DIST.METHODS <- c("correlation", "euclidean", "maximum", "manhattan", "canberra", 
         "binary", "minkowski")
   dist.method <- pmatch(dist.method, DIST.METHODS)
 
-  HCLUST.METHODS <- c("ward", "single", "complete", "average", "mcquitty", 
+  HCLUST.METHODS <- c("ward", "ward.D", "ward.D2", "single", "complete", "average", "mcquitty", 
         "median", "centroid")
   hclust.method <- pmatch(hclust.method, HCLUST.METHODS)
   if (is.na(hclust.method)) 
@@ -230,7 +230,8 @@ colSds <- function(x, ...) {
 #'        "\code{manhattan}", "\code{canberra}", "\code{binary}" or "\code{minkowski}". 
 #'        Any unambiguous abbreviation can be given. (default:"\code{correlation}")
 #' @param method the agglomeration method to be used. This should be 
-#'        (an unambiguous abbreviation of) one of "\code{ward}", "\code{single}", 
+#'        (an unambiguous abbreviation of) one of "\code{ward.D}", 
+#'        "\code{ward.D}", "\code{single}", 
 #'        "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}" 
 #'        or "\code{centroid}". (default:"\code{ward}")
 #' @param sd.filter  If \code{TRUE}, the bases/regions with low variation will be 
