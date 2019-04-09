@@ -19,9 +19,9 @@ calculateDiffMeth(.Object, covariates = NULL,
   overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM",
   "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
   "qvalue"), effect = c("wmean", "mean", "predicted"),
-  parShrinkMN = list(), test = c("F", "Chisq"), mc.cores = 1,
-  slim = TRUE, weighted.mean = TRUE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+  parShrinkMN = list(), test = c("F", "Chisq", "fast.fisher",
+  "midPval"), mc.cores = 1, slim = TRUE, weighted.mean = TRUE,
+  chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{.Object}{a \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to calculate differential
@@ -53,10 +53,11 @@ regression model is used for calculating the effect.}
 \item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 
 \item{test}{the statistical test used to determine the methylation differences. 
-The Chisq-test is used by default, while the F-test can be chosen 
-if overdispersion control ist applied. If there is one sample per 
-group the Fisher's exact test will be applied and users can 
-choose of two implementations, "fast.fisher" or "midPval". 
+The Chisq-test is used by default for more than two groups, 
+while the F-test can be chosen if overdispersion control 
+is applied. If there is one sample per group 
+the Fisher's exact test will be applied using "fast.fisher", while 
+"midPval" can be choosen to boost calculation speed. 
 See details section for more information.}
 
 \item{mc.cores}{integer denoting how many cores should be used for parallel
