@@ -3,6 +3,17 @@
 # that depend on those files
 
 
+# write to file without using scientific notation
+.write.table.noSci <- function(...,scipen=999) {
+  
+  defsci=options()$scipen
+  options(scipen = 999)
+  
+  write.table(...)
+
+  options(scipen = defsci)
+}
+
 #' merge tabix files by chr, start,end, strand
 #' 
 #' @param tabixList list of tabix files
@@ -90,7 +101,7 @@ df2tabix<-function(df,outfile){
   }
   
   # write the file to disk
-  write.table(df,outfile,quote=FALSE,sep="\t",
+  .write.table.noSci(df,outfile,quote=FALSE,sep="\t",
               col.names=FALSE,row.names=FALSE)
   
   
@@ -188,7 +199,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
   # if not parallel we can write out one file and append to it
   outfile= file.path(path.expand(dir),filename)   
   con=file(outfile, open = "a", blocking = TRUE)
-  write.table(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,
+  .write.table.noSci(res,con,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,
               append=TRUE)
   close(con)
   }else{
@@ -196,7 +207,7 @@ mergeTbxByChr<-function(chr,tabixList,dir,filename,parallel=FALSE,all=FALSE){
     # when parallel, we have to write seperate files for each chr
     # then merge them outside this function
     outfile= file.path(path.expand( dir),paste(chr,filename,sep="_")) 
-    write.table(res,outfile,quote=FALSE,sep="\t",
+    .write.table.noSci(res,outfile,quote=FALSE,sep="\t",
                 col.names=FALSE,row.names=FALSE,append=TRUE)
     
   }
@@ -415,7 +426,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       
       # for tabix
       outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
-      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+      .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
     }
 
@@ -441,7 +452,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       
       # for text
       outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
-      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+      .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
     }
     
@@ -543,7 +554,8 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
       
       # for tabix
       outfile= file.path(path.expand( dir),paste(chr,filename,sep="_"))
-      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+      
+      .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
     }
     
@@ -661,7 +673,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
       
       # for tabix
       outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
-      write.table(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+      .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
                   sep="\t")
     }
     }
