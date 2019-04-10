@@ -759,10 +759,17 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
       
       unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
     }
-    obj <- readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
-                            sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
-                            context = object[[1]]@context,resolution = object[[1]]@resolution,
-                            treatment = object@treatment,destranded = destrand)
+    obj <- tryCatch(expr = { 
+      readMethylBaseDB(dbpath = dbpath,dbtype = object[[1]]@dbtype,
+                       sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                       context = object[[1]]@context,resolution = object[[1]]@resolution,
+                       treatment = object@treatment,destranded = destrand)
+    },
+      error = function(e) {
+        stop(sprintf("no %s were united. try adjusting 'min.per.group'.",
+                     object[[1]]@resolution))
+      }
+    )
     
     message(paste0("flatfile located at: ",obj@dbpath))
     

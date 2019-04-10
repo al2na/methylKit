@@ -1282,7 +1282,8 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
             resolution=object[[1]]@resolution )
     
     if(nrow(obj) == 0)
-      stop("the methylBase object seems to be empty. stopping here.")
+      stop(sprintf("no %s were united. try adjusting 'min.per.group'.",
+                   obj@resolution))
     
     obj
     
@@ -1308,16 +1309,23 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
     
     # create methylBaseDB
     #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
-    obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
-                            sample.ids=sample.ids,
-                            assembly=unique(assemblies),
-                            context=unique(contexts),
-                            treatment=object@treatment,
-                            coverage.index=coverage.ind,
-                            numCs.index=numCs.ind,
-                            numTs.index=numTs.ind,destranded=destrand,
-                            resolution=object[[1]]@resolution,
-                            suffix=suffix)
+    obj <- tryCatch(expr = { 
+      makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
+                       sample.ids=sample.ids,
+                       assembly=unique(assemblies),
+                       context=unique(contexts),
+                       treatment=object@treatment,
+                       coverage.index=coverage.ind,
+                       numCs.index=numCs.ind,
+                       numTs.index=numTs.ind,destranded=destrand,
+                       resolution=object[[1]]@resolution,
+                       suffix=suffix)},
+      error = function(e) {
+          stop(sprintf("no %s were united. try adjusting 'min.per.group'.",
+                       object[[1]]@resolution))
+      }
+    )
+    
     obj@sample.ids <- sample.ids
     
     message(paste0("flatfile located at: ",obj@dbpath))
