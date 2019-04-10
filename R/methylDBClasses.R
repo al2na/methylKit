@@ -799,6 +799,7 @@ setMethod("makeMethylDB", signature="methylRaw", definition=function(obj,dbdir) 
                   assembly=obj@assembly, context=obj@context, 
                   resolution=obj@resolution)
   message(paste0("flatfile located at: ",getDBPath(objdb)))
+  return(objdb)
 })
 
 #' @rdname makeMethylDB-methods
@@ -823,7 +824,6 @@ setMethod("makeMethylDB", signature="methylRawList",
   dbdir <- .check.dbdir(dbdir)
   outList <- lapply(obj,makeMethylDB,dbdir)
   objdb <- new("methylRawListDB",outList,treatment=obj@treatment)
-  message(paste0("flatfile located at: ",getDBPath(objdb)))
   return(objdb)
 })
 
