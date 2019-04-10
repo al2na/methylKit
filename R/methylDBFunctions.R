@@ -706,11 +706,12 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
     }
     
     # filename will be "methylBase" concatenated with either 13-char random string or suffix
-    filename <- paste0( ifelse(is.null(suffix),
+    filename <- paste0( dir, "/", ifelse(is.null(suffix),
                                yes = tempfile(pattern = "methylBase_",tmpdir = "."),
                                no = paste0("methylBase",suffix)),
                         ".txt")
     
+    filename <- .checkTabixFileExists(filename)
     # remove the "./" that tempfile prepends
     filename <- basename(filename)
     
