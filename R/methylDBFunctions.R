@@ -1249,11 +1249,16 @@ setMethod("pool", "methylBaseDB",
                                  treatment = obj@treatment,
                                  numCs.index = obj@numCs.index) 
     
-    readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,
+    objdb <- readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,
                      sample.ids=sample.ids,
                      assembly=obj@assembly,context=obj@context,
                      treatment=treat,destranded=obj@destranded,
                      resolution=obj@resolution )
+    
+    message(paste0("flatfile located at: ",getDBPath(objdb)))
+    
+    objdb
+    
   } else {
     
     tmp <- obj[]
