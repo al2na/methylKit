@@ -1274,6 +1274,10 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
             treatment=object@treatment,coverage.index=coverage.ind,
             numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,
             resolution=object[[1]]@resolution )
+    
+    if(nrow(merged.dat) == 0)
+      stop("the methylBase object seems to be empty. stopping here.")
+    
     obj
     
   } else {

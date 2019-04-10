@@ -324,13 +324,17 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
     yieldSize(tbxFile)<-chunk.size
   }
   
+  res <- scanTabix(tbxFile)
+  if(length(res) == 1 & length(res[[1]]) == 0)
+    stop("the tabix file seems to be empty. stopping here.")
+  
   if(return.type=="data.table")
   {
-    tabix2dt(scanTabix(tbxFile) )
+    tabix2dt(res)
   }else if (return.type=="data.frame"){
-    tabix2df(scanTabix(tbxFile) )
+    tabix2df(res)
   }else {
-    tabix2gr(scanTabix(tbxFile))
+    tabix2gr(res)
   }
 }
 
