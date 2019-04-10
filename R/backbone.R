@@ -1192,6 +1192,7 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
   sample.ids=c(object[[1]]@sample.id)
   assemblies=c(object[[1]]@assembly)
   contexts  =c(object[[1]]@context)
+  message("uniting...")
   for(i in 2:length(object))
   {
     df2=getData(object[[i]])
@@ -1199,7 +1200,7 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
       df2=.CpG.dinuc.unify(df2)
       }
     #
-    message("uniting...")
+    
     if( is.null(min.per.group) ){
       df2=data.table(df2,key=c("chr","start","end","strand"))
       # merge the dat to a data.frame
