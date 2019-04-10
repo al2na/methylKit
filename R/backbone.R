@@ -1184,7 +1184,10 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
   
   #merge raw methylation calls together
   df=getData(object[[1]])
-  if(destrand & (object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
+  if(destrand & (object[[1]]@resolution == "base") ){
+    message("destranding...")
+    df=.CpG.dinuc.unify(df)
+    }
   df=data.table(df,key=c("chr","start","end","strand"))
   sample.ids=c(object[[1]]@sample.id)
   assemblies=c(object[[1]]@assembly)
@@ -1192,9 +1195,11 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
   for(i in 2:length(object))
   {
     df2=getData(object[[i]])
-    if(destrand & (object[[1]]@resolution == "base") ){df2=.CpG.dinuc.unify(df2)}
+    if(destrand & (object[[1]]@resolution == "base") ){
+      df2=.CpG.dinuc.unify(df2)
+      }
     #
-    
+    message("uniting...")
     if( is.null(min.per.group) ){
       df2=data.table(df2,key=c("chr","start","end","strand"))
       # merge the dat to a data.frame
@@ -1211,9 +1216,9 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
     }
     sample.ids=c(sample.ids,object[[i]]@sample.id)
     contexts=c(contexts,object[[i]]@context)
+    assemblies=c(assemblies,object[[i]]@assembly)
   }
   
-  # stop if the assembly of object don't match
   if( length( unique(assemblies) ) != 1 ){
     stop("assemblies of methylrawList elements should be same\n")}
   
