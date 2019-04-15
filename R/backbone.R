@@ -1412,9 +1412,10 @@ setGeneric("getCorrelation", function(object, method = "pearson",
     text(0.5, 0.5, txt, cex = cex.cor * r)
   }
   
-  panel.my.smooth2<-function(x, y, col = par("col"), bg = NA, pch = par("pch"),
-                             cex = 1, col.smooth = "darkgreen", span = 2/3, 
-                             iter = 3, ...) 
+  panel.my.smooth2 <- function(x, y, col = par("col"), bg = NA, 
+                               pch = par("pch"), cex = 1, 
+                               col.smooth = "darkgreen", span = 2/3, 
+                               iter = 3, ...) 
   {
     par(new = TRUE)    #par(usr = c(usr[1:2], 0, 1.5) )
     smoothScatter(x, y,colramp=colorRampPalette(topo.colors(100)), bg = bg)
@@ -1425,13 +1426,15 @@ setGeneric("getCorrelation", function(object, method = "pearson",
     abline(lm(y[ok]~x[ok]), col="red")
   }
   
-  panel.my.smooth<-function(x, y, col = par("col"), bg = NA, pch = par("pch"), 
-                            cex = 0.3, col.smooth = "green", 
-                            span = 2/3, iter = 3, ...) 
+  panel.my.smooth <- function(x, y, col = par("col"), bg = NA, 
+                              pch = par("pch"), cex = 0.3, 
+                              col.smooth = "green", span = 2/3, iter = 3, ...) 
   {
-    points(x, y, pch = 20, col = densCols(x,y,
-                                          colramp=colorRampPalette(topo.colors(20))), 
-           bg = bg, cex = 0.1)
+    points(x, y, 
+           pch = 20,
+           col = densCols(x, y, colramp = colorRampPalette(topo.colors(20))), 
+           bg = bg, 
+           cex = 0.1)
     ok <- is.finite(x) & is.finite(y)
     if (any(ok)){
       lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
@@ -1483,7 +1486,7 @@ setMethod("getCorrelation", "methylBase",
   
   if (plot) {
     .plotCorrelation(meth.mat = meth.mat,
-                     title = paste(object@context, object@resolution ,method,"cor."),
+                     title = paste(object@context, object@resolution , method, "cor."),
                      method = method)
   }
   
