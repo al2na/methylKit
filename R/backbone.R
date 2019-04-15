@@ -1405,7 +1405,7 @@ setGeneric("getCorrelation", function(object, method = "pearson",
   {
     usr <- par("usr"); on.exit(par(usr))
     par(usr = c(0, 1, 0, 1))
-    r <- abs(cor(x, y, method=method))
+    r <- abs(cor(x, y, method=method, use = "na.or.complete"))
     txt <- format(c(r, 0.123456789), digits=digits)[1]
     txt <- paste(prefix, txt, sep="")
     if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
@@ -1482,7 +1482,9 @@ setMethod("getCorrelation", "methylBase",
        getData(object)[,object@numTs.index] )                                      
   names(meth.mat)=object@sample.ids
   
-  print( cor(meth.mat,method=method) )
+  method <- match.arg(method)
+  
+  print( cor(meth.mat,method=method, use = "na.or.complete") )
   
   if (plot) {
     .plotCorrelation(meth.mat = meth.mat,
