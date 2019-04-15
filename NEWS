@@ -1,3 +1,34 @@
+methylKit 1.9.4
+--------------
+NEW FUNCTIONS AND FEATURES
+* calculateDiffMeth: introduce method "midPval" for fast testing of 
+  different methylation if there is one sample per group, 
+  contributed by @zellerivo 
+
+IMPROVEMENTS AND BUG FIXES
+* calculateDiffMeth: 
+  - fix rare case issue with invalid p-values on calculateDiffMeth call, 
+    that caused "qvalue" p-value adjustment to fail 
+    https://github.com/al2na/methylKit/issues/90
+  - let user choose between new "midPval" or older "fast.fisher" implemtation 
+    for statistical test used to determine the methylation differences
+    https://github.com/al2na/methylKit/issues/96
+  - introduce p-value lookup table to reduce multiple testing of 
+    identical configurations 
+    https://github.com/al2na/methylKit/issues/96
+  - reduce code duplication and overhead by introducing S3 functions 
+    to be called by S4 methods
+* update vignette with section about usage of methylKit for analysis of 
+  affinity- and array-based methylation assays
+* methSeg: if object with multiple chromosomes is used, remove chroms with 
+  less than two ranges 
+* unite: fix issue where digits were written in scientific notation 
+  https://github.com/al2na/methylKit/issues/130
+* getCorrelation: fix issue where getCorrelation produces matrix with NA
+  when using "min.per.group" https://github.com/al2na/methylKit/issues/137
+
+
+
 methylKit 1.9.3
 --------------
 IMPROVEMENTS AND BUG FIXES
