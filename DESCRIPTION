@@ -47,6 +47,7 @@ Imports:
     fastseg,
     rtracklayer,
     mclust,
+    mgcv,
     Rcpp,
     R.utils,
     limma, 

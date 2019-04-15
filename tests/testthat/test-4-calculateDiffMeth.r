@@ -11,8 +11,8 @@ myobj=methRead( file.list,
                 sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
 
 mydblist = suppressMessages(methRead( file.list,
-                                  sample.id=list("t1","t2","c1","c2"),assembly="hg18",
-                                  pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
+                                      sample.id=list("t1","t2","c1","c2"),assembly="hg18",
+                                      pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
 
 # unite function
 methidh=unite(myobj)
@@ -47,7 +47,7 @@ myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
 suppressMessages(mydblist2 <- reorganize(mydblist,sample.ids=c("t1","c2"),treatment=c(1,0) ))
 
 test_that("check if reorganize works with methylRawList", {
-    expect_is(myobj2, 'methylRawList')
+  expect_is(myobj2, 'methylRawList')
 })
 
 test_that("check if reorganize works with methylRawListDB", {
@@ -56,7 +56,7 @@ test_that("check if reorganize works with methylRawListDB", {
 
 
 test_that("check if calculateDiffMeth output is a methylDiff object", {
-    expect_is(myDiff, 'methylDiff')
+  expect_is(myDiff, 'methylDiff')
 })
 
 test_that("check if calculateDiffMeth output is a methylDiffDB object", {
@@ -74,7 +74,7 @@ test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is 
 
 
 test_that("check if calculateDiffMeth output from pooled methylBase is a methylDiff object", {
-    expect_is(myDiff3, 'methylDiff')
+  expect_is(myDiff3, 'methylDiff')
 })
 
 test_that("check if calculateDiffMeth output from pooled methylBaseDB is a methylDiffDB object", {
@@ -94,8 +94,8 @@ test_that("check if calculateDiffMeth output from three treatment groups is a me
 
 
 test_that("check getting hypo/hyper meth works with methylDiff", {
-    expect_is(hypo, 'methylDiff')
-    expect_is(hyper, 'methylDiff')
+  expect_is(hypo, 'methylDiff')
+  expect_is(hyper, 'methylDiff')
 })
 
 test_that("check getting hypo/hyper meth works with methylDiffDB", {
@@ -103,4 +103,15 @@ test_that("check getting hypo/hyper meth works with methylDiffDB", {
   expect_is(hyperDB, 'methylDiffDB')
 })
 
+test_that("check different arguments for calculateDiffMeth", {
+  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "fast.fisher"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "F"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "Chisq"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "midPval"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "fast.fisher"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "F"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "Chisq"), 'methylDiff')
+  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "midPval"), 'methylDiff')
+  
+})
 

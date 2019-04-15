@@ -11,17 +11,17 @@ calculateDiffMeth(.Object, covariates = NULL,
   overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM",
   "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
   "qvalue"), effect = c("wmean", "mean", "predicted"),
-  parShrinkMN = list(), test = c("F", "Chisq"), mc.cores = 1,
-  slim = TRUE, weighted.mean = TRUE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+  parShrinkMN = list(), test = c("F", "Chisq", "fast.fisher",
+  "midPval"), mc.cores = 1, slim = TRUE, weighted.mean = TRUE,
+  chunk.size = 1e+06, save.db = FALSE, ...)
 
 \S4method{calculateDiffMeth}{methylBaseDB}(.Object, covariates = NULL,
   overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM",
   "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
   "qvalue"), effect = c("wmean", "mean", "predicted"),
-  parShrinkMN = list(), test = c("F", "Chisq"), mc.cores = 1,
-  slim = TRUE, weighted.mean = TRUE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+  parShrinkMN = list(), test = c("F", "Chisq", "fast.fisher",
+  "midPval"), mc.cores = 1, slim = TRUE, weighted.mean = TRUE,
+  chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{.Object}{a \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to calculate differential
@@ -53,8 +53,12 @@ regression model is used for calculating the effect.}
 \item{parShrinkMN}{a list for squeezeVar(). (NOT IMPLEMENTED)}
 
 \item{test}{the statistical test used to determine the methylation differences. 
-The Chisq-test is used by default, while the F-test can be chosen 
-if overdispersion control ist applied.}
+The Chisq-test is used by default for more than two groups, 
+while the F-test can be chosen if overdispersion control 
+is applied. If there is one sample per group 
+the Fisher's exact test will be applied using "fast.fisher", while 
+"midPval" can be choosen to boost calculation speed. 
+See details section for more information.}
 
 \item{mc.cores}{integer denoting how many cores should be used for parallel
 differential methylation calculations (can only be used in
@@ -117,7 +121,15 @@ If overdispersion correction is applied, the function automatically switches
 to the 
 F-test. The Chisq-test can be manually chosen in this case as well, but the 
 F-test only 
-works with overdispersion correction switched on.
+works with overdispersion correction switched on. \cr
+If there is one sample in each group, e.g. after applying the pooling samples, 
+the Fisher's exact test will be applied for differential methylation. 
+methyKit offers two implementations to perform this test, which yield 
+slightly different results but differ much in computation time. 
+"fast.fisher" is a cut down version `fisher.test()` that should produce 
+the exact same results as the base implementation, while "midPval" 
+will produce marginaly different p-values, but offers a large boost in 
+calculation speed. 
 
 The parameter \code{chunk.size} is only used when working with 
 \code{methylBaseDB} objects, as they are read in chunk by chunk to enable 
@@ -176,6 +188,11 @@ Altuna Akalin, Matthias Kormaksson, Sheng Li,
             
             McCullagh and Nelder. (1989). Generalized Linear Models. Chapman
             and Hall. London New York.
+            
+            Barnard. (1989). On alleged gains in power from lower P-values.
+            Statistics in Medicine. 
+            Armitage and Berry. (1994) Statistical Methods in Medical Research (3rd
+            edition). Blackwell.
 }
 \seealso{
 \code{\link{pool}}, \code{\link{reorganize}}
