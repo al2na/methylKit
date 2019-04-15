@@ -1184,15 +1184,21 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
   
   #merge raw methylation calls together
   df=getData(object[[1]])
-  if(destrand & (object[[1]]@resolution == "base") ){df=.CpG.dinuc.unify(df)}
+  if(destrand & (object[[1]]@resolution == "base") ){
+    message("destranding...")
+    df=.CpG.dinuc.unify(df)
+    }
   df=data.table(df,key=c("chr","start","end","strand"))
   sample.ids=c(object[[1]]@sample.id)
   assemblies=c(object[[1]]@assembly)
   contexts  =c(object[[1]]@context)
+  message("uniting...")
   for(i in 2:length(object))
   {
     df2=getData(object[[i]])
-    if(destrand & (object[[1]]@resolution == "base") ){df2=.CpG.dinuc.unify(df2)}
+    if(destrand & (object[[1]]@resolution == "base") ){
+      df2=.CpG.dinuc.unify(df2)
+      }
     #
     
     if( is.null(min.per.group) ){
@@ -1211,9 +1217,9 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
     }
     sample.ids=c(sample.ids,object[[i]]@sample.id)
     contexts=c(contexts,object[[i]]@context)
+    assemblies=c(assemblies,object[[i]]@assembly)
   }
   
-  # stop if the assembly of object don't match
   if( length( unique(assemblies) ) != 1 ){
     stop("assemblies of methylrawList elements should be same\n")}
   
@@ -1274,6 +1280,11 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
             treatment=object@treatment,coverage.index=coverage.ind,
             numCs.index=numCs.ind,numTs.index=numTs.ind,destranded=destrand,
             resolution=object[[1]]@resolution )
+    
+    if(nrow(obj) == 0)
+      stop(sprintf("no %s were united. try adjusting 'min.per.group'.",
+                   obj@resolution))
+    
     obj
     
   } else {
@@ -1298,16 +1309,23 @@ unite.methylRawList <- function(object,destrand=FALSE,min.per.group=NULL,
     
     # create methylBaseDB
     #message(paste("creating file",paste0(methylObj@sample.id,suffix,".txt")))
-    obj <- makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
-                            sample.ids=sample.ids,
-                            assembly=unique(assemblies),
-                            context=unique(contexts),
-                            treatment=object@treatment,
-                            coverage.index=coverage.ind,
-                            numCs.index=numCs.ind,
-                            numTs.index=numTs.ind,destranded=destrand,
-                            resolution=object[[1]]@resolution,
-                            suffix=suffix)
+    obj <- tryCatch(expr = { 
+      makeMethylBaseDB(df=df,dbpath=dbdir,dbtype="tabix",
+                       sample.ids=sample.ids,
+                       assembly=unique(assemblies),
+                       context=unique(contexts),
+                       treatment=object@treatment,
+                       coverage.index=coverage.ind,
+                       numCs.index=numCs.ind,
+                       numTs.index=numTs.ind,destranded=destrand,
+                       resolution=object[[1]]@resolution,
+                       suffix=suffix)},
+      error = function(e) {
+          stop(sprintf("no %s were united. try adjusting 'min.per.group'.",
+                       object[[1]]@resolution))
+      }
+    )
+    
     obj@sample.ids <- sample.ids
     
     message(paste0("flatfile located at: ",obj@dbpath))

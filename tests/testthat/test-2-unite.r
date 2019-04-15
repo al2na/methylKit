@@ -42,3 +42,29 @@ test_that("test if output of unite is  methylBaseDB object", {
   expect_is(ta2methylDB, 'methylBaseDB')
 })
 
+
+# test for error when methylRaws are non-overlapping
+
+filtered.obj <- filterByCoverage(methylRawList.obj,
+                                 lo.count = 200, 
+                                 lo.perc = NULL, 
+                                 hi.count = NULL, 
+                                 hi.perc = 99.9)
+filtered.objDB <- makeMethylDB(filtered.obj, dbdir = "methylDB")
+
+test_that("test if unite stopps if bases overlap.", {
+  expect_error(unite(filtered.obj,
+                     destrand = TRUE,
+                     save.db = TRUE,
+                     dbdir = "methylDB",
+                     suffix = "filtered_merged"))
+  expect_error(unite(filtered.obj,
+                     destrand = TRUE))
+  expect_error(unite(filtered.objDB,
+                     destrand = TRUE,
+                     save.db = TRUE,
+                     suffix = "filtered_merged"))
+  expect_error(unite(filtered.objDB,
+                     destrand = TRUE,
+                     save.db = FALSE))
+})
