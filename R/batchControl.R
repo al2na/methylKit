@@ -315,7 +315,7 @@ setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...)
 #' @aliases removeComp,methylBase-method
 setMethod("removeComp",signature(mBase="methylBase"), 
           function(mBase,comp,save.db,...){
-  if(is.na(comp) || is.null(comp)){
+  if(anyNA(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
   

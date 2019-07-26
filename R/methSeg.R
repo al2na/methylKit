@@ -2,19 +2,19 @@
 
 #' Segment methylation or differential methylation profile
 #' 
-#' The function uses a segmentation algorithm (\code{\link[fastseg]{fastseg}}) 
-#' to segment the methylation profiles. Following that, it uses
-#' gaussian mixture modelling to cluster the segments into k components. This process
-#' uses mean methylation value of each segment in the modeling phase. Each
-#' component ideally indicates quantitative classification of segments, such
-#' as high or low methylated regions.
+#' The function uses a segmentation algorithm (\code{\link[fastseg]{fastseg}})
+#' to segment the methylation profiles. Following that, it uses gaussian mixture
+#' modelling to cluster the segments into k components. This process uses mean
+#' methylation value of each segment in the modeling phase. Each component
+#' ideally indicates quantitative classification of segments, such as high or
+#' low methylated regions.
 #' 
-#' @param obj \code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link{methylDiff}}, 
-#'        \code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
-#'        \code{\link{methylRawDB}} . If the object is a 
-#'        \code{\link[GenomicRanges:GRanges-class]{GRanges}} it should have one meta column 
-#'        with methylation scores and has to be sorted by position, 
-#'        i.e. ignoring the strand information.
+#' @param obj \code{\link[GenomicRanges:GRanges-class]{GRanges}},
+#'        \code{\link{methylDiff}}, \code{\link{methylDiffDB}},
+#'        \code{\link{methylRaw}} or \code{\link{methylRawDB}} . 
+#'        If the object is a \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+#'        it should have one meta column with methylation scores and has to be
+#'        sorted by position, i.e. ignoring the strand information.
 #' @param diagnostic.plot if TRUE a diagnostic plot is plotted. The plot shows
 #'        methylation and length statistics per segment group. In addition, it 
 #'        shows diagnostics from mixture modeling: the density function estimated 
@@ -62,8 +62,9 @@
 #' @examples 
 #' 
 #' \donttest{
-#'   download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
-#'                destfile="H1.chr21.chr22.rds",method="curl")
+#'  download.file(
+#'  "https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+#'  destfile="H1.chr21.chr22.rds",method="curl")
 #' 
 #'  mbw=readRDS("H1.chr21.chr22.rds")
 #' 

@@ -9,12 +9,12 @@ methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
   initialize.on.subset = 1, ...)
 }
 \arguments{
-\item{obj}{\code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link{methylDiff}}, 
-\code{\link{methylDiffDB}}, \code{\link{methylRaw}} or 
-\code{\link{methylRawDB}} . If the object is a 
-\code{\link[GenomicRanges:GRanges-class]{GRanges}} it should have one meta column 
-with methylation scores and has to be sorted by position, 
-i.e. ignoring the strand information.}
+\item{obj}{\code{\link[GenomicRanges:GRanges-class]{GRanges}},
+\code{\link{methylDiff}}, \code{\link{methylDiffDB}},
+\code{\link{methylRaw}} or \code{\link{methylRawDB}} . 
+If the object is a \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+it should have one meta column with methylation scores and has to be
+sorted by position, i.e. ignoring the strand information.}
 
 \item{diagnostic.plot}{if TRUE a diagnostic plot is plotted. The plot shows
 methylation and length statistics per segment group. In addition, it 
@@ -51,12 +51,12 @@ A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment
        'seg.group' column shows the segment groups obtained by mixture modeling
 }
 \description{
-The function uses a segmentation algorithm (\code{\link[fastseg]{fastseg}}) 
-to segment the methylation profiles. Following that, it uses
-gaussian mixture modelling to cluster the segments into k components. This process
-uses mean methylation value of each segment in the modeling phase. Each
-component ideally indicates quantitative classification of segments, such
-as high or low methylated regions.
+The function uses a segmentation algorithm (\code{\link[fastseg]{fastseg}})
+to segment the methylation profiles. Following that, it uses gaussian mixture
+modelling to cluster the segments into k components. This process uses mean
+methylation value of each segment in the modeling phase. Each component
+ideally indicates quantitative classification of segments, such as high or
+low methylated regions.
 }
 \details{
 To be sure that the algorithm will work on your data, 
@@ -74,8 +74,9 @@ After initial segmentation with fastseg(), segments are clustered
 \examples{
 
 \donttest{
-  download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
-               destfile="H1.chr21.chr22.rds",method="curl")
+ download.file(
+ "https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+ destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")
 
