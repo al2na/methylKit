@@ -434,12 +434,12 @@ setMethod("adjustMethylC", c("methylRawListDB","methylRawListDB"),
     
     if( !( "dbdir" %in% names(args)) ){
       dbdir <- NULL
-    } else { dbdir <- .check.dbdir(args$dbdir) }
+    } else { dbdir <- basename(.check.dbdir(args$dbdir)) }
     
     my.list=list()
     for(i in 1:length(mc)){
       my.list[[i]]=adjustMethylC(mc[[i]],hmc[[i]],save.db,
-                                  dbdir=basename(dbdir),...,chunk.size)
+                                  dbdir=dbdir,...,chunk.size)
     }
     new("methylRawListDB",my.list,treatment=mc@treatment )
     
