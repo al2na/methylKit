@@ -11,8 +11,18 @@
 \alias{makeMethylDB,methylDiff-methods}
 \alias{makeMethylDB,methylRawList-method}
 \alias{makeMethylDB,methylRawList-methods}
-\title{coerce methylKit objects from memory to flat file database objects}
+\title{load tabix file with header to methylDB}
 \usage{
+makeMethylDB(obj, dbdir = getwd())
+
+\S4method{makeMethylDB}{methylBase}(obj, dbdir = getwd())
+
+\S4method{makeMethylDB}{methylRaw}(obj, dbdir = getwd())
+
+\S4method{makeMethylDB}{methylDiff}(obj, dbdir = getwd())
+
+\S4method{makeMethylDB}{methylRawList}(obj, dbdir = getwd())
+
 makeMethylDB(obj, dbdir = getwd())
 
 \S4method{makeMethylDB}{methylBase}(obj, dbdir = getwd())
@@ -24,19 +34,18 @@ makeMethylDB(obj, dbdir = getwd())
 \S4method{makeMethylDB}{methylRawList}(obj, dbdir = getwd())
 }
 \arguments{
-\item{obj}{an \code{\link{methylBase}},
-\code{\link{methylRaw}},
-\code{\link{methylRawList}} or an \code{\link{methylDiff}} object}
-
-\item{dbdir}{directory where flat file database(s) should be stored, 
-defaults to getwd(), working directory.}
+\item{dbpath}{path to a tabix file with header}
 }
 \value{
 an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
 \code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
 }
 \description{
-The function converts in-memory methylKit objects to methylDB objects
+load tabix file with header to methylDB
+}
+\details{
+The function reads the header from a given tabix file and 
+loads it into corresponding methylDB object.
 }
 \examples{
 \dontrun{
