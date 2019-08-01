@@ -328,6 +328,28 @@ writeTabixHeader <- function(obj,tabixHead,filename) {
     write(paste0("#NR:",nrow(df)),file = filename ,append = TRUE)
   }
 }
+
+.formatTabixHeader <- function(class,numRecords=NULL,tabixHead,filename=NULL) {
+  
+  formattedTabixHead <- paste0(
+    # then we write the creation date ..
+    paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S'),"\n"),
+    # add the class of the object
+    paste0("#Class:",class,"\n"),
+    # and number of records
+    if(!"num.records" %in% names(tabixHead) & !is.null(numRecords)) 
+      {paste0("#NR:",numRecords,"\n")},
+    # and the slots as comments 
+    paste0("#",tabixHead,collapse = "\n"),"\n",
+    # add database type
+    "#DT:tabix"
+  )
+  if(!is.null(filename)) {
+    write( formattedTabixHead,file = filename ,append = FALSE)
+  } else {
+    return(formattedTabixHead)
+  }
+}
   
   
 
