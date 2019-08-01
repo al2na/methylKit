@@ -94,20 +94,21 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE,tabixHead=NULL
 #' 
 #' @usage df2tabix(df,outfile)
 #' @noRd
-df2tabix<-function(df,outfile){
+df2tabix<-function(df,outfile,rm.file=TRUE,append = FALSE){
   
-  if(file.exists(outfile)){
+  if(!append &  file.exists(outfile)){
     message("overwriting ",outfile)
     unlink(outfile)
   }
   
   # write the file to disk
   .write.table.noSci(df,outfile,quote=FALSE,sep="\t",
-              col.names=FALSE,row.names=FALSE)
+                     append = append, col.names=FALSE,
+                     row.names=FALSE)
   
   
   #make tabix out if the file
-  makeMethTabix( outfile ,skip=0)
+  makeMethTabix( outfile ,skip=0,rm.file=rm.file)
 }
 
 
