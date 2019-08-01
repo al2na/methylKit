@@ -18,11 +18,18 @@ test_that("test if output of adjustMethylC is  methylRaw or methylRawList object
   
 })
 
+makeMethylDB(my5mCList,dbdir = "methylDB")
+
+
+suppressMessages(expr = {
+  my5mCListDB = makeMethylDB(my5mCList)
+  my5hmCListDB = makeMethylDB(my5hmCList)
+  })
 test_that("test if output of adjustMethylC is  methylRawDB object", {
   expect_is(adjustMethylC(my5mC,my5hmC,save.db = TRUE,dbtype="tabix",dbdir="methylDB"), 'methylRawDB')
   expect_is(adjustMethylC(makeMethylDB(my5mC),makeMethylDB(my5hmC)), 'methylRawDB')
-  expect_is(adjustMethylC(makeMethylDB(my5mCList),makeMethylDB(my5hmCList)), 'methylRawListDB')
+  expect_is(adjustMethylC(my5mCListDB,my5hmCListDB), 'methylRawListDB')
 })
 
 
-unlink("tests/testthat/methylDB",recursive = TRUE)
+unlink("tests/testthat/methylDB*",recursive = TRUE)

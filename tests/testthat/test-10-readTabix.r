@@ -12,7 +12,7 @@ test_that("reading of tabix without dbtype leads to error", {
 })
 
 # but you need to take care of the dbtype parameter ( is NA by default)
-myobj.db <- methRead(location = compr.file.path,sample.id = "test1",assembly = "hg18",dbtype = "tabix",dbdir = dbdir)
+myobj.db <- suppressWarnings(methRead(location = compr.file.path,sample.id = "test1",assembly = "hg18",dbtype = "tabix",dbdir = dbdir))
 test_that("if read of database return a methylRawDB", {
   expect_is(myobj.db, 'methylRawDB')
 })
