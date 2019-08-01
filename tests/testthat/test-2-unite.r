@@ -56,3 +56,6 @@ test_that("test if unite stopps if bases overlap.", {
                      destrand = TRUE,
                      save.db = FALSE))
 })
+
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

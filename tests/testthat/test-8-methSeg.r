@@ -94,3 +94,4 @@ test_that("check if methSeg2bed returns bed file", {
 })
 
 unlink("test.bed")
+unlink("tests/testthat/methylDB",recursive = TRUE)

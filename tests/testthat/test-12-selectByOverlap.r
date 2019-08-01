@@ -34,3 +34,6 @@ test_that("check if selectByOverlap works for normal methyl objects." ,{
   expect_is(selectByOverlap(methylBase.obj,my.win),"methylBase")
   expect_is(selectByOverlap(methylDiff.obj,my.win),"methylDiff")
 })
+
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

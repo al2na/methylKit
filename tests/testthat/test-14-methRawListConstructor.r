@@ -38,3 +38,6 @@ test_that("check if the joined list is equal to direct processing for methylRawL
 test_that("check if the joined list is equal to direct processing for methylRawListDB",{
   expect_identical(mydblist_joined,mydblist)
 })
+
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

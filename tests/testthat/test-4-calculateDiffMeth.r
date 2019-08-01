@@ -114,3 +114,5 @@ test_that("check different arguments for calculateDiffMeth", {
   
 })
 
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

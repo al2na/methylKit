@@ -47,3 +47,5 @@ test_that("check getting hypo/hyper meth works", {
         is_a('methylDiff'))
 })
 
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

@@ -16,3 +16,5 @@ test_that("check if dataSim output with vectorized effect sizes is a methylBase 
   expect_that(my.methylBase2, 
               is_a('methylBase'))
 })
+
+unlink("tests/testthat/methylDB",recursive = TRUE)
