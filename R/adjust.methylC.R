@@ -139,7 +139,7 @@ setMethod("adjustMethylC", c("methylRaw","methylRaw"),
 
 
 #' @rdname adjustMethylC
-#' @aliases adjustMethylC,methylRawList,methylRawList-method adjust.methylC
+#' @aliases adjustMethylC,methylRawList,methylRawList-method
 setMethod("adjustMethylC", c("methylRawList","methylRawList"),
           function(mc,hmc,save.db=FALSE,...){
   

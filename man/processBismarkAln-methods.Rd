@@ -3,7 +3,6 @@
 \docType{methods}
 \name{processBismarkAln}
 \alias{processBismarkAln}
-\alias{read.bismark}
 \alias{processBismarkAln,character,character,character-method}
 \alias{processBismarkAln,list,list,character-method}
 \title{Get methylation percentage from sorted Bismark alignments}

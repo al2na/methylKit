@@ -736,7 +736,7 @@ setMethod("methRead", signature(location = "character"),
 # @param dbdir directory where flat file database(s) should be stored, defaults
 # @return returns a methylRawListDB object
 #' @rdname methRead-methods
-#' @aliases methRead,list,list,character-method read
+#' @aliases methRead,list,list,character-method
 setMethod("methRead", signature(location = "list",sample.id="list",
                             assembly="character"),
           function(location,sample.id,assembly,dbtype,pipeline,header,
@@ -848,7 +848,7 @@ setMethod("methRead", signature(location = "list",sample.id="list",
 ## if this is not the case error is returned
 # @return returns a methylRawDB object
 #' @rdname methRead-methods
-#' @aliases methRead,list,list,character-method read
+#' @aliases methRead,list,list,character-method
 setMethod("methRead", signature(location = "list"),
           function(location,sample.id,assembly,dbtype,pipeline,header,
                    skip,sep,context,resolution,treatment,dbdir,mincov){
