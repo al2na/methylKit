@@ -31,6 +31,9 @@
 
 # MethylRawDB and MethylRawListDB -----------------------------------------
 
+# filterByCoverage --------------------------------------------------------
+
+ 
 #' @aliases filterByCoverage,methylRawDB-method
 #' @rdname filterByCoverage-methods
 setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
@@ -134,6 +137,8 @@ setMethod("filterByCoverage", signature(methylObj="methylRawListDB"),
 })
 
 
+# getCoverageStats --------------------------------------------------------
+
 #' @rdname getCoverageStats-methods
 #' @aliases getCoverageStats,methylRawDB-method
 setMethod("getCoverageStats", "methylRawDB",
@@ -227,6 +232,9 @@ setMethod("getCoverageStats", "methylRawDB",
             }
           })
 
+
+# getMethylationStats -----------------------------------------------------
+
 #' @rdname getMethylationStats-methods
 #' @aliases getMethylationStats,methylRawDB-method
 setMethod("getMethylationStats", "methylRawDB",
@@ -318,6 +326,8 @@ setMethod("getMethylationStats", "methylRawDB",
             }
           })
 
+
+# adjustMethylC -----------------------------------------------------------
 
 #' @rdname adjustMethylC
 #' @aliases adjustMethylC,methylRawDB,methylRawDB-method
@@ -425,6 +435,9 @@ setMethod("adjustMethylC", c("methylRawListDB","methylRawListDB"),
   
 })
 
+# normalizeCoverage -------------------------------------------------------
+
+
 #' @rdname normalizeCoverage-methods
 #' @aliases normalizeCoverage,methylRawListDB-method
 setMethod("normalizeCoverage", "methylRawListDB",
@@ -512,6 +525,10 @@ setMethod("normalizeCoverage", "methylRawListDB",
               normalizeCoverage(tmp,method,save.db=FALSE)
             }
 })
+
+
+# reorganize --------------------------------------------------------------
+
 
 #' @rdname reorganize-methods
 #' @aliases reorganize,methylRawListDB-method
@@ -613,6 +630,9 @@ setMethod("reorganize", signature(methylObj="methylRawListDB"),
 
 
 # MethylBaseDB ------------------------------------------------------------
+
+# unite -------------------------------------------------------------------
+
 
 unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                                   chunk.size=1e6,mc.cores=1,save.db=TRUE,...){
@@ -786,6 +806,10 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
 #' @aliases unite,methylRawListDB-method
 setMethod("unite", "methylRawListDB",unite.methylRawListDB) 
 
+
+# getCorrelation ----------------------------------------------------------
+
+
 #' @rdname getCorrelation-methods
 #' @aliases getCorrelation,methylBaseDB-method
 setMethod("getCorrelation", "methylBaseDB",
@@ -818,6 +842,9 @@ setMethod("getCorrelation", "methylBaseDB",
   }
 }  
 )
+
+
+# reconstruct -------------------------------------------------------------
 
 #' @rdname reconstruct-methods
 #' @aliases reconstruct,methylBaseDB-method
@@ -924,6 +951,10 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
 }
 )
 
+
+# removeComp --------------------------------------------------------------
+
+
 #' @rdname removeComp-methods
 #' @aliases removeComp,methylBaseDB-method
 setMethod("removeComp",signature(mBase="methylBaseDB"), 
@@ -955,6 +986,10 @@ setMethod("removeComp",signature(mBase="methylBaseDB"),
   reconstruct(res,mBase,chunk.size,save.db = save.db,...=...)
 }
 )
+
+
+# percMethylation ---------------------------------------------------------
+
 
 #' @rdname percMethylation-methods
 #' @aliases percMethylation,methylBaseDB-method
@@ -1003,6 +1038,10 @@ setMethod("percMethylation", "methylBaseDB",
             }
 })
 
+
+# clusterSamples ----------------------------------------------------------
+
+
 #' @rdname clusterSamples-methods
 #' @aliases clusterSamples,methylBaseDB-method
 setMethod("clusterSamples", "methylBaseDB",
@@ -1050,6 +1089,9 @@ setMethod("clusterSamples", "methylBaseDB",
             
           }
 )
+
+# PCASamples --------------------------------------------------------------
+
 
 #' @rdname PCASamples-methods
 #' @aliases PCASamples,methylBaseDB-method
@@ -1108,6 +1150,9 @@ setMethod("PCASamples", "methylBaseDB",
   
 }      
 )
+
+# reorganize --------------------------------------------------------------
+
 
 #' @rdname reorganize-methods
 #' @aliases reorganize,methylBaseDB-method
@@ -1184,6 +1229,9 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     
   }
 })
+
+# pool --------------------------------------------------------------------
+
 
 #' @rdname pool-methods
 #' @aliases pool,methylBaseDB-method
@@ -1279,6 +1327,9 @@ setMethod("pool", "methylBaseDB",
 
 # MethylDiffDB ------------------------------------------------------------
 
+# calculateDiffMeth -------------------------------------------------------
+
+
 #' @aliases calculateDiffMeth,methylBaseDB-method
 #' @rdname calculateDiffMeth-methods
 setMethod("calculateDiffMeth", "methylBaseDB",
@@ -1357,6 +1408,9 @@ setMethod("calculateDiffMeth", "methylBaseDB",
 }
 )
 
+# getMethylDiff -----------------------------------------------------------
+
+
 #' @aliases getMethylDiff,methylDiffDB-method
 #' @rdname getMethylDiff-methods
 setMethod(f="getMethylDiff", signature="methylDiffDB", 
@@ -1433,6 +1487,9 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     
 }) 
 
+# diffMethPerChr ----------------------------------------------------------
+
+
 #' @aliases diffMethPerChr,methylDiffDB-method
 #' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiffDB"),
@@ -1504,6 +1561,9 @@ if(plot){
 })
 
 # Regionalize methods ----------------------------------------------------
+
+# regionCounts ------------------------------------------------------------
+
 
 #' @rdname regionCounts
 #' @aliases regionCounts,methylRawDB,GRanges-method
@@ -1947,6 +2007,9 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
             }
           }
 )
+
+# tileMethylCounts --------------------------------------------------------
+
 
 #' @aliases tileMethylCounts,methylRawDB-method
 #' @rdname tileMethylCounts-methods
