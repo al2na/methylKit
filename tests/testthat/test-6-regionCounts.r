@@ -38,3 +38,5 @@ test_that("check that tileMethylCounts on methylRawDB works", {
   expect_is( tileMethylCounts(object=myobjDB,win.size=1000,step.size=1000,cov.bases=0) ,
                'methylRawDB')
 })
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

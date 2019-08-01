@@ -55,4 +55,4 @@ test_that("getMethylationStats on methylRaw works", {
                   'methylation statistics per base')
 })
 
-
+unlink("tests/testthat/methylDB",recursive = TRUE)

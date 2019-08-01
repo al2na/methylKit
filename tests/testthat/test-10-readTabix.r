@@ -38,3 +38,4 @@ test_that("reading of compressed files returns methylRawListDB", {
 })
 
 
+unlink("tests/testthat/methylDB",recursive = TRUE)

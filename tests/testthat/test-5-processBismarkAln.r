@@ -53,3 +53,5 @@ test_that("check that CHH context can be read-in as methylrawdb", {
              'methylRawDB')
 })
 
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

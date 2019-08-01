@@ -29,3 +29,5 @@ test_that("check if PCASamples output is a summary of princomp", {
     expect_is(PCASamples(methidhDB,obj.return=TRUE),
             'prcomp')
 })
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

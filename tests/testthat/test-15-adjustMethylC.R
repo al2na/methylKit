@@ -23,3 +23,6 @@ test_that("test if output of adjustMethylC is  methylRawDB object", {
   expect_is(adjustMethylC(makeMethylDB(my5mC),makeMethylDB(my5hmC)), 'methylRawDB')
   expect_is(adjustMethylC(makeMethylDB(my5mCList),makeMethylDB(my5hmCList)), 'methylRawListDB')
 })
+
+
+unlink("tests/testthat/methylDB",recursive = TRUE)

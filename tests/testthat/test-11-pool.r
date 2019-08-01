@@ -33,3 +33,4 @@ test_that("wrong number of sample.ids lead to error", {
   expect_error(pool(methidh,sample.ids=c("test","control","onetoomuch")))
 })
 
+unlink("tests/testthat/methylDB",recursive = TRUE)

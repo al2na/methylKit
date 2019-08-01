@@ -50,3 +50,4 @@ test_that("check if applyTbxByOverlap returns expected results for different ret
   expect_identical(headTabix(tmp3,nrow = nrow(res.dt),return.type = "data.table"),res.dt)
 })
 
+unlink("tests/testthat/methylDB",recursive = TRUE)
