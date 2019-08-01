@@ -87,13 +87,22 @@ setMethod("filterByCoverage", signature(methylObj="methylRawDB"),
     
     filename <- basename(filename)
     
-    #print(filename)
+    ## creating the tabix header
+    slotList <- list(dbtype = "tabix",
+                     sample.id = methylObj@sample.id,
+                     assembly = methylObj@assembly, context = methylObj@context,
+                     resolution = methylObj@resolution)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                          tabixHead = tabixHead)
     
     newdbpath <- applyTbxByChunk(methylObj@dbpath,chunk.size = chunk.size, 
                                  dir=dir,filename = filename, 
                                  return.type = "tabix", FUN = filter, 
                                  lo.count=lo.count, lo.perc=lo.perc, 
-                                 hi.count=hi.count, hi.perc=hi.perc)
+                                 hi.count=hi.count, hi.perc=hi.perc,
+                                 tabixHead = tabixHeadString)
     
     readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
                     sample.id = methylObj@sample.id,
@@ -374,9 +383,20 @@ setMethod("adjustMethylC", c("methylRawDB","methylRawDB"),
     
     filename <- basename(filename)
     
+    ## creating the tabix header
+    slotList <- list(sample.id=mc@sample.id,
+                     assembly=mc@assembly, context =mc@context,
+                     resolution=mc@resolution,
+                     dbtype = mc@dbtype)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByChunk(base@dbpath,chunk.size = chunk.size, 
                                  dir=dir,filename = filename, 
-                                 return.type = "tabix", FUN = adjust)
+                                 return.type = "tabix", FUN = adjust,
+                                 tabixHead = tabixHeadString)
     
     unlink(list.files(dirname(base@dbpath),
                       pattern = basename(gsub(".txt.bgz","",base@dbpath)),
@@ -500,11 +520,23 @@ setMethod("normalizeCoverage", "methylRawListDB",
                 
                 filename <- basename(filename)
                 
+                ## creating the tabix header
+                slotList <- list(sample.id=obj[[i]]@sample.id,
+                                 assembly=obj[[i]]@assembly, 
+                                 context =obj[[i]]@context,
+                                 resolution=obj[[i]]@resolution,
+                                 dbtype = obj[[i]]@dbtype)
+                
+                tabixHead <- makeTabixHeader(slotList)
+                tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                                      tabixHead = tabixHead)
+                
                 newdbpath <- applyTbxByChunk(obj[[i]]@dbpath,
                                              chunk.size = chunk.size, 
                                              dir=dir,filename = filename, 
                                              return.type = "tabix", 
-                                             FUN = normCov,method = method)
+                                             FUN = normCov,method = method,
+                                             tabixHead = tabixHeadString)
                 
                 outList[[i]] <- readMethylRawDB(dbpath = newdbpath,
                                                 sample.id=obj[[i]]@sample.id,
@@ -679,6 +711,17 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
           
           filename <- basename(filename)
           
+          ## creating the tabix header
+          slotList <- list(dbtype = "tabix",
+                           sample.id = obj@sample.id,
+                           assembly = obj@assembly, 
+                           context = obj@context,
+                           resolution = obj@resolution)
+          
+          tabixHead <- makeTabixHeader(slotList)
+          tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                                tabixHead = tabixHead)
+          
           # need to use .CpG.dinuc.unifyOld because output needs to be ordered
           newdbpath <- applyTbxByChunk(obj@dbpath,
                                        chunk.size = chunk.size, 
@@ -686,7 +729,8 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                                        return.type = "tabix", 
                                        FUN = function(x) { 
                                          .CpG.dinuc.unifyOld(.setMethylDBNames(x,
-                                                                               "methylRawDB") )})
+                                                                               "methylRawDB") )}, 
+                                       tabixHead = tabixHeadString)
           
           readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
                           sample.id = obj@sample.id,
@@ -738,20 +782,41 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
     # filename <- tempfile(pattern = "methylBase",tmpdir = ".",fileext = ".txt")
     #filename <- paste0(paste(getSampleID(object),collapse = "_"),".txt")
     
+    # get indices of coverage in the data frame 
+    coverage.ind=seq(5,by=3,length.out=length(object))
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
+    slotList <- list(dbtype = object[[1]]@dbtype,
+                     sample.ids = getSampleID(object),assembly = object[[1]]@assembly,
+                     context = object[[1]]@context,resolution = object[[1]]@resolution,
+                     coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
+                     treatment = object@treatment,destranded = destrand)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                          tabixHead = tabixHead)
+    
     if(is.null(min.per.group)) {
       
+      message("merging tabix files ...")
+      
       dbpath <- mergeTabix(tabixList = objList ,dir = dir,
-                           filename = filename,mc.cores = mc.cores) 
+                           filename = filename,mc.cores = mc.cores,
+                           tabixHead = tabixHeadString) 
       dbpath <- gsub(".tbi","",dbpath)
       
     } else {
       # if the the min.per.group argument is supplied, remove the rows
       # that doesn't have enough coverage
       
+      message("merging tabix files ...")
+      
       # keep rows with no matching in all samples  
       tmpPath <- mergeTabix(tabixList = objList ,dir = dir,
                             filename = paste0(filename,".tmp"),
-                            mc.cores = mc.cores,all=TRUE) 
+                            mc.cores = mc.cores,all=TRUE,
+                            tabixHead = tabixHeadString) 
       tmpPath <- gsub(".tbi","",tmpPath)
       
       # get indices of coverage in the data frame 
@@ -773,9 +838,13 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
         return(as.data.frame(df))
       }
       
-      dbpath <- applyTbxByChunk(tbxFile = tmpPath,chunk.size = chunk.size, dir = dir, filename = filename, 
-                                return.type = "tabix", FUN = filter,treatment=object@treatment,
-                                coverage.ind=coverage.ind,min.per.group=min.per.group)
+      message("filter mincov per group ...")
+      
+      dbpath <- applyTbxByChunk(tbxFile = tmpPath, chunk.size = chunk.size, 
+                                dir = dir, filename = filename, 
+                                return.type = "tabix", FUN = filter, 
+                                treatment=object@treatment, coverage.ind=coverage.ind,
+                                min.per.group=min.per.group, tabixHead = tabixHeadString)
       
       unlink(list.files(dirname(tmpPath),pattern = basename(gsub(".txt.bgz","",tmpPath)),full.names = TRUE))
     }
@@ -929,11 +998,21 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     
     con <- file(methMat,open = "r") 
     
+    ## creating the tabix header
+    slotList <- list(dbtype = mBase@dbtype,
+                     sample.ids = mBase@sample.ids,assembly = mBase@assembly,
+                     context = mBase@context,resolution = mBase@resolution,
+                     treatment = mBase@treatment,destranded = mBase@destranded)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByChunk(tbxFile = mBase@dbpath,chunk.size = chunk.size, 
                                  dir=dir,filename = filename, 
                                  return.type = "tabix", FUN = reconstr, 
                                  con,chunk.size,mBase@numCs.index,
-                                 mBase@numTs.index)
+                                 mBase@numTs.index, tabixHead = tabixHeadString)
     
     close(con)
     if(file.exists(matFile)) {unlink(matFile)}
@@ -1211,11 +1290,22 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     
     filename <- basename(filename)
     
+    ## creating the tabix header
+    slotList <- list(dbtype = methylObj@dbtype,
+                     sample.ids=sample.ids,
+                     assembly=methylObj@assembly,context=methylObj@context,
+                     treatment=treatment,destranded=methylObj@destranded, 
+                     resolution=methylObj@resolution)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByChunk(tbxFile = methylObj@dbpath,
                                  chunk.size = chunk.size, dir=dir,
                                  filename = filename, 
                                  return.type = "tabix", FUN = getSub, 
-                                 ind.mat=ind.mat) 
+                                 ind.mat=ind.mat,tabixHead = tabixHeadString) 
     
     readMethylBaseDB(dbpath = newdbpath,dbtype = methylObj@dbtype,
                      sample.ids=sample.ids,
@@ -1299,11 +1389,30 @@ setMethod("pool", "methylBaseDB",
     
     # if(file.exists(paste0(filename,".bgz"))) message("overwriting file.")
     
+    # get indices of coverage in the data frame 
+    coverage.ind=seq(5,by=3,length.out=length(sample.ids))
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
+    ## creating the tabix header
+    slotList <- list(dbtype = obj@dbtype,
+                     sample.ids=sample.ids,
+                     assembly=obj@assembly,context=obj@context,
+                     treatment=treat,destranded=obj@destranded,
+                     coverage.index=coverage.ind,numCs.index=numCs.ind,
+                     numTs.index=numTs.ind,
+                     resolution=obj@resolution)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByChunk(tbxFile = obj@dbpath,chunk.size = chunk.size,
                                  dir=dir,filename = filename, 
                                  return.type = "tabix", FUN = mypool, 
                                  treatment = obj@treatment,
-                                 numCs.index = obj@numCs.index) 
+                                 numCs.index = obj@numCs.index, 
+                                 tabixHead = tabixHeadString) 
     
     objdb <- readMethylBaseDB(dbpath = newdbpath,dbtype = obj@dbtype,
                      sample.ids=sample.ids,
@@ -1370,6 +1479,19 @@ setMethod("calculateDiffMeth", "methylBaseDB",
               
               filename <- basename(filename)
               
+              ## creating the tabix header
+              slotList <- list(dbtype = .Object@dbtype, 
+                               sample.ids=.Object@sample.ids,
+                               assembly=.Object@assembly,
+                               context=.Object@context,
+                               destranded=.Object@destranded,
+                               treatment=.Object@treatment,
+                               resolution=.Object@resolution)
+              
+              tabixHead <- makeTabixHeader(slotList)
+              tabixHeadString <- .formatTabixHeader(class = "methylDiffDB",
+                                                    tabixHead = tabixHead)
+              
               dbpath <- applyTbxByChunk(.Object@dbpath,dir = 
                                           dir,chunk.size = chunk.size,  
                                         filename = filename, 
@@ -1381,11 +1503,13 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                                         parShrinkMN=parShrinkMN,
                                         test=test,
                                         adjust=adjust,
-                                        mc.cores=mc.cores)
+                                        mc.cores=mc.cores,
+                                        tabixHead = tabixHeadString)
               
               obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, 
                                    sample.ids=.Object@sample.ids,
-                                   assembly=.Object@assembly,context=.Object@context,
+                                   assembly=.Object@assembly,
+                                   context=.Object@context,
                                    destranded=.Object@destranded,
                                    treatment=.Object@treatment,
                                    resolution=.Object@resolution)
@@ -1465,10 +1589,22 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     
     filename <- basename(filename)
     
+    ## creating the tabix header
+    slotList <- list(dbtype = .Object@dbtype, 
+                     sample.ids=.Object@sample.ids,
+                     assembly=.Object@assembly,context=.Object@context,
+                     destranded=.Object@destranded,
+                     treatment=.Object@treatment,resolution=.Object@resolution)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylDiffDB",
+                                          tabixHead = tabixHead)
+    
     dbpath <- applyTbxByChunk(.Object@dbpath,chunk.size = chunk.size, 
                               dir = dir, filename = filename, 
                               return.type = "tabix", FUN = f,
-                              difference = difference, qv = qvalue, type = type)
+                              difference = difference, qv = qvalue, type = type,
+                              tabixHead = tabixHeadString)
     
     
     obj=readMethylDiffDB(dbpath = dbpath,dbtype = .Object@dbtype, 
@@ -1641,10 +1777,22 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRanges"),
     
     filename <- basename(filename)
     
+    ## creating the tabix header
+    slotList <- list(sample.id=object@sample.id,
+                     assembly=object@assembly, context =object@context,
+                     resolution="region",
+                     dbtype = object@dbtype)
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                    ranges=regions,  dir=dir,filename = filename, 
                                    return.type = "tabix", FUN = getCounts,
-                                   regions,cov.bases,strand.aware)
+                                   regions = regions ,cov.bases = cov.bases,
+                                   strand.aware = strand.aware,
+                                   tabixHead = tabixHeadString)
     
     readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
                     assembly=object@assembly, context =object@context,
@@ -1735,7 +1883,6 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
               }
               
               
-              # filename <- paste0(paste(object@sample.id,collapse = "_"),suffix,".txt")
               filename <- paste0(gsub(".txt.bgz","",object@dbpath)
                                  ,suffix,".txt")
               
@@ -1743,9 +1890,25 @@ setMethod("regionCounts", signature(object="methylRawDB",regions="GRangesList"),
               
               filename <- basename(filename)
               
+              ## creating the tabix header
+              slotList <- list(sample.id=object@sample.id,
+                               assembly=object@assembly, 
+                               context =object@context,
+                               resolution="region",
+                               dbtype = object@dbtype)
               
-              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+              tabixHead <- makeTabixHeader(slotList)
+              tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                                    tabixHead = tabixHead)
+              
+              newdbpath <- applyTbxByOverlap(object@dbpath,
+                                             chunk.size = chunk.size, 
+                                             ranges=regions,  dir=dir,filename = filename, 
+                                             return.type = "tabix", 
+                                             FUN = getCounts,regions = regions ,
+                                             cov.bases = cov.bases,
+                                             strand.aware = strand.aware,
+                                             tabixHead = tabixHeadString)
               
               
               readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
@@ -1886,15 +2049,31 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRanges"),
       
       filename <- basename(filename)
       
+      destranded = ifelse( test = (strand.aware & !(object@destranded)), 
+                           FALSE, TRUE)
+      
+      ## creating the tabix header
+      slotList <- list(dbtype = object@dbtype,
+                       sample.ids=object@sample.ids,
+                       assembly=object@assembly,
+                       context=object@context,
+                       treatment=object@treatment,
+                       destranded=destranded,
+                       resolution="region")
+      
+      tabixHead <- makeTabixHeader(slotList)
+      tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                            tabixHead = tabixHead)
+      
       newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
                                      ranges=regions,  dir=dir,
                                      filename = filename, 
                                      return.type = "tabix", 
-                                     FUN = getCounts,regions,cov.bases,
-                                     strand.aware)
+                                     FUN = getCounts,regions = regions ,
+                                     cov.bases = cov.bases,
+                                     strand.aware = strand.aware,
+                                     tabixHead = tabixHeadString)
       
-      if(strand.aware & !(object@destranded) ){destranded=FALSE}else{
-        destranded=TRUE}
       readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,
                        sample.ids=object@sample.ids,
                        assembly=object@assembly,
@@ -1991,12 +2170,34 @@ setMethod("regionCounts", signature(object="methylBaseDB",regions="GRangesList")
               
               filename <- basename(filename)
               
-              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, ranges=regions,  dir=dir,filename = filename, 
-                                             return.type = "tabix", FUN = getCounts,regions,cov.bases,strand.aware)
+              destranded = ifelse( test = (strand.aware & !(object@destranded)), 
+                                  FALSE, TRUE)
+              ## creating the tabix header
+              slotList <- list(dbtype = object@dbtype,
+                               sample.ids=object@sample.ids,
+                               assembly=object@assembly,
+                               context=object@context,
+                               treatment=object@treatment,
+                               destranded=destranded,
+                               resolution="region")
               
-              if(strand.aware & !(object@destranded) ){destranded=FALSE}else{destranded=TRUE}
-              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,sample.ids=object@sample.ids,
-                               assembly=object@assembly,context=object@context,treatment=object@treatment,
+              tabixHead <- makeTabixHeader(slotList)
+              tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                                    tabixHead = tabixHead)
+              
+              newdbpath <- applyTbxByOverlap(object@dbpath,chunk.size = chunk.size, 
+                                             ranges=regions,  dir=dir,
+                                             filename = filename, 
+                                             return.type = "tabix", 
+                                             FUN = getCounts,regions = regions ,
+                                             cov.bases = cov.bases,
+                                             strand.aware = strand.aware,
+                                             tabixHead = tabixHeadString)
+              
+              readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,
+                               sample.ids=object@sample.ids,
+                               assembly=object@assembly,
+                               context=object@context,treatment=object@treatment,
                                destranded=destranded,resolution="region")
               
             } else {
@@ -2082,13 +2283,25 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
               
               filename <- basename(filename)
               
+              ## creating the tabix header
+              slotList <- list(sample.id=object@sample.id,
+                               assembly=object@assembly, 
+                               context =object@context,
+                               resolution="region",
+                               dbtype = object@dbtype)
+              
+              tabixHead <- makeTabixHeader(slotList)
+              tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                                    tabixHead = tabixHead)
+              
               newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                          dir = dir,filename = filename,
                                          FUN = tileCount, win.size = win.size,
                                          step.size = step.size,
                                          cov.bases = cov.bases,
                                          resolution=object@resolution,
-                                         mc.cores = mc.cores)
+                                         mc.cores = mc.cores,
+                                         tabixHead = tabixHeadString)
               
               readMethylRawDB(dbpath = newdbpath,sample.id=object@sample.id,
                               assembly=object@assembly, context =object@context,
@@ -2199,12 +2412,25 @@ setMethod("tileMethylCounts", signature(object="methylBaseDB"),
     
     filename <- basename(filename)
     
+    ## creating the tabix header
+    slotList <- list(dbtype = object@dbtype,
+                     sample.ids=object@sample.ids,
+                     assembly=object@assembly,context=object@context,
+                     treatment=object@treatment,
+                     destranded=TRUE,resolution="region")
+    
+    tabixHead <- makeTabixHeader(slotList)
+    tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
+                                          tabixHead = tabixHead)
+    
     newdbpath <- applyTbxByChr(object@dbpath, return.type = "tabix",
                                dir = dir,filename = filename,
                                FUN = tileCount, win.size = win.size,
-                               step.size = step.size,cov.bases = cov.bases,
+                               step.size = step.size,
+                               cov.bases = cov.bases,
                                resolution=object@resolution,
-                               mc.cores = mc.cores)
+                               mc.cores = mc.cores,
+                               tabixHead = tabixHeadString)
     
     readMethylBaseDB(dbpath = newdbpath,dbtype = object@dbtype,
                      sample.ids=object@sample.ids,
