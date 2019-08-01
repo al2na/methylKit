@@ -273,11 +273,12 @@ obj2tabix <- function(obj,filename,rm.txt=TRUE){
 checkTabixHeader <- function(tbxFile,message=NULL) {
   if(is.null(message)) message <- paste("Could not read header of file",tbxFile)
   tryCatch(expr  = readTabixHeader(tbxFile),
-                   error = function(cond){
-                     message(cond)
-                     message(message)
-                     return(NA)
-                   })
+           error = function(cond){
+             message(cond)
+             message(message)
+             return(NULL)
+             })
+  
   
 }
 
