@@ -23,12 +23,13 @@
 #'   each chromosome will be created prior to cat, zipping and indexing the
 #'   single output file
 #' @param all logical parameter passed to \code{\link{merge}} function
+#' @param tabixHead optional header to prepend to the file
 #'   
 #'   mergeTabix(tabixList,dir="~",filename="dump.meth.txt",mc.cores=1)
 #'   
 #' @usage mergeTabix(tabixList,dir,filename,mc.cores=1 ,all=FALSE)
 #' @noRd
-mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
+mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE,tabixHead=NULL){
   
   # get outfile
   
@@ -56,8 +57,8 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       message("overwriting ",outfile)
       unlink(outfile)
     }
-  
     con=file(outfile, open = "a", blocking = TRUE) # open connection  
+    if(!is.null(tabixHead)) { write(tabixHead,con) }
     for(file in list.files(path = dir, pattern = rndFile,full.names=TRUE)){
       file.append(outfile,file) # append files
     }
@@ -71,7 +72,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE){
       message("overwriting ",outfile)
       unlink(outfile)
     }
-    
+    if(!is.null(tabixHead)) { write(tabixHead,outfile) }
     outlist=lapply(chrs,mergeTbxByChr,tabixList,dir,filename,
                      parallel=FALSE,all=all)
     outfile= file.path(path.expand(dir),filename) 
@@ -595,12 +596,13 @@ tabix2gr<-function(tabixRes){
 #' @param dir directory to create temporary files and the resulting tabix file
 #' @param filename the filename for the resulting tabix file, this should not be 
 #' a path, just a file name.
+#' @param tabixHead optional header to prepend to the file
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
 #' @noRd
 applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table","text"),
-                          FUN,...){
+                          FUN,...,tabixHead=NULL){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -643,7 +645,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE)
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE,tabixHead = tabixHead)
 
     return(gsub(".tbi","",path))
     
@@ -738,12 +740,13 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
 #' @param filename the filename for the resulting tabix file, this should not be 
 #' a path, just a file name.
 #' @param mc.cores number of cores to use in parallel (works only on UNIX based OS)
+#' @param tabixHead optional header to prepend to the file
 #' 
 #' @return either a path to a tabix or text file, or a data frame or data.table
 #' @noRd
 applyTbxByChr<-function(tbxFile,chrs,dir,filename,
                         return.type=c("tabix","data.frame","data.table"),
-                        FUN,...,mc.cores=1){
+                        FUN,...,mc.cores=1,tabixHead=NULL){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -772,7 +775,7 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
     
     # collect & cat temp files,then make tabix
 
-    path <- catsub2tabix(dir,filename2,filename)
+    path <- catsub2tabix(dir,filename2,filename,tabixHead = tabixHead)
     
     return(gsub(".tbi","",path))
 
@@ -823,12 +826,13 @@ applyTbxByChr<-function(tbxFile,chrs,dir,filename,
 #' @param dir directory to create temporary files and the resulting tabix file
 #' @param filename the filename for the resulting tabix file, this should not be 
 #' a path, just a file name.
+#' @param tabixHead optional header to prepend to the file
 #'
 #' @return either a path to a tabix or text file, or a data frame or data.table
 #' @noRd
 applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table"),
-                          FUN,...){
+                          FUN,...,tabixHead=NULL){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -891,7 +895,8 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     res=lapply(1:chunk.num,myFunc,region.split,tbxFile,dir,filename2,FUN,...)
     
     # collect & cat temp files,then make tabix
-    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE)
+    path <- catsub2tabix(dir,pattern=filename2,filename,sort = TRUE,
+                         tabixHead = tabixHead)
     
     return(gsub(".tbi","",path))
     
