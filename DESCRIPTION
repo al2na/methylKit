@@ -56,7 +56,11 @@ Imports:
     stats, 
     utils
 Suggests:
-    testthat,knitr, rmarkdown, genomation, BiocManager
+    testthat (>= 2.1.0),
+    knitr,
+    rmarkdown,
+    genomation,
+    BiocManager
 VignetteBuilder: knitr
 Collate:
     'methylKit.R'
@@ -72,7 +76,7 @@ Collate:
     'percMethylation.R'
     'normalizeCoverage.R'
     'pool.R'
-    'adjust.methylC.R'
+    'adjustMethylC.R'
     'updateMethObject.R'
     'batchControl.R'
     'dataSim.R'
