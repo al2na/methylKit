@@ -234,26 +234,21 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
   }
   
   # then we write the creation date ..
-  write(paste0("#Date:",format(Sys.time(),'%Y-%m-%d %H:%M:%S')),
-        file = filename)
-  # add the class of the object
-  write(paste0("#Class:","methylRawDB"),
-        file = filename, append = TRUE)
-  # and the slots as comments 
-  
+  # plus the class of the object ..
+  # plus the slots ..
+  # as comments 
   num.records = nrow(df)
-
-  # prepare slots as comments
-  tabixHead <- paste0("#NR:",num.records,"\n",
-                      "#SI:",sample.id,"\n",
-                      "#AS:",assembly,"\n",
-                      "#CT:",context,"\n",
-                      "#RS:",resolution,"\n",
-                      "#DT:",dbtype)
   
-  # write slots to file
-  write(tabixHead,
-        file = filename ,append = TRUE)
+  slotList <- list(dbtype = dbtype, sample.id = sample.id, 
+                   assembly = assembly, context = context,
+                   resolution = resolution, num.records = num.records)
+  
+  tabixHead <- makeTabixHeader(slotList)
+  
+  # format and write slots to file
+  .formatTabixHeader(class = "methylRawDB",
+                     tabixHead = tabixHead,
+                     filename = filename)
   
   # sort the data
   df <- df[with(df,order(chr,start,end)),]
@@ -282,9 +277,9 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 # creates a methylRawDB object from a flat file database
 # it is called from read function or whenever this functionality is needed
 # can load a database with or without header
-readMethylRawDB<-function(dbpath,dbtype,
-                          sample.id, assembly ,context,
-                          resolution,skip=0){
+readMethylRawDB<-function(dbpath,dbtype=NULL,
+                          sample.id=NULL, assembly=NULL ,context=NULL,
+                          resolution=NULL,skip=0){
 
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
@@ -298,32 +293,43 @@ readMethylRawDB<-function(dbpath,dbtype,
                            message = paste("No Tabix Header Found,",
                            "trying to create methylRawDB from supplied arguments."))
 
-  if(!anyNA(head)) {
+  if(!is.null(head) & !anyNA(head)) {  
 
-  
-  if(! any(head$class == c("methylRaw", "methylRawDB") ) ) {
-    stop(
-      paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
-            "Please provide the correct class of data.")
-    )
-  }
-  
-  obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
-             num.records=head$num.records, sample.id = head$sample.ids, 
-             assembly = head$assembly,context=head$context, 
-             resolution=head$resolution,dbtype=head$dbtype)
+    
+    if(! any(head$class == c("methylRaw", "methylRawDB") ) ) {
+      stop(
+        paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
+              "Please provide the correct class of data.")
+      )
+    }
+      
+    if(is.null(head$num.records)) {
+      num.records=Rsamtools::countTabix(dbpath)[[1]] 
+    } else num.records = head$num.records
+    
+    obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
+               num.records=num.records, sample.id = head$sample.ids, 
+               assembly = head$assembly,context=head$context, 
+               resolution=head$resolution,dbtype=head$dbtype)
 
   } else {
-  # else we need to generate it from the supplied arguments
-  
-  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
-  
-  obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
-      sample.id = sample.id, assembly = assembly,context=context,
-      resolution=resolution,dbtype=dbtype)
-  
-  }
-  
+    
+    # else we need to generate it from the supplied arguments
+    argList <- list(sample.id = sample.id, assembly = assembly,context=context,
+                    resolution=resolution,dbtype=dbtype)
+    checkMissingArg <- sapply(argList,is.null)
+    if(any(checkMissingArg)) {
+      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
+      }
+    
+    num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+    
+    obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
+        sample.id = sample.id, assembly = assembly,context=context,
+        resolution=resolution,dbtype=dbtype)
+    
+    }
+    
   if(valid.methylRawDB(obj)) {return(obj)}   
   
 }
@@ -575,12 +581,26 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
                             no = paste0(dbpath,"/methylBase",suffix)),
                      ".txt")
   
-  # new tabix file is named by concatenation of sample.ids, works for now
-  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt") 
-  #print(filepath)
+  # then we write the creation date ..
+  # plus the class of the object ..
+  # plus the slots ..
+  # as comments 
+  num.records = nrow(df)
+  
+  slotList <- list(dbtype = dbtype,
+                   sample.ids = sample.ids,assembly = assembly,
+                   context = context,resolution = resolution,
+                   coverage.index = coverage.index, numCs.index = numCs.index,
+                   numTs.index = numTs.index, treatment = treatment,
+                   destranded = destranded, num.records = num.records)
+  
+  tabixHead <- makeTabixHeader(slotList)
+  .formatTabixHeader(class = "methylBase",
+                     tabixHead = tabixHead,
+                     filename = filepath)
+  
   df <- df[with(df,order(chr,start,end)),]
-  df2tabix(df,filepath)
-  num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
+  df2tabix(df,filepath,append = TRUE)
 
   new("methylBaseDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
@@ -592,9 +612,9 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
 # PRIVATE function:
 # reads a methylBaseDB object from flat file database
 # it is called from read function or whenever this functionality is needed
-readMethylBaseDB<-function(dbpath,dbtype,
-                           sample.ids, assembly ,context,
-                           resolution,treatment,destranded,skip=0){
+readMethylBaseDB<-function(dbpath,dbtype=NULL,
+                           sample.ids=NULL, assembly=NULL ,context=NULL,
+                           resolution=NULL,treatment=NULL,destranded=NULL,skip=0){
   
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
@@ -605,39 +625,50 @@ readMethylBaseDB<-function(dbpath,dbtype,
   # if the tabix file includes a header generated with obj2tabix,
   # it can easily be parsed into the respective object
   head <- checkTabixHeader(tbxFile = dbpath,
-                           message = paste(
-                             "No Tabix Header Found,",
-                             "\nCreating methylBaseDB using supplied arguments."))
+                           message = paste("No Tabix Header Found,",
+                                           "\nCreating methylBaseDB using supplied arguments."))
   
-  if(!anyNA(head)) {
+  if(!is.null(head) & !anyNA(head)) {
     
     if(! any(head$class == c("methylBase", "methylBaseDB") ) ) {
       stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
     }
     
-    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=head$num.records,
+    if(is.null(head$num.records)) {
+        num.records=Rsamtools::countTabix(dbpath)[[1]] 
+      } else num.records = head$num.records
+    
+    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
                sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
                resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
                coverage.index=head$coverage.ind,numCs.index=head$numCs.ind,numTs.index=head$numTs.ind,
                destranded=head$destranded)
     
   } else {
-  # else we need to generate it from the supplied arguments
     
-  num.records=Rsamtools::countTabix(dbpath)[[1]] ##   
-
-  # determine postion of coverage/numCs/numTs indices
-  df <- headTabix(dbpath)
-  numsamples = (length(df)-4)/3
-  coverage.ind=seq(5,by=3,length.out=numsamples)
-  numCs.ind   =coverage.ind+1
-  numTs.ind   =coverage.ind+2
-  
-  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
-              sample.ids = sample.ids, assembly = assembly,context=context,
-              resolution=resolution,dbtype=dbtype,treatment=treatment,
-              coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
-              destranded=destranded)
+    # else we need to generate it from the supplied arguments
+    argList <- list(sample.ids = sample.ids, assembly = assembly,context=context,
+                    resolution=resolution,dbtype=dbtype,treatment=treatment,
+                    destranded=destranded)
+    checkMissingArg <- sapply(argList,is.null)
+    if(any(checkMissingArg)) {
+      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
+    }
+    
+    num.records=Rsamtools::countTabix(dbpath)[[1]] ##   
+    
+    # determine postion of coverage/numCs/numTs indices
+    df <- headTabix(dbpath)
+    numsamples = (length(df)-4)/3
+    coverage.ind=seq(5,by=3,length.out=numsamples)
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
+    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
+                sample.ids = sample.ids, assembly = assembly,context=context,
+                resolution=resolution,dbtype=dbtype,treatment=treatment,
+                coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
+                destranded=destranded)
   }
  
   if(valid.methylBaseDB(obj)) {return(obj)}   
@@ -759,12 +790,26 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
                             no = paste0(dbpath,"/methylDiff",suffix)),
                      ".txt")
   
-  # # new tabix file is named by concatenation of sample.ids, works for now
-  # filepath=paste0(dbpath,"/",paste0(sample.ids,collapse = "_"),suffix,".txt")
+  # then we write the creation date ..
+  # plus the class of the object ..
+  # plus the slots ..
+  # as comments 
+  num.records = nrow(df)
+  
+  slotList <- list(dbtype = dbtype,
+                   sample.ids = sample.ids,assembly = assembly,
+                   context = context,resolution = resolution,
+                   treatment = treatment, destranded = destranded, 
+                   num.records = num.records)
+  
+  tabixHead <- makeTabixHeader(slotList)
+  .formatTabixHeader(class = "methylDiff",
+                     tabixHead = tabixHead,
+                     filename = filepath)
+  
   df <- df[with(df,order(chr,start,end)),]
-  df2tabix(df,filepath)
-  num.records=Rsamtools::countTabix(paste0(filepath,".bgz"))[[1]] ## 
-
+  df2tabix(df,filepath,append = TRUE)
+  
   new("methylDiffDB",dbpath=paste0(filepath,".bgz"),num.records=num.records,
       sample.ids = sample.ids, assembly = assembly,context=context,
       resolution=resolution,dbtype=dbtype,treatment=treatment,
@@ -774,9 +819,9 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
 # PRIVATE function:
 # reads a methylDiffDB object from flat file database
 # it is called from read function or whenever this functionality is needed
-readMethylDiffDB<-function(dbpath,dbtype,
-                           sample.ids, assembly ,context,
-                           resolution,treatment,destranded,skip=0){
+readMethylDiffDB<-function(dbpath,dbtype=NULL,
+                           sample.ids=NULL, assembly=NULL ,context=NULL,
+                           resolution=NULL,treatment=NULL,destranded=NULL,skip=0){
   
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
@@ -791,27 +836,39 @@ readMethylDiffDB<-function(dbpath,dbtype,
                              "No Tabix Header Found,",
                              "\nCreating methylDiffDB using supplied arguments."))
   
-  if(!anyNA(head)) {
-
-
-  if(! any(head$class == c("methylDiff", "methylDiffDB") ) ) {
-    stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
-  }
   
-  obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=head$num.records,
-               sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
-               resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
-               destranded=head$destranded)
+  
+  if(!is.null(head) & !anyNA(head)) {
+
+    if(! any(head$class == c("methylDiff", "methylDiffDB") ) ) {
+      stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
+    }
+    
+    if(is.null(head$num.records)) {
+      num.records=Rsamtools::countTabix(dbpath)[[1]] 
+    } else num.records = head$num.records
+  
+    obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
+                 sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
+                 resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
+                 destranded=head$destranded)
 
   } else {
-  # else we need to generate it from the supplied arguments
-
-  num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
-  
-  obj <- new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
-      sample.ids = sample.ids, assembly = assembly,context=context,
-      resolution=resolution,dbtype=dbtype,treatment=treatment,
-      destranded=destranded)
+    
+    # else we need to generate it from the supplied arguments
+    argList <- list(sample.ids = sample.ids, assembly = assembly,context=context,
+                    resolution=resolution,dbtype=dbtype,treatment=treatment,
+                    destranded=destranded)
+    checkMissingArg <- sapply(argList,is.null)
+    if(any(checkMissingArg)) {
+      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
+    }
+    num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
+    
+    obj <- new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
+        sample.ids = sample.ids, assembly = assembly,context=context,
+        resolution=resolution,dbtype=dbtype,treatment=treatment,
+        destranded=destranded)
 
   }
   
