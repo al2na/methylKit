@@ -166,19 +166,20 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
 {
+  cpg = data.table(cpg,key = c("chr","start","end"))
+  cpgR=cpg[strand=="-"]
+  cpgF=cpg[strand=="+",]
+  cpgR[,start := start +1]
+  cpgF[,start := start +1 ]
+  cpgR[,strand := "+"]
   
-  cpgR=cpg[cpg$strand=="-",]
-  cpgF=cpg[cpg$strand=="+",]
-  cpgR$start=cpgR$start-1L
-  cpgR$end=cpgR$end-1L
-  cpgR$strand="+"
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
   
-  cpgFR=merge(data.table(cpgF),data.table(cpgR),by=c("chr","start","end"))
+  cpgFR=merge(cpgF,cpgR,by=c("chr","start","end"))
   #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
   #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
-  res=data.frame(
+  res=data.table(
     chr     =as.character(cpgFR$chr),
     start    =as.integer(cpgFR$start),
     end      =as.integer(cpgFR$start),
@@ -191,8 +192,8 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
   Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
   resid=paste(res$chr,res$start,res$end)  
   res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  #res=res[order(res$chr,res$start),]
-  return(res)
+  setkey(res,"chr","start")
+  return(data.frame(res))
 }
 
 .CpG.dinuc.unifyOld<-function(cpg)
