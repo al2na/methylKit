@@ -206,15 +206,15 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
   x <- headerItem[2]
   val <- switch(type,
                 NR = as.integer(x),
-                SI = unlist(strsplit(as.character(x),split = ",")),
+                SI = unlist(strsplit(as.character(x),split = ";")),
                 AS = as.character(x),
                 CT = as.character(x),
                 RS = as.character(x),
                 DT = as.character(x),
-                TM = as.integer(unlist(strsplit(as.character(x),split = ","))),
-                CI = as.integer(unlist(strsplit(as.character(x),split = ","))),
-                NC = as.integer(unlist(strsplit(as.character(x),split = ","))),
-                NT = as.integer(unlist(strsplit(as.character(x),split = ","))),
+                TM = as.integer(unlist(strsplit(as.character(x),split = ";"))),
+                CI = as.integer(unlist(strsplit(as.character(x),split = ";"))),
+                NC = as.integer(unlist(strsplit(as.character(x),split = ";"))),
+                NT = as.integer(unlist(strsplit(as.character(x),split = ";"))),
                 DS = as.logical(x),
                 NULL
   )
