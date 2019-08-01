@@ -4,22 +4,33 @@
 \name{methRead}
 \alias{methRead}
 \alias{methRead,character,character,character-method}
+\alias{methRead,character,ANY,ANY-method}
+\alias{methRead,character-method}
 \alias{methRead,list,list,character-method}
-\alias{read}
+\alias{methRead,list,ANY,ANY-method}
 \title{read file(s) to methylRaw or methylRawList objects}
 \usage{
 methRead(location, sample.id, assembly, dbtype = NA, pipeline = "amp",
   header = TRUE, skip = 0, sep = "\\t", context = "CpG",
-  resolution = "base", treatment, dbdir = getwd(), mincov = 10)
+  resolution = "base", treatment = NA, dbdir = getwd(),
+  mincov = 10)
 
 \S4method{methRead}{character,character,character}(location, sample.id,
   assembly, dbtype, pipeline, header, skip, sep, context, resolution,
   dbdir, mincov)
 
+\S4method{methRead}{character,ANY,ANY}(location, sample.id, assembly,
+  dbtype, pipeline, header, skip, sep, context, resolution, dbdir, mincov)
+
 \S4method{methRead}{list,list,character}(location, sample.id, assembly,
   dbtype = NA, pipeline = "amp", header = TRUE, skip = 0,
-  sep = "\\t", context = "CpG", resolution = "base", treatment,
-  dbdir = getwd(), mincov = 10)
+  sep = "\\t", context = "CpG", resolution = "base",
+  treatment = NA, dbdir = getwd(), mincov = 10)
+
+\S4method{methRead}{list,ANY,ANY}(location, sample.id, assembly,
+  dbtype = NA, pipeline = "amp", header = TRUE, skip = 0,
+  sep = "\\t", context = "CpG", resolution = "base",
+  treatment = NA, dbdir = getwd(), mincov = 10)
 }
 \arguments{
 \item{location}{file location(s), either a list of locations (each a 

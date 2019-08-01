@@ -1219,7 +1219,7 @@ setGeneric(name="getMethylDiff", def=function(.Object,difference=25,qvalue=0.01,
                                                save.db=FALSE,...) 
   standardGeneric("getMethylDiff"))
 
-#' @aliases getMethylDiff,methylDiff-method get.methylDiff
+#' @aliases getMethylDiff,methylDiff-method
 #' @rdname getMethylDiff-methods
 setMethod(f="getMethylDiff", signature="methylDiff", 
           definition=function(.Object,difference,qvalue,type,save.db=FALSE,...){

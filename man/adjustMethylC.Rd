@@ -5,7 +5,6 @@
 \alias{adjustMethylC}
 \alias{adjustMethylC,methylRaw,methylRaw-method}
 \alias{adjustMethylC,methylRawList,methylRawList-method}
-\alias{adjust.methylC}
 \alias{adjustMethylC,methylRawDB,methylRawDB-method}
 \alias{adjustMethylC,methylRawListDB,methylRawListDB-method}
 \title{Adjust measured 5mC levels using 5hmC levels}

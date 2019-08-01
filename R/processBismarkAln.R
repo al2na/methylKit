@@ -73,7 +73,7 @@
 #' @export
 #' @docType methods
 #' @rdname processBismarkAln-methods
-#' @aliases processBismarkAln read.bismark
+#' @aliases processBismarkAln
 #'
 #' @examples
 #' 

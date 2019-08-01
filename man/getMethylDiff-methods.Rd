@@ -4,7 +4,6 @@
 \name{getMethylDiff}
 \alias{getMethylDiff}
 \alias{getMethylDiff,methylDiff-method}
-\alias{get.methylDiff}
 \alias{getMethylDiff,methylDiffDB-method}
 \title{get differentially methylated regions/bases based on cutoffs}
 \usage{
