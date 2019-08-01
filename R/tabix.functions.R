@@ -246,23 +246,32 @@ makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
 obj2tabix <- function(obj,filename,rm.txt=TRUE){
   
   ## create the header from the slots
-  tabixHead <- makeTabixHeader(obj)
+  tabixHead <- makeTabixHeader(sapply(slotNames(obj), slot, object = obj ))
+  
+  if ("dbtype" %in% slotNames(obj)) {
+    numRecords <- obj@num.records
+  } 
+  else {
+    numRecords <- nrow(getData(obj))
+  }
   
   ## write the header first
-  writeTabixHeader(obj,tabixHead,filename)
+  .formatTabixHeader(class = class(obj),
+                    numRecords = numRecords,
+                    tabixHead = tabixHead,
+                    filename = filename)
   
+  # extract and
+  df <- getData(obj)
   # sort the data
-  df <- df[with(df,order(V1,V2,V3)),]
-  # then we write the data
-  write.table(x = df,
-              file = filename, quote = FALSE,
-              append = TRUE,col.names = FALSE,
-              row.names = FALSE,sep = "\t")
+  df <- df[with(df,order(chr,start,end)),]
   
-  # and make tabix out of file
-  makeMethTabix(filename,rm.file = rm.txt)
+  # then we append the data
+  df2tabix(df,
+           outfile = filename,
+           rm.file=rm.txt,
+           append = TRUE)
 }
-
 
 #' function to check wether tabix header exists 
 #' and exit with message instead of error
