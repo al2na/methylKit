@@ -926,6 +926,72 @@ setAs("methylDiffDB","methylDiff", function(from)
   return(from[])
 })
 
+## load tabix file with header to methylDB
+
+#' load tabix file with header to methylDB
+#' 
+#' 
+#' 
+#' The function reads the header from a given tabix file and 
+#' loads it into corresponding methylDB object.
+#' 
+#' @param dbpath path to a tabix file with header
+#'
+#' @examples 
+#' \dontrun{
+#' data(methylKit)
+#' 
+#' baseDB.obj <- makeMethylDB(methylBase.obj,"my/path")
+#' mydbpath <- getDBPath(baseDB.obj)
+#' rm(baseDB.obj)
+#' readMethlDB(mydbpath)
+#' 
+#' }
+#' 
+#' @return an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
+#' \code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
+#' @export
+#' @docType methods
+#' @rdname readMethylDB-methods
+readMethylDB <- function(dbpath) {
+  
+  if(!file.exists(paste0(dbpath,".tbi"))) 
+  {  
+    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+                          skip=0, comment="#", zeroBased=FALSE)
+  }
+  
+  # if the tabix file includes a header generated with obj2tabix,
+  # it can easily be parsed into the respective object
+  head <- checkTabixHeader(tbxFile = dbpath,
+                           message = paste(
+                             "No Tabix Header Found,",
+                             "\nPlease provide tabix file with header created ", 
+                             "from methylKit version >=1.12."))
+  
+  if(!is.null(head)) {
+    
+    if(! head$class %in% c("methylRaw", "methylRawDB",
+                               "methylBase", "methylBaseDB",
+                               "methylDiff", "methylDiffDB") ) {
+      stop("Unsupported class:", head$class,"\nPlease provide the correct class of data.")
+    }
+    
+    if(is.null(head$num.records)) {
+      num.records=Rsamtools::countTabix(dbpath)[[1]] 
+    } else num.records = head$num.records
+    
+    obj <-  switch (head$class,
+                    methylRaw = readMethylRawDB(dbpath), 
+                    methylRawDB = readMethylRawDB(dbpath),
+                    methylBase = readMethylBaseDB(dbpath),
+                    methylBaseDB = readMethylBaseDB(dbpath),
+                    methylDiff = readMethylDiffDB(dbpath),
+                    methylDiffDB = readMethylDiffDB(dbpath)
+                    )
+  }
+  
+}
 
 
 ## coerce methyl-obj to methylDB
