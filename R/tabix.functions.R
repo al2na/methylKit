@@ -292,25 +292,26 @@ checkTabixHeader <- function(tbxFile,message=NULL) {
 }
 
 
-#' function to create a tabix header from an methylKit object
+#' function to create a tabix header from methylKit object's slots 
 #'
-#' @param tbxFile tabix file
-#' @param message text to print instead of default
+#' @param slotList list of slot items with respective values
 #' @noRd
-makeTabixHeader <- function(obj) {
+#' 
+#' @importFrom S4Vectors isEmpty
+makeTabixHeader <- function(slotList) {
   # first we query each slots and ... 
-  tabixHead <- sapply(slotNames(obj),
+  tabixHead <- sapply(names(slotList),
                       FUN = function(i) {
                         # convert it into a shorter form
                         ssn <- .encodeShortSlotNames(i)
                         # and then paste its values into a comma seperated string
                         if(!is.null(ssn)) paste(ssn,sep = ":",
-                                                paste0(slot(obj,i),collapse = ",")
+                                                paste0(slotList[[i]],collapse = ";")
                         )
                       }
   )
   # then we remove slots we don't need in the header (as the @.Data slot) 
-  tabixHead <- tabixHead[!isEmpty(tabixHead)]
+  tabixHead <- tabixHead[!S4Vectors::isEmpty(tabixHead)]
   
   return(tabixHead)
 
