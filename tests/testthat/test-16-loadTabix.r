@@ -10,10 +10,10 @@ myobj=methRead( file.list,
             sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",
             pipeline="amp",treatment=c(1,1,0,0))
 
-mydblist = methRead( file.list,
+suppressMessages({mydblist = methRead( file.list,
                      sample.id=list("t1","t2","c1","c2"),assembly="hg18",
                      pipeline="amp",treatment=c(1,1,0,0),
-                     dbtype = "tabix",dbdir="methylDB")
+                     dbtype = "tabix",dbdir="methylDB")})
 
 # process using usual functions
 methidh=unite(myobj)
