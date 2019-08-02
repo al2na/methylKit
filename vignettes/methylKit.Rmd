@@ -934,6 +934,16 @@ methylKit to perform downstream analysis but this would require constructing a
 table that mimics our expected count based format and is not officially
 supported.
 
+### How can I analyze data generated from a local alignment ?
+
+You cannot use the function processBismarkAln() to extract methylation calls,
+but you have to use methylDackel or Bismark methylation extractor to generate
+input files for methylKit.
+
+The reason why we were not dealing with this directly is described here: 
+https://sequencing.qcfail.com/articles/soft-clipping
+
+
 
 # Acknowledgements
 
