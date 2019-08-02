@@ -908,6 +908,10 @@ files to "methylBase_suffix.txt.bgz"/"methylDiff_suffix.txt.bgz", where suffix
 is either a self-defined string given by the `suffix` argument or a
 random-string.
 
+### How can I make a bigwig file from methylKit result?
+
+You can use the rtacklayer package, it should be able to convert GRanges objects to bigWig. 
+
 ### My data comes from MIRA-seq, can I use methylKit to perform the differential
 methylation analysis and its annotation?
  
