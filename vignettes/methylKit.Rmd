@@ -692,6 +692,7 @@ as(myDiff,"GRanges")
 
 
 ## Converting methylKit objects to methylDB objects and vice versa
+
 **methylDB** objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) can be
 coerced to normal `methylKit` objects. This might speed up the analysis if
 sufficient computing resources are available. This can be done via "as()"
@@ -716,6 +717,24 @@ data(methylKit)
  
 objDB=makeMethylDB(methylBase.obj,"exMethylDB")
 
+```
+
+## Loading methylDB objects from tabix files
+
+Since version 1.11.1 of methylKit the underlying tabix file of **methylDB**
+objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) include a header
+which stores the corresponding metadata of the object. Thus you can recreate the
+object with just the tabix file, which allows easy sharing of methylDB objects
+accross sessions or users.
+
+```{r, }
+data(methylKit)
+baseDB.obj <- makeMethylDB(methylBase.obj,"my/path")
+mydbpath <- getDBPath(baseDB.obj)
+rm(baseDB.obj)
+
+methylKit:::checkTabixHeader(mydbpath)
+readMethylDB(mydbpath)
 ```
 
 ## Selection: subsetting methylKit Objects
@@ -895,8 +914,8 @@ see `?unite` and also check the `...` argument section for further details.
 
 ### Where do I find the flatfile database underlying a methylDB?
 
-You can easily find the underlying flatfile database using the `getDBPath()`
-function which prints the absolute location. methylRawDBPlease note that
+You can easily find the underlying flatfile database (aka tabix file) using the `getDBPath()`
+function which prints the absolute location. Please note that
 starting  is the generated when you decide to set a db.
 
 ### Why does my methylBaseDB flatfile database has a different name now ?
