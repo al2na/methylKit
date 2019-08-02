@@ -315,10 +315,19 @@ methSeg2bed<-function(segments,filename,
     mcols(segments)$name=as.character(segments$seg.group)
     
     #scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean))-(min(segments$seg.mean))
-    scores=(segments$seg.mean-min(segments$seg.mean))/(max(segments$seg.mean)-
-                                                         min(segments$seg.mean))
     
-    mcols(segments)$itemRgb= rgb(ramp(scores), maxColorValue = 255)     
+    if( mean(segments$seg.mean) == 0) {
+      scores = rep(0,length(segments$seg.mean))
+    } else {
+      scores=(segments$seg.mean - min(segments$seg.mean))/
+        (max(segments$seg.mean)-min(segments$seg.mean))
+      }
+    
+    if(max(segments$seg.mean) + min(segments$seg.mean) == 0 ) {
+      
+    }
+    
+    mcols(segments)$itemRgb= rgb(ramp(scores), maxColorValue = 255) 
   }
   
   

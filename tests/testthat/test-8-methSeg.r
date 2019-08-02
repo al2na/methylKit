@@ -78,4 +78,19 @@ test_that("check if methSeg2bed returns bed file", {
   expect_true(file.exists("test.bed"))
 })
 
+segments <- GRanges(seqnames = c("chr2","chr2","chr2","chrM","chrX"),
+                    ranges = IRanges(
+                      start = c(52445739,58194119,58582091,4848,65761515),
+                      end = c(52453651,58211798,58601283,15960,65769140)),
+                    strand = "*", ID = "meth", num.mark = c(4,6,8,11,5),
+                    seg.mean = 0, startRow = c(918976,988985,992438,1,561162),
+                    endRow = c(918980,988991,992446,12,561167),
+                    seg.group = 1, name = 1)
+methSeg2bed(segments = segments,filename = "test2.bed")
+
+
+test_that("check if methSeg2bed returns bed file", {
+  expect_true(file.exists("test2.bed"))
+})
+
 unlink("test.bed")
