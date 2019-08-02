@@ -1,3 +1,13 @@
+methylKit 1.11.1
+--------------
+NEW FUNCTIONS AND FEATURES
+* add functions to read and write a header to tabix files: 
+  this allows for easier sharing of methylDB objects, 
+  as the metadata is included in the tabix file
+* new function readMethylDB: function reads the header from a given tabix file 
+  and loads it into corresponding methylDB object
+
+
 methylKit 1.9.4
 --------------
 NEW FUNCTIONS AND FEATURES
