@@ -969,27 +969,22 @@ readMethylDB <- function(dbpath) {
                              "\nPlease provide tabix file with header created ", 
                              "from methylKit version >=1.12."))
   
-  if(!is.null(head)) {
+  if(is.null(head)) stop("Stopping here.") 
     
-    if(! head$class %in% c("methylRaw", "methylRawDB",
-                               "methylBase", "methylBaseDB",
-                               "methylDiff", "methylDiffDB") ) {
-      stop("Unsupported class:", head$class,"\nPlease provide the correct class of data.")
-    }
-    
-    if(is.null(head$num.records)) {
-      num.records=Rsamtools::countTabix(dbpath)[[1]] 
-    } else num.records = head$num.records
-    
-    obj <-  switch (head$class,
-                    methylRaw = readMethylRawDB(dbpath), 
-                    methylRawDB = readMethylRawDB(dbpath),
-                    methylBase = readMethylBaseDB(dbpath),
-                    methylBaseDB = readMethylBaseDB(dbpath),
-                    methylDiff = readMethylDiffDB(dbpath),
-                    methylDiffDB = readMethylDiffDB(dbpath)
-                    )
+  if(! head$class %in% c("methylRaw", "methylRawDB",
+                             "methylBase", "methylBaseDB",
+                             "methylDiff", "methylDiffDB") ) {
+    stop("Unsupported class:", head$class,"\nPlease provide the correct class of data.")
   }
+  
+  switch (head$class,
+                  methylRaw = readMethylRawDB(dbpath), 
+                  methylRawDB = readMethylRawDB(dbpath),
+                  methylBase = readMethylBaseDB(dbpath),
+                  methylBaseDB = readMethylBaseDB(dbpath),
+                  methylDiff = readMethylDiffDB(dbpath),
+                  methylDiffDB = readMethylDiffDB(dbpath)
+          )
   
 }
 
