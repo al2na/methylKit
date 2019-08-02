@@ -28,7 +28,7 @@ data(methylKit)
 baseDB.obj <- makeMethylDB(methylBase.obj,"my/path")
 mydbpath <- getDBPath(baseDB.obj)
 rm(baseDB.obj)
-readMethlDB(mydbpath)
+readMethylDB(mydbpath)
 
 }
 
