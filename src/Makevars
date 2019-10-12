@@ -1,3 +1,7 @@
+## This file uses GNU make syntax $(shell ...) so we need to
+## have "SystemRequirements: GNU make" in the DESCRIPTION file.
+## See Rhtslib's vignette for details.
+
 ## editable compiler flags for C++ code
 ##
 #PKG_CPPFLAGS = 
@@ -16,6 +20,11 @@
 CXX_STD= CXX11
 
 ## RHTSlib specific settings
-RHTSLIB_LIBS=`echo 'Rhtslib::pkgconfig("PKG_LIBS")'|\
-    "${R_HOME}/bin/R" --vanilla --slave`
+RHTSLIB_LIBS=$(shell echo 'Rhtslib::pkgconfig("PKG_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave)
+RHTSLIB_CPPFLAGS=$(shell echo 'Rhtslib::pkgconfig("PKG_CPPFLAGS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave)
+
 PKG_LIBS=$(RHTSLIB_LIBS)
+PKG_CPPFLAGS=$(RHTSLIB_CPPFLAGS)
+
