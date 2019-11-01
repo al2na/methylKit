@@ -912,6 +912,17 @@ Yes, you can. Many functions of the analysis workflow provide an `save.db`
 argument, which allows you to save the output as methylDB object. For example
 see `?unite` and also check the `...` argument section for further details.
 
+You can also use the `makeMethylDB()` function to export your in-memory object 
+to flat-file database.
+
+### How could I share methylKit objects ?
+
+Starting from version 1.11.1, when generating tabix files we are storing all 
+required metadata in the header of the created tabix file. The function 
+`readMethylDB()` can be used to load supported tabix files only from the file 
+path. Supported tabix files are created during normal tabix-based workflow or 
+exported with `makeMethylDB()` function whenever using methylKit versions > 1.11.1. 
+
 ### Where do I find the flatfile database underlying a methylDB?
 
 You can easily find the underlying flatfile database (aka tabix file) using the `getDBPath()`
