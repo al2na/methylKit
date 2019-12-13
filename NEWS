@@ -1,3 +1,20 @@
+methylKit 1.13.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix issues related to build checking: 
+  - logical vectors of size longer than one
+  - docs for methseg contain line longer than 100 chars
+* fix methSeg2bed error when seg.mean=0 and scores=NA by 
+  replacing score with zero if average seg.mean is zero
+  https://github.com/al2na/methylKit/issues/123
+* update vignette:
+  - explain how to get wig/bigwig file from methylKit
+    https://github.com/al2na/methylKit/issues/157
+  - explain how to deal with soft clipping in processBismarkAln
+    https://github.com/al2na/methylKit/issues/159
+  - add section about exporting and loading tabix objects 
+    starting from version 1.11.1
+
 methylKit 1.11.1
 --------------
 NEW FUNCTIONS AND FEATURES
