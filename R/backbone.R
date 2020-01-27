@@ -1555,6 +1555,30 @@ setGeneric("getCorrelation", function(object, method = "pearson",
     .panel.cor(..., method = mymethod)
   }  
   
+  ## add density key 
+  density.key <- function(xleft = 0, ytop = 1.03, 
+                          xright = xleft+0.1, 
+                          ybottom = ytop-0.04,
+                          key.title = "density",
+                          n.key.marks = 2,
+                          key.labels = c("low","high")) {
+    
+    colfunc <- colorRampPalette(topo.colors(100))
+    legend_image <- as.raster(matrix(colfunc(20), ncol=1))
+    
+    
+    text(x=xleft+0.05, y = ytop+0.02, 
+         labels = key.title,cex = 0.8)
+    text(x = seq(xleft,xright,l=n.key.marks), y=ybottom-0.01, 
+         labels = key.labels,
+         cex = 0.6,srt = 90,adj = 1)
+    rasterImage(t(legend_image), 
+                xleft = xleft, ybottom = ybottom, 
+                xright = xright, ytop = ytop)
+    rect(xleft = xleft, ybottom = ybottom, 
+         xright = xright, ytop = ytop)
+  }
+  
   pairs(meth.mat, 
         lower.panel = panel.my.smooth2, 
         upper.panel = panel.cor,
@@ -1562,6 +1586,9 @@ setGeneric("getCorrelation", function(object, method = "pearson",
         main = title#,
         #oma=c(4,4,6,12) ## if legend is required
         )
+  
+  # plot a density key
+  density.key(xleft = 0.05, ytop = 1.01)
   
   # # allow plotting of the legend outside the figure region 
   # # (ie within the space left by making the margins big)

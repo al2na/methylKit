@@ -1,6 +1,12 @@
 methylKit 1.13.1
 --------------
 IMPROVEMENTS AND BUG FIXES
+* add colour scale for density on correlation plots
+  https://github.com/al2na/methylKit/issues/19
+
+methylKit 1.13.1
+--------------
+IMPROVEMENTS AND BUG FIXES
 * fix issues related to build checking: 
   - logical vectors of size longer than one
   - docs for methseg contain line longer than 100 chars
