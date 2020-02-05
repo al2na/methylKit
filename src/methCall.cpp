@@ -936,7 +936,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
     else if( (xr_tag == "ZGA") && (xg_tag == "ZGA") ) {strand='-';} // complementary to original bottom strand, bismark says + strand to this
     
     
-    // check wether read is proper paired (both mapped)
+    // check whether read is proper paired (both mapped)
     int proper_paired = (int) ((b)->core.flag&BAM_FPROPER_PAIR);
     
     // if is proper pair and no_overlap is set
