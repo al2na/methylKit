@@ -115,17 +115,17 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
   # destrand
   strand(obj) <- "*"
   
-  ## check wether obj contains at least one metacol 
+  ## check whether obj contains at least one metacol 
   if(ncol(elementMetadata(obj))<1)
     stop("GRanges does not have any meta column.")
   
-  ## check wether obj contains is sorted by position
+  ## check whether obj contains is sorted by position
   if(is.unsorted(obj,ignore.strand=TRUE)) {
     obj <- sort(obj,ignore.strand=TRUE)
     message("Object not sorted by position, sorting now.")
   }
   
-  ## check wether obj contains at least two ranges else stop
+  ## check whether obj contains at least two ranges else stop
   if(length(obj)<=1)
     stop("segmentation requires at least two ranges.")
   
