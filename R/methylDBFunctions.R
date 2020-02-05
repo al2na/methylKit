@@ -1,9 +1,9 @@
 # Helper Functions ---------------------------------------------------
 
-## function checks wether a tabix file already exists and 
+## function checks whether a tabix file already exists and 
 ## appends number if file already exists  
 .checkTabixFileExists <- function(tabixfile) {
-  message("\nchecking wether tabix file already exists:")
+  message("\nchecking whether tabix file already exists:")
   tabixfile <- paste0(tabixfile,".bgz")
   message(tabixfile)
   if(file.exists(tabixfile) ) {
