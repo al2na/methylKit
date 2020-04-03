@@ -5,6 +5,13 @@
 # reads gzipped files with data.table::fread
 #' @noRd
 fread.gzipped<-function(filepath, ..., runShell=TRUE){
+  # check if file exists
+  if(!file.exists(filepath) ) 
+    stop("No such file: ", filepath)
+  
+  # check if file is not empty
+  if( !file.size(filepath) > 0 )
+    stop(sprintf("ERROR: File %s is empty.",filepath))
   
   # check if file is gzipped (either gz or bgz)
   if (R.utils::isGzipped(filepath, method = "content")){
