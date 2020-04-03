@@ -4,7 +4,8 @@
 
 # reads gzipped files with data.table::fread
 #' @noRd
-fread.gzipped<-function(filepath, ..., runShell=TRUE){
+fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
+  
   # check if file exists
   if(!file.exists(filepath) ) 
     stop("No such file: ", filepath)
@@ -16,35 +17,37 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
   # check if file is gzipped (either gz or bgz)
   if (R.utils::isGzipped(filepath, method = "content")){
     
-    if( runShell && ( .Platform$OS.type == "unix" ) ) {
-      # being on unix we can run shell comands to uncompress the file
-      if(!file.exists(filepath) ) 
-        # to protect against exploits
-        stop("No such file: ", filepath)
-      # run the command
-      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
-      tmpFile <- paste0(tempdir(),"/",gsub(ext,"",basename(filepath)))
-      if(!file.exists(tmpFile)) {
-        system2("gunzip",args = c("-c",shQuote(filepath)), stdout = tmpFile)
-      }
-      filepath <- tmpFile
-      # on.exit(unlink( tmpFile ), add = TRUE)
-      
-    } else {
-      # on windows we have to decompress first ... 
-      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
-      tmpFile <- R.utils::gunzip(filepath,temporary = TRUE, overwrite = TRUE,
-                                 remove = FALSE, ext = ext, FUN = gzfile)
-      filepath <- tmpFile
-      # on.exit(unlink( tmpFile ), add = TRUE)
-    }
+    message("Uncompressing file.")
+    
+    # starting from v1.11.8 data.table supports reading compressed files,
+    # by using R.utils::decompressFile function, but they check for 
+    # extensions .gz and .bz2, so we keep our own function.
+    # however uncompressed output will be written to temp files, 
+    # so for now we do not remove them and keep them as cache. 
+    
+    ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
+    tmpFile <- R.utils::gunzip(filepath,
+                               temporary = TRUE, 
+                               overwrite = TRUE,
+                               remove = FALSE,
+                               skip = skipDecompress,
+                               ext = ext, 
+                               FUN = gzfile)
+    filepath <- tmpFile
+    
+    if( !file.size(filepath) > 0 )
+      stop(sprintf("ERROR: File %s is empty.",filepath))
+    
+    # on.exit(unlink( tmpFile ), add = TRUE)
     
   }
-    ## finally we read in the uncompressed file  
-    df <- data.table::fread(file = filepath,...)
   
-    
+  ## finally we read in the uncompressed file  
+  message("Reading file.")
+  df <- data.table::fread(file = filepath,...)
+  
   return(df)
+  
 }
 
 # reads a table in a fast way to a dataframe
