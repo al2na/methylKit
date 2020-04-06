@@ -2246,7 +2246,7 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
                 # clean up
                 rm(g.meth)
                 
-                tmp <- new("methylRaw",data,resolution=object@resolution)
+                tmp <- new("methylRaw",data,sample.id="temp",resolution=object@resolution)
                 # clean up
                 rm(data)
                 
