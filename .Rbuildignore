@@ -19,3 +19,5 @@
 ^man/mergeTbxByChr\.Rd$
 ^\.travis\.c\.yml$
 ^\.travis\.r\.yml$
+^doc$
+^Meta$
