@@ -78,7 +78,10 @@ paired chromosomes from the same sample
 
 We start by reading in the methylation call data from bisulfite sequencing with
 `methRead` function. Reading in the data this way will return a `methylRawList`
-object which stores methylation information per sample for each covered base.
+object which stores methylation information per sample for each covered base. By
+default `methRead` requires a minimum coverage of 10 reads per base to ensure
+good quality of the data and a high confidence methylation percentage.
+
 The methylation call files are basically text files that contain percent
 methylation score per base. Such input files may be obtained from 
 [AMP pipeline](http://code.google.com/p/amp-errbs/)
@@ -125,7 +128,8 @@ myobj=methRead(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
            treatment=c(1,1,0,0),
-           context="CpG"
+           context="CpG",
+           mincov = 10
            )
 ```
 
@@ -404,17 +408,38 @@ newobj=reconstruct(mat,meth)
 For some situations, it might be desirable to summarize methylation information
 over tiling windows rather than doing base-pair resolution analysis. `methylKit`
 provides functionality to do such analysis. The function below tiles the genome
-with windows 1000bp length and 1000bp step-size and summarizes the methylation
+with windows of 1000bp length and 1000bp step-size and summarizes the methylation
 information on those tiles. In this case, it returns a `methylRawList` object
 which can be fed into `unite` and `calculateDiffMeth` functions consecutively to
 get differentially methylated regions. The tilling function adds up C and T
 counts from each covered cytosine and returns a total C and T count for each
 tile.
 
+As mentioned [before](#reading-the-methylation-call-files), `methRead` sets a
+minimum coverage threshold of 10 reads per cytosine to ensure good quality for
+downstream base-pair resolution analysis. However in the case of tiling window /
+regional analysis one might want to set the initial per base coverage threshold
+to a lower value and then filter based on the number of bases (cytosines) per
+region. [Filtering samples based on read
+coverage](#filtering-samples-based-on-read-coverage) might still be appropriate
+to remove coverage biases.
+
+
+
 ```{r,warning=FALSE}
-tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
+myobj_lowCov = methRead(file.list,
+           sample.id=list("test1","test2","ctrl1","ctrl2"),
+           assembly="hg18",
+           treatment=c(1,1,0,0),
+           context="CpG",
+           mincov = 3
+           )
+
+tiles = tileMethylCounts(myobj_lowCov,win.size=1000,step.size=1000,cov.bases = 10)
 head(tiles[[1]],3)
 ```
+
+
 
 ## Finding differentially methylated bases or regions
 
