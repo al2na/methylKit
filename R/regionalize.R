@@ -590,7 +590,7 @@ setMethod("regionCounts", signature(object="methylRawList",
 #'
 #' The function summarizes methylated/unmethylated base counts over tilling 
 #' windows accross genome. This function can be used when differential 
-#' methylated analysis is preferable to tilling windows instead of base pairs.
+#' methylation analysis is preferable to tilling windows instead of base pairs.
 #'
 #' @param object \code{\link{methylRaw}}, \code{\link{methylRawDB}},
 #'   \code{\link{methylRawList}}, \code{\link{methylRawListDB}},
