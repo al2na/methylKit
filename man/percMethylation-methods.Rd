@@ -7,13 +7,21 @@
 \alias{percMethylation,methylBaseDB-method}
 \title{get percent methylation scores from methylBase or methylBaseDB object}
 \usage{
-percMethylation(methylBase.obj, rowids = FALSE, save.txt = FALSE,
-  chunk.size = 1e+06)
+percMethylation(
+  methylBase.obj,
+  rowids = FALSE,
+  save.txt = FALSE,
+  chunk.size = 1e+06
+)
 
 \S4method{percMethylation}{methylBase}(methylBase.obj, rowids = FALSE)
 
-\S4method{percMethylation}{methylBaseDB}(methylBase.obj, rowids = FALSE,
-  save.txt = FALSE, chunk.size = 1e+06)
+\S4method{percMethylation}{methylBaseDB}(
+  methylBase.obj,
+  rowids = FALSE,
+  save.txt = FALSE,
+  chunk.size = 1e+06
+)
 }
 \arguments{
 \item{methylBase.obj}{a methylBase or methylBaseDB object}

@@ -6,13 +6,19 @@
 \alias{calculateDiffMethDSS,methylBase-method}
 \title{calculate Differential Methylation with DSS}
 \usage{
-calculateDiffMethDSS(meth, adjust = c("SLIM", "holm", "hochberg",
-  "hommel", "bonferroni", "BH", "BY", "fdr", "none", "qvalue"),
-  mc.cores = 1)
+calculateDiffMethDSS(
+  meth,
+  adjust = c("SLIM", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr",
+    "none", "qvalue"),
+  mc.cores = 1
+)
 
-\S4method{calculateDiffMethDSS}{methylBase}(meth, adjust = c("SLIM",
-  "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
-  "qvalue"), mc.cores = 1)
+\S4method{calculateDiffMethDSS}{methylBase}(
+  meth,
+  adjust = c("SLIM", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr",
+    "none", "qvalue"),
+  mc.cores = 1
+)
 }
 \arguments{
 \item{meth}{a methylBase object}

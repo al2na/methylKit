@@ -7,14 +7,32 @@
 \alias{getMethylationStats,methylRawDB-method}
 \title{get Methylation stats from methylRaw or methylRawDB object}
 \usage{
-getMethylationStats(object, plot = FALSE, both.strands = FALSE,
-  labels = TRUE, ..., chunk.size = 1e+06)
+getMethylationStats(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 
-\S4method{getMethylationStats}{methylRaw}(object, plot = FALSE,
-  both.strands = FALSE, labels = TRUE, ..., chunk.size = 1e+06)
+\S4method{getMethylationStats}{methylRaw}(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 
-\S4method{getMethylationStats}{methylRawDB}(object, plot = FALSE,
-  both.strands = FALSE, labels = TRUE, ..., chunk.size = 1e+06)
+\S4method{getMethylationStats}{methylRawDB}(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 }
 \arguments{
 \item{object}{a \code{methylRaw} or \code{methylRawDB} object}

@@ -7,16 +7,35 @@
 \alias{unite,methylRawListDB-method}
 \title{unite methylRawList to a single table}
 \usage{
-unite(object, destrand = FALSE, min.per.group = NULL,
-  chunk.size = 1e+06, mc.cores = 1, save.db = FALSE, ...)
+unite(
+  object,
+  destrand = FALSE,
+  min.per.group = NULL,
+  chunk.size = 1e+06,
+  mc.cores = 1,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{unite}{methylRawList}(object, destrand = FALSE,
-  min.per.group = NULL, chunk.size = 1e+06, mc.cores = 1,
-  save.db = FALSE, ...)
+\S4method{unite}{methylRawList}(
+  object,
+  destrand = FALSE,
+  min.per.group = NULL,
+  chunk.size = 1e+06,
+  mc.cores = 1,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{unite}{methylRawListDB}(object, destrand = FALSE,
-  min.per.group = NULL, chunk.size = 1e+06, mc.cores = 1,
-  save.db = TRUE, ...)
+\S4method{unite}{methylRawListDB}(
+  object,
+  destrand = FALSE,
+  min.per.group = NULL,
+  chunk.size = 1e+06,
+  mc.cores = 1,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{a methylRawList or methylRawListDB object to be merged by 

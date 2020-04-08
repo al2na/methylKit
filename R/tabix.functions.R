@@ -511,9 +511,9 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 
 #' get data from meth tabix for a given number of rows
 #'
-#' @example
-#' tbxFile=methylRawListDB[[1]]@dbpath
-#' headTabix(tbxFile)
+# @example
+# tbxFile=methylRawListDB[[1]]@dbpath
+# headTabix(tbxFile)
 #' @noRd
 headTabix <- function(tbxFile, nrow = 10,
                     return.type = c("data.table","data.frame","GRanges") ){

@@ -5,9 +5,12 @@
 \alias{methSeg2bed}
 \title{Export segments to BED files}
 \usage{
-methSeg2bed(segments, filename,
+methSeg2bed(
+  segments,
+  filename,
   trackLine = "track name='meth segments' description='meth segments' itemRgb=On",
-  colramp = colorRamp(c("gray", "green", "darkgreen")))
+  colramp = colorRamp(c("gray", "green", "darkgreen"))
+)
 }
 \arguments{
 \item{segments}{\code{\link[GenomicRanges:GRanges-class]{GRanges}} object with segment

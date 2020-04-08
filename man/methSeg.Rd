@@ -5,8 +5,13 @@
 \alias{methSeg}
 \title{Segment methylation or differential methylation profile}
 \usage{
-methSeg(obj, diagnostic.plot = TRUE, join.neighbours = FALSE,
-  initialize.on.subset = 1, ...)
+methSeg(
+  obj,
+  diagnostic.plot = TRUE,
+  join.neighbours = FALSE,
+  initialize.on.subset = 1,
+  ...
+)
 }
 \arguments{
 \item{obj}{\code{\link[GenomicRanges:GRanges-class]{GRanges}},

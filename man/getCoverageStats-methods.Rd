@@ -7,14 +7,32 @@
 \alias{getCoverageStats,methylRawDB-method}
 \title{get coverage stats from methylRaw object}
 \usage{
-getCoverageStats(object, plot = FALSE, both.strands = FALSE,
-  labels = TRUE, ..., chunk.size = 1e+06)
+getCoverageStats(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 
-\S4method{getCoverageStats}{methylRaw}(object, plot = FALSE,
-  both.strands = FALSE, labels = TRUE, ..., chunk.size = 1e+06)
+\S4method{getCoverageStats}{methylRaw}(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 
-\S4method{getCoverageStats}{methylRawDB}(object, plot = FALSE,
-  both.strands = FALSE, labels = TRUE, ..., chunk.size = 1e+06)
+\S4method{getCoverageStats}{methylRawDB}(
+  object,
+  plot = FALSE,
+  both.strands = FALSE,
+  labels = TRUE,
+  ...,
+  chunk.size = 1e+06
+)
 }
 \arguments{
 \item{object}{a \code{methylRaw} or \code{methylRawDB} object}

@@ -13,29 +13,65 @@
 \usage{
 tileMethylCounts(object,win.size=1000,step.size=1000,cov.bases=0,mc.cores=1,save.db,...)
 
-\S4method{tileMethylCounts}{methylRaw}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = FALSE,
-  ...)
+\S4method{tileMethylCounts}{methylRaw}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{tileMethylCounts}{methylRawList}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = FALSE,
-  ...)
+\S4method{tileMethylCounts}{methylRawList}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{tileMethylCounts}{methylBase}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = FALSE,
-  ...)
+\S4method{tileMethylCounts}{methylBase}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{tileMethylCounts}{methylRawDB}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = TRUE,
-  ...)
+\S4method{tileMethylCounts}{methylRawDB}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{tileMethylCounts}{methylRawListDB}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = TRUE,
-  ...)
+\S4method{tileMethylCounts}{methylRawListDB}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{tileMethylCounts}{methylBaseDB}(object, win.size = 1000,
-  step.size = 1000, cov.bases = 0, mc.cores = 1, save.db = TRUE,
-  ...)
+\S4method{tileMethylCounts}{methylBaseDB}(
+  object,
+  win.size = 1000,
+  step.size = 1000,
+  cov.bases = 0,
+  mc.cores = 1,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{\code{\link{methylRaw}}, \code{\link{methylRawDB}},
@@ -78,7 +114,7 @@ saved as flat file database or not, default: explained in Details sections}
 \description{
 The function summarizes methylated/unmethylated base counts over tilling 
 windows accross genome. This function can be used when differential 
-methylated analysis is preferable to tilling windows instead of base pairs.
+methylation analysis is preferable to tilling windows instead of base pairs.
 }
 \section{Details}{
 

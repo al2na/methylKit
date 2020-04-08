@@ -19,53 +19,125 @@
 \usage{
 regionCounts(object,regions,cov.bases=0,strand.aware=FALSE,chunk.size,save.db,...)
 
-\S4method{regionCounts}{methylRaw,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylRaw,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylBase,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylBase,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylRaw,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylRaw,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylBase,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylBase,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawList,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylRawList,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawList,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{regionCounts}{methylRawList,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawDB,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylRawDB,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawDB,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylRawDB,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawListDB,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylRawListDB,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{regionCounts}{methylRawListDB,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylRawListDB,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{regionCounts}{methylBaseDB,GRanges}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylBaseDB,GRanges}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{regionCounts}{methylBaseDB,GRangesList}(object, regions,
-  cov.bases = 0, strand.aware = FALSE, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{regionCounts}{methylBaseDB,GRangesList}(
+  object,
+  regions,
+  cov.bases = 0,
+  strand.aware = FALSE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 

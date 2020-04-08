@@ -5,10 +5,21 @@
 \alias{dataSim}
 \title{Simulate DNA methylation data}
 \usage{
-dataSim(replicates, sites, treatment, percentage = 10, effect = 25,
-  alpha = 0.4, beta = 0.5, theta = 10, covariates = NULL,
-  sample.ids = NULL, assembly = "hg18", context = "CpG",
-  add.info = FALSE)
+dataSim(
+  replicates,
+  sites,
+  treatment,
+  percentage = 10,
+  effect = 25,
+  alpha = 0.4,
+  beta = 0.5,
+  theta = 10,
+  covariates = NULL,
+  sample.ids = NULL,
+  assembly = "hg18",
+  context = "CpG",
+  add.info = FALSE
+)
 }
 \arguments{
 \item{replicates}{the number of samples that should be simulated.}
