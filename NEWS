@@ -1,3 +1,25 @@
+methylKit 1.13.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fread.gzipped: 
+  - add pre-checks wheter file exists and is not empty
+  - switch to R.utils::gunzip instead of building shell   
+    command manually 
+* tileMethylCounts: remove orphan warning triggered by   
+  incomplete temporary methylRaw object, 
+  fixes https://github.com/al2na/methylKit/issues/175
+* update vignette: 
+  - add mincov argument to methread
+  - add paragraph to tiling section about reducing 
+  coverage threshold + update example code
+* update docs:
+  - rebuild docs with more recent version of roxygen
+  - exclude examples from internal function
+*  increase version requirement for tabix files with header
+  
+  
+    
+
 methylKit 1.13.1
 --------------
 IMPROVEMENTS AND BUG FIXES
