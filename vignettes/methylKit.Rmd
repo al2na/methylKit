@@ -746,7 +746,7 @@ objDB=makeMethylDB(methylBase.obj,"exMethylDB")
 
 ## Loading methylDB objects from tabix files
 
-Since version 1.11.1 of methylKit the underlying tabix file of **methylDB**
+Since version 1.13.1 of methylKit the underlying tabix file of **methylDB**
 objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) include a header
 which stores the corresponding metadata of the object. Thus you can recreate the
 object with just the tabix file, which allows easy sharing of methylDB objects
@@ -942,11 +942,11 @@ to flat-file database.
 
 ### How could I share methylKit objects ?
 
-Starting from version 1.11.1, when generating tabix files we are storing all 
+Starting from version 1.13.1, when generating tabix files we are storing all 
 required metadata in the header of the created tabix file. The function 
 `readMethylDB()` can be used to load supported tabix files only from the file 
 path. Supported tabix files are created during normal tabix-based workflow or 
-exported with `makeMethylDB()` function whenever using methylKit versions > 1.11.1. 
+exported with `makeMethylDB()` function whenever using methylKit versions > 1.13.1. 
 
 ### Where do I find the flatfile database underlying a methylDB?
 

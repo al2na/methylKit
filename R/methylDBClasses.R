@@ -967,7 +967,7 @@ readMethylDB <- function(dbpath) {
                            message = paste(
                              "No Tabix Header Found,",
                              "\nPlease provide tabix file with header created ", 
-                             "from methylKit version >=1.12."))
+                             "from methylKit version >=1.13.1."))
   
   if(is.null(head)) stop("Stopping here.") 
     

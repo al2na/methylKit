@@ -13,7 +13,7 @@ IMPROVEMENTS AND BUG FIXES
   - explain how to deal with soft clipping in processBismarkAln
     https://github.com/al2na/methylKit/issues/159
   - add section about exporting and loading tabix objects 
-    starting from version 1.11.1
+    starting from version 1.13.1
 
 methylKit 1.11.1
 --------------
