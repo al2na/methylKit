@@ -1073,14 +1073,21 @@ setMethod("removeComp",signature(mBase="methylBaseDB"),
 #' @rdname percMethylation-methods
 #' @aliases percMethylation,methylBaseDB-method
 setMethod("percMethylation", "methylBaseDB",
-          function(methylBase.obj,rowids=FALSE,save.txt,chunk.size){
-            
-            meth.fun <- function(data, numCs.index, numTs.index){
-              
-              dat=100 * data[, numCs.index]/( data[,numCs.index] + 
-                                                data[,numTs.index] )
-              rownames(dat)=paste(as.character(data[,1]),
-                                  data[,2],data[,3],sep=".")
+          function(methylBase.obj,
+                   rowids = FALSE,
+                   save.txt = FALSE,
+                   chunk.size = 1e6) {
+            meth.fun <- function(data, numCs.index, numTs.index, rowids) {
+              dat = 100 * data[, numCs.index] / (data[, numCs.index] +
+                                                   data[, numTs.index])
+              if(rowids) {
+                dat = cbind(pos = 
+                              paste(as.character(data[, 1]),
+                                      data[, 2], data[, 3], 
+                                    sep = "."),
+                            dat)
+                
+              }
               return(dat)
               
             }
@@ -1089,15 +1096,20 @@ setMethod("percMethylation", "methylBaseDB",
               filename <- paste0(basename(gsub(".txt.bgz","",
                                       methylBase.obj@dbpath)),"_methMath.txt")
               
-              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,
-                                         return.type = "text", 
+              textHeader = methylBase.obj@sample.ids
+              if(rowids) textHeader = c("pos",textHeader)
+              
+              outfile = applyTbxByChunk(methylBase.obj@dbpath,
+                                         return.type = "text",
+                                         textHeader = textHeader,
                                          chunk.size = chunk.size,
                                          dir = dirname(methylBase.obj@dbpath), 
                                          filename = filename,
                                          FUN = meth.fun, 
                                          numCs.index = methylBase.obj@numCs.index,
-                                         numTs.index = methylBase.obj@numTs.index)
-              return(meth.mat)
+                                         numTs.index = methylBase.obj@numTs.index,
+                                         rowids = rowids)
+              return(outfile)
               
             } else {
               
@@ -1106,12 +1118,14 @@ setMethod("percMethylation", "methylBaseDB",
                                          chunk.size = chunk.size,
                                          FUN = meth.fun, 
                                          numCs.index = methylBase.obj@numCs.index,
-                                         numTs.index = methylBase.obj@numTs.index)
+                                         numTs.index = methylBase.obj@numTs.index,
+                                         rowids = rowids)
+              if(rowids){
+                rownames(meth.mat) = meth.mat$pos 
+                meth.mat$pos = NULL
+              }
               
               names(meth.mat)=methylBase.obj@sample.ids
-              if(!rowids){
-                rownames(meth.mat)=NULL 
-              }
               return(as.matrix(meth.mat))
               
             }
