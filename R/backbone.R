@@ -148,12 +148,15 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 .check.dbdir <- function(dir){
   
   if(dir==getwd() ){
-    tabixDir <- paste("methylDB",Sys.Date(),
-                      paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),
-                            collapse=""))
+    tabixDir <- sprintf(fmt = "methylDB_%s_%s",
+            Sys.Date(),
+            paste(
+              sample(c(0:9, letters, LETTERS), 3, replace = TRUE),
+              collapse = "")
+            )
     dir.create(tabixDir)
-    dir <- paste(dir,"/",tabixDir,collapse = "",sep = "")
-    message(paste("creating directory ",getwd(),"/",tabixDir,sep = ""))
+    dir <- file.path(dir,tabixDir)
+    message(paste("creating directory ",dir,sep = ""))
   }
   else{
     
