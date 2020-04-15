@@ -636,7 +636,7 @@ tabix2gr<-function(tabixRes){
 #' @noRd
 applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table","text"),
-                          FUN,...,tabixHead=NULL){
+                          FUN,...,tabixHead=NULL,textHeader=NULL){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -711,6 +711,13 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       unlink(outfile)
     }
     con=file(outfile, open = "a", blocking = TRUE) # open connection  
+    # write header if provided
+    if(!is.null(textHeader)) 
+      write(file = con,
+            x = textHeader,
+            ncolumns = length(textHeader),
+            sep = "\t")
+    # append result files
     for(file in gtools::mixedsort(
       list.files(path = dir, pattern = filename2,full.names=TRUE))){
       file.append(outfile,file) # append files
