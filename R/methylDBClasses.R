@@ -436,7 +436,6 @@ valid.methylBaseDB <- function(object) {
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
   check3=( length(object@sample.ids) == length(object@treatment) )
-  numsamples = (length(df)-4)/3
   if (check2) {
     df <- headTabix(object@dbpath)
     numsamples = (length(df)-4)/3
