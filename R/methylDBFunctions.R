@@ -1258,6 +1258,11 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
                   methylObj@numCs.index[col.ord],
                   methylObj@numTs.index[col.ord])
     
+    # get indices of coverage,numCs and numTs in the data frame 
+    coverage.ind=seq(5,by=3,length.out=length(sample.ids))
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
     
     getSub <- function(data,ind.mat) {
       
@@ -1291,11 +1296,18 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     filename <- basename(filename)
     
     ## creating the tabix header
-    slotList <- list(dbtype = methylObj@dbtype,
-                     sample.ids=sample.ids,
-                     assembly=methylObj@assembly,context=methylObj@context,
-                     treatment=treatment,destranded=methylObj@destranded, 
-                     resolution=methylObj@resolution)
+    slotList <- list(
+      dbtype = methylObj@dbtype,
+      sample.ids = sample.ids,
+      assembly = methylObj@assembly,
+      context = methylObj@context,
+      treatment = treatment,
+      destranded = methylObj@destranded,
+      resolution = methylObj@resolution,
+      coverage.index = coverage.ind,
+      numCs.index = numCs.ind,
+      numTs.index = numTs.ind
+    )
     
     tabixHead <- makeTabixHeader(slotList)
     tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
