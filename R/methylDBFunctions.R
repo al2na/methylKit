@@ -1575,7 +1575,7 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- "_type"
+      suffix <- paste0("_",type)
     } else { 
       suffix <- paste0("_",args$suffix)
     }
@@ -1583,7 +1583,7 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     
     # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    filename <- paste(gsub(".txt.bgz","",.Object@dbpath),suffix,".txt")
+    filename <- paste0(gsub(".txt.bgz","",.Object@dbpath),suffix,".txt")
     
     filename <- .checkTabixFileExists(filename)
     
