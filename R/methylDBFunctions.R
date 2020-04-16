@@ -925,8 +925,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     if(is.matrix(methMat) ) {
       
       # check if indeed methMat is percent methylation matrix
-      if(max(methMat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix ",
+      if(min(methMat)<0 | max(methMat)>100 ){
+        stop("\nmake sure 'methMat' is percent methylation matrix ",
                 "(values between 0-100) \n")
       }
       
@@ -949,8 +949,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       mat <- fread(methMat,header = FALSE)
       
       # check if indeed methMat is percent methylation matrix
-      if(max(mat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix ",
+      if(min(methMat)<0 | max(methMat)>100 ){
+        stop("\nmake sure 'methMat' is percent methylation matrix ",
                 "(values between 0-100) \n")
       }
       
