@@ -313,7 +313,7 @@ assocComp <- function(mBase,sampleAnnotation){
 #' @export
 #' @docType methods
 #' @rdname removeComp-methods
-setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...) 
+setGeneric("removeComp", function(mBase,comp = NULL ,chunk.size=1e6,save.db=FALSE,...) 
   standardGeneric("removeComp"))
 
 #' @rdname removeComp-methods
