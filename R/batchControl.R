@@ -198,6 +198,11 @@ setMethod("reconstruct",signature(mBase="methylBase"),
 #' @docType methods
 #' @rdname assocComp-methods
 assocComp <- function(mBase,sampleAnnotation){
+  
+  if(length(sampleAnnotation) < 1) {
+    stop("ERROR: Sample Annotation has to have at least one column.")
+  } 
+  
   scale=TRUE
   center=TRUE
   mat=percMethylation(mBase) # get matrix
