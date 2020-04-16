@@ -931,8 +931,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       }
       
       # check if methMat is percent methylation matrix fitting to mBase  
-      if(nrow(methMat) != mBase@num.records | ncol(methMat) != 
-         length(mBase@numCs.index) ){
+      if(nrow(methMat) != mBase@num.records | 
+         ncol(methMat) != length(mBase@numCs.index) ){
         stop("\nmethMat dimensions do not match number of samples\n",
              "and number of bases in methylBase object\n")
       }
@@ -1002,7 +1002,10 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     slotList <- list(dbtype = mBase@dbtype,
                      sample.ids = mBase@sample.ids,assembly = mBase@assembly,
                      context = mBase@context,resolution = mBase@resolution,
-                     treatment = mBase@treatment,destranded = mBase@destranded)
+                     treatment = mBase@treatment,destranded = mBase@destranded,
+                     coverage.index = mBase@coverage.index,
+                     numCs.index = mBase@numCs.index,
+                     numTs.index = mBase@numTs.index)
     
     tabixHead <- makeTabixHeader(slotList)
     tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
