@@ -40,6 +40,7 @@ setMethod("percMethylation", "methylBase",
     meth.mat = 100 * x[, methylBase.obj@numCs.index]/(
       x[,methylBase.obj@numCs.index] + x[,methylBase.obj@numTs.index] )                                      
     names(meth.mat)=methylBase.obj@sample.ids
+    rownames(meth.mat) <- NULL
     if(rowids){
       rownames(meth.mat)=as.character(paste(x[,1],x[,2],x[,3],sep=".") )
     }
