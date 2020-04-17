@@ -1041,7 +1041,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
 #' @aliases removeComp,methylBaseDB-method
 setMethod("removeComp",signature(mBase="methylBaseDB"), 
           function(mBase,comp,chunk.size,save.db=TRUE,...){
-  if(is.na(comp) || is.null(comp)){
+  if(anyNA(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
   
