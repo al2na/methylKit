@@ -758,7 +758,7 @@ setMethod("methRead", signature(location = "list",sample.id="list",
             
   message("Received list of locations.")
             
-  if(any(is.na(treatment))) 
+  if(anyNA(treatment)) 
     stop("Treatment vector is missing.")
             
   #check if the given arugments makes sense
