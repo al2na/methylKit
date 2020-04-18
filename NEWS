@@ -1,3 +1,38 @@
+methylKit 1.13.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* getMethylDiff: 
+  - fixes bugs in method for methylDiffDB
+  - suffix will be actual type now, was "type" before
+  - removed whitespaces in filename,
+  fixes https://github.com/al2na/methylKit/issues/171
+  - add extensive test for getmethylDiff function
+* applyTbxByChunk:
+  - Allow optional writing of colnames and rownames if 
+  returntype is text. Find details in 
+  https://github.com/al2na/methylKit/issues/169
+* percMethylation:
+  - return rownames for methylDB when rowids is TRUE,
+  fixes https://github.com/al2na/methylKit/issues/170
+  - add extensive tests for percMethylation
+* reorganize:
+  - fix bug in method for methylBaseDB introduced with new tabix header
+  - add extensive testing for reorganize
+* assocComp:
+  - add further checks for proper annotation
+* removeComp:
+  - set default comp to NULL, to trigger earlier fail
+  - fix bug method for methylBaseDB introduced with new tabix header
+* reconstruct:
+  - update checks for percent methylation matrix
+  - fix bug with fread 
+* add extensive tests for batch control functions
+* diffMethPerChr: 
+  - prevent from plotting when no chrom left
+  - add extensive tests for diffMethPerChr
+  
+  
+
 methylKit 1.13.2
 --------------
 IMPROVEMENTS AND BUG FIXES
