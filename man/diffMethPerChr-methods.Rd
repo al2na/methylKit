@@ -44,7 +44,7 @@ hypo/hyper methylated bases/regions}
 
 \item{meth.cutoff}{cutoff for percent methylation difference}
 
-\item{exclude}{names of chromosomes to be excluded}
+\item{exclude}{names of chromosomes to be excluded from plot}
 
 \item{...}{extra graphical parameters to be passed to \code{\link{barplot}} 
 function}

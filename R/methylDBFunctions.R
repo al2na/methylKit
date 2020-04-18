@@ -1702,10 +1702,19 @@ all.hyper.hypo=data.frame(number.of.hypermethylated=sum(res$number.of.hypermethy
 
 dmc.hyper.hypo=res[order(as.numeric(sub("chr","",res$chr))),] # order the chromosomes
 
+if (all(dmc.hyper.hypo$chr %in% exclude)) {
+  warning("Cannot plot figure, excluded all available chromosomes.")
+  plot <- FALSE
+}
+
+
 if(plot){
   
-  if(!is.null(exclude)){dmc.hyper.hypo=
-    dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
+  if(!is.null(exclude)){
+    
+    
+    dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]
+    }
   
   barplot(
     t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],

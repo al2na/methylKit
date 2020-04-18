@@ -1297,7 +1297,7 @@ setMethod(f="getMethylDiff", signature="methylDiff",
 #'             hypo/hyper methylated bases/regions
 #' @param qvalue.cutoff  cutoff for q-value
 #' @param meth.cutoff cutoff for percent methylation difference
-#' @param exclude names of chromosomes to be excluded
+#' @param exclude names of chromosomes to be excluded from plot
 #' @param ... extra graphical parameters to be passed to \code{\link{barplot}} 
 #'                  function
 #' 
@@ -1355,9 +1355,17 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                                     "percentage.of.hypermethylated",
                                     "number.of.hypomethylated",
                                     "percentage.of.hypomethylated")
+            
+            if (all(dmc.hyper.hypo$chr %in% exclude)) {
+              warning("Cannot plot figure, excluded all available chromosomes.")
+              plot <- FALSE
+            }
+            
             if(plot){
               
-              if(!is.null(exclude)){dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
+              if(!is.null(exclude)){
+                dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]
+                }
               
               barplot(
                 t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
