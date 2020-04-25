@@ -52,25 +52,21 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 
 # reads a table in a fast way to a dataframe
 #' @noRd
-.readTableFast<-function(filename,header=TRUE,skip=0,sep="auto")
+.readTableFast <- function(filename,
+                           header = TRUE,
+                           skip = 0,
+                           sep = "auto",
+                           stringsAsFactors = FALSE)
 {
-  #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
-  #                       nrows = 100,stringsAsFactors=FALSE)
-  #classes  <- sapply(tab5rows, class)
-  #classes[classes=="logical"]="character"
-  #lines2keep <- 100
-  #nL <- R.utils::countLines(filename)
-  #lastrows <- read.table(filename, header = header,skip=nL-lines2keep,sep=sep, 
-  #                       stringsAsFactors=FALSE)
-  #lastclasses  <- sapply(lastrows, class)
-  #if(any(classes!=lastclasses)) {
-    #classes[which(classes!=lastclasses)] = lastclasses[which(classes!=lastclasses)]
-  #}
-
-  #return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
-  #                   )  )
   
-  fread.gzipped(filename,header=header,skip=skip,sep=sep,data.table=FALSE)
+  fread.gzipped(
+    filepath = filename,
+    header = header,
+    skip = skip,
+    sep = sep,
+    stringsAsFactors = stringsAsFactors,
+    data.table = FALSE
+  )
 }
 
 # reformats a data.frame to a standard methylraw data.frame
