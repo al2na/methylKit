@@ -283,16 +283,19 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 #'     
 #' @param mincov a numeric value for minimum coverage. Bases that have coverage
 #' below this value will be removed.
+#' @param context methylation context string, CpG,CHG,CHH
 #' 
 #' @return data.frame
 #' @noRd
-.procBismarkCytosineReport<-function(df,mincov=10){
+.procBismarkCytosineReport <- function(df, mincov = 10, context) {
+  
 
+    if (context == "CpG") context = "CG"
+    
     # remove low coverage stuff
     df=df[ (df[,4]+df[,5]) >= mincov ,]
     
-    
-    
+    df=df[ df[,6] == context ,]
     
     # make the object (arrange columns of df), put it in a list
     data.frame(chr=df[,1],start=df[,2],end=df[,2],
@@ -507,7 +510,7 @@ methylRawList <- function(...,treatment) {
 #' Default 'base'
 #' @param treatment a vector contatining 0 and 1 denoting which samples are 
 #' control which samples are test
-#' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
+#' @param context methylation context string, ex: CpG,CHG,CHH, etc. (default:CpG)
 #' @param dbdir directory where flat file database(s) should be stored, defaults
 #'       to getwd(), working directory.
 #' @param mincov minimum read coverage to be included in the methylKit objects.
@@ -673,7 +676,13 @@ setMethod("methRead", signature(location = "character",sample.id="character",
         {
           data<- .structureAMPoutput(data,mincov)
         }else if(pipeline == "bismarkCytosineReport"){
-          data= .procBismarkCytosineReport(data,mincov)
+          
+          if (!context %in% c("CpG","CHG","CHH")) {
+            stop("Unknown bismark context given, supported contexts are:",
+                 "'CpG', 'CHG' or 'CHH'")
+          }
+          message("Filtering for context: ",context,".")
+          data= .procBismarkCytosineReport(data,mincov,context)
          
         }else if(pipeline == "bismarkCoverage"){
           data= .procBismarkCoverage(data,mincov)
