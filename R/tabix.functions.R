@@ -527,7 +527,7 @@ headTabix <- function(tbxFile, nrow = 10,
   } 
   else {
     returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
-    df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = TRUE, data.table = returnDt)
+    df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = FALSE, data.table = returnDt)
     
     if(return.type[1] == "GRanges"){
       return( GRanges(seqnames=as.character(df$V1),
@@ -581,7 +581,7 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
 tabix2dt<-function(tabixRes){
 
     fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       stringsAsFactors=TRUE)
+                       stringsAsFactors=FALSE)
   
 }
 
@@ -591,7 +591,7 @@ tabix2dt<-function(tabixRes){
 tabix2df<-function(tabixRes){
 
     fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       stringsAsFactors=TRUE,data.table = FALSE)
+                       stringsAsFactors=FALSE,data.table = FALSE)
     
 }
 
