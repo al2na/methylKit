@@ -32,15 +32,17 @@ test_that("check if unite works", {
 # df <- df[!duplicated(df[,1:3]),]
 # df <- as.data.frame(df)
 # 
-bench::mark(
-  .CpG.dinuc.unify(df),
-  .CpG.dinuc.unifyOld(df)
-)
-
-microbenchmark::microbenchmark(
-  .CpG.dinuc.unify(df),
-  .CpG.dinuc.unifyOld(df)
-)
+# bench::mark(
+#   .CpG.dinuc.unify(df),
+#   .CpG.dinuc.unify2(df),
+#   .CpG.dinuc.unifyOld(df)
+# )
+# 
+# microbenchmark::microbenchmark(
+#   .CpG.dinuc.unify(df),
+#   .CpG.dinuc.unify2(df),
+#   .CpG.dinuc.unifyOld(df)
+# )
 
 
 unlink(dbdir,recursive = TRUE)
