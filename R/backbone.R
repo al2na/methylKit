@@ -175,34 +175,50 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
 {
-  cpg = data.table(cpg,key = c("chr","start","end"))
-  cpgR=cpg[strand=="-"]
-  cpgF=cpg[strand=="+",]
-  cpgR[,start := start +1]
-  cpgF[,start := start +1 ]
-  cpgR[,strand := "+"]
+  cpg = data.table(cpg, key = c("chr", "start", "end"))
+  cpgF = cpg[strand == "+",]
+  cpgR = cpg[strand == "-",]
+  cpgR[, `:=`(start = start - 1L,
+              end = end - 1L,
+              strand = "+")]
   
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
   
-  cpgFR=merge(cpgF,cpgR,by=c("chr","start","end"))
-  #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
-  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
-  res=data.table(
-    chr     =as.character(cpgFR$chr),
-    start    =as.integer(cpgFR$start),
-    end      =as.integer(cpgFR$start),
-    strand  =rep("+",nrow(cpgFR)),
-    coverage=cpgFR$coverage.x + cpgFR$coverage.y,
-    numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
-  )
-  Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
-  Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
-  resid=paste(res$chr,res$start,res$end)  
-  res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  setkey(res,"chr","start")
-  return(data.frame(res))
+  cpgFR = merge(cpgF, cpgR, by = c("chr", "start", "end"))
+  
+  cpgFR[, `:=`(
+    strand = "+",
+    coverage = coverage.x + coverage.y,
+    numCs = numCs.x + numCs.y,
+    numTs = numTs.x + numTs.y
+  )][, grep("x|y", names(cpgFR), value = TRUE) := NULL]
+  
+  # res=data.table(
+  #   chr     =as.character(cpgFR$chr),
+  #   start    =as.integer(cpgFR$start),
+  #   end      =as.integer(cpgFR$start),
+  #   strand  =rep("+",nrow(cpgFR)),
+  #   coverage=cpgFR$coverage.x + cpgFR$coverage.y,
+  #   numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
+  #   numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,
+  #   stringsAsFactors =FALSE
+  # )
+  Fid = paste(cpgF$chr, cpgF$start, cpgF$end)
+  Rid = paste(cpgR$chr, cpgR$start, cpgR$end)
+  FRid = paste(cpgFR$chr, cpgFR$start, cpgFR$end)
+  cpgFR = rbind(cpgFR, cpgF[!Fid  %in%  FRid, ], cpgR[!Rid  %in%  FRid, ])
+
+  cpgFR[, `:=`(
+    chr = as.character(chr),
+    strand = as.character(strand),
+    start = as.integer(start),
+    end = as.integer(end)
+  )]
+
+  setorder(cpgFR,"chr","start")
+
+  return(as.data.frame(cpgFR))
 }
 
 .CpG.dinuc.unifyOld<-function(cpg)
@@ -210,8 +226,8 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   
   cpgR=cpg[cpg$strand=="-",]
   cpgF=cpg[cpg$strand=="+",]
-  cpgR$start=cpgR$start-1
-  cpgR$end=cpgR$end-1
+  cpgR$start=cpgR$start-1L
+  cpgR$end=cpgR$end-1L
   cpgR$strand="+"
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
@@ -226,13 +242,15 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
     strand  =rep("+",nrow(cpgFR)),
     coverage=cpgFR$coverage.x + cpgFR$coverage.y,
     numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
+    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,
+    stringsAsFactors =FALSE
   )
   Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
   Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
   resid=paste(res$chr,res$start,res$end)  
   res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
   res=res[order(res$chr,res$start),]
+  rownames(res) <- NULL
   return(res)
 }
 
