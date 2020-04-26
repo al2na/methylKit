@@ -78,19 +78,28 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   # remove data beyond mincoverage
   data = data[data[,5] >= mincov,]
   
-  strand=rep("+",nrow(data))
-  strand[data[,4]=="R"]="-"
+  strand = rep("+",nrow(data))
+  strand[data[, 4] == "R"] = "-"
   
+  numCs = round(data[, 5] * data[, 6] / 100)
+  numTs = round(data[, 5] * data[, 7] / 100)
 
+  df <- data.frame(
+    chr = data[, 2],
+    start = data[, 3],
+    end = data[, 3],
+    strand = strand,
+    coverage = as.integer(data[, 5]),
+    numCs = as.integer(numCs),
+    numTs = as.integer(numTs),
+    stringsAsFactors = FALSE
+  )
   
-  numCs=round(data[,5]*data[,6]/100)
-  numTs=round(data[,5]*data[,7]/100)
+  # sort the data
+  df <- df[with(df,order(chr,start,end)),]
+  row.names(df) <- 1:nrow(df)
   
-
-  
-  
-  data.frame(chr=data[,2],start=data[,3],end=data[,3]
-             ,strand=strand,coverage=data[,5],numCs=numCs,numTs=numTs)
+  return(df)
 }
 
 # reformats a generic structure data.frame to a standard methylraw data.frame
@@ -119,8 +128,22 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
     numTs=data[,coverage.col] - numCs
     #id=paste(data[,chr.col], data[,start.col],sep=".")
     
-    data.frame(chr=data[,chr.col],start=data[,start.col],end=data[,end.col]
-    ,strand=strand,coverage=data[,coverage.col],numCs=numCs,numTs=numTs)
+    df <- data.frame(
+      chr = data[, chr.col],
+      start = data[, start.col],
+      end = data[, end.col],
+      strand = strand,
+      coverage = as.integer(data[, coverage.col]),
+      numCs = as.integer(numCs),
+      numTs = as.integer(numTs),
+      stringsAsFactors = FALSE
+    )
+    
+    # sort the data
+    df <- df[with(df,order(chr,start,end)),]
+    row.names(df) <- 1:nrow(df)
+    
+    return(df)
     
 }
 
