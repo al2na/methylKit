@@ -1,3 +1,22 @@
+methylKit 1.13.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+* set stringAsFactors to FALSE 
+  - changed when reading data and tabix files
+  - this solves class missmatches downstream
+  - update methylKit data with stringsAsFactors off
+* methRead:
+  - filter for given context when pipeline is cytosinereport
+  - order data when processing with methread, this ensures that 
+    methylRaw and methylRawDB contain exact same data
+  - add additional test for methread, check whether methread 
+    with or without tabix produces same data when processing 
+    bismark coverage and cytosine report
+* unite:
+  - make sure .CpG.dinuc.unifyOld equals .CpG.dinuc.unify
+  - add test to check that destranding result is same 
+    for methylBase and methylBaseDB
+
 methylKit 1.13.3
 --------------
 IMPROVEMENTS AND BUG FIXES
