@@ -858,7 +858,7 @@ setMethod("methRead", signature(location = "list",sample.id="list",
         if(pipeline %in% c("amp","bismark")){
           data<- .structureAMPoutput(data,mincov)
         }else if(pipeline == "bismarkCytosineReport"){
-          data= .procBismarkCytosineReport(data,mincov)
+          data= .procBismarkCytosineReport(data, mincov, context)
           
         }else if(pipeline == "bismarkCoverage"){
           data= .procBismarkCoverage(data,mincov)
