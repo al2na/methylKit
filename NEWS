@@ -1,3 +1,12 @@
+methylKit 1.15.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* check.dbdir: catch if path equals root ("/") dir
+* methRead: 
+  - add missing context argument for call 
+  to .procBismarkCytosineReport
+  - fixes https://github.com/al2na/methylKit/issues/198
+
 methylKit 1.13.4
 --------------
 IMPROVEMENTS AND BUG FIXES
