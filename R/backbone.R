@@ -166,6 +166,7 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 # checks if dbdir in read-call for methylRawDB and methylRawListDB objects exists
 .check.dbdir <- function(dir){
   
+  if(dir=="/"){ stop("ERROR: Cannot write in root dir.\nDid you mean set dbdir to './'?") }
   if(dir==getwd() ){
     tabixDir <- sprintf(fmt = "methylDB_%s_%s",
             Sys.Date(),
