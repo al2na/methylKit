@@ -1315,46 +1315,119 @@ setMethod(f="getMethylDiff", signature="methylDiff",
 #' @export
 #' @docType methods
 #' @rdname diffMethPerChr-methods
-setGeneric("diffMethPerChr", def=function(x,plot=TRUE,qvalue.cutoff=0.01, 
-                                          meth.cutoff=25,exclude=NULL,...) 
+setGeneric("diffMethPerChr", def=function(x,
+                                          plot=TRUE,
+                                          qvalue.cutoff=0.01, 
+                                          meth.cutoff=25,
+                                          exclude=NULL,
+                                          keep.empty.chrom = FALSE,
+                                          ...) 
   standardGeneric("diffMethPerChr"))
+
+
+.diffMethPerChr <- function(data,qvalue.cutoff, meth.cutoff, 
+                            keep.empty.chrom = FALSE){
+  
+  data <- as.data.table(data)
+  .setMethylDBNames(data,"methylDiffDB")
+  
+  
+  data[, type := "none" ]
+  data[qvalue < qvalue.cutoff & meth.diff >= meth.cutoff, type := "hyper" ]
+  data[qvalue < qvalue.cutoff & meth.diff <= -meth.cutoff, type := "hypo" ]
+  
+  ## summarize number of hype and hyper
+  number = perc = NULL
+  temp.hyper.hypo <- data[,
+                          .(number = .N) ,
+                          by = list(chr, type)][,
+                                                .(type,
+                                                  number ,
+                                                  perc = 100 * number / sum(number)),
+                                                by = chr][type != "none"]
+  
+  empty.chrom <- setdiff(unique(data$chr), temp.hyper.hypo$chr)
+  if (length(empty.chrom) > 0 & keep.empty.chrom) {
+    ## create empty result if no hyper or hypo found
+    temp.hyper.hypo <- rbind(temp.hyper.hypo,
+                             data.table(
+                               chr = empty.chrom,
+                               type = c("hypo", "hyper"),
+                               number = 0,
+                               perc = 0
+                             ))
+  }
+  
+  ## merge hyper hypo per chromosome
+  dmc.hyper.hypo <- merge(
+    temp.hyper.hypo[type == "hyper",.(chr,number,perc)],
+    temp.hyper.hypo[type == "hypo",.(chr,number,perc)],
+    by = "chr",
+    all = TRUE
+  )
+  
+  ## replace NA with 0
+  dmc.hyper.hypo[is.na(dmc.hyper.hypo)] <- 0
+  
+  names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
+                          "percentage.of.hypermethylated",
+                          "number.of.hypomethylated",
+                          "percentage.of.hypomethylated")
+  
+  dmc.hyper.hypo$chr <-  as.factor(dmc.hyper.hypo$chr)
+  
+  return(as.data.frame(dmc.hyper.hypo))
+}
+
+.plotDiffMethPerChr <- function(dmc.hyper.hypo,exclude,qvalue.cutoff,meth.cutoff,...) {
+  
+  if(!is.null(exclude)) {
+    dmc.hyper.hypo = dmc.hyper.hypo[!dmc.hyper.hypo$chr %in% exclude, ]
+  }
+  
+  barplot( 
+    t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
+                           hypo=dmc.hyper.hypo[,5],
+                           row.names=dmc.hyper.hypo[,1]) ))
+    ,las=2,horiz=TRUE,col=c("magenta","aquamarine4"),
+    main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
+    xlab="% (percentage)",...)
+  
+  mtext(side=3,paste("qvalue<",qvalue.cutoff,
+                     " & methylation diff. >=",meth.cutoff,
+                     " %",sep="") )
+  legend("topright",
+         legend=c("hyper","hypo"),
+         fill=c("magenta","aquamarine4"))
+}
 
 #' @aliases diffMethPerChr,methylDiff-method
 #' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiff"),
-          function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
+          function(x,plot,qvalue.cutoff, meth.cutoff,exclude,keep.empty.chrom,...){
             x=getData(x)
-            temp.hyper=x[x$qvalue < qvalue.cutoff & x$meth.diff >= meth.cutoff,]
-            temp.hypo =x[x$qvalue < qvalue.cutoff & x$meth.diff <= -meth.cutoff,]
             
-            dmc.hyper=100*nrow(temp.hyper)/nrow(x) # get percentages of hypo/ hyper
-            dmc.hypo =100*nrow(temp.hypo )/nrow(x)
+            # get per chrom percentages of hypo/ hyper
+            dmc.hyper.hypo <- .diffMethPerChr(
+              data = x,
+              qvalue.cutoff = qvalue.cutoff,
+              meth.cutoff = meth.cutoff,
+              keep.empty.chrom = keep.empty.chrom
+            )
             
-            all.hyper.hypo=data.frame(number.of.hypermethylated=nrow(temp.hyper),
-                                      percentage.of.hypermethylated=dmc.hyper,
-                                      number.of.hypomethylated=nrow(temp.hypo),
-                                      percentage.of.hypomethylated=dmc.hypo)
+            # order the chromosomes
+            dmc.hyper.hypo=dmc.hyper.hypo[order(as.numeric(sub("chr","",dmc.hyper.hypo$chr))),] 
             
-            # plot barplot for percentage of DMCs per chr
-            dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), 
-                                as.data.frame(table(x$chr)),by="Var1")
-            dmc.hyper.chr=cbind(dmc.hyper.chr,
-                                perc=100*dmc.hyper.chr[,2]/dmc.hyper.chr[,3])
+            # get global percentages of hypo/ hyper
+            dmc.hyper = 100 * sum(dmc.hyper.hypo$number.of.hypermethylated) / nrow(x)
+            dmc.hypo = 100 * sum(dmc.hyper.hypo$number.of.hypomethylated) / nrow(x)
             
-            dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)),
-                               as.data.frame(table(x$chr)),by="Var1")
-            dmc.hypo.chr=cbind(dmc.hypo.chr,
-                               perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
-            
-            # merge hyper hypo per chromosome
-            dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],
-                                 dmc.hypo.chr[,c(1,2,4)],by="Var1") 
-            dmc.hyper.hypo=dmc.hyper.hypo[order(as.numeric(sub("chr","",dmc.hyper.hypo$Var1))),] # order the chromosomes
-            
-            names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
-                                    "percentage.of.hypermethylated",
-                                    "number.of.hypomethylated",
-                                    "percentage.of.hypomethylated")
+            all.hyper.hypo = data.frame(
+              number.of.hypermethylated = sum(dmc.hyper.hypo$number.of.hypermethylated),
+              percentage.of.hypermethylated = dmc.hyper,
+              number.of.hypomethylated = sum(dmc.hyper.hypo$number.of.hypomethylated),
+              percentage.of.hypomethylated = dmc.hypo
+            )
             
             if (all(dmc.hyper.hypo$chr %in% exclude)) {
               warning("Cannot plot figure, excluded all available chromosomes.")
@@ -1382,7 +1455,8 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
                      fill=c("magenta","aquamarine4"))
             }else{
               
-              list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
+              return(list(diffMeth.per.chr = dmc.hyper.hypo,
+                          diffMeth.all = all.hyper.hypo))
               
             }
             
