@@ -22,7 +22,7 @@ test_that("check if percMethylation is same for methylBase and methylBaseDB",
 test_that("check if percMethylation is writting to file for methylBaseDB",
           {
             expect_equal(
-              as.matrix(read.delim(
+              as.matrix(read.table(
                 percMethylation(methylBaseDB, save.txt = TRUE, rowids = TRUE),
                 header = TRUE,
                 row.names = 1
@@ -31,7 +31,7 @@ test_that("check if percMethylation is writting to file for methylBaseDB",
             )
             
             expect_equal(
-              as.matrix(read.delim(
+              as.matrix(read.table(
                 percMethylation(methylBaseDB, save.txt = TRUE, rowids = FALSE),
                 header = TRUE
               )),

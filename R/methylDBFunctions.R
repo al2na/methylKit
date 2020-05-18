@@ -966,7 +966,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
       
       mat=data[,numCs.index]+data[,numTs.index]
-      methMat = read.delim(methMat,header = FALSE, nrows = chunk)
+      methMat = read.table(methMat,header = FALSE, nrows = chunk, sep="\t")
       
       # get new unmethylated and methylated counts
       numCs=round(methMat*mat/100)
