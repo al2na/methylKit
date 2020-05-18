@@ -123,7 +123,7 @@ files with track line (default: 0)}
 \item{sep}{seperator between fields, same as \code{\link{read.table}} argument 
 (default: "\\t")}
 
-\item{context}{methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)}
+\item{context}{methylation context string, ex: CpG,CHG,CHH, etc. (default:CpG)}
 
 \item{resolution}{designates whether methylation information is base-pair 
 resolution or regional resolution. allowed values 'base' or 'region'. 
