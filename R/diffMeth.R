@@ -1300,6 +1300,8 @@ setMethod(f="getMethylDiff", signature="methylDiff",
 #' @param exclude names of chromosomes to be excluded from plot
 #' @param ... extra graphical parameters to be passed to \code{\link{barplot}} 
 #'                  function
+#' @param keep.empty.chrom keep chromosome in list / plot, even if it contains
+#'   no hyper/hypo sites
 #' 
 #' @return plots a piechart or a barplot for percentage of the target 
 #' features overlapping with annotation
@@ -1436,24 +1438,9 @@ setMethod("diffMethPerChr", signature(x = "methylDiff"),
             
             if(plot){
               
-              if(!is.null(exclude)){
-                dmc.hyper.hypo=dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]
-                }
+              .plotDiffMethPerChr(dmc.hyper.hypo,exclude,qvalue.cutoff,meth.cutoff,...)
               
-              barplot(
-                t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
-                                       hypo=dmc.hyper.hypo[,5],
-                                       row.names=dmc.hyper.hypo[,1]) ))
-                ,las=2,horiz=TRUE,col=c("magenta","aquamarine4"),
-                main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
-                xlab="% (percentage)",...)
-              mtext(side=3,paste("qvalue<",qvalue.cutoff,
-                                 " & methylation diff. >=",meth.cutoff,
-                                 " %",sep="") )
-              legend("topright",
-                     legend=c("hyper","hypo"),
-                     fill=c("magenta","aquamarine4"))
-            }else{
+            } else {
               
               return(list(diffMeth.per.chr = dmc.hyper.hypo,
                           diffMeth.all = all.hyper.hypo))
