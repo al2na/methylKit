@@ -1,12 +1,12 @@
 
-#---------------------------------------------------------------------------------------
-# regular R functions to be used in S4 functions
+# regular R functions to be used in S4 functions -------------------------
 
 
-# set column names for methylRawDB and methylBaseDB data aquired from 
-# flat file database
-# @param df data.frame containing methylRaw or methylBase data
-# @param methylDBclass 
+#' @noRd
+## set column names for methylRawDB and methylBaseDB data aquired from 
+## flat file database
+## @param df data.frame containing methylRaw or methylBase data
+## @param methylDBclass 
 .setMethylDBNames <- function(df,
                               methylDBclass=c("methylDB","methylBaseDB",
                                               "methylDiffDB")){
@@ -81,8 +81,7 @@
 }
 
 
-# end of regular functions to be used in S4 functions
-#---------------------------------------------------------------------------------------
+# end of regular functions to be used in S4 functions #--------------------
 
 
 # methylRawDB -------------------------------------------------------------

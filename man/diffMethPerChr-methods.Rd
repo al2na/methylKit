@@ -13,6 +13,7 @@ diffMethPerChr(
   qvalue.cutoff = 0.01,
   meth.cutoff = 25,
   exclude = NULL,
+  keep.empty.chrom = FALSE,
   ...
 )
 
@@ -22,6 +23,7 @@ diffMethPerChr(
   qvalue.cutoff = 0.01,
   meth.cutoff = 25,
   exclude = NULL,
+  keep.empty.chrom = FALSE,
   ...
 )
 
@@ -31,6 +33,7 @@ diffMethPerChr(
   qvalue.cutoff = 0.01,
   meth.cutoff = 25,
   exclude = NULL,
+  keep.empty.chrom = FALSE,
   ...
 )
 }
@@ -45,6 +48,9 @@ hypo/hyper methylated bases/regions}
 \item{meth.cutoff}{cutoff for percent methylation difference}
 
 \item{exclude}{names of chromosomes to be excluded from plot}
+
+\item{keep.empty.chrom}{keep chromosome in list / plot, even if it contains
+no hyper/hypo sites}
 
 \item{...}{extra graphical parameters to be passed to \code{\link{barplot}} 
 function}

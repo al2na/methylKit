@@ -1,5 +1,6 @@
 # Helper Functions ---------------------------------------------------
 
+#' @noRd
 ## function checks wether a tabix file already exists and 
 ## appends number if file already exists  
 .checkTabixFileExists <- function(tabixfile) {
