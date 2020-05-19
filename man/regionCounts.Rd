@@ -140,10 +140,15 @@ regionCounts(object,regions,cov.bases=0,strand.aware=FALSE,chunk.size,save.db,..
 )
 }
 \arguments{
-\item{object}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 
-\code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylBase}} or
- \code{\link{methylBaseDB}} object}
+\item{object}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}},
+  \code{\link{methylRawList}}, \code{\link{methylRawListDB}},
+  \code{\link{methylBase}} or \code{\link{methylBaseDB}} object
+ 
+NOTE: The given regions (Granges/GrangesList object) will be orderd based on
+chromosome and position before searching for overlaps, so the resulting
+methylKit object might have a different ording than expected. See details
+section for the reasoning of this choice and ways to still get custom
+ordering of regions.}
 
 \item{regions}{a GRanges or GRangesList object. Make sure that the GRanges
 objects are
@@ -191,12 +196,22 @@ a new methylRaw,methylBase or methylRawList object. If \code{strand.aware} is
 }
 \description{
 Convert \code{\link{methylRaw}}, \code{\link{methylRawDB}},
- \code{\link{methylRawList}}, 
-\code{\link{methylRawListDB}}, \code{\link{methylBase}} or 
-\code{\link{methylBaseDB}}  object into 
-regional counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
+\code{\link{methylRawList}}, \code{\link{methylRawListDB}},
+\code{\link{methylBase}} or \code{\link{methylBaseDB}}  object into regional
+counts for a given \code{\link{GRanges}} or \code{\link{GRangesList}} object.
 }
 \section{Details}{
+
+The given regions (Granges/GrangesList object) will be orderd based on
+chromosome and position before searching for overlaps, so the resulting
+methylKit object might have a different ording than expected. We are doing
+this is to ensure that resulting output is consistent for in-memory and
+database based objects, as database based objects always have to be sorted to
+enable tabix indexing and providing fast random access. 
+
+If you to still want get a custom ordering of the output regions you can
+access the single regions in any object providing your indices to the
+\code{\link{select}} or \code{\link{extract}} functions.
 
 The parameter \code{chunk.size} is only used when working with 
 \code{methylRawDB}, \code{methylBaseDB} or \code{methylRawListDB} objects, 
