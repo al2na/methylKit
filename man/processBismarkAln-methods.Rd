@@ -18,22 +18,25 @@ processBismarkAln(
   mincov = 10,
   minqual = 20,
   phred64 = FALSE,
-  treatment,
-  save.db = FALSE
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
 )
 
 \S4method{processBismarkAln}{character,character,character}(
   location,
   sample.id,
   assembly,
-  save.folder,
-  save.context,
-  read.context,
-  nolap,
-  mincov,
-  minqual,
-  phred64,
-  save.db
+  save.folder = NULL,
+  save.context = c("CpG"),
+  read.context = "CpG",
+  nolap = FALSE,
+  mincov = 10,
+  minqual = 20,
+  phred64 = FALSE,
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
 )
 
 \S4method{processBismarkAln}{list,list,character}(
@@ -47,8 +50,9 @@ processBismarkAln(
   mincov = 10,
   minqual = 20,
   phred64 = FALSE,
-  treatment,
-  save.db = FALSE
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
 )
 }
 \arguments{
