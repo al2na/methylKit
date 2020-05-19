@@ -2,13 +2,9 @@
 #' 
 #' @importMethodsFrom GenomeInfoDb seqnames seqlengths sortSeqlevels seqlevels
 #'
-#' @importClassesFrom IRanges RangedSelection
 #' @importMethodsFrom IRanges nearest as.data.frame
 #' @importFrom IRanges IRanges findOverlaps RangedSelection ranges countOverlaps
 #'
-#' @importClassesFrom S4Vectors Annotated Vector List character_OR_NULL SimpleList DataFrame
-#' @importFrom S4Vectors DataFrame Rle levels elementMetadata "elementMetadata<-"
-#' 
 #' @importFrom Rsamtools TabixFile scanTabix yieldSize "yieldSize<-"
 #' 
 #' @importFrom data.table data.table fread setnames setcolorder as.data.table tables 
