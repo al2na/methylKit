@@ -199,6 +199,11 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify<-function(cpg)
 {
+  ## silence R CMD check NOTE
+  coverage.x = coverage.y = NULL
+  numCs.x = numCs.y =  NULL
+  numTs.x = numTs.y = NULL
+  
   cpg = data.table(cpg, key = c("chr", "start", "end"))
   cpgF = cpg[strand == "+",]
   cpgR = cpg[strand == "-",]
