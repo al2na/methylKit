@@ -62,6 +62,7 @@
 #'                working directory 
 #'                named after this scheme: 
 #'                "methylDB <Date> <3randomlettersornumbers>"
+#' @param verbose logical set verbosity of methCall (default: TRUE)
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'

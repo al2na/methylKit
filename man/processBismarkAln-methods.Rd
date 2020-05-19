@@ -116,6 +116,8 @@ if this is NULL, to a new folder in the current
 working directory 
 named after this scheme: 
 "methylDB <Date> <3randomlettersornumbers>"}
+
+\item{verbose}{logical set verbosity of methCall (default: TRUE)}
 }
 \value{
 \code{methylRaw} or \code{methylRawList} object
