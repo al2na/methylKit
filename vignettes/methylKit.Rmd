@@ -999,6 +999,27 @@ The reason why we were not dealing with this directly is described here:
 https://sequencing.qcfail.com/articles/soft-clipping
 
 
+### Why does the regionCount function not keep the input region order?
+
+The given regions (Granges/GrangesList object) will be orderd based on
+chromosome and position before searching for overlaps, so the resulting
+methylKit object might have a different ording than expected. We are doing
+this is to ensure that resulting output is consistent for in-memory and
+database based objects, as database based objects always have to be sorted to
+enable tabix indexing and providing fast random access.
+
+If you to still want get a custom ordering of the output regions you can
+order the single regions in any object by providing your indices to the
+`select` or `extract` functions.
+
+```{r}
+## methylDiff object sorted by chromosome and position 
+myDiff
+## can be ordered by decreasing absolute methylation difference
+myDiff[order(-abs(myDiff$meth.diff))]
+```
+
+
 
 # Acknowledgements
 
