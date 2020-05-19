@@ -197,7 +197,7 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 # unfies forward and reverse strand CpGs on the forward strand if the if
 # both are on the same CpG
 # if that's the case their values are generally correlated
-.CpG.dinuc.unify<-function(cpg)
+.CpG.dinuc.unify <- function(cpg)
 {
   ## silence R CMD check NOTE
   coverage.x = coverage.y = NULL
@@ -205,8 +205,8 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   numTs.x = numTs.y = NULL
   
   cpg = data.table(cpg, key = c("chr", "start", "end"))
-  cpgF = cpg[strand == "+",]
-  cpgR = cpg[strand == "-",]
+  cpgF = cpg[strand == "+", ]
+  cpgR = cpg[strand == "-", ]
   cpgR[, `:=`(start = start - 1L,
               end = end - 1L,
               strand = "+")]
@@ -236,49 +236,48 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   Fid = paste(cpgF$chr, cpgF$start, cpgF$end)
   Rid = paste(cpgR$chr, cpgR$start, cpgR$end)
   FRid = paste(cpgFR$chr, cpgFR$start, cpgFR$end)
-  cpgFR = rbind(cpgFR, cpgF[!Fid  %in%  FRid, ], cpgR[!Rid  %in%  FRid, ])
-
+  cpgFR = rbind(cpgFR, cpgF[!Fid  %in%  FRid,], cpgR[!Rid  %in%  FRid,])
+  
   cpgFR[, `:=`(
     chr = as.character(chr),
     strand = as.character(strand),
     start = as.integer(start),
     end = as.integer(end)
   )]
-
-  setorder(cpgFR,"chr","start")
-
+  
+  setorder(cpgFR, "chr", "start")
+  
   return(as.data.frame(cpgFR))
 }
 
-.CpG.dinuc.unifyOld<-function(cpg)
+.CpG.dinuc.unifyOld <- function(cpg)
 {
-  
-  cpgR=cpg[cpg$strand=="-",]
-  cpgF=cpg[cpg$strand=="+",]
-  cpgR$start=cpgR$start-1L
-  cpgR$end=cpgR$end-1L
-  cpgR$strand="+"
+  cpgR = cpg[cpg$strand == "-", ]
+  cpgF = cpg[cpg$strand == "+", ]
+  cpgR$start = cpgR$start - 1L
+  cpgR$end = cpgR$end - 1L
+  cpgR$strand = "+"
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
   
-  cpgFR=merge(cpgF,cpgR,by=c("chr","start","end"))
+  cpgFR = merge(cpgF, cpgR, by = c("chr", "start", "end"))
   #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
-  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
-  res=data.frame(
-    chr     =as.character(cpgFR$chr),
-    start    =as.integer(cpgFR$start),
-    end      =as.integer(cpgFR$start),
-    strand  =rep("+",nrow(cpgFR)),
-    coverage=cpgFR$coverage.x + cpgFR$coverage.y,
-    numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,
-    stringsAsFactors =FALSE
+  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]
+  res = data.frame(
+    chr     = as.character(cpgFR$chr),
+    start    = as.integer(cpgFR$start),
+    end      = as.integer(cpgFR$start),
+    strand  = rep("+", nrow(cpgFR)),
+    coverage = cpgFR$coverage.x + cpgFR$coverage.y,
+    numCs   = cpgFR$numCs.x + cpgFR$numCs.y ,
+    numTs   = cpgFR$numTs.x + cpgFR$numTs.y ,
+    stringsAsFactors = FALSE
   )
-  Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
-  Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
-  resid=paste(res$chr,res$start,res$end)  
-  res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  res=res[order(res$chr,res$start),]
+  Fid = paste(cpgF$chr, cpgF$start, cpgF$end)
+  Rid = paste(cpgR$chr, cpgR$start, cpgR$end)
+  resid = paste(res$chr, res$start, res$end)
+  res = rbind(res, cpgF[!Fid  %in%  resid, ], cpgR[!Rid  %in%  resid, ])
+  res = res[order(res$chr, res$start), ]
   rownames(res) <- NULL
   return(res)
 }
