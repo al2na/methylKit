@@ -1332,6 +1332,9 @@ setGeneric("diffMethPerChr", def=function(x,
   
   data <- as.data.table(data)
   .setMethylDBNames(data,"methylDiffDB")
+
+  ## silence R CMD Check Note   
+  . = type = qvalue = meth.diff = NULL 
   
   
   data[, type := "none" ]
@@ -1339,7 +1342,7 @@ setGeneric("diffMethPerChr", def=function(x,
   data[qvalue < qvalue.cutoff & meth.diff <= -meth.cutoff, type := "hypo" ]
   
   ## summarize number of hype and hyper
-  number = perc = NULL
+  number = perc = .N = NULL
   temp.hyper.hypo <- data[,
                           .(number = .N) ,
                           by = list(chr, type)][,
