@@ -80,7 +80,7 @@ After initial segmentation with fastseg(), segments are clustered
 
 \donttest{
  download.file(
- "https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+ "https://raw.githubusercontent.com/BIMSBbioinfo/compgen2018/master/day3_diffMeth/data/H1.chr21.chr22.rds",
  destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")
