@@ -155,11 +155,12 @@ function(location,sample.id,assembly,save.folder,save.context
     temp.files=TRUE # set there are temp files to be deleted
     
   }else{
-    try(
-      dir.create(save.folder, showWarnings = TRUE, 
-                 recursive = TRUE, mode = "0777")
-      )
-
+    if(!dir.exists(save.folder)) {
+      try(
+        dir.create(save.folder, showWarnings = TRUE, 
+                   recursive = TRUE, mode = "0777")
+        )
+    }
                           
     for(mytype in unique(c(save.context,read.context)) ){
       out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
@@ -179,16 +180,29 @@ function(location,sample.id,assembly,save.folder,save.context
     if(verbose > 0) cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
     if(save.db) { dbtype="tabix"; 
       if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
-      obj=methRead(location=out.files[[read.context]],
-               sample.id=paste(sample.id,tolower(read.context),sep = "_"),
-               assembly=assembly,dbtype=dbtype,pipeline="bismark",header=TRUE, 
-               context=read.context,dbdir = dbdir,mincov=mincov)
+      obj = methRead(
+        location = out.files[[read.context]],
+        sample.id = paste(sample.id, tolower(read.context), sep = "_"),
+        assembly = assembly,
+        dbtype = dbtype,
+        pipeline = "bismark",
+        header = TRUE,
+        context = read.context,
+        dbdir = dbdir,
+        mincov = mincov
+      )
       obj@sample.id <- sample.id
     }
     else {
-      obj=methRead(location=out.files[[read.context]],sample.id=sample.id,
-               assembly=assembly,pipeline="bismark",header=TRUE, 
-               context=read.context,mincov=mincov)
+      obj = methRead(
+        location = out.files[[read.context]],
+        sample.id = sample.id,
+        assembly = assembly,
+        pipeline = "bismark",
+        header = TRUE,
+        context = read.context,
+        mincov = mincov
+      )
     }
     if(temp.files ){dummy=lapply(out.files,unlink)}
     
@@ -206,6 +220,9 @@ setMethod("processBismarkAln", signature(location = "list",sample.id="list",
           function(location,sample.id,assembly,save.folder,save.context,read.context,
                              nolap,mincov,minqual,phred64,treatment,save.db,verbose){
             #check if the given arugments makes sense
+            if(is.null(treatment)){
+              stop("argument 'treatment' is required for list of samples\n")
+            }
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
             }
@@ -217,9 +234,19 @@ setMethod("processBismarkAln", signature(location = "list",sample.id="list",
               outList=list()
               for(i in 1:length(location))
               {
-                data=processBismarkAln(location[[i]],sample.id[[i]],assembly,
-                                  save.folder,save.context,read.context,
-                                  nolap,mincov,minqual,phred64)# read data
+                data = processBismarkAln(
+                  location[[i]],
+                  sample.id[[i]],
+                  assembly,
+                  save.folder,
+                  save.context,
+                  read.context,
+                  nolap,
+                  mincov,
+                  minqual,
+                  phred64,
+                  verbose = verbose
+                )# read data
                 outList[[i]]=data  
               }
               myobj=new("methylRawList",outList,treatment=treatment)
