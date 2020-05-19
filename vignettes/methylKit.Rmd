@@ -992,11 +992,17 @@ supported.
 ### How can I analyze data generated from a local alignment ?
 
 You cannot use the function processBismarkAln() to extract methylation calls,
-but you have to use methylDackel or Bismark methylation extractor to generate
+but you have to use [methylDackel](https://github.com/dpryan79/MethylDackel) or [Bismark methylation extractor](https://github.com/FelixKrueger/Bismark/tree/master/Docs#iv-running-bismark_methylation_extractor) to generate
 input files for methylKit.
 
 The reason why we were not dealing with this directly is described here: 
 https://sequencing.qcfail.com/articles/soft-clipping
+
+### How can I analyze data generated from a spliced alignment ?
+
+We currently do not fully support spliced alignments generate with Bismarks's HISAT2 mode, but you can extract methylation calls with [methylDackel](https://github.com/dpryan79/MethylDackel) or [Bismark methylation extractor](https://github.com/FelixKrueger/Bismark/tree/master/Docs#iv-running-bismark_methylation_extractor) to generate
+input files for methylKit.
+
 
 
 ### Why does the regionCount function not keep the input region order?
