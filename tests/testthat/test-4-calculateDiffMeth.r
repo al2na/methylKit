@@ -10,17 +10,6 @@ mc.cores <- 1
 
 
 test_that("check if default calculateDiffMeth works", {
-  expect_is(calculateDiffMeth(methylBase.obj, mc.cores = mc.cores),
-            'methylDiff')
-  expect_is(
-    calculateDiffMeth(
-      methylBase.obj,
-      save.db = TRUE,
-      dbdir = dbdir,
-      mc.cores = mc.cores
-    ),
-    'methylDiffDB'
-  )
   expect_is(
     calculateDiffMeth(
       methylBase.obj,
@@ -31,19 +20,25 @@ test_that("check if default calculateDiffMeth works", {
     ),
     'methylDiffDB'
   )
-  expect_is(calculateDiffMeth(methylBaseDB,mc.cores = mc.cores), 'methylDiffDB')
   expect_is(calculateDiffMeth(methylBaseDB, suffix = "mDiff",mc.cores = mc.cores),
             'methylDiffDB')
-  expect_is(calculateDiffMeth(methylBaseDB, save.db = FALSE,mc.cores = mc.cores),
-            'methylDiff')
   expect_equal(
-    calculateDiffMeth(methylBase.obj,mc.cores = mc.cores),
-    calculateDiffMeth(methylBaseDB, save.db = FALSE,mc.cores = mc.cores)
+    calculateDiffMeth(methylBase.obj, save.db = FALSE, mc.cores = mc.cores),
+    calculateDiffMeth(methylBaseDB, save.db = FALSE, mc.cores = mc.cores)
   )
   expect_equal(
-    getData(calculateDiffMeth(methylBase.obj,mc.cores = mc.cores)),
-    getData(calculateDiffMeth(methylBaseDB,mc.cores = mc.cores))
-  )
+    getData(calculateDiffMeth(
+      methylBase.obj,
+      save.db = TRUE,
+      dbdir = dbdir,
+      mc.cores = mc.cores
+    )),
+    getData(calculateDiffMeth(
+      methylBaseDB,
+      save.db = TRUE,
+      dbdir = dbdir,
+      mc.cores = mc.cores
+    )))
 })
 
 
