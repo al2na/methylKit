@@ -56,12 +56,17 @@ gr.list <- lapply(methylRawList.obj, FUN = function(obj){
 })
 large.gr <- do.call("c",gr.list)
 
-res1 <- methSeg(large.gr)
-res2 <- methSeg(large.gr,join.neighbours = TRUE)
+res1 <- methSeg(large.gr,diagnostic.plot = TRUE)
+res2 <- methSeg(large.gr,join.neighbours = TRUE,diagnostic.plot = TRUE)
+suppressWarnings(res3 <- methSeg(large.gr[1:100],join.neighbours = TRUE,diagnostic.plot = FALSE))
+
+suppressWarnings(res4 <- methSeg(MethDiff_multiChrom, diagnostic.plot = TRUE,join.neighbours = TRUE))
 
 test_that("check if joining neighbours works" ,{
   expect_false(all(rle(res1$seg.group)$lengths == 1))
   expect_true(all(rle(res2$seg.group)$lengths == 1))
+  expect_true(all(rle(res3$seg.group)$lengths == 1))
+  expect_is(res4,"GRanges")
 })
 
 test_that("check if initialization works" ,{
