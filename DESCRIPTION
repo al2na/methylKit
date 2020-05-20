@@ -31,7 +31,7 @@ LinkingTo: Rcpp, Rhtslib (>= 1.13.1), zlibbioc
 SystemRequirements: GNU make
 biocViews: DNAMethylation, Sequencing, MethylSeq
 Depends:
-    R (>= 3.3.0),
+    R (>= 3.5.0),
     GenomicRanges (>= 1.18.1),
     methods
 Imports:
