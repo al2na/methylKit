@@ -729,7 +729,7 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                                        dir=dir,filename = filename,
                                        return.type = "tabix", 
                                        FUN = function(x) { 
-                                         .CpG.dinuc.unifyOld(.setMethylDBNames(x,
+                                         .CpG.dinuc.unify(.setMethylDBNames(x,
                                                                                "methylRawDB") )}, 
                                        tabixHead = tabixHeadString)
           
