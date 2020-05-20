@@ -105,6 +105,38 @@ test_that("test if getMethylDiff saves to tabix", {
     ),
     "methylDiffDB"
   )
+  expect_is(
+    getMethylDiff(
+      methylDiff.obj,
+      difference = 25,
+      qvalue = 0.01,
+      type = "hyper",
+      save.db = TRUE,
+      dbdir = dbdir
+    ),
+    "methylDiffDB"
+  )
+  expect_is(
+    getMethylDiff(
+      methylDiff.obj,
+      difference = 25,
+      qvalue = 0.01,
+      type = "hypo",
+      save.db = TRUE,
+      dbdir = dbdir
+    ),
+    "methylDiffDB"
+  )
+  expect_error(
+    getMethylDiff(
+      methylDiff.obj,
+      difference = 25,
+      qvalue = 0.01,
+      type = "any",
+      save.db = TRUE,
+      dbdir = dbdir
+    )
+  )
 })
 
 test_that("test if getMethylDiff saves to memory", {
@@ -117,6 +149,35 @@ test_that("test if getMethylDiff saves to memory", {
       save.db = FALSE
     ),
     "methylDiff"
+  )
+  expect_is(
+    getMethylDiff(
+      methyldiffDB,
+      difference = 25,
+      qvalue = 0.01,
+      type = "hyper",
+      save.db = FALSE
+    ),
+    "methylDiff"
+  )
+  expect_is(
+    getMethylDiff(
+      methyldiffDB,
+      difference = 25,
+      qvalue = 0.01,
+      type = "hypo",
+      save.db = FALSE
+    ),
+    "methylDiff"
+  )
+  expect_error(
+    getMethylDiff(
+      methyldiffDB,
+      difference = 25,
+      qvalue = 0.01,
+      type = "any",
+      save.db = FALSE
+    )
   )
 })
 
