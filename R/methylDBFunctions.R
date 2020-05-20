@@ -1477,13 +1477,13 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    test ,mc.cores , slim , weighted.mean,
                    chunk.size, save.db=TRUE, ...){
             
-            # check object before starting calculations
-            .checksCalculateDiffMeth(treatment = .Object@treatment,
-                                     covariates = covariates,
-                                     Tcols = .Object@numTs.index)
-    
             if(save.db) {
         
+              # check object before starting calculations
+              .checksCalculateDiffMeth(treatment = .Object@treatment,
+                                       covariates = covariates,
+                                       Tcols = .Object@numTs.index)
+      
               # catch additional args 
               args <- list(...)
               dir <- dirname(.Object@dbpath)
