@@ -71,25 +71,25 @@ test_that("check if destranding works as expected", {
 })
 
 
-## benchmark for .CpG.dinuc.unify vs .CpG.dinuc.unifyOld
-df <- data.table::rbindlist(lapply(methylRawList.obj, getData))
-dim(df)
-# df <- rbind(df,df,df,df,df,df,df,df)
-# df$chr <- rep(x = 1:8,each = dd[1])
-for(i in 1:4 ) {
-  df2 <- copy(df)
-  df2[,`:=`(start = start - i,end = end - i)]
-  df <- rbind(df,df2)
-}
-data.table::setkey(df,chr,start,end)
-df <- df[!duplicated(df[,1:3]),]
-df <- as.data.frame(df)
-dim(df)
-
-
-bench::mark(
-  .CpG.dinuc.unify(df),
-  .CpG.dinuc.unifyOld(df)
-)
+# ## benchmark for .CpG.dinuc.unify vs .CpG.dinuc.unifyOld
+# df <- data.table::rbindlist(lapply(methylRawList.obj, getData))
+# dim(df)
+# # df <- rbind(df,df,df,df,df,df,df,df)
+# # df$chr <- rep(x = 1:8,each = dd[1])
+# for(i in 1:4 ) {
+#   df2 <- copy(df)
+#   df2[,`:=`(start = start - i,end = end - i)]
+#   df <- rbind(df,df2)
+# }
+# data.table::setkey(df,chr,start,end)
+# df <- df[!duplicated(df[,1:3]),]
+# df <- as.data.frame(df)
+# dim(df)
+# 
+# 
+# bench::mark(
+#   .CpG.dinuc.unify(df),
+#   .CpG.dinuc.unifyOld(df)
+# )
 
 unlink(dbdir,recursive = TRUE)
