@@ -214,12 +214,17 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     seg.res <- joinSegmentNeighbours(seg.res)
     diagnostic.plot <- diagnostic.plot.old
     
-    # get the new density
-    args.Mclust[["score.gr"]]=seg.res
-    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-    # skip second progress bar
-    args.Mclust[["verbose"]]=FALSE
-    dens=do.call("densityFind", args.Mclust  )
+    if(length(seg.res)==1) {
+      warning("joining segments resulted in only one range, no mixture modeling possible.")
+      return(seg.res)
+    } else {
+      # get the new density
+      args.Mclust[["score.gr"]]=seg.res
+      args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+      # skip second progress bar
+      args.Mclust[["verbose"]]=FALSE
+      dens=do.call("densityFind", args.Mclust  )
+    } 
     
   }
   
