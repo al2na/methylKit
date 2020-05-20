@@ -108,7 +108,7 @@ Below, there are several options showing how to do basic analysis with *`methylK
  * You can look at the vignette [here](https://bioconductor.org/packages/release/bioc/vignettes/methylKit/inst/doc/methylKit.html). This is the primary source of documentation. It includes detailed examples.
  * You can check out the [slides](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/methylkit/methylKitTutorialSlides_2013.pdf ) for a tutorial at EpiWorkshop 2013. This works with older versions of methylKit, you may need to update the function names.
  * You can check out the [tutorial](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/methylkit/methylKitTutorial_feb2012.pdf) prepared for  EpiWorkshop 2012. This works with older versions of methylKit, you may need to update the function names.
-
+* You can check out the [slides](https://www.slideshare.net/AlexanderGosdschan/eurobioc-2018-metyhlkit-overview) prepared for EuroBioc 2018. This also includes more recent features of methylKit  and is meant to give you a quick overview about what you can do with the package. 
 
 
 
