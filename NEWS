@@ -1,3 +1,46 @@
+methylKit 1.15.3
+--------------
+NEW FUNCTIONS AND FEATURES
+* add verbosity argument to methCall to allow for 
+  complete silencing of output, this will be set by 
+  processBismarkAln which gained 'verbose' argument
+
+IMPROVEMENTS AND BUG FIXES
+* update R requirement to (>= 3.5.0)
+* processBismarkAln:
+  - add verbose argument
+  - update tests
+  - update docs
+* joinsegmentneighbours: 
+  - Catch case when only one groups is there
+* regionCounts:
+  - update docs: mention that the output will be sorted by default
+  - Fixes #195
+* vignette: 
+  - add faq paragraph about regionCount to the vignette explaining 
+  why we order input region
+  - update paragraph about methyldackel when to use 
+  it instead of processBismarkAln 
+  - Fixes #162
+* add extensive test for bedgraph export
+* update and export tests for getMethylationStats
+* add extensive tests for getCoverageStats
+* add extensive tests for normalizCoverage
+* update checks for dataSim:
+  - if sample ids given check if length(sample.ids) == # replicates 
+* update tests for getMethylDiff
+* unite destranding: 
+  - make sure high numbers are not used in scientific notation
+  - fixes #129
+  - switch to data.table based destranding as it is faster and 
+  more memory efficient for larger number of regions
+* methseg: 
+  - catch error when joined segments produce only single range
+  - Fixes #195
+* calculateDiffmeth: 
+  - check if output is equal for memory and tabix file
+  - Fixes #189
+
 methylKit 1.15.2
 --------------
 IMPROVEMENTS AND BUG FIXES
