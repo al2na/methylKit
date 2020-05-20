@@ -7,21 +7,39 @@
 \alias{calculateDiffMeth,methylBaseDB-method}
 \title{Calculate differential methylation statistics}
 \usage{
-calculateDiffMeth(.Object, covariates = NULL,
-  overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM",
-  "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
-  "qvalue"), effect = c("wmean", "mean", "predicted"),
-  parShrinkMN = list(), test = c("F", "Chisq", "fast.fisher",
-  "midPval"), mc.cores = 1, slim = TRUE, weighted.mean = TRUE,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+calculateDiffMeth(
+  .Object,
+  covariates = NULL,
+  overdispersion = c("none", "MN", "shrinkMN"),
+  adjust = c("SLIM", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr",
+    "none", "qvalue"),
+  effect = c("wmean", "mean", "predicted"),
+  parShrinkMN = list(),
+  test = c("F", "Chisq", "fast.fisher", "midPval"),
+  mc.cores = 1,
+  slim = TRUE,
+  weighted.mean = TRUE,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{calculateDiffMeth}{methylBaseDB}(.Object, covariates = NULL,
-  overdispersion = c("none", "MN", "shrinkMN"), adjust = c("SLIM",
-  "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none",
-  "qvalue"), effect = c("wmean", "mean", "predicted"),
-  parShrinkMN = list(), test = c("F", "Chisq", "fast.fisher",
-  "midPval"), mc.cores = 1, slim = TRUE, weighted.mean = TRUE,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{calculateDiffMeth}{methylBaseDB}(
+  .Object,
+  covariates = NULL,
+  overdispersion = c("none", "MN", "shrinkMN"),
+  adjust = c("SLIM", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr",
+    "none", "qvalue"),
+  effect = c("wmean", "mean", "predicted"),
+  parShrinkMN = list(),
+  test = c("F", "Chisq", "fast.fisher", "midPval"),
+  mc.cores = 1,
+  slim = TRUE,
+  weighted.mean = TRUE,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{.Object}{a \code{\link{methylBase}} or \code{\link{methylBaseDB}} object to calculate differential

@@ -11,14 +11,34 @@ PCASamples(.Object, screeplot=FALSE, adj.lim=c(0.0004,0.1), scale=TRUE,
 center=TRUE,comp=c(1,2),transpose=TRUE,sd.filter=TRUE,
            sd.threshold=0.5,filterByQuantile=TRUE,obj.return=FALSE,chunk.size)
 
-\S4method{PCASamples}{methylBase}(.Object, screeplot, adj.lim, scale,
-  center, comp, transpose, sd.filter, sd.threshold, filterByQuantile,
-  obj.return)
+\S4method{PCASamples}{methylBase}(
+  .Object,
+  screeplot,
+  adj.lim,
+  scale,
+  center,
+  comp,
+  transpose,
+  sd.filter,
+  sd.threshold,
+  filterByQuantile,
+  obj.return
+)
 
-\S4method{PCASamples}{methylBaseDB}(.Object, screeplot = FALSE,
-  adj.lim = c(4e-04, 0.1), scale = TRUE, center = TRUE, comp = c(1,
-  2), transpose = TRUE, sd.filter = TRUE, sd.threshold = 0.5,
-  filterByQuantile = TRUE, obj.return = FALSE, chunk.size = 1e+06)
+\S4method{PCASamples}{methylBaseDB}(
+  .Object,
+  screeplot = FALSE,
+  adj.lim = c(4e-04, 0.1),
+  scale = TRUE,
+  center = TRUE,
+  comp = c(1, 2),
+  transpose = TRUE,
+  sd.filter = TRUE,
+  sd.threshold = 0.5,
+  filterByQuantile = TRUE,
+  obj.return = FALSE,
+  chunk.size = 1e+06
+)
 }
 \arguments{
 \item{.Object}{a \code{methylBase} or \code{methylBaseDB} object}

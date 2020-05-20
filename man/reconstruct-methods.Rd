@@ -12,11 +12,9 @@
 \usage{
 reconstruct(methMat, mBase, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{reconstruct}{ANY,methylBase}(methMat, mBase,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{reconstruct}{ANY,methylBase}(methMat, mBase, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{reconstruct}{ANY,methylBaseDB}(methMat, mBase,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{reconstruct}{ANY,methylBaseDB}(methMat, mBase, chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{methMat}{percent methylation matrix, row order and order of the samples

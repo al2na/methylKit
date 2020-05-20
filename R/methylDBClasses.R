@@ -1,12 +1,12 @@
 
-#---------------------------------------------------------------------------------------
-# regular R functions to be used in S4 functions
+# regular R functions to be used in S4 functions -------------------------
 
 
-# set column names for methylRawDB and methylBaseDB data aquired from 
-# flat file database
-# @param df data.frame containing methylRaw or methylBase data
-# @param methylDBclass 
+#' @noRd
+## set column names for methylRawDB and methylBaseDB data aquired from 
+## flat file database
+## @param df data.frame containing methylRaw or methylBase data
+## @param methylDBclass 
 .setMethylDBNames <- function(df,
                               methylDBclass=c("methylDB","methylBaseDB",
                                               "methylDiffDB")){
@@ -81,8 +81,7 @@
 }
 
 
-# end of regular functions to be used in S4 functions
-#---------------------------------------------------------------------------------------
+# end of regular functions to be used in S4 functions #--------------------
 
 
 # methylRawDB -------------------------------------------------------------
@@ -436,7 +435,6 @@ valid.methylBaseDB <- function(object) {
   check1=( (object@resolution == "base") | (object@resolution == "region") )
   check2=file.exists(object@dbpath)
   check3=( length(object@sample.ids) == length(object@treatment) )
-  numsamples = (length(df)-4)/3
   if (check2) {
     df <- headTabix(object@dbpath)
     numsamples = (length(df)-4)/3
@@ -967,7 +965,7 @@ readMethylDB <- function(dbpath) {
                            message = paste(
                              "No Tabix Header Found,",
                              "\nPlease provide tabix file with header created ", 
-                             "from methylKit version >=1.12."))
+                             "from methylKit version >=1.13.1."))
   
   if(is.null(head)) stop("Stopping here.") 
     

@@ -11,29 +11,78 @@
 \alias{bedgraph,methylDiffDB-method}
 \title{Get bedgraph from methylRaw, methylRawList and methylDiff objects}
 \usage{
-bedgraph(methylObj, file.name = NULL, col.name, unmeth = FALSE,
-  log.transform = FALSE, negative = FALSE, add.on = "",
-  chunk.size = 1e+06)
+bedgraph(
+  methylObj,
+  file.name = NULL,
+  col.name,
+  unmeth = FALSE,
+  log.transform = FALSE,
+  negative = FALSE,
+  add.on = "",
+  chunk.size = 1e+06
+)
 
-\S4method{bedgraph}{methylDiff}(methylObj, file.name, col.name, unmeth,
-  log.transform, negative, add.on)
+\S4method{bedgraph}{methylDiff}(
+  methylObj,
+  file.name,
+  col.name,
+  unmeth,
+  log.transform,
+  negative,
+  add.on
+)
 
-\S4method{bedgraph}{methylRaw}(methylObj, file.name, col.name, unmeth,
-  log.transform, negative, add.on)
+\S4method{bedgraph}{methylRaw}(
+  methylObj,
+  file.name,
+  col.name,
+  unmeth,
+  log.transform,
+  negative,
+  add.on
+)
 
-\S4method{bedgraph}{methylRawList}(methylObj, file.name, col.name, unmeth,
-  log.transform, negative, add.on)
+\S4method{bedgraph}{methylRawList}(
+  methylObj,
+  file.name,
+  col.name,
+  unmeth,
+  log.transform,
+  negative,
+  add.on
+)
 
-\S4method{bedgraph}{methylRawDB}(methylObj, file.name = NULL, col.name,
-  unmeth = FALSE, log.transform = FALSE, negative = FALSE,
-  add.on = "", chunk.size = 1e+06)
+\S4method{bedgraph}{methylRawDB}(
+  methylObj,
+  file.name = NULL,
+  col.name,
+  unmeth = FALSE,
+  log.transform = FALSE,
+  negative = FALSE,
+  add.on = "",
+  chunk.size = 1e+06
+)
 
-\S4method{bedgraph}{methylRawListDB}(methylObj, file.name = NULL,
-  col.name, unmeth = FALSE, log.transform = FALSE, negative = FALSE,
-  add.on = "", chunk.size = 1e+06)
+\S4method{bedgraph}{methylRawListDB}(
+  methylObj,
+  file.name = NULL,
+  col.name,
+  unmeth = FALSE,
+  log.transform = FALSE,
+  negative = FALSE,
+  add.on = "",
+  chunk.size = 1e+06
+)
 
-\S4method{bedgraph}{methylDiffDB}(methylObj, file.name, col.name,
-  log.transform, negative, add.on, chunk.size)
+\S4method{bedgraph}{methylDiffDB}(
+  methylObj,
+  file.name,
+  col.name,
+  log.transform,
+  negative,
+  add.on,
+  chunk.size
+)
 }
 \arguments{
 \item{methylObj}{a \code{\link{methylRaw}}, \code{\link{methylRawDB}}, 

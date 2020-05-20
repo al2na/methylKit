@@ -62,6 +62,7 @@
 #'                working directory 
 #'                named after this scheme: 
 #'                "methylDB <Date> <3randomlettersornumbers>"
+#' @param verbose logical set verbosity of methCall (default: TRUE)
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'
@@ -99,12 +100,20 @@
 #'              nolap=FALSE,mincov=10,minqual=20,phred64=FALSE,
 #'              treatment=c(1,1,0,0))
 #' 
-setGeneric("processBismarkAln", function(location,sample.id,assembly,
-                                         save.folder=NULL,
-                                    save.context=c("CpG"),read.context="CpG",
-                                    nolap=FALSE,mincov=10,
-                                    minqual=20,phred64=FALSE
-                                    ,treatment,save.db=FALSE) 
+setGeneric("processBismarkAln", function(location,
+                                         sample.id,
+                                         assembly,
+                                         save.folder = NULL,
+                                         save.context = c("CpG"),
+                                         read.context = "CpG",
+                                         nolap = FALSE,
+                                         mincov = 10,
+                                         minqual = 20,
+                                         phred64 = FALSE,
+                                         treatment = NULL,
+                                         save.db = FALSE,
+                                         verbose = 1)
+           
   standardGeneric("processBismarkAln"))
 
 #' @aliases processBismarkAln,character,character,character-method
@@ -114,7 +123,8 @@ setMethod("processBismarkAln", signature(location = "character",
                                     assembly= "character"),
 function(location,sample.id,assembly,save.folder,save.context
          ,read.context,
-         nolap,mincov,minqual,phred64,save.db){
+         nolap,mincov,minqual,phred64,treatment = NULL,save.db,verbose){
+  
   
   # check if file exists
   location <- path.expand(location)
@@ -146,11 +156,12 @@ function(location,sample.id,assembly,save.folder,save.context
     temp.files=TRUE # set there are temp files to be deleted
     
   }else{
-    try(
-      dir.create(save.folder, showWarnings = TRUE, 
-                 recursive = TRUE, mode = "0777")
-      )
-
+    if(!dir.exists(save.folder)) {
+      try(
+        dir.create(save.folder, showWarnings = TRUE, 
+                   recursive = TRUE, mode = "0777")
+        )
+    }
                           
     for(mytype in unique(c(save.context,read.context)) ){
       out.files[[mytype]]=paste(save.folder,"/",sample.id,"_",mytype,".txt",sep="") 
@@ -161,24 +172,38 @@ function(location,sample.id,assembly,save.folder,save.context
   # call the Rcpp function 
   methCall(read1 = location, type = "bam", nolap = nolap, minqual = minqual, 
            mincov = mincov, phred64 = phred64, CpGfile = out.files[["CpG"]], 
-           CHHfile = out.files[["CHH"]], CHGfile = out.files[["CHG"]] ) 
+           CHHfile = out.files[["CHH"]], CHGfile = out.files[["CHG"]], 
+           verbosity = ifelse( verbose, 2, 0)) 
   
 
   # read the result
   if(read.context != "none"){
-    cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
+    if(verbose > 0) cat("Reading methylation percentage per base for sample:",sample.id,"\n\n")
     if(save.db) { dbtype="tabix"; 
       if(is.null(save.folder)) dbdir=getwd() else  dbdir = save.folder
-      obj=methRead(location=out.files[[read.context]],
-               sample.id=paste(sample.id,tolower(read.context),sep = "_"),
-               assembly=assembly,dbtype=dbtype,pipeline="bismark",header=TRUE, 
-               context=read.context,dbdir = dbdir,mincov=mincov)
+      obj = methRead(
+        location = out.files[[read.context]],
+        sample.id = paste(sample.id, tolower(read.context), sep = "_"),
+        assembly = assembly,
+        dbtype = dbtype,
+        pipeline = "bismark",
+        header = TRUE,
+        context = read.context,
+        dbdir = dbdir,
+        mincov = mincov
+      )
       obj@sample.id <- sample.id
     }
     else {
-      obj=methRead(location=out.files[[read.context]],sample.id=sample.id,
-               assembly=assembly,pipeline="bismark",header=TRUE, 
-               context=read.context,mincov=mincov)
+      obj = methRead(
+        location = out.files[[read.context]],
+        sample.id = sample.id,
+        assembly = assembly,
+        pipeline = "bismark",
+        header = TRUE,
+        context = read.context,
+        mincov = mincov
+      )
     }
     if(temp.files ){dummy=lapply(out.files,unlink)}
     
@@ -194,8 +219,11 @@ function(location,sample.id,assembly,save.folder,save.context
 setMethod("processBismarkAln", signature(location = "list",sample.id="list",
                                          assembly="character"),
           function(location,sample.id,assembly,save.folder,save.context,read.context,
-                             nolap,mincov,minqual,phred64,treatment,save.db){
+                             nolap,mincov,minqual,phred64,treatment,save.db,verbose){
             #check if the given arugments makes sense
+            if(is.null(treatment)){
+              stop("argument 'treatment' is required for list of samples\n")
+            }
             if(length(location) != length(sample.id)){
               stop("length of 'location'  and 'name' should be same\n")
             }
@@ -207,9 +235,19 @@ setMethod("processBismarkAln", signature(location = "list",sample.id="list",
               outList=list()
               for(i in 1:length(location))
               {
-                data=processBismarkAln(location[[i]],sample.id[[i]],assembly,
-                                  save.folder,save.context,read.context,
-                                  nolap,mincov,minqual,phred64)# read data
+                data = processBismarkAln(
+                  location[[i]],
+                  sample.id[[i]],
+                  assembly,
+                  save.folder,
+                  save.context,
+                  read.context,
+                  nolap,
+                  mincov,
+                  minqual,
+                  phred64,
+                  verbose = verbose
+                )# read data
                 outList[[i]]=data  
               }
               myobj=new("methylRawList",outList,treatment=treatment)
@@ -224,7 +262,7 @@ setMethod("processBismarkAln", signature(location = "list",sample.id="list",
               {
                 data=processBismarkAln(location[[i]],sample.id[[i]],assembly,
                                   save.folder,save.context,read.context,
-                                  nolap,mincov,minqual,phred64,save.db)# read data
+                                  nolap,mincov,minqual,phred64,save.db,verbose = verbose)# read data
                 outList[[i]]=data  
               }
               return(new("methylRawListDB",outList,treatment=treatment))

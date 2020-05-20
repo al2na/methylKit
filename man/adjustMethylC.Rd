@@ -11,17 +11,13 @@
 \usage{
 adjustMethylC(mc,hmc,save.db,...,chunk.size)
 
-\S4method{adjustMethylC}{methylRaw,methylRaw}(mc, hmc, save.db = FALSE,
-  ..., chunk.size = 1e+06)
+\S4method{adjustMethylC}{methylRaw,methylRaw}(mc, hmc, save.db = FALSE, ..., chunk.size = 1e+06)
 
-\S4method{adjustMethylC}{methylRawList,methylRawList}(mc, hmc,
-  save.db = FALSE, ..., chunk.size = 1e+06)
+\S4method{adjustMethylC}{methylRawList,methylRawList}(mc, hmc, save.db = FALSE, ..., chunk.size = 1e+06)
 
-\S4method{adjustMethylC}{methylRawDB,methylRawDB}(mc, hmc,
-  save.db = TRUE, ..., chunk.size = 1e+06)
+\S4method{adjustMethylC}{methylRawDB,methylRawDB}(mc, hmc, save.db = TRUE, ..., chunk.size = 1e+06)
 
-\S4method{adjustMethylC}{methylRawListDB,methylRawListDB}(mc, hmc,
-  save.db = TRUE, ..., chunk.size = 1e+06)
+\S4method{adjustMethylC}{methylRawListDB,methylRawListDB}(mc, hmc, save.db = TRUE, ..., chunk.size = 1e+06)
 }
 \arguments{
 \item{mc}{a \code{methylRawList}, \code{methylRaw}, \code{methylRawDB} 

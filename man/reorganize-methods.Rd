@@ -9,20 +9,50 @@
 \alias{reorganize,methylBaseDB-method}
 \title{Reorganize methylKit objects by creating new objects from subset of samples}
 \usage{
-reorganize(methylObj, sample.ids, treatment, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+reorganize(
+  methylObj,
+  sample.ids,
+  treatment,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{reorganize}{methylBase}(methylObj, sample.ids, treatment,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{reorganize}{methylBase}(
+  methylObj,
+  sample.ids,
+  treatment,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{reorganize}{methylRawList}(methylObj, sample.ids, treatment,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{reorganize}{methylRawList}(
+  methylObj,
+  sample.ids,
+  treatment,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{reorganize}{methylRawListDB}(methylObj, sample.ids, treatment,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{reorganize}{methylRawListDB}(
+  methylObj,
+  sample.ids,
+  treatment,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{reorganize}{methylBaseDB}(methylObj, sample.ids, treatment,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{reorganize}{methylBaseDB}(
+  methylObj,
+  sample.ids,
+  treatment,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{methylObj}{a \code{methylRawList}, \code{methylRawListDB}, 

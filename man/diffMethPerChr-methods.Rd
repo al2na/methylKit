@@ -7,14 +7,35 @@
 \alias{diffMethPerChr,methylDiffDB-method}
 \title{Get and plot the number of hyper/hypo methylated regions/bases per chromosome}
 \usage{
-diffMethPerChr(x, plot = TRUE, qvalue.cutoff = 0.01,
-  meth.cutoff = 25, exclude = NULL, ...)
+diffMethPerChr(
+  x,
+  plot = TRUE,
+  qvalue.cutoff = 0.01,
+  meth.cutoff = 25,
+  exclude = NULL,
+  keep.empty.chrom = FALSE,
+  ...
+)
 
-\S4method{diffMethPerChr}{methylDiff}(x, plot = TRUE,
-  qvalue.cutoff = 0.01, meth.cutoff = 25, exclude = NULL, ...)
+\S4method{diffMethPerChr}{methylDiff}(
+  x,
+  plot = TRUE,
+  qvalue.cutoff = 0.01,
+  meth.cutoff = 25,
+  exclude = NULL,
+  keep.empty.chrom = FALSE,
+  ...
+)
 
-\S4method{diffMethPerChr}{methylDiffDB}(x, plot = TRUE,
-  qvalue.cutoff = 0.01, meth.cutoff = 25, exclude = NULL, ...)
+\S4method{diffMethPerChr}{methylDiffDB}(
+  x,
+  plot = TRUE,
+  qvalue.cutoff = 0.01,
+  meth.cutoff = 25,
+  exclude = NULL,
+  keep.empty.chrom = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{a \code{\link{methylDiff}}  object}
@@ -26,7 +47,10 @@ hypo/hyper methylated bases/regions}
 
 \item{meth.cutoff}{cutoff for percent methylation difference}
 
-\item{exclude}{names of chromosomes to be excluded}
+\item{exclude}{names of chromosomes to be excluded from plot}
+
+\item{keep.empty.chrom}{keep chromosome in list / plot, even if it contains
+no hyper/hypo sites}
 
 \item{...}{extra graphical parameters to be passed to \code{\link{barplot}} 
 function}

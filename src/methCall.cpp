@@ -530,7 +530,16 @@ void processCigar ( std::string cigar, std::string &methc, std::string &qual) {
 
 
 // processed sam file without header
-int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual, int nolap, int paired) {
+int process_sam ( std::istream *fh, 
+                  std::string &CpGfile, 
+                  std::string &CHHfile, 
+                  std::string &CHGfile, 
+                  int &offset, 
+                  int &mincov, 
+                  int &minqual, 
+                  int nolap, 
+                  int paired, 
+                  size_t &verbosity) {
 
   
 // check the file status produce flags 
@@ -755,7 +764,7 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
 
 
-   Rcpp::Rcout << sout.str() << std::endl;
+  if(verbosity > 0 ) Rcpp::Rcout << sout.str() << std::endl;
   
 
   if( !(CpGfile.empty()  )) {
@@ -788,7 +797,15 @@ int process_sam ( std::istream *fh, std::string &CpGfile, std::string &CHHfile, 
 
 
 // processed  single-end bam/sam file !! with header !!
-int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual, int nolap) {
+int process_bam ( std::string &input, 
+                  std::string &CpGfile, 
+                  std::string &CHHfile, 
+                  std::string &CHGfile, 
+                  int &offset, 
+                  int &mincov, 
+                  int &minqual, 
+                  int nolap, 
+                  size_t &verbosity) {
 
   // intialize hts objects which can refer to bam or sam
   htsFile *in = NULL;
@@ -800,7 +817,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
    
   header = sam_hdr_read(in);
   if ( (header ==NULL) || (header->l_text == 0)) { 
-    Rcpp::Rcerr << "Failed to read header, falling back.\n" << std::endl ; 
+    if(verbosity > 1 ) Rcpp::Rcout << "Failed to read header, falling back." << std::endl ; 
     return 2;
     }
 
@@ -1073,7 +1090,7 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
 
 
-   Rcpp::Rcout << sout.str() << std::endl;
+  if(verbosity > 0 ) Rcpp::Rcout << sout.str() << std::endl;
   
 
   if( !(CpGfile.empty()  )) {
@@ -1110,7 +1127,14 @@ int process_bam ( std::string &input, std::string &CpGfile, std::string &CHHfile
 
 
 // processed the Bismark 'vanilla' file
-int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string &CHHfile, std::string &CHGfile, int &offset, int &mincov, int &minqual ) {
+int process_single_bismark (std::istream *fh, 
+                            std::string &CpGfile, 
+                            std::string &CHHfile, 
+                            std::string &CHGfile, 
+                            int &offset, 
+                            int &mincov, 
+                            int &minqual, 
+                            size_t &verbosity) {
 
   
 // check the file status produce flags 
@@ -1301,7 +1325,7 @@ int process_single_bismark (std::istream *fh, std::string &CpGfile, std::string 
    <<  "average conversion rate (Reverse) = "            <<   AvRconvRate << "\n";
 
 
-   Rcpp::Rcout << sout.str() << std::endl;
+  if(verbosity > 0 ) Rcpp::Rcout << sout.str() << std::endl;
   
 
   if( !(CpGfile.empty()  )) {
@@ -1361,7 +1385,7 @@ Rcpp::stop("Feature is not ready yet.\n");
 // [[Rcpp::export]]
 void methCall(std::string read1, std::string type="bam", bool nolap=false, int minqual=20,
                 int mincov = 10 , bool phred64 = false , std::string CpGfile ="",
-                std::string CHHfile ="" , std::string CHGfile = "" ) {
+                std::string CHHfile ="" , std::string CHGfile = "" , size_t verbosity = 1) {
 
   int offset = 33;
   if (phred64) offset = 64;
@@ -1374,25 +1398,27 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
   
   int res = 0;
   
+  if(verbosity > 0 ) Rcpp::Rcout << "Trying to process:\n\t" << read1 << std::endl;
+  
   if(!type.empty()) {
     // type is "bam" per default (reads both sam or bam), but if the header is missing, 
     // the file will be treated as paired_sam
     if( type == "bam"){
-      Rcpp::Rcerr << "Trying to process:" << std::endl << read1 << std::endl << " using htslib.\n"  << std::endl;
-      res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap);
+      if(verbosity > 1 ) Rcpp::Rcout << "Using htslib."  << std::endl;
+      res = process_bam(read1, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,nolap, verbosity);
       // std::cout << res;
     }
     if( (res==2)  || (type == "paired_sam")){
-      Rcpp::Rcerr << "Trying to process: " << std::endl<< read1 << std::endl << " paired sam.\n"  << std::endl;
-      process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1);
+      if(verbosity > 1 ) Rcpp::Rcout << "As paired sam."  << std::endl;
+      process_sam(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,nolap,1,verbosity);
     }
     else if(type == "single_sam"){
-      Rcpp::Rcerr << "Trying to process " << std::endl << read1 << std::endl<< " single sam.\n"  << std::endl;
-      process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0);
+      if(verbosity > 1 ) Rcpp::Rcout << "As single sam."  << std::endl;
+      process_sam(input, CpGfile, CHHfile, CHGfile, offset, mincov, minqual ,0,0,verbosity);
     }
     else if( type == "single_bismark" ){
-      Rcpp::Rcerr << "Trying to process " << std::endl<< read1 << std::endl<< " single bismark.\n"  << std::endl;
-      process_single_bismark(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual);
+      if(verbosity > 1 ) Rcpp::Rcout << "As single bismark."  << std::endl;
+      process_single_bismark(input, CpGfile,CHHfile,CHGfile,offset,mincov,minqual,verbosity);
     }
     else if( type =="paired_bismark"){
     Rcpp::stop( "--paired_bismark option NOT IMPLEMENTED! get a paired sam file and used that as input\n") ;
@@ -1401,7 +1427,7 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
 
   }
   
-  Rcpp::Rcerr << "Done.\n" << std::endl;
+  if(verbosity > 0 ) Rcpp::Rcout << "Done.\n" << std::endl;
   
   if(file.is_open()) file.close();
 

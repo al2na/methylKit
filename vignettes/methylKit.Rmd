@@ -78,7 +78,10 @@ paired chromosomes from the same sample
 
 We start by reading in the methylation call data from bisulfite sequencing with
 `methRead` function. Reading in the data this way will return a `methylRawList`
-object which stores methylation information per sample for each covered base.
+object which stores methylation information per sample for each covered base. By
+default `methRead` requires a minimum coverage of 10 reads per base to ensure
+good quality of the data and a high confidence methylation percentage.
+
 The methylation call files are basically text files that contain percent
 methylation score per base. Such input files may be obtained from 
 [AMP pipeline](http://code.google.com/p/amp-errbs/)
@@ -125,7 +128,8 @@ myobj=methRead(file.list,
            sample.id=list("test1","test2","ctrl1","ctrl2"),
            assembly="hg18",
            treatment=c(1,1,0,0),
-           context="CpG"
+           context="CpG",
+           mincov = 10
            )
 ```
 
@@ -404,17 +408,38 @@ newobj=reconstruct(mat,meth)
 For some situations, it might be desirable to summarize methylation information
 over tiling windows rather than doing base-pair resolution analysis. `methylKit`
 provides functionality to do such analysis. The function below tiles the genome
-with windows 1000bp length and 1000bp step-size and summarizes the methylation
+with windows of 1000bp length and 1000bp step-size and summarizes the methylation
 information on those tiles. In this case, it returns a `methylRawList` object
 which can be fed into `unite` and `calculateDiffMeth` functions consecutively to
 get differentially methylated regions. The tilling function adds up C and T
 counts from each covered cytosine and returns a total C and T count for each
 tile.
 
+As mentioned [before](#reading-the-methylation-call-files), `methRead` sets a
+minimum coverage threshold of 10 reads per cytosine to ensure good quality for
+downstream base-pair resolution analysis. However in the case of tiling window /
+regional analysis one might want to set the initial per base coverage threshold
+to a lower value and then filter based on the number of bases (cytosines) per
+region. [Filtering samples based on read
+coverage](#filtering-samples-based-on-read-coverage) might still be appropriate
+to remove coverage biases.
+
+
+
 ```{r,warning=FALSE}
-tiles=tileMethylCounts(myobj,win.size=1000,step.size=1000)
+myobj_lowCov = methRead(file.list,
+           sample.id=list("test1","test2","ctrl1","ctrl2"),
+           assembly="hg18",
+           treatment=c(1,1,0,0),
+           context="CpG",
+           mincov = 3
+           )
+
+tiles = tileMethylCounts(myobj_lowCov,win.size=1000,step.size=1000,cov.bases = 10)
 head(tiles[[1]],3)
 ```
+
+
 
 ## Finding differentially methylated bases or regions
 
@@ -721,7 +746,7 @@ objDB=makeMethylDB(methylBase.obj,"exMethylDB")
 
 ## Loading methylDB objects from tabix files
 
-Since version 1.11.1 of methylKit the underlying tabix file of **methylDB**
+Since version 1.13.1 of methylKit the underlying tabix file of **methylDB**
 objects (`methylRawDB`, `methylBaseDB` and `methylDiffDB`) include a header
 which stores the corresponding metadata of the object. Thus you can recreate the
 object with just the tabix file, which allows easy sharing of methylDB objects
@@ -812,7 +837,7 @@ See more at
 http://zvfak.blogspot.de/2015/06/segmentation-of-methylation-profiles.html
 
 ```{r, eval=FALSE}
- download.file("https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+ download.file("https://raw.githubusercontent.com/BIMSBbioinfo/compgen2018/master/day3_diffMeth/data/H1.chr21.chr22.rds",
                destfile="H1.chr21.chr22.rds",method="curl")
 
  mbw=readRDS("H1.chr21.chr22.rds")
@@ -917,11 +942,11 @@ to flat-file database.
 
 ### How could I share methylKit objects ?
 
-Starting from version 1.11.1, when generating tabix files we are storing all 
+Starting from version 1.13.1, when generating tabix files we are storing all 
 required metadata in the header of the created tabix file. The function 
 `readMethylDB()` can be used to load supported tabix files only from the file 
 path. Supported tabix files are created during normal tabix-based workflow or 
-exported with `makeMethylDB()` function whenever using methylKit versions > 1.11.1. 
+exported with `makeMethylDB()` function whenever using methylKit versions > 1.13.1. 
 
 ### Where do I find the flatfile database underlying a methylDB?
 
@@ -967,11 +992,38 @@ supported.
 ### How can I analyze data generated from a local alignment ?
 
 You cannot use the function processBismarkAln() to extract methylation calls,
-but you have to use methylDackel or Bismark methylation extractor to generate
+but you have to use [methylDackel](https://github.com/dpryan79/MethylDackel) or [Bismark methylation extractor](https://github.com/FelixKrueger/Bismark/tree/master/Docs#iv-running-bismark_methylation_extractor) to generate
 input files for methylKit.
 
 The reason why we were not dealing with this directly is described here: 
 https://sequencing.qcfail.com/articles/soft-clipping
+
+### How can I analyze data generated from a spliced alignment ?
+
+We currently do not fully support spliced alignments generate with Bismarks's HISAT2 mode, but you can extract methylation calls with [methylDackel](https://github.com/dpryan79/MethylDackel) or [Bismark methylation extractor](https://github.com/FelixKrueger/Bismark/tree/master/Docs#iv-running-bismark_methylation_extractor) to generate
+input files for methylKit.
+
+
+
+### Why does the regionCount function not keep the input region order?
+
+The given regions (Granges/GrangesList object) will be orderd based on
+chromosome and position before searching for overlaps, so the resulting
+methylKit object might have a different ording than expected. We are doing
+this is to ensure that resulting output is consistent for in-memory and
+database based objects, as database based objects always have to be sorted to
+enable tabix indexing and providing fast random access.
+
+If you to still want get a custom ordering of the output regions you can
+order the single regions in any object by providing your indices to the
+`select` or `extract` functions.
+
+```{r}
+## methylDiff object sorted by chromosome and position 
+myDiff
+## can be ordered by decreasing absolute methylation difference
+myDiff[order(-abs(myDiff$meth.diff))]
+```
 
 
 

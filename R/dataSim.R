@@ -88,17 +88,31 @@ dataSim <- function(replicates,sites,treatment,percentage=10,effect=25,
   
   # check if length(treatment) == # replicates
   if(length(treatment) != replicates){
-    stop("treatment and replicates must be of same length")} 
+    stop("treatment must be of same length as requested number of replicates")} 
   # check if # covariates == # replicates
   if(!is.null(covariates)){
     if(nrow(covariates)!=replicates){
       stop("nrow(covariates) must be equal to replicates")}
   }
-  
-  # create sample.ids (if not given by user)
-  if(is.null(sample.ids)){
-    sample.ids<-ifelse(treatment==1,paste0("test",cumsum(treatment)),
-                       paste0("ctrl",cumsum(!treatment)))
+  # check if length(treatment) == # replicates
+  if (replicates < 1) {
+    stop("number of replicates has to be >= 1.")
+  }
+  # check if length(treatment) == # replicates
+  if(replicates == 1){
+    warning("single replicate methylBase cannot be used downstream.")
+  }
+  # check if length(sample.ids) == # replicates
+  if (!is.null(sample.ids)) {
+    if (length(sample.ids) != replicates) {
+      stop("sample.ids must be of same length as requested number of replicates")
+    }
+  } else {
+    # create sample.ids (if not given by user)
+    sample.ids <-
+      ifelse(treatment == 1,
+             paste0("test", cumsum(treatment)),
+             paste0("ctrl", cumsum(!treatment)))
   }
   
   # create data.frame

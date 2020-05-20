@@ -107,15 +107,15 @@ setMethod("reconstruct",signature(mBase="methylBase"),
           function(methMat,mBase,save.db=FALSE,...){
   
   # check if indeed methMat is percent methylation matrix
-  if(max(methMat)<=1){
-    warning("\nmake sure 'methMat' is percent methylation " ,
-            "matrix (values between 0-100) \n")
+  if(min(methMat)<0 | max(methMat)>100 ){
+    stop("make sure 'methMat' is percent methylation " ,
+          "matrix (values between 0-100)")
   }
 
   # check if indeed methMat is percent methylation matrix  
   if(nrow(methMat) != nrow(mBase) | ncol(methMat) != length(mBase@numCs.index) ){
-    stop("\nmethMat dimensions do not match number of samples\n",
-         "and number of bases in methylBase object\n")
+    stop("methMat dimensions do not match number of samples\n",
+         "and number of bases in methylBase object")
   }
   
   df=getData(mBase)
@@ -198,6 +198,11 @@ setMethod("reconstruct",signature(mBase="methylBase"),
 #' @docType methods
 #' @rdname assocComp-methods
 assocComp <- function(mBase,sampleAnnotation){
+  
+  if(length(sampleAnnotation) < 1) {
+    stop("ERROR: Sample Annotation has to have at least one column.")
+  } 
+  
   scale=TRUE
   center=TRUE
   mat=percMethylation(mBase) # get matrix
@@ -308,7 +313,7 @@ assocComp <- function(mBase,sampleAnnotation){
 #' @export
 #' @docType methods
 #' @rdname removeComp-methods
-setGeneric("removeComp", function(mBase,comp,chunk.size=1e6,save.db=FALSE,...) 
+setGeneric("removeComp", function(mBase,comp = NULL ,chunk.size=1e6,save.db=FALSE,...) 
   standardGeneric("removeComp"))
 
 #' @rdname removeComp-methods

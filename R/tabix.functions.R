@@ -511,9 +511,9 @@ getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
 
 #' get data from meth tabix for a given number of rows
 #'
-#' @example
-#' tbxFile=methylRawListDB[[1]]@dbpath
-#' headTabix(tbxFile)
+# @example
+# tbxFile=methylRawListDB[[1]]@dbpath
+# headTabix(tbxFile)
 #' @noRd
 headTabix <- function(tbxFile, nrow = 10,
                     return.type = c("data.table","data.frame","GRanges") ){
@@ -527,7 +527,7 @@ headTabix <- function(tbxFile, nrow = 10,
   } 
   else {
     returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
-    df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = TRUE, data.table = returnDt)
+    df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = FALSE, data.table = returnDt)
     
     if(return.type[1] == "GRanges"){
       return( GRanges(seqnames=as.character(df$V1),
@@ -581,7 +581,7 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
 tabix2dt<-function(tabixRes){
 
     fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       stringsAsFactors=TRUE)
+                       stringsAsFactors=FALSE)
   
 }
 
@@ -591,7 +591,7 @@ tabix2dt<-function(tabixRes){
 tabix2df<-function(tabixRes){
 
     fread( paste0(paste(tabixRes[[1]],collapse="\n"),"\n" ),
-                       stringsAsFactors=TRUE,data.table = FALSE)
+                       stringsAsFactors=FALSE,data.table = FALSE)
     
 }
 
@@ -636,7 +636,7 @@ tabix2gr<-function(tabixRes){
 #' @noRd
 applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
                           return.type=c("tabix","data.frame","data.table","text"),
-                          FUN,...,tabixHead=NULL){
+                          FUN,...,tabixHead=NULL,textHeader=NULL){
   
   return.type <- match.arg(return.type)
   FUN <- match.fun(FUN)
@@ -711,6 +711,13 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
       unlink(outfile)
     }
     con=file(outfile, open = "a", blocking = TRUE) # open connection  
+    # write header if provided
+    if(!is.null(textHeader)) 
+      write(file = con,
+            x = textHeader,
+            ncolumns = length(textHeader),
+            sep = "\t")
+    # append result files
     for(file in gtools::mixedsort(
       list.files(path = dir, pattern = filename2,full.names=TRUE))){
       file.append(outfile,file) # append files

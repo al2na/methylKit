@@ -7,16 +7,35 @@
 \alias{getMethylDiff,methylDiffDB-method}
 \title{get differentially methylated regions/bases based on cutoffs}
 \usage{
-getMethylDiff(.Object, difference = 25, qvalue = 0.01, type = "all",
-  chunk.size = 1e+06, save.db = FALSE, ...)
+getMethylDiff(
+  .Object,
+  difference = 25,
+  qvalue = 0.01,
+  type = "all",
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{getMethylDiff}{methylDiff}(.Object, difference = 25,
-  qvalue = 0.01, type = "all", chunk.size = 1e+06, save.db = FALSE,
-  ...)
+\S4method{getMethylDiff}{methylDiff}(
+  .Object,
+  difference = 25,
+  qvalue = 0.01,
+  type = "all",
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{getMethylDiff}{methylDiffDB}(.Object, difference = 25,
-  qvalue = 0.01, type = "all", chunk.size = 1e+06, save.db = TRUE,
-  ...)
+\S4method{getMethylDiff}{methylDiffDB}(
+  .Object,
+  difference = 25,
+  qvalue = 0.01,
+  type = "all",
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{.Object}{a \code{\link{methylDiff}} or \code{\link{methylDiffDB}} object}

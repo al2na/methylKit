@@ -15,12 +15,26 @@ clusterSamples(.Object, dist="correlation", method="ward",
                        sd.filter=TRUE,sd.threshold=0.5,
                        filterByQuantile=TRUE, plot=TRUE,chunk.size)
 
-\S4method{clusterSamples}{methylBase}(.Object, dist, method, sd.filter,
-  sd.threshold, filterByQuantile, plot)
+\S4method{clusterSamples}{methylBase}(
+  .Object,
+  dist,
+  method,
+  sd.filter,
+  sd.threshold,
+  filterByQuantile,
+  plot
+)
 
-\S4method{clusterSamples}{methylBaseDB}(.Object, dist = "correlation",
-  method = "ward", sd.filter = TRUE, sd.threshold = 0.5,
-  filterByQuantile = TRUE, plot = TRUE, chunk.size = 1e+06)
+\S4method{clusterSamples}{methylBaseDB}(
+  .Object,
+  dist = "correlation",
+  method = "ward",
+  sd.filter = TRUE,
+  sd.threshold = 0.5,
+  filterByQuantile = TRUE,
+  plot = TRUE,
+  chunk.size = 1e+06
+)
 }
 \arguments{
 \item{.Object}{a \code{methylBase} or \code{methylBaseDB} object}

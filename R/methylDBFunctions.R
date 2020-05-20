@@ -1,6 +1,8 @@
 # Helper Functions ---------------------------------------------------
 
-## function checks whether a tabix file already exists and 
+
+#' @noRd
+## function checks wether a tabix file already exists and 
 ## appends number if file already exists  
 .checkTabixFileExists <- function(tabixfile) {
   message("\nchecking whether tabix file already exists:")
@@ -728,7 +730,7 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                                        dir=dir,filename = filename,
                                        return.type = "tabix", 
                                        FUN = function(x) { 
-                                         .CpG.dinuc.unifyOld(.setMethylDBNames(x,
+                                         .CpG.dinuc.unify(.setMethylDBNames(x,
                                                                                "methylRawDB") )}, 
                                        tabixHead = tabixHeadString)
           
@@ -925,14 +927,14 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     if(is.matrix(methMat) ) {
       
       # check if indeed methMat is percent methylation matrix
-      if(max(methMat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix ",
+      if(min(methMat)<0 | max(methMat)>100 ){
+        stop("\nmake sure 'methMat' is percent methylation matrix ",
                 "(values between 0-100) \n")
       }
       
       # check if methMat is percent methylation matrix fitting to mBase  
-      if(nrow(methMat) != mBase@num.records | ncol(methMat) != 
-         length(mBase@numCs.index) ){
+      if(nrow(methMat) != mBase@num.records | 
+         ncol(methMat) != length(mBase@numCs.index) ){
         stop("\nmethMat dimensions do not match number of samples\n",
              "and number of bases in methylBase object\n")
       }
@@ -949,8 +951,8 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
       mat <- fread(methMat,header = FALSE)
       
       # check if indeed methMat is percent methylation matrix
-      if(max(mat)<=1){
-        warning("\nmake sure 'methMat' is percent methylation matrix ",
+      if(min(methMat)<0 | max(methMat)>100 ){
+        stop("\nmake sure 'methMat' is percent methylation matrix ",
                 "(values between 0-100) \n")
       }
       
@@ -965,7 +967,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     reconstr <- function(data, methMat, chunk, numCs.index, numTs.index) {
       
       mat=data[,numCs.index]+data[,numTs.index]
-      methMat = fread(methMat,header = FALSE, nrows = chunk)
+      methMat = read.table(methMat,header = FALSE, nrows = chunk, sep="\t")
       
       # get new unmethylated and methylated counts
       numCs=round(methMat*mat/100)
@@ -1002,7 +1004,10 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
     slotList <- list(dbtype = mBase@dbtype,
                      sample.ids = mBase@sample.ids,assembly = mBase@assembly,
                      context = mBase@context,resolution = mBase@resolution,
-                     treatment = mBase@treatment,destranded = mBase@destranded)
+                     treatment = mBase@treatment,destranded = mBase@destranded,
+                     coverage.index = mBase@coverage.index,
+                     numCs.index = mBase@numCs.index,
+                     numTs.index = mBase@numTs.index)
     
     tabixHead <- makeTabixHeader(slotList)
     tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
@@ -1038,7 +1043,7 @@ setMethod("reconstruct",signature(mBase="methylBaseDB"),
 #' @aliases removeComp,methylBaseDB-method
 setMethod("removeComp",signature(mBase="methylBaseDB"), 
           function(mBase,comp,chunk.size,save.db=TRUE,...){
-  if(is.na(comp) || is.null(comp)){
+  if(anyNA(comp) || is.null(comp)){
     stop("no component to remove\n")
   }
   
@@ -1073,14 +1078,21 @@ setMethod("removeComp",signature(mBase="methylBaseDB"),
 #' @rdname percMethylation-methods
 #' @aliases percMethylation,methylBaseDB-method
 setMethod("percMethylation", "methylBaseDB",
-          function(methylBase.obj,rowids=FALSE,save.txt,chunk.size){
-            
-            meth.fun <- function(data, numCs.index, numTs.index){
-              
-              dat=100 * data[, numCs.index]/( data[,numCs.index] + 
-                                                data[,numTs.index] )
-              rownames(dat)=paste(as.character(data[,1]),
-                                  data[,2],data[,3],sep=".")
+          function(methylBase.obj,
+                   rowids = FALSE,
+                   save.txt = FALSE,
+                   chunk.size = 1e6) {
+            meth.fun <- function(data, numCs.index, numTs.index, rowids) {
+              dat = 100 * data[, numCs.index] / (data[, numCs.index] +
+                                                   data[, numTs.index])
+              if(rowids) {
+                dat = cbind(pos = 
+                              paste(as.character(data[, 1]),
+                                      data[, 2], data[, 3], 
+                                    sep = "."),
+                            dat)
+                
+              }
               return(dat)
               
             }
@@ -1089,15 +1101,20 @@ setMethod("percMethylation", "methylBaseDB",
               filename <- paste0(basename(gsub(".txt.bgz","",
                                       methylBase.obj@dbpath)),"_methMath.txt")
               
-              meth.mat = applyTbxByChunk(methylBase.obj@dbpath,
-                                         return.type = "text", 
+              textHeader = methylBase.obj@sample.ids
+              if(rowids) textHeader = c("pos",textHeader)
+              
+              outfile = applyTbxByChunk(methylBase.obj@dbpath,
+                                         return.type = "text",
+                                         textHeader = textHeader,
                                          chunk.size = chunk.size,
                                          dir = dirname(methylBase.obj@dbpath), 
                                          filename = filename,
                                          FUN = meth.fun, 
                                          numCs.index = methylBase.obj@numCs.index,
-                                         numTs.index = methylBase.obj@numTs.index)
-              return(meth.mat)
+                                         numTs.index = methylBase.obj@numTs.index,
+                                         rowids = rowids)
+              return(outfile)
               
             } else {
               
@@ -1106,12 +1123,14 @@ setMethod("percMethylation", "methylBaseDB",
                                          chunk.size = chunk.size,
                                          FUN = meth.fun, 
                                          numCs.index = methylBase.obj@numCs.index,
-                                         numTs.index = methylBase.obj@numTs.index)
+                                         numTs.index = methylBase.obj@numTs.index,
+                                         rowids = rowids)
+              if(rowids){
+                rownames(meth.mat) = meth.mat$pos 
+                meth.mat$pos = NULL
+              }
               
               names(meth.mat)=methylBase.obj@sample.ids
-              if(!rowids){
-                rownames(meth.mat)=NULL 
-              }
               return(as.matrix(meth.mat))
               
             }
@@ -1258,6 +1277,11 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
                   methylObj@numCs.index[col.ord],
                   methylObj@numTs.index[col.ord])
     
+    # get indices of coverage,numCs and numTs in the data frame 
+    coverage.ind=seq(5,by=3,length.out=length(sample.ids))
+    numCs.ind   =coverage.ind+1
+    numTs.ind   =coverage.ind+2
+    
     
     getSub <- function(data,ind.mat) {
       
@@ -1291,11 +1315,18 @@ setMethod("reorganize", signature(methylObj="methylBaseDB"),
     filename <- basename(filename)
     
     ## creating the tabix header
-    slotList <- list(dbtype = methylObj@dbtype,
-                     sample.ids=sample.ids,
-                     assembly=methylObj@assembly,context=methylObj@context,
-                     treatment=treatment,destranded=methylObj@destranded, 
-                     resolution=methylObj@resolution)
+    slotList <- list(
+      dbtype = methylObj@dbtype,
+      sample.ids = sample.ids,
+      assembly = methylObj@assembly,
+      context = methylObj@context,
+      treatment = treatment,
+      destranded = methylObj@destranded,
+      resolution = methylObj@resolution,
+      coverage.index = coverage.ind,
+      numCs.index = numCs.ind,
+      numTs.index = numTs.ind
+    )
     
     tabixHead <- makeTabixHeader(slotList)
     tabixHeadString <- .formatTabixHeader(class = "methylBaseDB",
@@ -1447,13 +1478,13 @@ setMethod("calculateDiffMeth", "methylBaseDB",
                    test ,mc.cores , slim , weighted.mean,
                    chunk.size, save.db=TRUE, ...){
             
-            # check object before starting calculations
-            .checksCalculateDiffMeth(treatment = .Object@treatment,
-                                     covariates = covariates,
-                                     Tcols = .Object@numTs.index)
-    
             if(save.db) {
         
+              # check object before starting calculations
+              .checksCalculateDiffMeth(treatment = .Object@treatment,
+                                       covariates = covariates,
+                                       Tcols = .Object@numTs.index)
+      
               # catch additional args 
               args <- list(...)
               dir <- dirname(.Object@dbpath)
@@ -1575,7 +1606,7 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     }
     
     if(!( "suffix" %in% names(args) ) ){
-      suffix <- "_type"
+      suffix <- paste0("_",type)
     } else { 
       suffix <- paste0("_",args$suffix)
     }
@@ -1583,7 +1614,7 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
     
     # filename <- paste0(paste(.Object@sample.ids,collapse = "_"),suffix,".txt")
     
-    filename <- paste(gsub(".txt.bgz","",.Object@dbpath),suffix,".txt")
+    filename <- paste0(gsub(".txt.bgz","",.Object@dbpath),suffix,".txt")
     
     filename <- .checkTabixFileExists(filename)
     
@@ -1629,70 +1660,48 @@ setMethod(f="getMethylDiff", signature="methylDiffDB",
 #' @aliases diffMethPerChr,methylDiffDB-method
 #' @rdname  diffMethPerChr-methods
 setMethod("diffMethPerChr", signature(x = "methylDiffDB"),
-          function(x,plot,qvalue.cutoff, meth.cutoff,exclude,...){
+          function(x,plot,qvalue.cutoff, meth.cutoff,exclude,keep.empty.chrom,...){
             
+            
+            
+            res <-
+              applyTbxByChr(
+                x@dbpath,
+                return.type = "data.frame",
+                FUN = .diffMethPerChr,
+                qvalue.cutoff = qvalue.cutoff,
+                meth.cutoff = meth.cutoff,
+                keep.empty.chrom = keep.empty.chrom
+              )
+            
+            # order the chromosomes
+            dmc.hyper.hypo = res[order(as.numeric(sub("chr", "", res$chr))),]
+            
+            # get percentages of hypo/ hyper
+            dmc.hyper = 100 * sum(res$number.of.hypermethylated) / x@num.records 
+            dmc.hypo = 100 * sum(res$number.of.hypomethylated) / x@num.records
+            
+            all.hyper.hypo = data.frame(
+              number.of.hypermethylated = sum(res$number.of.hypermethylated),
+              percentage.of.hypermethylated = dmc.hyper,
+              number.of.hypomethylated = sum(res$number.of.hypomethylated),
+              percentage.of.hypomethylated = dmc.hypo
+            )
+            
+            if (all(dmc.hyper.hypo$chr %in% exclude)) {
+              warning("Cannot plot figure, excluded all available chromosomes.")
+              plot <- FALSE
+            }
 
-diffMeth <- function(data,qvalue.cutoff, meth.cutoff){
-  
-  .setMethylDBNames(data,"methylDiffDB")
-  
-  temp.hyper=data[data$qvalue < qvalue.cutoff & data$meth.diff >= meth.cutoff,]
-  temp.hypo =data[data$qvalue < qvalue.cutoff & data$meth.diff <= -meth.cutoff,]
-  
-  # plot barplot for percentage of DMCs per chr
-  dmc.hyper.chr=merge(as.data.frame(table(temp.hyper$chr)), 
-                      as.data.frame(table(data$chr)),by="Var1")
-  dmc.hyper.chr=cbind(dmc.hyper.chr,perc=100*dmc.hyper.chr[,2]/
-                        dmc.hyper.chr[,3])
-  
-  dmc.hypo.chr=merge(as.data.frame(table(temp.hypo$chr)), 
-                     as.data.frame(table(data$chr)),by="Var1")
-  dmc.hypo.chr=cbind(dmc.hypo.chr,perc=100*dmc.hypo.chr[,2]/dmc.hypo.chr[,3])
-  
-  dmc.hyper.hypo=merge(dmc.hyper.chr[,c(1,2,4)],dmc.hypo.chr[,c(1,2,4)],
-                       by="Var1",all=TRUE) # merge hyper hypo per chromosome
-  
-  
-  names(dmc.hyper.hypo)=c("chr","number.of.hypermethylated",
-                          "percentage.of.hypermethylated",
-                          "number.of.hypomethylated",
-                          "percentage.of.hypomethylated")
-  
-  return(dmc.hyper.hypo)
-}
-
-res <- applyTbxByChr(x@dbpath,return.type = "data.frame",FUN = diffMeth,qvalue.cutoff=qvalue.cutoff, meth.cutoff=meth.cutoff)
-
-dmc.hyper=100*sum(res$number.of.hypermethylated)/x@num.records # get percentages of hypo/ hyper
-dmc.hypo =100*sum(res$number.of.hypomethylated)/x@num.records
-
-all.hyper.hypo=data.frame(number.of.hypermethylated=sum(res$number.of.hypermethylated),
-                          percentage.of.hypermethylated=dmc.hyper,
-                          number.of.hypomethylated=sum(res$number.of.hypomethylated),
-                          percentage.of.hypomethylated=dmc.hypo)
-
-dmc.hyper.hypo=res[order(as.numeric(sub("chr","",res$chr))),] # order the chromosomes
-
-if(plot){
-  
-  if(!is.null(exclude)){dmc.hyper.hypo=
-    dmc.hyper.hypo[! dmc.hyper.hypo$chr %in% exclude,]}
-  
-  barplot(
-    t(as.matrix(data.frame(hyper=dmc.hyper.hypo[,3],
-                           hypo=dmc.hyper.hypo[,5],
-                           row.names=dmc.hyper.hypo[,1]) ))
-    ,las=2,horiz=TRUE,col=c("magenta","aquamarine4"),
-    main=paste("% of hyper & hypo methylated regions per chromosome",sep=""),
-    xlab="% (percentage)",...)
-  mtext(side=3,paste("qvalue<",qvalue.cutoff," & methylation diff. >=",
-                     meth.cutoff," %",sep="") )
-  legend("topright",legend=c("hyper","hypo"),fill=c("magenta","aquamarine4"))
-}else{
-  
-  list(diffMeth.per.chr=dmc.hyper.hypo,diffMeth.all=all.hyper.hypo)
-  
-}
+            if (plot) {
+              
+                .plotDiffMethPerChr(dmc.hyper.hypo, exclude, qvalue.cutoff, meth.cutoff,...)
+                
+              } else {
+                
+                return(list(diffMeth.per.chr = dmc.hyper.hypo,
+                            diffMeth.all = all.hyper.hypo))
+              }
             
 })
 
@@ -2246,7 +2255,7 @@ setMethod("tileMethylCounts", signature(object="methylRawDB"),
                 # clean up
                 rm(g.meth)
                 
-                tmp <- new("methylRaw",data,resolution=object@resolution)
+                tmp <- new("methylRaw",data,sample.id="temp",resolution=object@resolution)
                 # clean up
                 rm(data)
                 

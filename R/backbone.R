@@ -4,63 +4,69 @@
 
 # reads gzipped files with data.table::fread
 #' @noRd
-fread.gzipped<-function(filepath, ..., runShell=TRUE){
+fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
+  
+  # check if file exists
+  if(!file.exists(filepath) ) 
+    stop("No such file: ", filepath)
+  
+  # check if file is not empty
+  if( !file.size(filepath) > 0 )
+    stop(sprintf("ERROR: File %s is empty.",filepath))
   
   # check if file is gzipped (either gz or bgz)
   if (R.utils::isGzipped(filepath, method = "content")){
     
-    if( runShell && ( .Platform$OS.type == "unix" ) ) {
-      # being on unix we can run shell comands to uncompress the file
-      if(!file.exists(filepath) ) 
-        # to protect against exploits
-        stop("No such file: ", filepath)
-      # run the command
-      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
-      tmpFile <- paste0(tempdir(),"/",gsub(ext,"",basename(filepath)))
-      if(!file.exists(tmpFile)) {
-        system2("gunzip",args = c("-c",shQuote(filepath)), stdout = tmpFile)
-      }
-      filepath <- tmpFile
-      # on.exit(unlink( tmpFile ), add = TRUE)
-      
-    } else {
-      # on windows we have to decompress first ... 
-      ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
-      tmpFile <- R.utils::gunzip(filepath,temporary = TRUE, overwrite = TRUE,
-                                 remove = FALSE, ext = ext, FUN = gzfile)
-      filepath <- tmpFile
-      # on.exit(unlink( tmpFile ), add = TRUE)
-    }
+    message("Uncompressing file.")
+    
+    # starting from v1.11.8 data.table supports reading compressed files,
+    # by using R.utils::decompressFile function, but they check for 
+    # extensions .gz and .bz2, so we keep our own function.
+    # however uncompressed output will be written to temp files, 
+    # so for now we do not remove them and keep them as cache. 
+    
+    ext = if( tools::file_ext(filepath) == "bgz") "bgz" else "gz"
+    tmpFile <- R.utils::gunzip(filepath,
+                               temporary = TRUE, 
+                               overwrite = TRUE,
+                               remove = FALSE,
+                               skip = skipDecompress,
+                               ext = ext, 
+                               FUN = gzfile)
+    filepath <- tmpFile
+    
+    if( !file.size(filepath) > 0 )
+      stop(sprintf("ERROR: File %s is empty.",filepath))
+    
+    # on.exit(unlink( tmpFile ), add = TRUE)
     
   }
-    ## finally we read in the uncompressed file  
-    df <- data.table::fread(file = filepath,...)
   
-    
+  ## finally we read in the uncompressed file  
+  message("Reading file.")
+  df <- data.table::fread(file = filepath,...)
+  
   return(df)
+  
 }
 
 # reads a table in a fast way to a dataframe
 #' @noRd
-.readTableFast<-function(filename,header=TRUE,skip=0,sep="auto")
+.readTableFast <- function(filename,
+                           header = TRUE,
+                           skip = 0,
+                           sep = "auto",
+                           stringsAsFactors = FALSE)
 {
-  #tab5rows <- read.table(filename, header = header,skip=skip,sep=sep, 
-  #                       nrows = 100,stringsAsFactors=FALSE)
-  #classes  <- sapply(tab5rows, class)
-  #classes[classes=="logical"]="character"
-  #lines2keep <- 100
-  #nL <- R.utils::countLines(filename)
-  #lastrows <- read.table(filename, header = header,skip=nL-lines2keep,sep=sep, 
-  #                       stringsAsFactors=FALSE)
-  #lastclasses  <- sapply(lastrows, class)
-  #if(any(classes!=lastclasses)) {
-    #classes[which(classes!=lastclasses)] = lastclasses[which(classes!=lastclasses)]
-  #}
-
-  #return( read.table(filename, header = header,skip=skip,sep=sep,colClasses = classes
-  #                   )  )
   
-  fread.gzipped(filename,header=header,skip=skip,sep=sep,data.table=FALSE)
+  fread.gzipped(
+    filepath = filename,
+    header = header,
+    skip = skip,
+    sep = sep,
+    stringsAsFactors = stringsAsFactors,
+    data.table = FALSE
+  )
 }
 
 # reformats a data.frame to a standard methylraw data.frame
@@ -72,19 +78,28 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
   # remove data beyond mincoverage
   data = data[data[,5] >= mincov,]
   
-  strand=rep("+",nrow(data))
-  strand[data[,4]=="R"]="-"
+  strand = rep("+",nrow(data))
+  strand[data[, 4] == "R"] = "-"
   
+  numCs = round(data[, 5] * data[, 6] / 100)
+  numTs = round(data[, 5] * data[, 7] / 100)
 
+  df <- data.frame(
+    chr = data[, 2],
+    start = data[, 3],
+    end = data[, 3],
+    strand = strand,
+    coverage = as.integer(data[, 5]),
+    numCs = as.integer(numCs),
+    numTs = as.integer(numTs),
+    stringsAsFactors = FALSE
+  )
   
-  numCs=round(data[,5]*data[,6]/100)
-  numTs=round(data[,5]*data[,7]/100)
+  # sort the data
+  df <- df[with(df,order(chr,start,end)),]
+  row.names(df) <- 1:nrow(df)
   
-
-  
-  
-  data.frame(chr=data[,2],start=data[,3],end=data[,3]
-             ,strand=strand,coverage=data[,5],numCs=numCs,numTs=numTs)
+  return(df)
 }
 
 # reformats a generic structure data.frame to a standard methylraw data.frame
@@ -113,8 +128,22 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
     numTs=data[,coverage.col] - numCs
     #id=paste(data[,chr.col], data[,start.col],sep=".")
     
-    data.frame(chr=data[,chr.col],start=data[,start.col],end=data[,end.col]
-    ,strand=strand,coverage=data[,coverage.col],numCs=numCs,numTs=numTs)
+    df <- data.frame(
+      chr = data[, chr.col],
+      start = data[, start.col],
+      end = data[, end.col],
+      strand = strand,
+      coverage = as.integer(data[, coverage.col]),
+      numCs = as.integer(numCs),
+      numTs = as.integer(numTs),
+      stringsAsFactors = FALSE
+    )
+    
+    # sort the data
+    df <- df[with(df,order(chr,start,end)),]
+    row.names(df) <- 1:nrow(df)
+    
+    return(df)
     
 }
 
@@ -137,13 +166,17 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
 # checks if dbdir in read-call for methylRawDB and methylRawListDB objects exists
 .check.dbdir <- function(dir){
   
+  if(dir=="/"){ stop("ERROR: Cannot write in root dir.\nDid you mean set dbdir to './'?") }
   if(dir==getwd() ){
-    tabixDir <- paste("methylDB",Sys.Date(),
-                      paste(sample(c(0:9, letters, LETTERS),3, replace=TRUE),
-                            collapse=""))
+    tabixDir <- sprintf(fmt = "methylDB_%s_%s",
+            Sys.Date(),
+            paste(
+              sample(c(0:9, letters, LETTERS), 3, replace = TRUE),
+              collapse = "")
+            )
     dir.create(tabixDir)
-    dir <- paste(dir,"/",tabixDir,collapse = "",sep = "")
-    message(paste("creating directory ",getwd(),"/",tabixDir,sep = ""))
+    dir <- file.path(dir,tabixDir)
+    message(paste("creating directory ",dir,sep = ""))
   }
   else{
     
@@ -164,66 +197,93 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
 # unfies forward and reverse strand CpGs on the forward strand if the if
 # both are on the same CpG
 # if that's the case their values are generally correlated
-.CpG.dinuc.unify<-function(cpg)
+.CpG.dinuc.unify <- function(cpg)
 {
-  cpg = data.table(cpg,key = c("chr","start","end"))
-  cpgR=cpg[strand=="-"]
-  cpgF=cpg[strand=="+",]
-  cpgR[,start := start +1]
-  cpgF[,start := start +1 ]
-  cpgR[,strand := "+"]
+  oldSciPen <- options()$scipen
+  options(scipen = 999)
+  ## silence R CMD check NOTE
+  coverage.x = coverage.y = NULL
+  numCs.x = numCs.y =  NULL
+  numTs.x = numTs.y = NULL
+  
+  cpg = data.table(cpg, key = c("chr", "start", "end"))
+  cpgF = cpg[strand == "+", ]
+  cpgR = cpg[strand == "-", ]
+  cpgR[, `:=`(start = start - 1L,
+              end = end - 1L,
+              strand = "+")]
   
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
   
-  cpgFR=merge(cpgF,cpgR,by=c("chr","start","end"))
-  #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
-  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
-  res=data.table(
-    chr     =as.character(cpgFR$chr),
-    start    =as.integer(cpgFR$start),
-    end      =as.integer(cpgFR$start),
-    strand  =rep("+",nrow(cpgFR)),
-    coverage=cpgFR$coverage.x + cpgFR$coverage.y,
-    numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
-  )
-  Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
-  Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
-  resid=paste(res$chr,res$start,res$end)  
-  res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  setkey(res,"chr","start")
-  return(data.frame(res))
+  cpgFR = merge(cpgF, cpgR, by = c("chr", "start", "end"))
+  
+  cpgFR[, `:=`(
+    strand = "+",
+    coverage = coverage.x + coverage.y,
+    numCs = numCs.x + numCs.y,
+    numTs = numTs.x + numTs.y
+  )][, grep("x|y", names(cpgFR), value = TRUE) := NULL]
+  
+  # res=data.table(
+  #   chr     =as.character(cpgFR$chr),
+  #   start    =as.integer(cpgFR$start),
+  #   end      =as.integer(cpgFR$start),
+  #   strand  =rep("+",nrow(cpgFR)),
+  #   coverage=cpgFR$coverage.x + cpgFR$coverage.y,
+  #   numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
+  #   numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,
+  #   stringsAsFactors =FALSE
+  # )
+  Fid = paste(cpgF$chr, cpgF$start, cpgF$end)
+  Rid = paste(cpgR$chr, cpgR$start, cpgR$end)
+  FRid = paste(cpgFR$chr, cpgFR$start, cpgFR$end)
+  cpgFR = rbind(cpgFR, cpgF[!Fid  %in%  FRid,], cpgR[!Rid  %in%  FRid,])
+  
+  cpgFR[, `:=`(
+    chr = as.character(chr),
+    strand = as.character(strand),
+    start = as.integer(start),
+    end = as.integer(end)
+  )]
+  
+  setorder(cpgFR, "chr", "start")
+  options(scipen = oldSciPen)
+  return(as.data.frame(cpgFR))
 }
 
-.CpG.dinuc.unifyOld<-function(cpg)
+.CpG.dinuc.unifyOld <- function(cpg)
 {
-  
-  cpgR=cpg[cpg$strand=="-",]
-  cpgF=cpg[cpg$strand=="+",]
-  cpgR$start=cpgR$start-1
-  cpgR$end=cpgR$end-1
-  cpgR$strand="+"
+  oldSciPen <- options()$scipen
+  options(scipen = 999)
+  cpgR = cpg[cpg$strand == "-", ]
+  cpgF = cpg[cpg$strand == "+", ]
+  cpgR$start = cpgR$start - 1L
+  cpgR$end = cpgR$end - 1L
+  cpgR$strand = "+"
   
   #cpgR$id=paste(cpgR$chr,cpgR$start,sep=".")
   
-  cpgFR=merge(cpgF,cpgR,by=c("chr","start","end"))
+  cpgFR = merge(cpgF, cpgR, by = c("chr", "start", "end"))
   #hemi =cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)>=50,]
-  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]  
-  res=data.frame(
-    chr     =as.character(cpgFR$chr),
-    start    =as.integer(cpgFR$start),
-    end      =as.integer(cpgFR$start),
-    strand  =rep("+",nrow(cpgFR)),
-    coverage=cpgFR$coverage.x + cpgFR$coverage.y,
-    numCs   =cpgFR$numCs.x + cpgFR$numCs.y ,
-    numTs   =cpgFR$numTs.x + cpgFR$numTs.y ,stringsAsFactors =FALSE
+  #cpgFR=cpgFR[abs(cpgFR$freqC.x-cpgFR$freqC.y)<50,]
+  res = data.frame(
+    chr     = as.character(cpgFR$chr),
+    start    = as.integer(cpgFR$start),
+    end      = as.integer(cpgFR$start),
+    strand  = rep("+", nrow(cpgFR)),
+    coverage = cpgFR$coverage.x + cpgFR$coverage.y,
+    numCs   = cpgFR$numCs.x + cpgFR$numCs.y ,
+    numTs   = cpgFR$numTs.x + cpgFR$numTs.y ,
+    stringsAsFactors = FALSE
   )
-  Fid=paste(cpgF$chr,cpgF$start,cpgF$end)
-  Rid=paste(cpgR$chr,cpgR$start,cpgR$end)
-  resid=paste(res$chr,res$start,res$end)  
-  res=rbind(res, cpgF[ !  Fid  %in%  resid,],cpgR[ ! Rid  %in%  resid,] )
-  res=res[order(res$chr,res$start),]
+  Fid = paste(cpgF$chr, cpgF$start, cpgF$end)
+  Rid = paste(cpgR$chr, cpgR$start, cpgR$end)
+  resid = paste(res$chr, res$start, res$end)
+  res = rbind(res, cpgF[!Fid  %in%  resid, ], cpgR[!Rid  %in%  resid, ])
+  res = res[order(res$chr, res$start), ]
+  rownames(res) <- NULL
+  options(scipen = oldSciPen)
   return(res)
 }
 
@@ -274,16 +334,19 @@ fread.gzipped<-function(filepath, ..., runShell=TRUE){
 #'     
 #' @param mincov a numeric value for minimum coverage. Bases that have coverage
 #' below this value will be removed.
+#' @param context methylation context string, CpG,CHG,CHH
 #' 
 #' @return data.frame
 #' @noRd
-.procBismarkCytosineReport<-function(df,mincov=10){
+.procBismarkCytosineReport <- function(df, mincov = 10, context) {
+  
 
+    if (context == "CpG") context = "CG"
+    
     # remove low coverage stuff
     df=df[ (df[,4]+df[,5]) >= mincov ,]
     
-    
-    
+    df=df[ df[,6] == context ,]
     
     # make the object (arrange columns of df), put it in a list
     data.frame(chr=df[,1],start=df[,2],end=df[,2],
@@ -498,7 +561,7 @@ methylRawList <- function(...,treatment) {
 #' Default 'base'
 #' @param treatment a vector contatining 0 and 1 denoting which samples are 
 #' control which samples are test
-#' @param context methylation context string, ex: CpG,CpH,CHH, etc. (default:CpG)
+#' @param context methylation context string, ex: CpG,CHG,CHH, etc. (default:CpG)
 #' @param dbdir directory where flat file database(s) should be stored, defaults
 #'       to getwd(), working directory.
 #' @param mincov minimum read coverage to be included in the methylKit objects.
@@ -664,7 +727,13 @@ setMethod("methRead", signature(location = "character",sample.id="character",
         {
           data<- .structureAMPoutput(data,mincov)
         }else if(pipeline == "bismarkCytosineReport"){
-          data= .procBismarkCytosineReport(data,mincov)
+          
+          if (!context %in% c("CpG","CHG","CHH")) {
+            stop("Unknown bismark context given, supported contexts are:",
+                 "'CpG', 'CHG' or 'CHH'")
+          }
+          message("Filtering for context: ",context,".")
+          data= .procBismarkCytosineReport(data,mincov,context)
          
         }else if(pipeline == "bismarkCoverage"){
           data= .procBismarkCoverage(data,mincov)
@@ -745,7 +814,7 @@ setMethod("methRead", signature(location = "list",sample.id="list",
             
   message("Received list of locations.")
             
-  if(any(is.na(treatment))) 
+  if(anyNA(treatment)) 
     stop("Treatment vector is missing.")
             
   #check if the given arugments makes sense
@@ -799,7 +868,7 @@ setMethod("methRead", signature(location = "list",sample.id="list",
         if(pipeline %in% c("amp","bismark")){
           data<- .structureAMPoutput(data,mincov)
         }else if(pipeline == "bismarkCytosineReport"){
-          data= .procBismarkCytosineReport(data,mincov)
+          data= .procBismarkCytosineReport(data, mincov, context)
           
         }else if(pipeline == "bismarkCoverage"){
           data= .procBismarkCoverage(data,mincov)

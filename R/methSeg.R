@@ -63,7 +63,7 @@
 #' 
 #' \donttest{
 #'  download.file(
-#'  "https://github.com/BIMSBbioinfo/compgen2018/raw/master/day3_diffMeth/data/H1.chr21.chr22.rds",
+#'  "https://raw.githubusercontent.com/BIMSBbioinfo/compgen2018/master/day3_diffMeth/data/H1.chr21.chr22.rds",
 #'  destfile="H1.chr21.chr22.rds",method="curl")
 #' 
 #'  mbw=readRDS("H1.chr21.chr22.rds")
@@ -214,12 +214,17 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
     seg.res <- joinSegmentNeighbours(seg.res)
     diagnostic.plot <- diagnostic.plot.old
     
-    # get the new density
-    args.Mclust[["score.gr"]]=seg.res
-    args.Mclust[["diagnostic.plot"]]=diagnostic.plot
-    # skip second progress bar
-    args.Mclust[["verbose"]]=FALSE
-    dens=do.call("densityFind", args.Mclust  )
+    if(length(seg.res)==1) {
+      warning("joining segments resulted in only one range, no mixture modeling possible.")
+      return(seg.res)
+    } else {
+      # get the new density
+      args.Mclust[["score.gr"]]=seg.res
+      args.Mclust[["diagnostic.plot"]]=diagnostic.plot
+      # skip second progress bar
+      args.Mclust[["verbose"]]=FALSE
+      dens=do.call("densityFind", args.Mclust  )
+    } 
     
   }
   
@@ -408,65 +413,83 @@ methSeg2bed<-function(segments,filename,
 # @noRd
 # @examples
 joinSegmentNeighbours <- function(res) {
-  
   # require(data.table)
   
-  if (length(unique(seqnames(res))) > 1 ) {
+  if (length(unique(seqnames(res))) > 1) {
     ## call recursively for multiple chromosomes
-    gr <- lapply(split(res,seqnames(res)),joinSegmentNeighbours)
-    gr <- do.call(c, unlist(gr,use.names = FALSE) )
-    return( gr )
-  } 
-  else if (length(res)<=1) {
+    gr <- lapply(split(res, seqnames(res)), joinSegmentNeighbours)
+    gr <- do.call(c, unlist(gr, use.names = FALSE))
+    return(gr)
+  }
+  else if (length(res) <= 1) {
     ## return object if it has only one range
     return(res)
-  }
-  else{
-    ## compute run-length-enconding of groups, 
+  } else {
+    
+    ## initialize "local variables" to silence R CMD check
+    ID = endRow = num.mark = seg.group = seg.mean = startRow = NULL
+    
+    ## copy to data.table
+    res_dt <- copy(as.data.table(res))
+    ## compute run-length-enconding of groups,
     ## which is higher than 1 if neighbours are in same group
     group.neighbours <- rle(res$seg.group)
     N = length(group.neighbours$lengths)
-    # res_joined <- vector(mode="list", length=N)
-    
-    ## k[i] is supposed to store the orginal index of the range i in res  
-    k <- numeric(N)
-    k[1] <- 1
-    
-    ## l[i] is either 0 if adjacent groups are distinct and 
-    ## higher or equal to 1 if groups are the same 
-    l <- group.neighbours$lengths - 1
-    
-    ## for some positions k[j] we have to skip l[j] index positions 
-    ## since neighbouring ranges can be merged
-    for ( i in 2:N ) { k[i] = k[i-1] + l[ i -1] + 1 }
-    #toJoin <- l==0
-    
-    # print(paste("k=",k,"l=",l))
-    
-    res_dt <- copy(as.data.table(res))
-    
-    ## initialize "global variables" to silence R CMD check
-    ID=endRow=num.mark=seg.group=seg.mean=startRow=NULL
-    
-    ## now we just merge ranges, that had a non-zero value in l
-    for (i in which(l!=0)) {
-      res_dt[k[i]:(k[i]+l[i]),":="(seqnames=unique(seqnames),
-                                   start=min(start),
-                                   end=max(end),
-                                   strand = "*",
-                                   width = sum(as.numeric(width)),
-                                   ID = unique(ID),
-                                   num.mark = sum(as.numeric(num.mark)),
-                                   seg.mean = mean(seg.mean),
-                                   startRow = min(startRow),
-                                   endRow = max(endRow),
-                                   seg.group = unique(seg.group))]
+    ## merge and skip if there is only one group
+    if (N == 1) {
+      ## just merge ranges of the single group
+      res_dt[, `:=`(
+        seqnames = unique(seqnames),
+        start = min(start),
+        end = max(end),
+        strand = "*",
+        width = sum(as.numeric(width)),
+        ID = unique(ID),
+        num.mark = sum(as.numeric(num.mark)),
+        seg.mean = mean(seg.mean),
+        startRow = min(startRow),
+        endRow = max(endRow),
+        seg.group = unique(seg.group)
+      )]
+      
+    } else {
+      ## k[i] is supposed to store the orginal index of the range i in res
+      k <- numeric(N)
+      k[1] <- 1
+      
+      ## l[i] is either 0 if adjacent groups are distinct and
+      ## higher or equal to 1 if groups are the same
+      l <- group.neighbours$lengths - 1
+      
+      ## for some positions k[j] we have to skip l[j] index positions
+      ## since neighbouring ranges can be merged
+      for (i in 2:N) {
+        k[i] = k[i - 1] + l[i - 1] + 1
+      }
+      
+      # print(paste("k=",k,"l=",l))
+      
+      ## now we just merge ranges, that had a non-zero value in l
+      for (i in which(l != 0)) {
+        res_dt[k[i]:(k[i] + l[i]), ":="(
+          seqnames = unique(seqnames),
+          start = min(start),
+          end = max(end),
+          strand = "*",
+          width = sum(as.numeric(width)),
+          ID = unique(ID),
+          num.mark = sum(as.numeric(num.mark)),
+          seg.mean = mean(seg.mean),
+          startRow = min(startRow),
+          endRow = max(endRow),
+          seg.group = unique(seg.group)
+        )]
+      }
     }
     
     res_dt <- unique(res_dt)
     
-    return(makeGRangesFromDataFrame(res_dt,keep.extra.columns = TRUE))
+    return(makeGRangesFromDataFrame(res_dt, keep.extra.columns = TRUE))
   }
 }
-
 

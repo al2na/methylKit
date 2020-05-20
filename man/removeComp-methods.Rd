@@ -7,13 +7,11 @@
 \alias{removeComp,methylBaseDB-method}
 \title{Remove principal components from a methylBase object}
 \usage{
-removeComp(mBase, comp, chunk.size = 1e+06, save.db = FALSE, ...)
+removeComp(mBase, comp = NULL, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{removeComp}{methylBase}(mBase, comp, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{removeComp}{methylBase}(mBase, comp = NULL, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{removeComp}{methylBaseDB}(mBase, comp, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{removeComp}{methylBaseDB}(mBase, comp = NULL, chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{mBase}{\code{\link{methylBase}} or \code{\link{methylBaseDB}} 

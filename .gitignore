@@ -22,3 +22,8 @@ methylkit_rstudio.Rproj
 *test2.txt.bgz.tbi
 *test1_test2_ctrl1_ctrl2.txt.bgz.tbi
 
+# temp folders
+methylDB*
+
+doc
+Meta

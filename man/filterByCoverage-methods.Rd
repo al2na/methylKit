@@ -10,25 +10,60 @@
 \title{Filter methylRaw, methylRawDB, methylRawList and methylRawListDB object 
 based on read coverage}
 \usage{
-filterByCoverage(methylObj, lo.count = NULL, lo.perc = NULL,
-  hi.count = NULL, hi.perc = NULL, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+filterByCoverage(
+  methylObj,
+  lo.count = NULL,
+  lo.perc = NULL,
+  hi.count = NULL,
+  hi.perc = NULL,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{filterByCoverage}{methylRaw}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{filterByCoverage}{methylRaw}(
+  methylObj,
+  lo.count = NULL,
+  lo.perc = NULL,
+  hi.count = NULL,
+  hi.perc = NULL,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{filterByCoverage}{methylRawList}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{filterByCoverage}{methylRawList}(
+  methylObj,
+  lo.count = NULL,
+  lo.perc = NULL,
+  hi.count = NULL,
+  hi.perc = NULL,
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{filterByCoverage}{methylRawDB}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{filterByCoverage}{methylRawDB}(
+  methylObj,
+  lo.count = NULL,
+  lo.perc = NULL,
+  hi.count = NULL,
+  hi.perc = NULL,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 
-\S4method{filterByCoverage}{methylRawListDB}(methylObj, lo.count = NULL,
-  lo.perc = NULL, hi.count = NULL, hi.perc = NULL,
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{filterByCoverage}{methylRawListDB}(
+  methylObj,
+  lo.count = NULL,
+  lo.perc = NULL,
+  hi.count = NULL,
+  hi.perc = NULL,
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{methylObj}{a \code{methylRaw}, \code{methylRawDB}, \code{methylRawList} 
@@ -118,7 +153,7 @@ hi.count=NULL,hi.perc=99.9)
 
 # filter out bases with covereage above 500 reads and save to database 
 # "test1_max500.txt.bgz" 
-# in directory "methylDB", filtered3 now becomes a \\code{methylRawDB} object
+# in directory "methylDB", filtered3 now becomes a \code{methylRawDB} object
 filtered3=filterByCoverage(methylRawList.obj[[1]], lo.count=NULL,lo.perc=NULL, 
                            hi.count=500, hi.perc=NULL, save.db=TRUE, 
                            suffix="max500", dbdir="methylDB")

@@ -45,14 +45,4 @@ test_that("if methRead of database return a methylRawDB", {
   expect_is(mydb, 'methylRawDB')
 })
 
-test_that("getMethylationStats on methylRawDB works", {
-  expect_output(getMethylationStats(mydblist[[2]],plot=F,both.strands=F),
-                'methylation statistics per base')
-})
-
-test_that("getMethylationStats on methylRaw works", {
-    expect_output(getMethylationStats(myobj[[2]],plot=F,both.strands=F),
-                  'methylation statistics per base')
-})
-
 unlink("tests/testthat/methylDB",recursive = TRUE)

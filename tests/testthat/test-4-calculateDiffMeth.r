@@ -1,118 +1,122 @@
 #library("methylKit")
 context("calculateDiffMeth checks")
 
-file.list=list( system.file("extdata", "test1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "test2.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control1.myCpG.txt", package = "methylKit"),
-                system.file("extdata", "control2.myCpG.txt", package = "methylKit") )
-
-myobj=methRead( file.list,
-                sample.id=list("test1","test2","ctrl1","ctrl2"),assembly="hg18",pipeline="amp",treatment=c(1,1,0,0))
-
-mydblist = suppressMessages(methRead( file.list,
-                                      sample.id=list("t1","t2","c1","c2"),assembly="hg18",
-                                      pipeline="amp",treatment=c(1,1,0,0),dbtype = "tabix",dbdir="methylDB"))
-
-# unite function
-methidh=unite(myobj)
-methidh2=unite(myobj,min.per.group=1L)
-methidh3=pool(methidh,sample.ids = c("test","control"))
-methidh4 <- methidh; getTreatment(methidh4) <- c(1,1,2,3)
-
-suppressMessages(methidhDB <- unite(mydblist))
-suppressMessages(methidh2DB <- unite(mydblist,min.per.group=1L))
-suppressMessages(methidh3DB <- pool(methidhDB,sample.ids = c("test","control")))
-suppressMessages(methidh4DB <- makeMethylDB(obj = methidh4,dbdir="methylDB"))
-
-# differential methylation
-myDiff =calculateDiffMeth(methidh)
-myDiff2=calculateDiffMeth(methidh2)
-myDiff3=calculateDiffMeth(methidh3)
-myDiff4=calculateDiffMeth(methidh4)
-
-suppressMessages(myDiffDB <- calculateDiffMeth(methidhDB))
-suppressMessages(myDiff2DB <- calculateDiffMeth(methidh2DB))
-suppressMessages(myDiff3DB <- calculateDiffMeth(methidh3DB))
-suppressMessages(myDiff4DB <- calculateDiffMeth(methidh4DB))
-
-hypo <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hypo")
-hyper <- getMethylDiff(myDiff,difference=25,qvalue=0.01,type="hyper")
-
-suppressMessages(hypoDB <- getMethylDiff(myDiffDB,difference=25,qvalue=0.01,type="hypo"))
-suppressMessages(hyperDB <- getMethylDiff(myDiffDB,difference=25,qvalue=0.01,type="hyper"))
+data("methylKit")
 
 
-myobj2=reorganize(myobj,sample.ids=c("test1","ctrl2"),treatment=c(1,0) )
-suppressMessages(mydblist2 <- reorganize(mydblist,sample.ids=c("t1","c2"),treatment=c(1,0) ))
+dbdir <- "methylDB"
+methylBaseDB <- makeMethylDB(methylBase.obj,dbdir = dbdir)
+mc.cores <- 1
 
-test_that("check if reorganize works with methylRawList", {
-  expect_is(myobj2, 'methylRawList')
-})
 
-test_that("check if reorganize works with methylRawListDB", {
-  expect_is(mydblist2, 'methylRawListDB')
+test_that("check if default calculateDiffMeth works", {
+  expect_is(
+    calculateDiffMeth(
+      methylBase.obj,
+      save.db = TRUE,
+      dbdir = dbdir,
+      suffix = "mdiff",
+      mc.cores = mc.cores
+    ),
+    'methylDiffDB'
+  )
+  expect_is(calculateDiffMeth(methylBaseDB, suffix = "mDiff",mc.cores = mc.cores),
+            'methylDiffDB')
+  expect_equal(
+    calculateDiffMeth(methylBase.obj, save.db = FALSE, mc.cores = mc.cores),
+    calculateDiffMeth(methylBaseDB, save.db = FALSE, mc.cores = mc.cores)
+  )
+  expect_equal(
+    getData(calculateDiffMeth(
+      methylBase.obj,
+      save.db = TRUE,
+      dbdir = dbdir,
+      mc.cores = mc.cores
+    )),
+    getData(calculateDiffMeth(
+      methylBaseDB,
+      save.db = TRUE,
+      dbdir = dbdir,
+      mc.cores = mc.cores
+    )))
 })
 
 
-test_that("check if calculateDiffMeth output is a methylDiff object", {
-  expect_is(myDiff, 'methylDiff')
+## create artificial single samples methylBase 
+suppressWarnings(single.methylBase<- dataSim(replicates=1,sites=1000,treatment=c(1),
+                         sample.ids=c("test1")))
+## create artificial single group methylBase 
+singleGroup.methylBase <- dataSim(replicates=4,sites=1000,treatment=c(0,0,0,0),
+                                  sample.ids=c("test1","test2","ctrl1","ctrl2"))
+
+## check if covariates+intercept+treatment more than replicates 
+## 2 + 1 + 1 >= 4   
+covariates.failed=data.frame(age=c(30,80,30,80),
+                             gender=c("male","female","male","female"))
+
+test_that("check if calculateDiffMeth errors", {
+  expect_error(calculateDiffMeth(single.methylBase, mc.cores = mc.cores))
+  expect_error(calculateDiffMeth(singleGroup.methylBase, mc.cores = mc.cores))
+  expect_error(
+    calculateDiffMeth(methylBase.obj,
+                      mc.cores = mc.cores,
+                      covariates = covariates.failed)
+  )
+  
 })
 
-test_that("check if calculateDiffMeth output is a methylDiffDB object", {
-  expect_is(myDiffDB, 'methylDiffDB')
+# pool samples in each group
+pooled.methylBase=pool(methylBase.obj,sample.ids=c("test","control"))
+
+test_that("check if calculateDiffMeth with pooled methylBase works", {
+  expect_is(calculateDiffMeth(pooled.methylBase), 'methylDiff')
 })
 
+# Covariates and overdispersion control:
+# generate a methylBase object with age as a covariate
+set.seed(123)
+covariates=data.frame(age=c(30,80,30,80))
+sim.methylBase<-dataSim(replicates=4,sites=1000,treatment=c(1,1,0,0),
+                        covariates=covariates,
+                        sample.ids=c("test1","test2","ctrl1","ctrl2"))
 
-test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiff object", {
-  expect_is(myDiff2, 'methylDiff')
+test_that("check if calculateDiffMeth with covariates works", {
+  expect_is(suppressWarnings(
+    calculateDiffMeth(
+      sim.methylBase,
+      covariates = covariates,
+      overdispersion = "MN",
+      test = "Chisq",
+      mc.cores = 1
+    )
+  ),
+  'methylDiff')
 })
 
-test_that("check if calculateDiffMeth output from unite(...,min.per.group=1) is a methylDiffDB object", {
-  expect_is(myDiff2DB, 'methylDiffDB')
+## set more than two groups
+methylBase.threeGroup <- methylBase.obj 
+getTreatment(methylBase.threeGroup) <- c(1,1,2,3)
+
+test_that("check if calculateDiffMeth with three treatment groups works", {
+  expect_is(suppressWarnings(calculateDiffMeth(methylBase.threeGroup)), 'methylDiff')
 })
 
-
-test_that("check if calculateDiffMeth output from pooled methylBase is a methylDiff object", {
-  expect_is(myDiff3, 'methylDiff')
-})
-
-test_that("check if calculateDiffMeth output from pooled methylBaseDB is a methylDiffDB object", {
-  expect_is(myDiff3DB, 'methylDiffDB')
-})
-
-
-test_that("check if calculateDiffMeth output with three treatment groups is a methylDiff object", {
-  expect_is(myDiff4, 'methylDiff')
-})
-
-test_that("check if calculateDiffMeth output from three treatment groups is a methylDiffDB object", {
-  expect_is(myDiff4DB, 'methylDiffDB')
-})
-
-
-
-
-test_that("check getting hypo/hyper meth works with methylDiff", {
-  expect_is(hypo, 'methylDiff')
-  expect_is(hyper, 'methylDiff')
-})
-
-test_that("check getting hypo/hyper meth works with methylDiffDB", {
-  expect_is(hypoDB, 'methylDiffDB')
-  expect_is(hyperDB, 'methylDiffDB')
-})
 
 test_that("check different arguments for calculateDiffMeth", {
-  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "fast.fisher"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "F"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "Chisq"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh,adjust = "SLIM",mc.cores = 1,test = "midPval"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "fast.fisher"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "F"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "Chisq"), 'methylDiff')
-  expect_is(calculateDiffMeth(methidh3,adjust = "SLIM",mc.cores = 1,test = "midPval"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "SLIM",test = "fast.fisher"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "holm",test = "F"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "hochberg",test = "Chisq"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "hommel",test = "midPval"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "bonferroni",overdispersion = "none"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "BH",overdispersion = "MN"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "BY",overdispersion = "shrinkMN"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "fdr",effect = "wmean"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "none",effect = "mean"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,adjust = "qvalue",effect = "predicted"), 'methylDiff')
+  expect_is(calculateDiffMeth(methylBase.obj,slim = FALSE ,weighted.mean = FALSE), 'methylDiff')
   
 })
 
 
 unlink("tests/testthat/methylDB",recursive = TRUE)
+unlink(dbdir,recursive = TRUE)

@@ -9,11 +9,9 @@
 \usage{
 pool(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{pool}{methylBase}(obj, sample.ids, chunk.size = 1e+06,
-  save.db = FALSE, ...)
+\S4method{pool}{methylBase}(obj, sample.ids, chunk.size = 1e+06, save.db = FALSE, ...)
 
-\S4method{pool}{methylBaseDB}(obj, sample.ids, chunk.size = 1e+06,
-  save.db = TRUE, ...)
+\S4method{pool}{methylBaseDB}(obj, sample.ids, chunk.size = 1e+06, save.db = TRUE, ...)
 }
 \arguments{
 \item{obj}{\link{methylBase} or \link{methylBaseDB} object with two groups

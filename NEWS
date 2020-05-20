@@ -1,3 +1,131 @@
+methylKit 1.15.3
+--------------
+NEW FUNCTIONS AND FEATURES
+* add verbosity argument to methCall to allow for 
+  complete silencing of output, this will be set by 
+  processBismarkAln which gained 'verbose' argument
+
+IMPROVEMENTS AND BUG FIXES
+* update R requirement to (>= 3.5.0)
+* processBismarkAln:
+  - add verbose argument
+  - update tests
+  - update docs
+* joinsegmentneighbours: 
+  - Catch case when only one groups is there
+* regionCounts:
+  - update docs: mention that the output will be sorted by default
+  - Fixes #195
+* vignette: 
+  - add faq paragraph about regionCount to the vignette explaining 
+  why we order input region
+  - update paragraph about methyldackel when to use 
+  it instead of processBismarkAln 
+  - Fixes #162
+* add extensive test for bedgraph export
+* update and export tests for getMethylationStats
+* add extensive tests for getCoverageStats
+* add extensive tests for normalizCoverage
+* update checks for dataSim:
+  - if sample ids given check if length(sample.ids) == # replicates 
+* update tests for getMethylDiff
+* unite destranding: 
+  - make sure high numbers are not used in scientific notation
+  - fixes #129
+  - switch to data.table based destranding as it is faster and 
+  more memory efficient for larger number of regions
+* methseg: 
+  - catch error when joined segments produce only single range
+  - Fixes #195
+* calculateDiffmeth: 
+  - check if output is equal for memory and tabix file
+  - Fixes #189
+
+methylKit 1.15.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* check.dbdir: catch if path equals root ("/") dir
+* methRead: 
+  - add missing context argument for call 
+  to .procBismarkCytosineReport
+  - fixes https://github.com/al2na/methylKit/issues/198
+
+methylKit 1.13.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+* set stringAsFactors to FALSE 
+  - changed when reading data and tabix files
+  - this solves class missmatches downstream
+  - update methylKit data with stringsAsFactors off
+* methRead:
+  - filter for given context when pipeline is cytosinereport
+  - order data when processing with methread, this ensures that 
+    methylRaw and methylRawDB contain exact same data
+  - add additional test for methread, check whether methread 
+    with or without tabix produces same data when processing 
+    bismark coverage and cytosine report
+* unite:
+  - make sure .CpG.dinuc.unifyOld equals .CpG.dinuc.unify
+  - add test to check that destranding result is same 
+    for methylBase and methylBaseDB
+
+methylKit 1.13.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* getMethylDiff: 
+  - fixes bugs in method for methylDiffDB
+  - suffix will be actual type now, was "type" before
+  - removed whitespaces in filename,
+  fixes https://github.com/al2na/methylKit/issues/171
+  - add extensive test for getmethylDiff function
+* applyTbxByChunk:
+  - Allow optional writing of colnames and rownames if 
+  returntype is text. Find details in 
+  https://github.com/al2na/methylKit/issues/169
+* percMethylation:
+  - return rownames for methylDB when rowids is TRUE,
+  fixes https://github.com/al2na/methylKit/issues/170
+  - add extensive tests for percMethylation
+* reorganize:
+  - fix bug in method for methylBaseDB introduced with new tabix header
+  - add extensive testing for reorganize
+* assocComp:
+  - add further checks for proper annotation
+* removeComp:
+  - set default comp to NULL, to trigger earlier fail
+  - fix bug method for methylBaseDB introduced with new tabix header
+* reconstruct:
+  - update checks for percent methylation matrix
+  - fix bug with fread 
+* add extensive tests for batch control functions
+* diffMethPerChr: 
+  - prevent from plotting when no chrom left
+  - add extensive tests for diffMethPerChr
+  
+  
+
+methylKit 1.13.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fread.gzipped: 
+  - add pre-checks wheter file exists and is not empty
+  - switch to R.utils::gunzip instead of building shell   
+    command manually 
+* tileMethylCounts: remove orphan warning triggered by   
+  incomplete temporary methylRaw object, 
+  fixes https://github.com/al2na/methylKit/issues/175
+* update vignette: 
+  - add mincov argument to methread
+  - add paragraph to tiling section about reducing 
+  coverage threshold + update example code
+* update docs:
+  - rebuild docs with more recent version of roxygen
+  - exclude examples from internal function
+*  increase version requirement for tabix files with header
+  
+  
+    
+
 methylKit 1.13.1
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -13,7 +141,7 @@ IMPROVEMENTS AND BUG FIXES
   - explain how to deal with soft clipping in processBismarkAln
     https://github.com/al2na/methylKit/issues/159
   - add section about exporting and loading tabix objects 
-    starting from version 1.11.1
+    starting from version 1.13.1
 
 methylKit 1.11.1
 --------------

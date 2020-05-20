@@ -7,19 +7,53 @@
 \alias{processBismarkAln,list,list,character-method}
 \title{Get methylation percentage from sorted Bismark alignments}
 \usage{
-processBismarkAln(location, sample.id, assembly, save.folder = NULL,
-  save.context = c("CpG"), read.context = "CpG", nolap = FALSE,
-  mincov = 10, minqual = 20, phred64 = FALSE, treatment,
-  save.db = FALSE)
+processBismarkAln(
+  location,
+  sample.id,
+  assembly,
+  save.folder = NULL,
+  save.context = c("CpG"),
+  read.context = "CpG",
+  nolap = FALSE,
+  mincov = 10,
+  minqual = 20,
+  phred64 = FALSE,
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
+)
 
-\S4method{processBismarkAln}{character,character,character}(location,
-  sample.id, assembly, save.folder, save.context, read.context, nolap,
-  mincov, minqual, phred64, save.db)
+\S4method{processBismarkAln}{character,character,character}(
+  location,
+  sample.id,
+  assembly,
+  save.folder = NULL,
+  save.context = c("CpG"),
+  read.context = "CpG",
+  nolap = FALSE,
+  mincov = 10,
+  minqual = 20,
+  phred64 = FALSE,
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
+)
 
-\S4method{processBismarkAln}{list,list,character}(location, sample.id,
-  assembly, save.folder = NULL, save.context = c("CpG"),
-  read.context = "CpG", nolap = FALSE, mincov = 10, minqual = 20,
-  phred64 = FALSE, treatment, save.db = FALSE)
+\S4method{processBismarkAln}{list,list,character}(
+  location,
+  sample.id,
+  assembly,
+  save.folder = NULL,
+  save.context = c("CpG"),
+  read.context = "CpG",
+  nolap = FALSE,
+  mincov = 10,
+  minqual = 20,
+  phred64 = FALSE,
+  treatment = NULL,
+  save.db = FALSE,
+  verbose = 1
+)
 }
 \arguments{
 \item{location}{location of sam or bam file(s). If multiple files are 
@@ -82,6 +116,8 @@ if this is NULL, to a new folder in the current
 working directory 
 named after this scheme: 
 "methylDB <Date> <3randomlettersornumbers>"}
+
+\item{verbose}{logical set verbosity of methCall (default: TRUE)}
 }
 \value{
 \code{methylRaw} or \code{methylRawList} object

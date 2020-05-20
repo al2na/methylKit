@@ -9,11 +9,21 @@
 \usage{
 normalizeCoverage(obj,method="median",chunk.size,save.db,...)
 
-\S4method{normalizeCoverage}{methylRawList}(obj, method = "median",
-  chunk.size = 1e+06, save.db = FALSE, ...)
+\S4method{normalizeCoverage}{methylRawList}(
+  obj,
+  method = "median",
+  chunk.size = 1e+06,
+  save.db = FALSE,
+  ...
+)
 
-\S4method{normalizeCoverage}{methylRawListDB}(obj, method = "median",
-  chunk.size = 1e+06, save.db = TRUE, ...)
+\S4method{normalizeCoverage}{methylRawListDB}(
+  obj,
+  method = "median",
+  chunk.size = 1e+06,
+  save.db = TRUE,
+  ...
+)
 }
 \arguments{
 \item{obj}{\code{methylRawList} or \code{methylRawListDB} object}
