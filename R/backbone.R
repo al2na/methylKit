@@ -199,6 +199,8 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
 # if that's the case their values are generally correlated
 .CpG.dinuc.unify <- function(cpg)
 {
+  oldSciPen <- options()$scipen
+  options(scipen = 999)
   ## silence R CMD check NOTE
   coverage.x = coverage.y = NULL
   numCs.x = numCs.y =  NULL
@@ -246,12 +248,14 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   )]
   
   setorder(cpgFR, "chr", "start")
-  
+  options(scipen = oldSciPen)
   return(as.data.frame(cpgFR))
 }
 
 .CpG.dinuc.unifyOld <- function(cpg)
 {
+  oldSciPen <- options()$scipen
+  options(scipen = 999)
   cpgR = cpg[cpg$strand == "-", ]
   cpgF = cpg[cpg$strand == "+", ]
   cpgR$start = cpgR$start - 1L
@@ -279,6 +283,7 @@ fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
   res = rbind(res, cpgF[!Fid  %in%  resid, ], cpgR[!Rid  %in%  resid, ])
   res = res[order(res$chr, res$start), ]
   rownames(res) <- NULL
+  options(scipen = oldSciPen)
   return(res)
 }
 
