@@ -525,6 +525,53 @@ midPval <- function (cntg_table) # very fast fisher
   
 }
 
+just <- function(x) {
+  res <- list(
+    type = "Just",
+    content = x
+  )  
+  class(res) <- append(class(res), "maybe")
+  return(res)
+}
+
+nothing <- function(errorString) {
+  res <- list(
+    type = "Nothing",
+    content = errorString
+  )
+  class(res) <- "maybe"
+  return(res)
+}
+
+print.maybe <- function(x, ...) {
+  if(x[["type"]] == "Just") {
+    cat("Just:\n")
+    show(x[["content"]], ...)
+  } else {
+    cat("Nothing:",
+        x[["content"]],
+        sep="\n")
+  }
+}
+
+safe_logReg <- function(counts, vars, treatment,...) {
+  
+  # correct counts and treatment factor for NAs in counts
+  treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
+  vars = vars[!is.na(treatment),] # update covariates if there are NAs
+  treatment<-treatment[!is.na(treatment)]
+  counts<-counts[!is.na(counts)] # update counts if there are NAs
+  
+  if(length(unique(treatment))>1) {
+    return(just(logReg(counts, vars, treatment,...)))
+  } else {
+    # Otherwise return nothing, and explain  
+    err <- paste0("safe_filter: Not enough samples per group",
+                  " after filtering NAs.")
+    return(nothing(err))
+  }
+}
+
 .calculateDiffMeth <- function(subst, 
                                treatment, 
                                covariates=NULL,
@@ -645,15 +692,36 @@ midPval <- function (cntg_table) # very fast fisher
     }
     
     # get the result of tests
-    tmp=simplify2array(
-      mclapply(cntlist,logReg,vars,treatment=treatment,
+    tmp=
+      mclapply(cntlist,safe_logReg,vars,treatment=treatment,
                overdispersion=overdispersion,effect=effect,
-               parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores))
+               parShrinkMN=parShrinkMN,test=test,mc.cores=mc.cores)
+    
+    passed <- sapply(tmp,function(x) x$type == "Just")
+    if(sum(passed) == 0 ) {
+      stop("No cytosine remained for testing after filtering NAs.")
+    } else if( sum(!passed) > 0 ) {
+      # constructing a pseudo passed row
+      tmp_failed <- tmp[[which(passed)[1]]]
+      tmp_failed <- sapply(names(tmp_failed$content),
+                           function(n) tmp_failed$content[[n]] <- NA)
+      warning(paste("CalculateDiffMeth failed for",sum(!passed),
+                    "cytosines.\nThese are the first positions:",
+                    paste(head(which(!passed),n = 10),
+                    collapse = ", ")))
+    }
+    
+    tmp_ <- sapply(tmp, function(x) {
+      if(x$type == "Just") return(x$content)
+      if(x$type == "Nothing") return(tmp_failed)
+    })
     
     # return the data frame part of methylDiff
-    tmp <- as.data.frame(t(tmp))
+    tmp <- as.data.frame(t(tmp_))
+    # adjust pvals where logreg passed
+    tmp$q.value[passed] <- p.adjusted(tmp$q.value[passed],method=adjust)
     x=data.frame(subst[,1:4],tmp$p.value,
-                 p.adjusted(tmp$q.value,method=adjust),
+                 tmp$q.value,
                  meth.diff=tmp[,1],
                  stringsAsFactors=FALSE)
     colnames(x)[5:7] <- c("pvalue","qvalue","meth.diff")
