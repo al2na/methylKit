@@ -610,13 +610,19 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
 # PRIVATE function:
 # reads a methylBaseDB object from flat file database
 # it is called from read function or whenever this functionality is needed
-readMethylBaseDB<-function(dbpath,dbtype=NULL,
-                           sample.ids=NULL, assembly=NULL ,context=NULL,
-                           resolution=NULL,treatment=NULL,destranded=NULL,skip=0){
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
+readMethylBaseDB <- function(dbpath,
+                             dbtype = NULL,
+                             sample.ids = NULL,
+                             assembly = NULL ,
+                             context = NULL,
+                             resolution = NULL,
+                             treatment = NULL,
+                             destranded = NULL,
+                             skip = 0) {
+
+  if(!file.exists(paste0(dbpath, ".tbi"))) 
   {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
+    Rsamtools::indexTabix(dbpath, seq=1, start=2, end=3,
                           skip=skip, comment="#", zeroBased=FALSE)
   }
 
@@ -626,22 +632,33 @@ readMethylBaseDB<-function(dbpath,dbtype=NULL,
                            message = paste("No Tabix Header Found,",
                                            "\nCreating methylBaseDB using supplied arguments."))
   
+  # initiate variables that could be missing
+  num.records = NULL
+  coverage.ind = NULL
+  numCs.ind   = NULL
+  numTs.ind   = NULL
+  
   if(!is.null(head) & !anyNA(head)) {
     
     if(! any(head$class == c("methylBase", "methylBaseDB") ) ) {
       stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
     }
     
-    if(is.null(head$num.records)) {
-        num.records=Rsamtools::countTabix(dbpath)[[1]] 
-      } else num.records = head$num.records
     
-    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
-               sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
-               resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
-               coverage.index=head$coverage.ind,numCs.index=head$numCs.ind,numTs.index=head$numTs.ind,
-               destranded=head$destranded)
+    sample.ids = head$sample.ids
+    assembly = head$assembly
+    context = head$context
+    resolution = head$resolution
+    dbtype = head$dbtype
+    treatment = head$treatment
+    destranded = head$destranded
     
+    num.records = head$num.records
+        
+    coverage.ind = head$coverage.index
+    numCs.ind   = head$numCs.index
+    numTs.ind   = head$numTs.index
+      
   } else {
     
     # else we need to generate it from the supplied arguments
@@ -653,21 +670,26 @@ readMethylBaseDB<-function(dbpath,dbtype=NULL,
       stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
     }
     
-    num.records=Rsamtools::countTabix(dbpath)[[1]] ##   
-    
+  }
+  
+  if(is.null(num.records)) {
+    num.records=Rsamtools::countTabix(dbpath)[[1]] 
+  }
+  
+  if(is.null(coverage.ind)) {
     # determine postion of coverage/numCs/numTs indices
     df <- headTabix(dbpath)
-    numsamples = (length(df)-4)/3
-    coverage.ind=seq(5,by=3,length.out=numsamples)
-    numCs.ind   =coverage.ind+1
-    numTs.ind   =coverage.ind+2
-    
-    obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
-                sample.ids = sample.ids, assembly = assembly,context=context,
-                resolution=resolution,dbtype=dbtype,treatment=treatment,
-                coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
-                destranded=destranded)
+    numsamples = (length(df) - 4) / 3
+    coverage.ind = seq(5, by = 3, length.out = numsamples)
+    numCs.ind   = coverage.ind + 1
+    numTs.ind   = coverage.ind + 2
   }
+  
+  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
+             sample.ids = sample.ids, assembly = assembly,context=context,
+             resolution=resolution,dbtype=dbtype,treatment=treatment,
+             coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
+             destranded=destranded)
  
   if(valid.methylBaseDB(obj)) {return(obj)}   
     
