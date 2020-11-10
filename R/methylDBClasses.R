@@ -975,6 +975,11 @@ setAs("methylDiffDB","methylDiff", function(from)
 #' @rdname readMethylDB-methods
 readMethylDB <- function(dbpath) {
   
+  if(!file.exists(dbpath)) 
+  {  
+    stop("Tabix File does not exist:", dbpath,"\nPlease provide a path to a valid tabix file.")
+  }
+  
   if(!file.exists(paste0(dbpath,".tbi"))) 
   {  
     Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
