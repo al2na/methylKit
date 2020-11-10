@@ -17,9 +17,17 @@ suppressMessages({mydblist = methRead( file.list,
 
 # process using usual functions
 methidh=unite(myobj)
-methdiff <- calculateDiffMeth(methidh,save.db = TRUE,dbtype ="tabix",dbdir = "methylDB")
-no_header <- system.file("extdata", "ctrl1.txt.bgz", package = "methylKit")
+methidh_region <- tileMethylCounts(methidh)
+methdiff <- calculateDiffMeth(methidh,save.db = TRUE)
+methdiff_region <- calculateDiffMeth(methidh_region,save.db = TRUE)
 
+methidh_db=unite(mydblist)
+methidh_db_region <- tileMethylCounts(methidh_db)
+methdiff_db <- calculateDiffMeth(methidh_db,save.db = TRUE)
+methdiff_db_region <- calculateDiffMeth(methidh_db_region,save.db = TRUE)
+
+
+no_header <- system.file("extdata", "ctrl1.txt.bgz", package = "methylKit")
 # the compressed can be directly loaded by using the path to the database file
 test_that("reading of tabix without heading leads to error", {
   expect_error(readMethylRawDB(dbpath = no_header))
@@ -47,6 +55,13 @@ test_that("reading of tabix without dbtype leads to error", {
 })
 
 # the compressed can be directly loaded by using the path to the database file
+obj2tabix(methidh_region,filename = "methylDB/my_base2.txt",rm.txt = FALSE)
+base <- readMethylBaseDB(dbpath =  "methylDB/my_base2.txt.bgz")
+test_that("reading of tabix without dbtype leads to error", {
+  expect_is(base,'methylBaseDB')
+})
+
+# the compressed can be directly loaded by using the path to the database file
 obj2tabix(methdiff,filename = "methylDB/my_diff.txt",rm.txt = FALSE)
 diff <- readMethylDiffDB(dbpath =  "methylDB/my_diff.txt.bgz")
 test_that("reading of tabix without dbtype leads to error", {
@@ -56,8 +71,11 @@ test_that("reading of tabix without dbtype leads to error", {
 test_that("reading of tabix can be done with one wrapper readMethylDB", {
   expect_error(readMethylDB(dbpath = no_header))
   expect_is(readMethylDB(dbpath =  "methylDB/my_raw.txt.bgz"),'methylRawDB')
+  expect_is(readMethylDB(dbpath =  mydblist[[1]]@dbpath),'methylRawDB')
   expect_is(readMethylDB(dbpath =  "methylDB/my_base.txt.bgz"),'methylBaseDB')
+  expect_is(readMethylDB(dbpath =  methidh_db@dbpath),'methylBaseDB')
   expect_is(readMethylDB(dbpath =  "methylDB/my_diff.txt.bgz"),'methylDiffDB')
+  expect_is(readMethylDB(dbpath =  methdiff_db@dbpath),'methylDiffDB')
 })
 
 
