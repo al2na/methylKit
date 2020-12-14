@@ -110,6 +110,11 @@ belong to the same group. The third and fourth files have sample ids "ctrl1"
 and "ctrl2" and they belong to the same group as indicated by the treatment 
 vector.
 
+> NOTE: Throughout the vignette we will be accessing files that are part of the
+methylKit package with the `system.file("extdata", "xyz", package =
+"methylKit")` notation. However when analyzing your own data you should *not* 
+use this notation, rather write full file paths yourself or use functions 
+like `file.path` , `list.files` etc. to create relative or absolute paths.  
 
 ```{r,message=FALSE}
 library(methylKit)
@@ -1020,10 +1025,20 @@ order the single regions in any object by providing your indices to the
 
 ```{r}
 ## methylDiff object sorted by chromosome and position 
-myDiff
-## can be ordered by decreasing absolute methylation difference
-myDiff[order(-abs(myDiff$meth.diff))]
+head(myDiff, n = 20)
 ```
+
+```{r}
+## can be ordered by decreasing absolute methylation difference
+head(myDiff[order(-abs(myDiff$meth.diff))], n = 20)
+```
+
+
+### How can I merge muliple separate methylRaw objects into a methylRawList? 
+
+You may use the `methylRawList()` constructor function, which takes a treatment vector and corresponding methylRaw objects to combine them into a methlyRawList object.
+However, you should not merge objects with different contexts, as detected Cytosines won't overlap for different contexts.
+
 
 
 
