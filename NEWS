@@ -1,3 +1,8 @@
+methylKit 1.17.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* export methylRawListDB and methylRawList constructors
+
 methylKit 1.17.2
 --------------
 IMPROVEMENTS AND BUG FIXES
