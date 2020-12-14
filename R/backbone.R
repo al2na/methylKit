@@ -502,12 +502,15 @@ valid.methylRawListObj <- function(object) {
 }
 
 ### constructor function
-
+#' @name methylRawList-class
+#' @aliases methylRawList
+#' @rdname methylRawList-class
+#' @export
 methylRawList <- function(...,treatment) {
-  
+
   listData <- list(...)
 
-  ## check if input is really of type methylRaw 
+  ## check if input is really of type methylRaw
   if (length(listData) == 0L) {
     stop("no methylRaw object given.")
   } else {
@@ -515,7 +518,7 @@ methylRawList <- function(...,treatment) {
       listData <- listData[[1L]]
     if (!all(sapply(listData, is, "methylRaw")))
       stop("all elements in '...' must be methylRaw objects")
-  
+
   ## just merge if valid
   mrl <- new("methylRawList", listData, treatment = treatment)
   if(valid.methylRawListObj(mrl)) return(mrl)

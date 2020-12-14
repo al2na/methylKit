@@ -408,6 +408,10 @@ setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
 
 
 ### constructor function
+#' @name methylRawListDB-class
+#' @aliases methylRawListDB
+#' @rdname methylRawListDB-class
+#' @export
 methylRawListDB <- function(...,treatment) {
   
   listData <- list(...)
