@@ -1,3 +1,14 @@
+methylKit 1.17.4
+--------------
+IMPROVEMENTS AND BUG FIXES
+* .setMethylDBNames: correct possible methylDBclass from "methylDB" 
+  to "methylRawDB"
+* fread.gzipped: disable skipping of decompression in fread.gzipped
+  - can cause serious issues as investigated in 
+  https://groups.google.com/g/methylkit_discussion/c/UruFjvX89B4/m/vV2Qnd8NEAAJ 
+  and explained in https://github.com/al2na/methylKit/issues/222
+
+
 methylKit 1.17.3
 --------------
 IMPROVEMENTS AND BUG FIXES
