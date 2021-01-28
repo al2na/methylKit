@@ -8,7 +8,7 @@
 ## @param df data.frame containing methylRaw or methylBase data
 ## @param methylDBclass 
 .setMethylDBNames <- function(df,
-                              methylDBclass=c("methylDB","methylBaseDB",
+                              methylDBclass=c("methylRawDB","methylBaseDB",
                                               "methylDiffDB")){
   
   if(nrow(df) == 0) return(df)
