@@ -4,7 +4,7 @@
 
 # reads gzipped files with data.table::fread
 #' @noRd
-fread.gzipped<-function(filepath, ..., skipDecompress = TRUE ){
+fread.gzipped<-function(filepath, ..., skipDecompress = FALSE ){
   
   # check if file exists
   if(!file.exists(filepath) ) 
