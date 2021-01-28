@@ -5,6 +5,9 @@
 \alias{methylRawList-class}
 \alias{methylRawList}
 \title{An S4 class for holding a list of methylRaw objects.}
+\usage{
+methylRawList(..., treatment)
+}
 \description{
 This class stores the list of  \code{\link{methylRaw}} objects.
 Functions such as \code{lapply} can be used on this list. It extends
