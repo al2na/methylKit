@@ -527,7 +527,12 @@ headTabix <- function(tbxFile, nrow = 10,
   } 
   else {
     returnDt = if(return.type[1] == "data.table") TRUE else FALSE 
-    df <- fread.gzipped(tbxFile,nrow = nrow, stringsAsFactors = FALSE, data.table = returnDt)
+    df <- fread.gzipped(tbxFile,nrow = nrow, 
+                        stringsAsFactors = FALSE, 
+                        data.table = returnDt, 
+                        # skip the lines that are part of header
+                        skip = length(Rsamtools::headerTabix(tbxFile)$header)
+                        )
     
     if(return.type[1] == "GRanges"){
       return( GRanges(seqnames=as.character(df$V1),
