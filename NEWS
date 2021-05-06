@@ -1,3 +1,10 @@
+methylKit 1.17.5
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fread.gzipped: skip header rows in tabix file to fix https://github.com/al2na/methylKit/issues/226
+
+
+
 methylKit 1.17.4
 --------------
 IMPROVEMENTS AND BUG FIXES
