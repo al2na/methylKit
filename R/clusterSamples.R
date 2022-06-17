@@ -37,7 +37,7 @@ colSds <- function(x, ...) {
 # x matrix, each row is a sample.
 # method only support "pearson"
 # abs logical. If use absolute value for correlation to distance.
-# diag logical. Inlcude diagnol value or not
+# diag logical. Include diagonal value or not
 # upper output upper panel or lower panel.
 .dist.cor=function(x, method="pearson", abs=TRUE, diag=FALSE, upper=FALSE)
 {
@@ -334,10 +334,10 @@ setMethod("clusterSamples", "methylBase",
 #'        to be plotted.
 #' @param transpose if TRUE (default) percent methylation matrix will be 
 #'        transposed, this is equivalent to doing PCA on variables that are 
-#'        regions/bases. The resulting plot will location of samples in the new 
-#'        coordinate system if FALSE the variables for the matrix will be samples 
-#'        and the resulting plot whill show how each sample (variable) 
-#'        contributes to the principle component.the samples that are highly 
+#'        regions/bases. The resulting plot will locate samples in the new 
+#'        coordinate system. If FALSE the variables for the matrix will be samples 
+#'        and the resulting plot will show how each sample (variable) 
+#'        contributes to the principle component. The samples that are highly 
 #'        correlated should have similar contributions to the principal components.       
 #' @param sd.filter  If \code{TRUE}, the bases/regions with low variation will 
 #'        be discarded prior to PCA (default:TRUE)
