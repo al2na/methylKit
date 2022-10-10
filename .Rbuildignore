@@ -25,3 +25,4 @@
 ^code.dups$
 ^.*sublime.*$
 ^templates/
+^\.github$
