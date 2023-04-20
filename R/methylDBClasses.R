@@ -408,25 +408,36 @@ setClass("methylRawListDB", slots=list(treatment = "vector"),contains = "list",
 
 
 ### constructor function
+#' @param ... vector of methylRawDB files
+#'
+#' @param treatment vector of treatment values
+#'
 #' @name methylRawListDB-class
 #' @aliases methylRawListDB
 #' @rdname methylRawListDB-class
 #' @export
-methylRawListDB <- function(...,treatment) {
-  
+methylRawListDB <- function(..., treatment) {
+  if (missing(treatment)) {
+    stop("no treatment vector given.")
+  }
   listData <- list(...)
-  ## check if input is really of type methylRaw 
+  ## check if any input is given
   if (length(listData) == 0L) {
-    stop("no methylRawDB object given.")
-  } else {
-    if (length(listData) == 1L && is.list(listData[[1L]]))
-      listData <- listData[[1L]]
-    if (!all(sapply(listData, is, "methylRawDB")))
-      stop("all elements in '...' must be methylRawDB objects")
-    
-    ## just merge if valid
-    mrl <- new("methylRawListDB", listData, treatment = treatment)
-    if(valid.methylRawListDB(mrl)) return(mrl)
+    stop("no methylRawDB objects given.")
+  }
+  ## flatten listData if '...' was list
+  if (length(listData) == 1L && is.list(listData[[1L]])) {
+    listData <- listData[[1L]]
+  }
+  ## check if input is really of type methylRaw
+  if (!all(sapply(listData, is, "methylRawDB"))) {
+    stop("all elements in '...' must be methylRawDB objects")
+  }
+  ## create new object
+  mrl <- new("methylRawListDB", listData, treatment = treatment)
+  ## return if valid
+  if (valid.methylRawListDB(mrl)) {
+    return(mrl)
   }
 }
 
@@ -950,11 +961,7 @@ setAs("methylDiffDB","methylDiff", function(from)
   return(from[])
 })
 
-## load tabix file with header to methylDB
-
 #' load tabix file with header to methylDB
-#' 
-#' 
 #' 
 #' The function reads the header from a given tabix file and 
 #' loads it into corresponding methylDB object.

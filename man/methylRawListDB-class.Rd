@@ -8,6 +8,11 @@
 \usage{
 methylRawListDB(..., treatment)
 }
+\arguments{
+\item{...}{vector of methylRawDB files}
+
+\item{treatment}{vector of treatment values}
+}
 \description{
 This class stores the list of  \code{\link{methylRawDB}} objects.
 Functions such as \code{lapply} can be used on this list. It extends
