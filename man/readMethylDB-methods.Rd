@@ -15,9 +15,6 @@ an \code{\link{methylBaseDB}},\code{\link{methylRawDB}},
 \code{\link{methylRawListDB}} or an \code{\link{methylDiffDB}} object
 }
 \description{
-load tabix file with header to methylDB
-}
-\details{
 The function reads the header from a given tabix file and 
 loads it into corresponding methylDB object.
 }
