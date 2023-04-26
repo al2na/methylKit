@@ -1,3 +1,18 @@
+methylKit 1.27.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix R cmd check warnings:
+  - fix "Undocumented arguments in documentation object" by 
+  documenting ‘...’, ‘treatment’ arguments for methylRawList and 
+  methylRawListDB constructors
+  - methCall: replace variable length char with vector of chars to fix the 
+  warning: "variable length arrays are a C99 feature [-Wvla-extension]"
+  - methCall: simplify the parsing of cigar string and replace 
+  calls to deprecated std::sprintf with std::snprintf
+* add test for processBismarkAln to check that reading sam and bam 
+returns the same object for the same content
+
+
 methylKit 1.17.5
 --------------
 IMPROVEMENTS AND BUG FIXES
@@ -629,8 +644,8 @@ methylKit 0.9.2
 IMPROVEMENTS AND BUG FIXES
 
 * A bug introduced with 0.9.1 is fixed. The bug occured when unite() function
-is used with destrand=TRUE argument. It returned less number of CpGs then it was
-supposed to, although returned CpGs had correct methylation and coverage values.
+  is used with destrand=TRUE argument. It returned less number of CpGs then it was
+  supposed to, although returned CpGs had correct methylation and coverage values.
 
 
 methylKit 0.9.1
