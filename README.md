@@ -2,15 +2,23 @@
 
 <a name="logo"/>
 <div align="center">
-<img src="https://github.com/al2na/methylKit/blob/master/inst/methylKit_logo.png" alt="methylKit Logo"  ></img>
+<img src="https://raw.githubusercontent.com/al2na/methylKit/master/inst/methylKit_logo.png" alt="methylKit Logo"  ></img>
 </a>
 </div>
 
 methylKit 
 ========
 
-Build Status [![Build Status](https://travis-ci.org/al2na/methylKit.svg?branch=development)](https://travis-ci.org/al2na/methylKit)
-[![GitHub release](https://img.shields.io/github/release/al2na/methylKit.svg)](https://github.com/al2na/methylKit/releases)
+Build Status 
+
+|  |  | 
+| - | - |
+| Github | [![Build Status](https://github.com/al2na/methylKit/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/al2na/methylKit/actions/workflows/check-standard.yaml) |
+| Bioc Release | [![Bioc release status](https://www.bioconductor.org/shields/build/release/bioc/methylKit.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/methylKit) | 
+Bioc Devel | [![Bioc devel status](https://www.bioconductor.org/shields/build/devel/bioc/methylKit.svg?text=esfes&)](https://bioconductor.org/checkResults/devel/bioc-LATEST/methylKit) | 
+
+
+[![GitHub R package version](https://img.shields.io/github/r-package/v/al2na/methylKit?label=version&)](https://github.com/al2na/methylKit/blob/master/NEWS)
 [![codecov](https://codecov.io/github/al2na/methylKit/branch/master/graphs/badge.svg)](https://codecov.io/github/al2na/methylKit) 
 
 # Introduction
