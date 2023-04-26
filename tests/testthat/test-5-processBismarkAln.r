@@ -79,6 +79,53 @@ test_that("check that sam file can be read-in", {
   'methylRawDB')
 })
 
+test_that("check that reading sam and bam returns the same object", {
+  expect_equal(
+    processBismarkAln(
+      location = system.file("extdata",
+        "ctrl.bismark_paired_end.sorted.bam",
+        package = "methylKit"
+      ),
+      sample.id = "ctrl1",
+      assembly = "hg18",
+      verbose = FALSE,
+      mincov = 1
+    ),
+    processBismarkAln(
+      location = system.file("extdata",
+        "ctrl.bismark_paired_end.sorted.wh.sam",
+        package = "methylKit"
+      ),
+      sample.id = "ctrl1",
+      assembly = "hg18",
+      verbose = FALSE,
+      mincov = 1
+    )
+  )
+  expect_equal(
+    processBismarkAln(
+      location = system.file("extdata",
+        "test.bismark_single_end.sorted.bam",
+        package = "methylKit"
+      ),
+      sample.id = "test",
+      assembly = "hg18",
+      verbose = FALSE,
+      mincov = 1
+    ),
+    processBismarkAln(
+      location = system.file("extdata",
+        "test.bismark_single_end.sorted.wh.sam",
+        package = "methylKit"
+      ),
+      sample.id = "test",
+      assembly = "hg18",
+      verbose = FALSE,
+      mincov = 1
+    )
+  )
+})
+
 test_that("check that CHG context can be read in", {
   expect_is(
     processBismarkAln(
