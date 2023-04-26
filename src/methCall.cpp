@@ -900,21 +900,15 @@ int process_bam ( std::string &input,
   // initialize buffers for sequence, qual and cigar string
   std::string seq, qual;
   std::vector<char> cigar_buffer(len_cigar + 1);
-  
-  // initialize counter and cigar-buffer-storage
+
+  // initialize counter
   int i = 0;
-  int c;
 
-
-  // parse the first cigar operation
-  c = std::sprintf(cigar_buffer,"%i%c", bam_cigar_oplen(cigar_pointer[0]), bam_cigar_opchr(cigar_pointer[0])) ;
-  // if further operations remain, append them to cigar_buffer
-  if (len_cigar >= 2 ) { 
-    for (i = 1; ((unsigned) i) < len_cigar; i++  ) {
-      char buffer [c];
-      c = std::sprintf(buffer,"%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i])) ;
-      strcat(cigar_buffer,buffer);
-    }
+  // parse the cigar operations
+  for (i = 0; i < len_cigar; i++)
+  {
+      // place each operation as character into cigar_buffer
+      std::snprintf(&cigar_buffer[i], cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
   }
 
   for (i = 0; i < len; i++  ) { qual += bam_get_qual(b)[i]+offset;}
