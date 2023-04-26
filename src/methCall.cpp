@@ -899,7 +899,7 @@ int process_bam ( std::string &input,
   
   // initialize buffers for sequence, qual and cigar string
   std::string seq, qual;
-  char cigar_buffer [len];
+  std::vector<char> cigar_buffer(len_cigar + 1);
   
   // initialize counter and cigar-buffer-storage
   int i = 0;
@@ -923,7 +923,7 @@ int process_bam ( std::string &input,
     int start = pos;                 
     int end                       = start + len;
     std::string chr               = header->target_name[chrom]; //get the "real" chromosome id
-    std::string cigar             = cigar_buffer ;
+    std::string cigar(cigar_buffer.begin(), cigar_buffer.end());
     std::string methc             = meth; 
     methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
     // std::string qual              = cols[10];
