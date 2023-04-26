@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // methCall
 void methCall(std::string read1, std::string type, bool nolap, int minqual, int mincov, bool phred64, std::string CpGfile, std::string CHHfile, std::string CHGfile, size_t verbosity);
 RcppExport SEXP _methylKit_methCall(SEXP read1SEXP, SEXP typeSEXP, SEXP nolapSEXP, SEXP minqualSEXP, SEXP mincovSEXP, SEXP phred64SEXP, SEXP CpGfileSEXP, SEXP CHHfileSEXP, SEXP CHGfileSEXP, SEXP verbositySEXP) {
