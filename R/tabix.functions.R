@@ -297,7 +297,6 @@ checkTabixHeader <- function(tbxFile,message=NULL) {
 #' @param slotList list of slot items with respective values
 #' @noRd
 #' 
-#' @importFrom S4Vectors isEmpty
 makeTabixHeader <- function(slotList) {
   # first we query each slots and ... 
   tabixHead <- sapply(names(slotList),
