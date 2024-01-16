@@ -311,7 +311,7 @@ makeTabixHeader <- function(slotList) {
                       }
   )
   # then we remove slots we don't need in the header (as the @.Data slot) 
-  tabixHead <- tabixHead[!S4Vectors::isEmpty(tabixHead)]
+  tabixHead <- tabixHead[!is.null(tabixHead)]
   
   return(tabixHead)
 
@@ -388,7 +388,7 @@ readTabixHeader <- function(tbxFile) {
                        }
   )
   
-  headerVals <- headerVals[!isEmpty(headerVals)]
+  headerVals <- headerVals[!is.null(headerVals)]
   
   # parse the object class 
   class <- unlist(sapply((strsplit(gsub("#", "", h),split = ":")), function(x) if(x[1]=="Class") return(x[2])))
