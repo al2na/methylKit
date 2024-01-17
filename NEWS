@@ -1,3 +1,11 @@
+methylKit 1.27.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* fix R-Devel build error:
+  - issues was caused by S4Vectors::isEmpty
+  - fixed by replacing S4Vectors::isEmpty with is.null
+
+
 methylKit 1.27.1
 --------------
 IMPROVEMENTS AND BUG FIXES
