@@ -628,86 +628,105 @@ makeMethylBaseDB<-function(df,dbpath,dbtype,
 readMethylBaseDB <- function(dbpath,
                              dbtype = NULL,
                              sample.ids = NULL,
-                             assembly = NULL ,
+                             assembly = NULL,
                              context = NULL,
                              resolution = NULL,
                              treatment = NULL,
-                             destranded = NULL,
-                             skip = 0) {
-
-  if(!file.exists(paste0(dbpath, ".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath, seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
+                             destranded = NULL) {
+  if (!is.character(dbpath)) {
+    stop("'dbpath' must be a character string")
   }
 
-  # if the tabix file includes a header generated with obj2tabix,
-  # it can easily be parsed into the respective object
-  head <- checkTabixHeader(tbxFile = dbpath,
-                           message = paste("No Tabix Header Found,",
-                                           "\nCreating methylBaseDB using supplied arguments."))
-  
-  # initiate variables that could be missing
-  num.records = NULL
-  coverage.ind = NULL
-  numCs.ind   = NULL
-  numTs.ind   = NULL
-  
-  if(!is.null(head) & !anyNA(head)) {
-    
-    if(! any(head$class == c("methylBase", "methylBaseDB") ) ) {
-      stop("Tabix file does not originate from methylBase or methylBaseDB.\nPlease provide the correct class of data.")
+  if (dbpath == "") {
+    stop("No tabix file specified.")
+  }
+  # check if tabix file has header
+  header <- readTabixHeader(dbpath)
+  # parse header fields
+  parsedHeader <- parseTabixHeader(header)
+
+  if (!is.null(parsedHeader)) {
+    if (!any(parsedHeader$class == c("methylBase", "methylBaseDB"))) {
+      stop(
+        "Tabix file does not originate from methylBase or methylBaseDB.\n",
+        "Please provide the correct class of data."
+      )
     }
-    
-    
-    sample.ids = head$sample.ids
-    assembly = head$assembly
-    context = head$context
-    resolution = head$resolution
-    dbtype = head$dbtype
-    treatment = head$treatment
-    destranded = head$destranded
-    
-    num.records = head$num.records
-        
-    coverage.ind = head$coverage.index
-    numCs.ind   = head$numCs.index
-    numTs.ind   = head$numTs.index
-      
+
+    if (is.null(parsedHeader$num.records)) {
+      parsedHeader$num.records <- NA_integer_
+    }
+
+    if (is.null(parsedHeader$coverage.index)) {
+      parsedHeader$coverage.index <- NA_integer_
+    }
+
+    if (is.null(parsedHeader$numCs.index)) {
+      parsedHeader$numCs.index <- NA_integer_
+    }
+
+    if (is.null(parsedHeader$numTs.index)) {
+      parsedHeader$numTs.index <- NA_integer_
+    }
+
+    argList <- list(
+      sample.ids = parsedHeader$sample.ids,
+      assembly = parsedHeader$assembly,
+      context = parsedHeader$context,
+      resolution = parsedHeader$resolution,
+      dbtype = parsedHeader$dbtype,
+      treatment = parsedHeader$treatment,
+      destranded = parsedHeader$destranded,
+      num.records = parsedHeader$num.records,
+      coverage.index = parsedHeader$coverage.index,
+      numCs.index = parsedHeader$numCs.index,
+      numTs.index = parsedHeader$numTs.index
+    )
   } else {
-    
+    message(
+      paste(
+        "No compatible Tabix Header Found,",
+        "Using provided arguments to import object."
+      )
+    )
+
     # else we need to generate it from the supplied arguments
-    argList <- list(sample.ids = sample.ids, assembly = assembly,context=context,
-                    resolution=resolution,dbtype=dbtype,treatment=treatment,
-                    destranded=destranded)
-    checkMissingArg <- sapply(argList,is.null)
-    if(any(checkMissingArg)) {
-      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
-    }
-    
+    argList <- list(
+      sample.ids = sample.ids, assembly = assembly, context = context,
+      resolution = resolution, dbtype = dbtype, treatment = treatment,
+      destranded = destranded
+    )
   }
-  
-  if(is.null(num.records)) {
-    num.records=Rsamtools::countTabix(dbpath)[[1]] 
+
+  checkMissingArg <- sapply(argList, is.null)
+  if (any(checkMissingArg)) {
+    stop("Missing argument: ", paste(names(argList[checkMissingArg]), collapse = ", "))
   }
-  
-  if(is.null(coverage.ind)) {
+
+  if (is.null(argList$num.records) || is.na(argList$num.records)) {
+    argList$num.records <- Rsamtools::countTabix(dbpath)[[1]]
+  }
+
+  if (is.null(argList$coverage.index)) {
     # determine postion of coverage/numCs/numTs indices
     df <- headTabix(dbpath)
-    numsamples = (length(df) - 4) / 3
-    coverage.ind = seq(5, by = 3, length.out = numsamples)
-    numCs.ind   = coverage.ind + 1
-    numTs.ind   = coverage.ind + 2
+    numsamples <- (length(df) - 4) / 3
+    argList$coverage.index <- seq(5, by = 3, length.out = numsamples)
+    argList$numCs.index <- argList$coverage.index + 1
+    argList$numTs.index <- argList$coverage.ind + 2
   }
-  
-  obj <- new("methylBaseDB",dbpath=normalizePath(dbpath),num.records=num.records,
-             sample.ids = sample.ids, assembly = assembly,context=context,
-             resolution=resolution,dbtype=dbtype,treatment=treatment,
-             coverage.index=coverage.ind,numCs.index=numCs.ind,numTs.index=numTs.ind,
-             destranded=destranded)
- 
-  if(valid.methylBaseDB(obj)) {return(obj)}   
-    
+
+
+  obj <- do.call(new,
+    args = c("methylBaseDB",
+      dbpath = normalizePath(dbpath),
+      argList
+    )
+  )
+
+  if (valid.methylBaseDB(obj)) {
+    return(obj)
+  }
 }
 
 
