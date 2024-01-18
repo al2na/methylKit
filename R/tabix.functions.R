@@ -318,6 +318,40 @@ readTabixHeader <- function(tbxFile){
 }
 
 
+#' This function checks a tabix. It will verify the file and check if the
+#' associated index exist. If the index cannot be found, the file will be reindexed.
+#' 
+#' @return the path to the tabix file or NULL if the file does not exist
+#'
+#' @param tbxFile tabix file
+#' @param createIndex should the index be created if it does not exist
+#' @noRd
+checkTabixFile <- function(tbxFile, createIndex = TRUE) {
+
+  if(!is.character(tbxFile)) {
+    stop("tbxFile must be a character string")
+  }
+
+  if (tbxFile == "") {
+    stop("No tabix file specified.")
+  }
+  if (!file.exists(tbxFile)) {
+    message(paste0("Tabix file '", tbxFile, "' does not exist."))
+    return(invisible(NULL))
+  }
+  if (!file.exists(paste0(tbxFile, ".tbi"))) {
+    if (createIndex && (file.access(dirname(tbxFile)) == 0)) {
+      message("creating tabix index")
+      indexMethTabix(tbxFile)
+    } else {
+      message(paste("Tabix index file", paste0(tbxFile, ".tbi"), "does not exist."))
+      return(invisible(NULL))
+    }
+  }
+  return(invisible(tbxFile))
+}
+
+
 
 #' function to create a tabix header from methylKit object's slots 
 #'
