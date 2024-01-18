@@ -276,61 +276,88 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
 # creates a methylRawDB object from a flat file database
 # it is called from read function or whenever this functionality is needed
 # can load a database with or without header
-readMethylRawDB<-function(dbpath,dbtype=NULL,
-                          sample.id=NULL, assembly=NULL ,context=NULL,
-                          resolution=NULL,skip=0){
+readMethylRawDB <- function(dbpath, 
+                            dbtype = NULL,
+                            sample.id = NULL,
+                            assembly = NULL, 
+                            context = NULL,
+                            resolution = NULL) {
 
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
+  if(!is.character(dbpath)) {
+    stop("'dbpath' must be a character string")
   }
-  
-  # if the tabix file includes a header generated with obj2tabix,
-  # it can easily be parsed into the respective object
-  head <- checkTabixHeader(tbxFile = dbpath,
-                           message = paste("No Tabix Header Found,",
-                           "trying to create methylRawDB from supplied arguments."))
 
-  if(!is.null(head) & !anyNA(head)) {  
+  if (dbpath == "") {
+    stop("No tabix file specified.")
+  }
+  # check if tabix file has header
+  header <- readTabixHeader(dbpath)
+  # parse header fields
+  parsedHeader <- parseTabixHeader(header)
 
-    
-    if(! any(head$class == c("methylRaw", "methylRawDB") ) ) {
+  if (!is.null(parsedHeader)) {
+    if (!any(parsedHeader$class == c("methylRaw", "methylRawDB"))) {
       stop(
-        paste("Tabix file does not originate from methylRaw or methylRawDB.\n",
-              "Please provide the correct class of data.")
+        paste(
+          "Tabix file does not originate from methylRaw or methylRawDB.\n",
+          "Please provide the correct class of data."
+        )
       )
     }
-      
-    if(is.null(head$num.records)) {
-      num.records=Rsamtools::countTabix(dbpath)[[1]] 
-    } else num.records = head$num.records
     
-    obj <- new("methylRawDB", dbpath=normalizePath(dbpath),
-               num.records=num.records, sample.id = head$sample.ids, 
-               assembly = head$assembly,context=head$context, 
-               resolution=head$resolution,dbtype=head$dbtype)
+    if(is.null(parsedHeader$num.records)) {
+      parsedHeader$num.records <- NA_integer_
+    }
+
+    # arguments are extracted from parsedHeader
+    argList <- list(
+      num.records = parsedHeader$num.records,
+      sample.id = parsedHeader$sample.ids,
+      assembly = parsedHeader$assembly,
+      context = parsedHeader$context,
+      resolution = parsedHeader$resolution,
+      dbtype = parsedHeader$dbtype
+    )
 
   } else {
-    
+    message(
+      paste(
+        "No compatible Tabix Header Found,",
+        "Using provided arguments to import object."
+      )
+    )
+
     # else we need to generate it from the supplied arguments
-    argList <- list(sample.id = sample.id, assembly = assembly,context=context,
-                    resolution=resolution,dbtype=dbtype)
-    checkMissingArg <- sapply(argList,is.null)
-    if(any(checkMissingArg)) {
-      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
-      }
-    
-    num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
-    
-    obj <- new("methylRawDB",dbpath=normalizePath(dbpath),num.records=num.records,
-        sample.id = sample.id, assembly = assembly,context=context,
-        resolution=resolution,dbtype=dbtype)
-    
+    argList <- list(
+      num.records = NA_integer_,
+      sample.id = sample.id, 
+      assembly = assembly, 
+      context = context,
+      resolution = resolution, 
+      dbtype = dbtype
+    )
+  }
+    checkMissingArg <- sapply(argList, is.null)
+    if (any(checkMissingArg)) {
+      stop("Missing argument: ",
+        paste(names(argList[checkMissingArg]), collapse = ", ")
+      )
     }
-    
-  if(valid.methylRawDB(obj)) {return(obj)}   
-  
+
+    if (is.null(argList$num.records) || is.na(argList$num.records)) {
+      argList$num.records <- Rsamtools::countTabix(dbpath)[[1]]
+    }
+
+    obj <- do.call(new,
+      args = c(
+        "methylRawDB",
+        dbpath = normalizePath(dbpath),
+        argList
+    ))
+
+  if (valid.methylRawDB(obj)) {
+    return(obj)
+  }
 }
 
 
