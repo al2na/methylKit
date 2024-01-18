@@ -854,60 +854,83 @@ makeMethylDiffDB<-function(df,dbpath,dbtype,
 # PRIVATE function:
 # reads a methylDiffDB object from flat file database
 # it is called from read function or whenever this functionality is needed
-readMethylDiffDB<-function(dbpath,dbtype=NULL,
-                           sample.ids=NULL, assembly=NULL ,context=NULL,
-                           resolution=NULL,treatment=NULL,destranded=NULL,skip=0){
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=skip, comment="#", zeroBased=FALSE)
+readMethylDiffDB <- function(dbpath, 
+                             dbtype = NULL, 
+                             sample.ids = NULL,
+                             assembly = NULL,
+                             context = NULL,
+                             resolution = NULL,
+                             treatment = NULL,
+                             destranded = NULL) {
+
+  if (!is.character(dbpath)) {
+    stop("'dbpath' must be a character string")
   }
 
-  # if the tabix file includes a header generated with obj2tabix,
-  # it can easily be parsed into the respective object
-  head <- checkTabixHeader(tbxFile = dbpath,
-                           message = paste(
-                             "No Tabix Header Found,",
-                             "\nCreating methylDiffDB using supplied arguments."))
-  
-  
-  
-  if(!is.null(head) & !anyNA(head)) {
+  if (dbpath == "") {
+    stop("No tabix file specified.")
+  }
+  # check if tabix file has header
+  header <- readTabixHeader(dbpath)
+  # parse header fields
+  parsedHeader <- parseTabixHeader(header)
 
-    if(! any(head$class == c("methylDiff", "methylDiffDB") ) ) {
-      stop("Tabix file does not originate from methylDiff or methylDiffDB.\nPlease provide the correct class of data.")
+  if (!is.null(parsedHeader)) {
+    if (!any(parsedHeader$class == c("methylDiff", "methylDiffDB"))) {
+      stop(
+        "Tabix file does not originate from methylDiff or methylDiffDB.\n",
+        "Please provide the correct class of data."
+      )
     }
-    
-    if(is.null(head$num.records)) {
-      num.records=Rsamtools::countTabix(dbpath)[[1]] 
-    } else num.records = head$num.records
-  
-    obj <-   new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
-                 sample.ids = head$sample.ids, assembly = head$assembly,context=head$context,
-                 resolution=head$resolution,dbtype=head$dbtype,treatment=head$treatment,
-                 destranded=head$destranded)
 
+    if (is.null(parsedHeader$num.records)) {
+      parsedHeader$num.records <- NA_integer_
+    }
+
+    # arguments are extracted from parsedHeader
+    argList <- list(
+      sample.ids = parsedHeader$sample.ids,
+      assembly = parsedHeader$assembly,
+      context = parsedHeader$context,
+      resolution = parsedHeader$resolution,
+      dbtype = parsedHeader$dbtype,
+      treatment = parsedHeader$treatment,
+      destranded = parsedHeader$destranded
+    )
   } else {
-    
-    # else we need to generate it from the supplied arguments
-    argList <- list(sample.ids = sample.ids, assembly = assembly,context=context,
-                    resolution=resolution,dbtype=dbtype,treatment=treatment,
-                    destranded=destranded)
-    checkMissingArg <- sapply(argList,is.null)
-    if(any(checkMissingArg)) {
-      stop("Missing argument: ",paste(names(argList[checkMissingArg]),collapse = ", ")) 
-    }
-    num.records=Rsamtools::countTabix(dbpath)[[1]] ## 
-    
-    obj <- new("methylDiffDB",dbpath=normalizePath(dbpath),num.records=num.records,
-        sample.ids = sample.ids, assembly = assembly,context=context,
-        resolution=resolution,dbtype=dbtype,treatment=treatment,
-        destranded=destranded)
+    message(
+      paste(
+        "No compatible Tabix Header Found,",
+        "Using provided arguments to import object."
+      )
+    )
 
+    # else we need to generate it from the supplied arguments
+    argList <- list(
+      sample.ids = sample.ids, assembly = assembly, context = context,
+      resolution = resolution, dbtype = dbtype, treatment = treatment,
+      destranded = destranded, num.records = NA_integer_
+    )
   }
-  
-  if(valid.methylDiffDB(obj)) {return(obj)} 
+  checkMissingArg <- sapply(argList, is.null)
+  if (any(checkMissingArg)) {
+    stop("Missing argument: ", paste(names(argList[checkMissingArg]), collapse = ", "))
+  }
+
+  if (is.null(argList$num.records) || is.na(argList$num.records)) {
+    argList$num.records <- Rsamtools::countTabix(dbpath)[[1]]
+  }
+
+  obj <- do.call(new,
+    args = c("methylDiffDB",
+      dbpath = normalizePath(dbpath),
+      argList
+    )
+  )
+
+  if (valid.methylDiffDB(obj)) {
+    return(obj)
+  }
 }
 
 # coercion functions ------------------------------------------------------
