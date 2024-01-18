@@ -293,23 +293,30 @@ obj2tabix <- function(obj,filename,rm.txt=TRUE){
            append = TRUE)
 }
 
-#' function to check wether tabix header exists 
-#' and exit with message instead of error
+#' Read the header of a tabix file if it exists
 #'
 #' @param tbxFile tabix file
-#' @param message text to print instead of default
 #' @noRd
-checkTabixHeader <- function(tbxFile,message=NULL) {
-  if(is.null(message)) message <- paste("Could not read header of file",tbxFile)
-  tryCatch(expr  = readTabixHeader(tbxFile),
-           error = function(cond){
-             # message(cond)
-             message(message)
-             return(NULL)
-             })
-  
-  
+readTabixHeader <- function(tbxFile){
+  if (is.null(checkTabixFile(tbxFile))) {
+    return(invisible(NULL))
+  }
+
+  header <- tryCatch(
+    expr = Rsamtools::headerTabix(tbxFile)$header,
+    error = function(cond) {
+      message(cond)
+      return(invisible(NULL))
+    }
+  )
+  if (length(header) == 0) {
+    message(paste("The Tabix File:", tbxFile, "does not include a header.\n"))
+    return(invisible(NULL))
+  } else {
+    return(header)
+  }
 }
+
 
 
 #' function to create a tabix header from methylKit object's slots 
