@@ -152,24 +152,44 @@ catsub2tabix<-function(dir,pattern,filename,tabixHead=NULL,sort=FALSE){
 
 #' make tabix from a flat file where first 3 columns
 #' are chr,start,end in that order
-#' 
+#'
 #' @param filepath path to the uncompressed file
 #' @param skip number of lines to skip
 #' @param rm.file remove the uncompressed text file (default: yes)
-#' 
+#'
 #' @usage makeMethTabix(filepath,skip=0)
 #' @noRd
-makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
+makeMethTabix <- function(filepath, skip = 0, rm.file = TRUE) {
   message("compressing the file with bgzip...")
-  zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
-  
-  if(rm.file){file.remove(filepath)}
-  
+  zipped <- Rsamtools::bgzip(filepath, overwrite = TRUE)
+
+  if (rm.file) {
+    file.remove(filepath)
+  }
+
   message("making tabix index...")
-  Rsamtools::indexTabix(zipped,
-             seq=1, start=2, end=3,
-             skip=skip, comment="#", zeroBased=FALSE)
-  
+  indexMethTabix(zipped)
+}
+
+
+#' index a tabix file created with makeMethTabix
+#' 
+#' @param tabixfile path to the tabix file
+#' 
+#' @usage indexMethTabix(tabixfile)
+#' @noRd
+indexMethTabix <- function(tabixfile) {
+  # Use Rsamtools to create the index
+  Rsamtools::indexTabix(
+    tabixfile,
+    seq = 1,
+    start = 2,
+    end = 3,
+    skip = 0,
+    # tabixHeader is ignored for indexing
+    comment = "#",
+    zeroBased = FALSE
+  )
 }
 
 
