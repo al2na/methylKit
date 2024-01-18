@@ -986,34 +986,33 @@ setAs("methylDiffDB","methylDiff", function(from)
 #' @rdname readMethylDB-methods
 readMethylDB <- function(dbpath) {
   
-  if(!file.exists(dbpath)) 
-  {  
-    stop("Tabix File does not exist:", dbpath,"\nPlease provide a path to a valid tabix file.")
-  }
-  
-  if(!file.exists(paste0(dbpath,".tbi"))) 
-  {  
-    Rsamtools::indexTabix(dbpath,seq=1, start=2, end=3,
-                          skip=0, comment="#", zeroBased=FALSE)
-  }
-  
   # if the tabix file includes a header generated with obj2tabix,
   # it can easily be parsed into the respective object
-  head <- checkTabixHeader(tbxFile = dbpath,
-                           message = paste(
-                             "No Tabix Header Found,",
-                             "\nPlease provide tabix file with header created ", 
-                             "from methylKit version >=1.13.1."))
-  
-  if(is.null(head)) stop("Stopping here.") 
-    
-  if(! head$class %in% c("methylRaw", "methylRawDB",
-                             "methylBase", "methylBaseDB",
-                             "methylDiff", "methylDiffDB") ) {
-    stop("Unsupported class:", head$class,"\nPlease provide the correct class of data.")
+  header <- readTabixHeader(dbpath)
+
+  if(is.null(header)) {
+    stop(paste(
+      "No Tabix Header Found,",
+      "\nPlease provide tabix file with header created ",
+      "from methylKit version >=1.13.1."
+    ))
+  }
+
+  parsedHeader <- parseTabixHeader(header)
+
+  supported.classes <- c("methylRaw", "methylRawDB",
+                         "methylBase", "methylBaseDB",
+                         "methylDiff", "methylDiffDB")
+
+  if (!parsedHeader$class %in% supported.classes) {
+    stop(
+      "Unsupported class:",
+      parsedHeader$class,
+      "\nPlease provide the correct class of data."
+    )
   }
   
-  switch (head$class,
+  switch (parsedHeader$class,
                   methylRaw = readMethylRawDB(dbpath), 
                   methylRawDB = readMethylRawDB(dbpath),
                   methylBase = readMethylBaseDB(dbpath),
