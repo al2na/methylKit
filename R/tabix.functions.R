@@ -386,36 +386,33 @@ writeTabixHeader <- function(obj,tabixHead,filename) {
 
 #' function to parse the information stored in the tabix header
 #'
-#' @param tbxFile tabix file
+#' @param header tabix header as read by readTabixHeader
 #' @noRd
-readTabixHeader <- function(tbxFile) {
-  
-  # save header values
-  h <- Rsamtools::headerTabix(tbxFile)$header
-  
-  # check if header is empty
-  if(length(h) == 0 ) stop(paste("The Tabix File:",tbxFile,"does not include a header.\n"))
-  
+parseTabixHeader <- function(header) {
+
+  if(is.null(header)) return(NULL)
   # parse the slots and format the values
-  headerVals <- sapply(h,
-                       USE.NAMES = FALSE,
-                       FUN = function(j) {
-                         tmp <- unlist(strsplit(gsub("#", "", j),split = ":"))
-                         val <- .formatShortSlotValues(tmp)
-                         names(val) <- .decodeShortSlotNames(names(val))
-                         return(val)
-                       }
+  headerVals <- sapply(header,
+    USE.NAMES = FALSE,
+    FUN = function(h) {
+      tmp <- unlist(strsplit(gsub("#", "", h), split = ":"))
+      val <- .formatShortSlotValues(tmp)
+      names(val) <- .decodeShortSlotNames(names(val))
+      # parse the object class
+      if (tmp[1] == "Class") {
+        val <- tmp[2]
+        names(val) <- c("class")
+      }
+      return(val)
+    }
   )
-  
-  headerVals <- headerVals[!is.null(headerVals)]
-  
-  # parse the object class 
-  class <- unlist(sapply((strsplit(gsub("#", "", h),split = ":")), function(x) if(x[1]=="Class") return(x[2])))
-  
-  headerVals$class <- class
-  
+
+  # remove empty slots and duplicates
+  headerVals <- headerVals[
+    (!sapply(headerVals, is.null)) &
+      (!duplicated(names(headerVals)))]
+
   return(headerVals)
-  
 }
 
 
