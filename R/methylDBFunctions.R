@@ -417,7 +417,7 @@ setMethod("adjustMethylC", c("methylRawDB","methylRawDB"),
     
   }
   
-  
+   
 })
 
 
@@ -1083,7 +1083,7 @@ setMethod("percMethylation", "methylBaseDB",
                    chunk.size = 1e6) {
             meth.fun <- function(data, numCs.index, numTs.index, rowids) {
               dat = 100 * data[, numCs.index] / (data[, numCs.index] +
-                                                   data[, numTs.index])
+                                                 data[, numTs.index])
               if(rowids) {
                 dat = cbind(pos = 
                               paste(as.character(data[, 1]),
@@ -2631,6 +2631,9 @@ setMethod("bedgraph", signature(methylObj="methylDiffDB"),
   if(! col.name %in% c('pvalue','qvalue', 'meth.diff') )
   {
     stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
+  }
+  if (col.name == "meth.diff" && log.transform) {
+    stop("Log transformation is not allowed for 'meth.diff' values")
   }
   
   bedgr <- function(data,col.name,file.name,log.transform,negative,add.on,

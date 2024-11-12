@@ -91,6 +91,9 @@ setMethod("bedgraph", signature(methylObj="methylDiff"),
   {
     stop("col.name argument is not one of 'pvalue','qvalue', 'meth.diff'")
   }
+  if (col.name == "meth.diff" && log.transform) {
+    stop("Log transformation is not allowed for 'meth.diff' values")
+  }
   mdata=getData(methylObj)
   df=data.frame(chr=mdata$chr,
                 start=mdata$start-1,
@@ -188,7 +191,7 @@ setMethod("bedgraph", signature(methylObj="methylRaw"),
     options(scipen = defsci)
   }
    
-                        
+                         
 }
 
 )
@@ -308,4 +311,3 @@ setMethod("bedgraph", signature(methylObj="methylRawList"),
       options(scipen = defsci)
   }
 })
- 
