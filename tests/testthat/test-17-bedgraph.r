@@ -14,15 +14,13 @@ bedgraph(methylDiff.obj, file.name=outFile, col.name="meth.diff",
         unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
 tt <- rtracklayer::import.bedGraph(outFile)
 outFile2 <- tempfile(pattern = "mdiff.",tmpdir = outDir,fileext = ".bed")
-suppressWarnings(bedgraph(methylDiff.obj,col.name = "meth.diff",
-         log.transform = TRUE,negative = TRUE,file.name = outFile2))
-tt2 <- rtracklayer::import.bedGraph(outFile2)
 
 
 test_that("export methylDiff worked", {
   expect_true(file.exists(outFile))
   expect_equal(length(tt),nrow(methylDiff.obj))
-  expect_equal(length(tt2),nrow(methylDiff.obj))
+  expect_error(bedgraph(methylDiff.obj,col.name = "meth.diff",
+         log.transform = TRUE,negative = TRUE,file.name = outFile2))
   expect_is(bedgraph(methylDiff.obj,col.name = "meth.diff"),
             class = "data.frame")
   expect_error(bedgraph(methylDiff.obj,col.name = "coverage"))
@@ -51,8 +49,6 @@ test_that("export methylRaw worked", {
   expect_error(bedgraph(methylRawList.obj[[1]],col.name = "meth.diff"))
 })
 
-
-
 # getting a bedgraph file from a methylRawList object containing raw
 #methylation values
 outFile <- tempfile(pattern = "mRawL",tmpdir = outDir,fileext = ".bed")
@@ -74,6 +70,24 @@ test_that("export methylRaw worked", {
   expect_error(bedgraph(methylRawList.obj,col.name = "meth.diff"))
 })
 
+# getting a bedgraph file from a methylDiffDB object containing differential
+# methylation percentages
+outFile <- tempfile(pattern = "mdiffDB.",tmpdir = outDir,fileext = ".bed")
+methylDiffDB.obj <- makeMethylDB(methylDiff.obj, dbdir)
+bedgraph(methylDiffDB.obj, file.name=outFile, col.name="meth.diff",
+        unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
+tt <- rtracklayer::import.bedGraph(outFile)
+outFile2 <- tempfile(pattern = "mdiffDB.",tmpdir = outDir,fileext = ".bed")
+
+test_that("export methylDiffDB worked", {
+  expect_true(file.exists(outFile))
+  expect_equal(length(tt),methylDiffDB.obj@num.records)
+  expect_error(bedgraph(methylDiffDB.obj,col.name = "meth.diff",
+         log.transform = TRUE,negative = TRUE,file.name = outFile2))
+  expect_is(bedgraph(methylDiffDB.obj,col.name = "meth.diff"),
+            class = "data.frame")
+  expect_error(bedgraph(methylDiffDB.obj,col.name = "coverage"))
+})
 
 # remove the file
 unlink(outDir,recursive = TRUE)
