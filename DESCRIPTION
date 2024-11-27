@@ -2,7 +2,7 @@ Package: methylKit
 Type: Package
 Title: DNA methylation analysis from high-throughput
     bisulfite sequencing results
-Version: 1.33.0
+Version: 1.33.1
 Author: Altuna Akalin [aut, cre], Matthias Kormaksson [aut], 
     Sheng Li [aut], Arsene Wabo [ctb], Adrian Bierling [aut], 
     Alexander Blume [aut], Katarzyna Wreczycka [ctb]
