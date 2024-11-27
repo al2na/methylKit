@@ -1,3 +1,10 @@
+methylKit 1.33.1
+--------------
+IMPROVEMENTS AND BUG FIXES
+* bedgraph: fix bedgraph error due to NA handling in meth.diff export (#331)
+
+
+
 methylKit 1.27.2
 --------------
 IMPROVEMENTS AND BUG FIXES
