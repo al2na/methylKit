@@ -905,7 +905,7 @@ int process_bam ( std::string &input,
   int i = 0;
 
   // parse the cigar operations
-  for (i = 0; i < len_cigar; i++)
+  for (i = 0; i < (int)len_cigar; i++)
   {
       // place each operation as character into cigar_buffer
       std::snprintf(&cigar_buffer[i], cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
