@@ -5,7 +5,3 @@ RHTSLIB_CPPFLAGS=$(shell echo 'Rhtslib::pkgconfig("PKG_CPPFLAGS")'|\
 
 PKG_LIBS=$(RHTSLIB_LIBS)
 PKG_CPPFLAGS=$(RHTSLIB_CPPFLAGS)
-#CXX?=g++-4.8		
-#CC?=gcc-4.8
-CXX_STD= CXX11
-

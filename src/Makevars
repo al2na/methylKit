@@ -12,12 +12,6 @@
 ## #ALL_CPPFLAGS = $(R_XTRA_CPPFLAGS) $(PKG_CPPFLAGS) $(CPPFLAGS) $(CLINK_CPPFLAGS)
 ## #ALL_CXXFLAGS = $(R_XTRA_CXXFLAGS) $(PKG_CXXFLAGS) $(CXXPICFLAGS) $(SHLIB_CXXFLAGS) $(CXXFLAGS)
 
-## specify compiler version
-#CXX?=g++-4.8		
-#CC?=gcc-4.8
-
-# use c++11 as std
-CXX_STD= CXX11
 
 ## RHTSlib specific settings
 RHTSLIB_LIBS=$(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript" -e \
