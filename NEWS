@@ -25,7 +25,7 @@ IMPROVEMENTS AND BUG FIXES
   - methCall: simplify the parsing of cigar string and replace 
   calls to deprecated std::sprintf with std::snprintf
 * add test for processBismarkAln to check that reading sam and bam 
-returns the same object for the same content
+  returns the same object for the same content
 
 
 methylKit 1.17.5
