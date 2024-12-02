@@ -35,7 +35,7 @@ mergeTabix<-function(tabixList,dir,filename,mc.cores=1 ,all=FALSE,tabixHead=NULL
   
   #filename="dump.meth.txt"
   #dir="~" 
-  if( class(tabixList) != "TabixFileList" ){
+  if(!inherits(tabixList, "TabixFileList")){
     tabixList <- Rsamtools::TabixFileList(tabixList)
   }
   
@@ -462,7 +462,7 @@ getTabixByChr<-function(tbxFile,chr="chr10",
   
   return.type <- match.arg(return.type)
   
-  if( class(tbxFile) != "TabixFile" ){
+  if( !inherits(tbxFile, "TabixFile") ){
     tbxFile <- TabixFile(tbxFile)
   }
   
@@ -488,7 +488,7 @@ getTabixByChr<-function(tbxFile,chr="chr10",
 #' @noRd
 getTabixByOverlap<-function(tbxFile,granges,return.type="data.table"){
   
-  if( class(tbxFile) != "TabixFile" ){
+  if( !inherits(tbxFile, "TabixFile") ){
     tbxFile <- TabixFile(tbxFile)
   }
   
@@ -518,7 +518,7 @@ headTabix <- function(tbxFile, nrow = 10,
                     return.type = c("data.table","data.frame","GRanges") ){
   
   if(nrow < 1e6) {
-    if( class(tbxFile) != "TabixFile" ){
+    if( !inherits(tbxFile, "TabixFile") ){
       tbxFile <- TabixFile(tbxFile)
       open(tbxFile)
     }
@@ -556,16 +556,16 @@ getTabixByChunk<-function(tbxFile,chunk.size=1e6,
   
   return.type <- match.arg(return.type)
   
-  if( class(tbxFile) != "TabixFile" | !Rsamtools::isOpen(tbxFile, rw="read") ){
+  if( !inherits(tbxFile, "TabixFile") || !Rsamtools::isOpen(tbxFile, rw="read") ){
     stop("tbxFile has to be a class of TabixFile and should be open for reading ")
   }
   
-  if(is.na(yieldSize(tbxFile)) | is.numeric(chunk.size)  ){
-    yieldSize(tbxFile)<-chunk.size
+  if(is.na(Rsamtools::yieldSize(tbxFile)) || is.numeric(chunk.size)  ){
+    Rsamtools::yieldSize(tbxFile)<-chunk.size
   }
   
-  res <- scanTabix(tbxFile)
-  if(length(res) == 1 & length(res[[1]]) == 0)
+  res <- Rsamtools::scanTabix(tbxFile)
+  if(length(res) == 1 && length(res[[1]]) == 0)
     stop("the tabix file seems to be empty. stopping here.")
   
   if(return.type=="data.table")
@@ -646,7 +646,7 @@ applyTbxByChunk<-function(tbxFile,chunk.size=1e6,dir,filename,
   FUN <- match.fun(FUN)
   
   # open tabix file with given chunk size
-  if( class(tbxFile) != "TabixFile" ){
+  if( !inherits(tbxFile, "TabixFile") ){
     tbxFile <- Rsamtools::TabixFile(tbxFile, yieldSize = chunk.size)
 
   } else {
@@ -883,7 +883,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
   FUN <- match.fun(FUN)
   
   # open tabix file with given chunk size
-  if( class(tbxFile) != "TabixFile" ){
+  if( !inherits(tbxFile, "TabixFile") ){
     tbxFile <- Rsamtools::TabixFile(tbxFile)
     
   } 
@@ -913,22 +913,14 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
         tbxFile,granges = region.split[[chunk.num]],
         return.type="data.frame"),silent = TRUE)
       
-      if( class(data)== "try-error") {
+      if(!inherits(data, "try-error")) {
+
+        res=FUN(data,...)  
         
-#         warning( paste("No records found in range between",
-        # min(IRanges::end(region.split[[chunk.num]])),
-#                        "and",max(IRanges::end(region.split[[chunk.num]])),
-#                        "for Chromosome",
-        # unique(as.character(region.split[[chunk.num]]@seqnames))))
-        
-      } else {
-      
-      res=FUN(data,...)  
-      
-      # for tabix
-      outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
-      .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
-                  sep="\t")
+        # for tabix
+        outfile= file.path(path.expand( dir),paste(chunk.num,filename,sep="_"))
+        .write.table.noSci(res,outfile,quote=FALSE,col.names=FALSE,row.names=FALSE,
+                    sep="\t")
     }
     }
     
@@ -954,15 +946,15 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
         tbxFile,granges = region.split[[chunk.num]],
         return.type="data.frame"),silent = TRUE)
       
-      if( !(class(data)== "try-error") ) {
-      res=FUN(data,...) 
+      if( !inherits(data, "try-error") ) {
+        FUN(data,...) 
       }
     }
     
     res=lapply(1:chunk.num,myFunc2,region.split,tbxFile,FUN,...)
     
     # collect and return
-    data.frame(rbindlist(res))
+    data.frame(data.table::rbindlist(res))
   }else{
     
     myFunc3<-function(chunk.num,region.split,tbxFile,FUN,...){
@@ -971,8 +963,8 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
                                     granges = region.split[[chunk.num]],
                                     return.type="data.table"),silent = TRUE)
       
-      if( !(class(data)[1] == "try-error") ) { ## class of data.table is both "data.table" and "data.frame
-      res=FUN(data,...)  
+      if( !(inherits(data, "try-error")) ) { ## class of data.table is both "data.table" and "data.frame
+      FUN(data,...) 
       }
     }
     
@@ -980,7 +972,7 @@ applyTbxByOverlap<-function(tbxFile,ranges,chunk.size=1e6,dir,filename,
     
     
     # collect and return
-    rbindlist(res)
+    data.table::rbindlist(res)
   }
   
 }

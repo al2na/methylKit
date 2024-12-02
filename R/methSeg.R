@@ -97,17 +97,17 @@ methSeg<-function(obj, diagnostic.plot=TRUE, join.neighbours=FALSE,
   
   
   ##coerce object to granges
-  if( class(obj) %in% c("methylRaw", "methylRawDB") ) {
+  if(inherits(obj, c("methylRaw", "methylRawDB"))) {
     obj= as(obj,"GRanges")
     ## calculate methylation score 
     mcols(obj)$meth=100*obj$numCs/obj$coverage
     ## select only required mcol
     obj = obj[,"meth"]
-  }else if ( class(obj) %in% c("methylDiff", "methylDiffDB") ) {
+  }else if ( inherits(obj, c("methylDiff", "methylDiffDB") ) ) {
     obj = as(obj,"GRanges")
     ## use methylation difference as score
     obj = obj[,"meth.diff"]
-  }else if (class(obj) != "GRanges"){
+  }else if (! inherits(obj, "GRanges")){
     stop("only methylRaw or methylDiff objects ", 
          "or GRanges objects can be used in this function")
   }
@@ -307,12 +307,12 @@ methSeg2bed<-function(segments,filename,
                       trackLine="track name='meth segments' description='meth segments' itemRgb=On",
                       colramp=colorRamp(c("gray","green", "darkgreen"))
 ){
-  if(class(segments)!="GRanges"){
+  if(!inherits(segments, "GRanges")){
     stop("segments object has to be of class GRanges")
   }
   
   ## case if only one line is exported
-  if(is.null(colramp) | length(segments)==1){
+  if(is.null(colramp) || length(segments)==1){
     trackLine <- gsub(pattern = "itemRgb=On",replacement = "",x = trackLine)
   } else {
     #require(rtracklayer)
