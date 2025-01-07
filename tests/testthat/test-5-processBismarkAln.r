@@ -210,4 +210,31 @@ test_that("check that multiple files can be read-in as methylrawList", {
   )
 })
 
+# test for consistent output (see https://github.com/al2na/methylKit/issues/334)
+aln_sam <- system.file("extdata", "reduced.sam", package = "methylKit")
+aln_out <- system.file("extdata", "methylKit.1.20.0.csv", package = "methylKit")
+
+
+test_that("check that output is consisten with methylKit.1.20.0", {
+  expect_identical(
+    getData(
+      processBismarkAln(
+        location = aln_sam,
+        sample.id = "test",
+        assembly = "mm39",
+        save.folder = NULL,
+        save.context = NULL,
+        read.context = "CpG",
+        nolap = FALSE,
+        mincov = 1,
+        minqual = 20,
+        phred64 = FALSE,
+        treatment = 0,
+        verbose = FALSE
+      )
+    ),
+    read.csv(aln_out)
+  )
+})
+
 unlink("tests/testthat/methylDB",recursive = TRUE)
