@@ -812,6 +812,10 @@ int process_bam ( std::string &input,
   bam1_t *b = NULL;
   bam_hdr_t *header = NULL;
 
+  if (verbosity > 1)
+    Rcpp::Rcout << "\n"
+                << "Processing " << input << "\n\n"
+                << std::endl;
   in = sam_open(input.c_str(),"r");
   if (in==NULL) {Rcpp::stop("fail to open sam/bam file: " + input );}
    
@@ -878,24 +882,32 @@ int process_bam ( std::string &input,
     // this link provides some explanations in the definitions
     // https://github.com/samtools/htslib/blob/develop/htslib/sam.h
 
-  int32_t pos = b->core.pos,        // 0-based leftmost coordinate 
-          len = b->core.l_qseq,     // length of query
-          chrom = b->core.tid,      // chromosome id defined by bam_hdr_t, might differ from original names. Compare with ordering header in header!
-          mtid = b ->core.mtid,     // chromosome id of next read in template
-          mpos = b->core.mpos;     // 0-based leftmost coordinate of next read in template
-  
-  // change pos and mposi to 1-based coordinates to get same results as for sam input  
-  pos = pos + 1; 
-  mpos = (int) mpos + 1;
-    
-  
-  uint32_t *cigar_pointer = bam_get_cigar(b), // pointer to cigar array
-          len_cigar = b->core.n_cigar;        // number of cigar operations
+    char *qname = (char *)bam_get_qname(b);
+    if (verbosity > 1)
+      std::printf("read name: %s\n", qname);
 
-  // read methylation call string
-  char *meth = (char*) bam_aux_get(b,"XM");
-  if(meth==NULL) {Rcpp::stop("no methylation tag found for bam file " + input );}
-  
+    int32_t pos = b->core.pos, // 0-based leftmost coordinate
+        len = b->core.l_qseq,  // length of query
+        chrom = b->core.tid,   // chromosome id defined by bam_hdr_t, might differ from original names. Compare with ordering header in header!
+        mtid = b->core.mtid,   // chromosome id of next read in template
+        mpos = b->core.mpos;   // 0-based leftmost coordinate of next read in template
+
+    // change pos and mposi to 1-based coordinates to get same results as for sam input
+    pos = pos + 1;
+    mpos = (int)mpos + 1;
+
+    uint32_t *cigar_pointer = bam_get_cigar(b), // pointer to cigar array
+        len_cigar = b->core.n_cigar;            // number of cigar operations
+
+    // read methylation call string
+    char *meth = (char *)bam_aux_get(b, "XM");
+    if (meth == NULL)
+    {
+      Rcpp::stop("no methylation tag found for bam file " + input);
+    }
+
+    if (verbosity > 1)
+      std::cout << "pos: " << pos << " len: " << len << " chrom: " << chrom << " mtid: " << mtid << " mpos: " << mpos << " len_cigar: " << len_cigar << std::endl;
   
   // initialize buffers for sequence, qual and cigar string
   std::string seq, qual;
@@ -921,8 +933,10 @@ int process_bam ( std::string &input,
     std::string methc             = meth; 
     methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
     // std::string qual              = cols[10];
-    
-    
+
+    // print out some information
+    if (verbosity > 1)
+      std::cout << "start: " << start << " end: " << end << " chr: " << chr << " cigar: " << cigar << " meth: " << methc << std::endl;
 
     // // check BAM flag if read was paired in sequencing
     // int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
@@ -1030,6 +1044,10 @@ int process_bam ( std::string &input,
     }
     lastPos=end;
     lastChrom=chr;
+
+    if (verbosity > 1)
+      Rcpp::Rcout << "read done\n"
+                  << std::endl;
   }
   //fh.close();
   
@@ -1420,9 +1438,11 @@ void methCall(std::string read1, std::string type="bam", bool nolap=false, int m
     }
 
   }
-  
-  if(verbosity > 0 ) Rcpp::Rcout << "Done.\n" << std::endl;
-  
+
+  if (verbosity > 1)
+    Rcpp::Rcout << "Done.\n"
+                << std::endl;
+
   if(file.is_open()) file.close();
 
 }
