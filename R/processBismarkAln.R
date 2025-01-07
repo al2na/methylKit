@@ -61,8 +61,10 @@
 #'                if this is NULL, to a new folder in the current 
 #'                working directory 
 #'                named after this scheme: 
-#'                "methylDB <Date> <3randomlettersornumbers>"
-#' @param verbose logical set verbosity of methCall (default: TRUE)
+#' @param verbose set verbosity level of methCall,
+#'                0 or FALSE does not any information,
+#'                1 or TRUE prints the conversion statistics,
+#'                2 or higher is used for debugging  (default: 1)
 #'
 #' @return \code{methylRaw} or \code{methylRawList} object
 #'
@@ -173,7 +175,7 @@ function(location,sample.id,assembly,save.folder,save.context
   methCall(read1 = location, type = "bam", nolap = nolap, minqual = minqual, 
            mincov = mincov, phred64 = phred64, CpGfile = out.files[["CpG"]], 
            CHHfile = out.files[["CHH"]], CHGfile = out.files[["CHG"]], 
-           verbosity = ifelse( verbose, 2, 0)) 
+           verbosity = ifelse( verbose > 2, 2, verbose)) 
   
 
   # read the result
