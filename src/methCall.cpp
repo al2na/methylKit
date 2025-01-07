@@ -944,8 +944,10 @@ int process_bam ( std::string &input,
       }
     }
 
-  for (i = 0; i < len; i++  ) { qual += bam_get_qual(b)[i]+offset;}
-
+    for (i = 0; i < len; i++)
+    {
+      qual += bam_get_qual(b)[i] + offset;
+    }
 
     int start = pos;                 
     int end                       = start + len;
