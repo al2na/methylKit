@@ -908,28 +908,48 @@ int process_bam ( std::string &input,
 
     if (verbosity > 1)
       std::cout << "pos: " << pos << " len: " << len << " chrom: " << chrom << " mtid: " << mtid << " mpos: " << mpos << " len_cigar: " << len_cigar << std::endl;
-  
-  // initialize buffers for sequence, qual and cigar string
-  std::string seq, qual;
-  std::vector<char> cigar_buffer(len_cigar + 1);
 
-  // initialize counter
-  int i = 0;
+    // initialize buffers for sequence, qual and cigar string
+    std::string seq, qual;
+    std::string cigar;
 
-  // parse the cigar operations
-  for (i = 0; i < (int)len_cigar; i++)
-  {
+    // initialize counter and cigar-buffer-storage
+    int i = 0;
+    int c;
+    std::string cigar_buffer;
+
+    // parse the cigar operations
+    for (i = 0; i < (int)len_cigar; i++)
+    {
+      // format the cigar operations as string and save the string length as c
+      c = std::snprintf(cigar_buffer.data(), cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
+      if (verbosity > 1)
+      {
+        std::printf("cigar buffer length: %i\n", c);
+        std::printf("cigar operation length: %i\n", bam_cigar_oplen(cigar_pointer[i]));
+        std::printf("cigar operation performed: %c\n", bam_cigar_opchr(cigar_pointer[i]));
+      }
+
       // place each operation as character into cigar_buffer
-      std::snprintf(&cigar_buffer[i], cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
-  }
+      std::snprintf(cigar_buffer.data(), c + 1, "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
+      // append to cigar string
+      cigar += cigar_buffer.c_str();
+
+      // print current cigar_buffer
+      if (verbosity > 1)
+      {
+        std::printf("cigar operation: %i\n", i);
+        std::printf("cigar_buffer: %s\n", cigar_buffer.c_str());
+        std::printf("cigar string: %s\n", cigar.c_str());
+      }
+    }
 
   for (i = 0; i < len; i++  ) { qual += bam_get_qual(b)[i]+offset;}
 
 
     int start = pos;                 
     int end                       = start + len;
-    std::string chr               = header->target_name[chrom]; //get the "real" chromosome id
-    std::string cigar(cigar_buffer.begin(), cigar_buffer.end());
+    std::string chr = header->target_name[chrom]; // get the "real" chromosome id
     std::string methc             = meth; 
     methc.erase(methc.begin()); //  remove leading "Z" from "XM:Z:"
     // std::string qual              = cols[10];
