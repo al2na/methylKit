@@ -884,7 +884,7 @@ int process_bam ( std::string &input,
 
     char *qname = (char *)bam_get_qname(b);
     if (verbosity > 1)
-      std::printf("read name: %s\n", qname);
+      Rprintf("read name: %s\n", qname);
 
     int32_t pos = b->core.pos, // 0-based leftmost coordinate
         len = b->core.l_qseq,  // length of query
@@ -907,7 +907,7 @@ int process_bam ( std::string &input,
     }
 
     if (verbosity > 1)
-      std::cout << "pos: " << pos << " len: " << len << " chrom: " << chrom << " mtid: " << mtid << " mpos: " << mpos << " len_cigar: " << len_cigar << std::endl;
+      Rcpp::Rcout << "pos: " << pos << " len: " << len << " chrom: " << chrom << " mtid: " << mtid << " mpos: " << mpos << " len_cigar: " << len_cigar << std::endl;
 
     // initialize buffers for sequence, qual and cigar string
     std::string seq, qual;
@@ -925,9 +925,9 @@ int process_bam ( std::string &input,
       c = std::snprintf(cigar_buffer.data(), cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
       if (verbosity > 1)
       {
-        std::printf("cigar buffer length: %i\n", c);
-        std::printf("cigar operation length: %i\n", bam_cigar_oplen(cigar_pointer[i]));
-        std::printf("cigar operation performed: %c\n", bam_cigar_opchr(cigar_pointer[i]));
+        Rprintf("cigar buffer length: %i\n", c);
+        Rprintf("cigar operation length: %i\n", bam_cigar_oplen(cigar_pointer[i]));
+        Rprintf("cigar operation performed: %c\n", bam_cigar_opchr(cigar_pointer[i]));
       }
 
       // place each operation as character into cigar_buffer
@@ -938,9 +938,9 @@ int process_bam ( std::string &input,
       // print current cigar_buffer
       if (verbosity > 1)
       {
-        std::printf("cigar operation: %i\n", i);
-        std::printf("cigar_buffer: %s\n", cigar_buffer.c_str());
-        std::printf("cigar string: %s\n", cigar.c_str());
+        Rprintf("cigar operation: %i\n", i);
+        Rprintf("cigar_buffer: %s\n", cigar_buffer.c_str());
+        Rprintf("cigar string: %s\n", cigar.c_str());
       }
     }
 
@@ -958,7 +958,7 @@ int process_bam ( std::string &input,
 
     // print out some information
     if (verbosity > 1)
-      std::cout << "start: " << start << " end: " << end << " chr: " << chr << " cigar: " << cigar << " meth: " << methc << std::endl;
+      Rcpp::Rcout << "start: " << start << " end: " << end << " chr: " << chr << " cigar: " << cigar << " meth: " << methc << std::endl;
 
     // // check BAM flag if read was paired in sequencing
     // int paired = (int) ((b)->core.flag&BAM_FPAIRED) ;
