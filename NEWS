@@ -1,3 +1,10 @@
+methylKit 1.33.2
+--------------
+IMPROVEMENTS AND BUG FIXES
+* processBismarkAln: fix cigar buffer storage issue which led to faulty methylation calls (#334)
+* remove zlibbioc dependency, zlibbioc is now deprecated in Bioc 3.21 and will be removed in Bioc 3.22
+
+
 methylKit 1.33.1
 --------------
 IMPROVEMENTS AND BUG FIXES
