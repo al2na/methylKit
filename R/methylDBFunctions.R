@@ -703,48 +703,52 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
       
       destrandFun <- function(obj){
         
-        if(obj@resolution == "base") {
-          dir <- dirname(obj@dbpath)
-          filename <- paste(gsub(".txt.bgz","",obj@dbpath),
-                            "destrand.txt",sep="_")
-          
-          # filename <- .checkTabixFileExists(filename)
-          
-          filename <- basename(filename)
-          
-          ## creating the tabix header
-          slotList <- list(dbtype = "tabix",
-                           sample.id = obj@sample.id,
-                           assembly = obj@assembly, 
-                           context = obj@context,
-                           resolution = obj@resolution)
-          
-          tabixHead <- makeTabixHeader(slotList)
-          tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
-                                                tabixHead = tabixHead)
-          
-          # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-          newdbpath <- applyTbxByChunk(obj@dbpath,
-                                       chunk.size = chunk.size, 
-                                       dir=dir,filename = filename,
-                                       return.type = "tabix", 
-                                       FUN = function(x) { 
-                                         .CpG.dinuc.unify(.setMethylDBNames(x,
-                                                                               "methylRawDB") )}, 
-                                       tabixHead = tabixHeadString)
-          
-          readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
-                          sample.id = obj@sample.id,
-                          assembly = obj@assembly, context = obj@context,
-                          resolution = obj@resolution)
-          
-        }else {obj}
+        ## if resolution is not base or if strand is * then return object
+        if(obj@resolution != "base" || any(obj[1:100]$strand == "*")) {return(obj)}
+
+        dir <- dirname(obj@dbpath)
+        filename <- paste(gsub(".txt.bgz","",obj@dbpath),
+                          "destrand.txt",sep="_")
         
+        # filename <- .checkTabixFileExists(filename)
+        
+        filename <- basename(filename)
+        
+        ## creating the tabix header
+        slotList <- list(dbtype = "tabix",
+                          sample.id = obj@sample.id,
+                          assembly = obj@assembly, 
+                          context = obj@context,
+                          resolution = obj@resolution)
+        
+        tabixHead <- makeTabixHeader(slotList)
+        tabixHeadString <- .formatTabixHeader(class = "methylRawDB",
+                                              tabixHead = tabixHead)
+        
+        # need to use .CpG.dinuc.unifyOld because output needs to be ordered
+        newdbpath <- applyTbxByChunk(obj@dbpath,
+                                      chunk.size = chunk.size, 
+                                      dir=dir,filename = filename,
+                                      return.type = "tabix", 
+                                      FUN = function(x) { 
+                                        .CpG.dinuc.unify(
+                                          .setMethylDBNames(x,"methylRawDB") 
+                                          )}, 
+                                      tabixHead = tabixHeadString)
+        
+        readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
+                        sample.id = obj@sample.id,
+                        assembly = obj@assembly, context = obj@context,
+                        resolution = obj@resolution)
+                
       }
       new.list=suppressMessages(lapply(object,destrandFun))
       object <- new("methylRawListDB", new.list,treatment=object@treatment)
-      
-      on.exit(unlink(c(getDBPath(object),paste0(getDBPath(object),".tbi"))),add = TRUE)
+
+      ## on exit remove all destrand files
+      on.exit(unlink(grep("destrand.txt",getDBPath(object),value = TRUE)),add = TRUE, after = TRUE)
+      on.exit(unlink(paste0(grep("destrand.txt",getDBPath(object),value = TRUE),".tbi")),add = TRUE, after = TRUE)
+      # on.exit(unlink(c(getDBPath(object),paste0(getDBPath(object),".tbi"))),add = TRUE)
     }
     #merge raw methylation calls together
     
