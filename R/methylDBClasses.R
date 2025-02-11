@@ -258,7 +258,7 @@ makeMethylRawDB<-function(df,dbpath,dbtype,
               row.names = FALSE,sep = "\t")
   
   # and make tabix out of file
-  makeMethTabix(filename,rm.file = FALSE)
+  makeMethTabix(filename,rm.file = TRUE)
   
   #filepath=paste0(dbpath,"/",sample.id,".txt")
   #df <- df[with(df,order(chr,start,end)),]
