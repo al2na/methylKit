@@ -33,12 +33,15 @@ test_that("test if output of unite is  methylBaseDB object", {
 
 # test for error when methylRaws are non-overlapping
 
+data(methylKit)
+
 filtered.obj <- filterByCoverage(methylRawList.obj,
                                  lo.count = 200, 
                                  lo.perc = NULL, 
                                  hi.count = NULL, 
                                  hi.perc = 99.9)
 filtered.objDB <- makeMethylDB(filtered.obj, dbdir = "methylDB")
+on.exit(unlink("methylDB",recursive = TRUE), add = TRUE, after = TRUE)
 
 test_that("test if unite stopps if bases overlap.", {
   expect_error(unite(filtered.obj,
@@ -58,4 +61,44 @@ test_that("test if unite stopps if bases overlap.", {
 })
 
 
-unlink("tests/testthat/methylDB",recursive = TRUE)
+test_that("test unite with destranding and different resolution and strands", {
+  data(methylKit)
+  
+  mt <- tileMethylCounts(methylRawList.obj)
+  expect_is(unite(mt, destrand = TRUE), "methylBase")
+  
+  # Create methylDB object
+  mdb <- makeMethylDB(methylRawList.obj, dbdir = "methylDB")
+
+  # Clean up
+  on.exit(unlink("methylDB",recursive = TRUE), add = TRUE, after = TRUE)
+  
+  # Test base resolution with destranding
+  expect_is(unite(mdb, destrand = TRUE), "methylBaseDB")
+  
+  # Create tiled version and set resolution to base to mimic strand "*"
+  mdbt <- tileMethylCounts(mdb)
+  # Test normal unite works for regions
+  expect_is(unite(mdbt), "methylBaseDB")
+  
+  # Test normal unite works for regions
+  expect_is(unite(mdbt, destrand = TRUE),"methylBaseDB")
+  
+  # Check if original tiled methylRawDB still exist 
+  # see https://github.com/al2na/methylKit/issues/270
+  expect_is(mdbt, "methylRawListDB")
+  
+  mdbt_base <- methylRawListDB(
+    lapply(mdbt, function(x) {x@resolution <- "base"; x}),
+    treatment = getTreatment(mdb)
+  )
+  
+  # Test normal unite works
+  expect_is(unite(mdbt_base), "methylBaseDB")
+  
+  # Test that no error is thrown when using destrand=TRUE with region resolution
+  # see  https://github.com/al2na/methylKit/issues/271
+  expect_is(unite(mdbt_base, destrand = TRUE),"methylBaseDB")
+  
+})
+
