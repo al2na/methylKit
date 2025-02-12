@@ -69,13 +69,37 @@ test_that("reading of tabix without dbtype leads to error", {
 })
 
 test_that("reading of tabix can be done with one wrapper readMethylDB", {
-  expect_error(readMethylDB(dbpath = no_header))
   expect_is(readMethylDB(dbpath =  "methylDB/my_raw.txt.bgz"),'methylRawDB')
   expect_is(readMethylDB(dbpath =  mydblist[[1]]@dbpath),'methylRawDB')
   expect_is(readMethylDB(dbpath =  "methylDB/my_base.txt.bgz"),'methylBaseDB')
   expect_is(readMethylDB(dbpath =  methidh_db@dbpath),'methylBaseDB')
   expect_is(readMethylDB(dbpath =  "methylDB/my_diff.txt.bgz"),'methylDiffDB')
   expect_is(readMethylDB(dbpath =  methdiff_db@dbpath),'methylDiffDB')
+})
+
+
+test_that("reading of tabix fails for tabix file without header", {
+  expect_error(readMethylRawDB(dbpath =  no_header))
+})
+
+
+test_that("passing empty string fails", {
+  expect_error(readMethylRawDB(dbpath =  ""))
+})
+
+test_that("passing object fails", {
+  expect_error(readMethylDB(dbpath =  base))
+})
+
+test_that("passing wrong object class fails", {
+  expect_error(readMethylRawDB(dbpath =  base@dbpath),
+  "Tabix file does not originate from methylRaw or methylRawDB")
+})
+
+# remove index file
+unlink(paste0(base@dbpath,".tbi"))
+test_that("reading of tabix works for tabix file without index", {
+  expect_is(readMethylDB(dbpath = base@dbpath), "methylBaseDB")
 })
 
 
