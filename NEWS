@@ -1,3 +1,8 @@
+methylKit 1.33.3
+--------------
+IMPROVEMENTS AND BUG FIXES
+* remove import of "key<-" function deprecated since data.table 1.17.0
+
 methylKit 1.33.2
 --------------
 IMPROVEMENTS AND BUG FIXES
