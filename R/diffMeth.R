@@ -201,8 +201,8 @@ QValuesfun<-function(rawp,pi0)
 
 logReg<-function(counts, vars, treatment, 
                  overdispersion=c("none","MN","shrinkMN"),
-                 effect=c("wmean","mean","predicted"), parShrinkMN=list(), 
-                 test=c("F","Chisq")){
+                 effect=c("wmean","mean","predicted","predicted2"), 
+                 parShrinkMN=list(), test=c("F","Chisq")){
   
   # correct counts and treatment factor for NAs in counts
   treatment<-ifelse(is.na(counts),NA,treatment)[1:length(treatment)]
@@ -240,13 +240,13 @@ logReg<-function(counts, vars, treatment,
   phi=switch(overdispersion,
              none=1,
              MN={
-               mu=fitted(obj)
+               #mu=fitted(obj) # already calculated above
                uresids <- (y-w*mu)/sqrt(mu*(w-w*mu)) # pearson residuals
                phi=sum( uresids^2 )/(length(w)-nprm) # correction factor  
                ifelse(phi>1,phi,1)
              },
              shrinkMN={
-               mu=fitted(obj)
+               #mu=fitted(obj) # already calculated above
                uresids <- (y-w*mu)/sqrt(mu*(w-w*mu)) # pearson residuals
                phi=sum( uresids^2 )/(length(w)-nprm) # correction factor
                
@@ -300,6 +300,23 @@ logReg<-function(counts, vars, treatment,
                },
                predicted={
                  tapply(mu, treatment, FUN = mean)
+               },
+               predicted2={
+                 # Add effect estimate calculated on balanced set of covariates.
+                 # Use sets of covariates seen in any treatment group for each group:
+                 covars = vars[,-1,drop=FALSE]
+                 # optionally, remove duplicate covariate sets:
+                 #covars = unique(covars)
+                 # if treatment is a factor, ii will be a factor with same levels:
+                 ii = sort(unique(treatment))
+                 newdata = cbind(treatment=ii[1], covars)
+                 for(i in ii[-1]) newdata = rbind(newdata, cbind(treatment=i, covars))
+                 # predict:
+                 # (this should take care of factor covariates as well)
+                 newMat = model.matrix(formula, as.data.frame(newdata))
+                 eta <- as.matrix(newMat) %*% as.matrix(obj$coef)
+                 mu_pred = as.vector(obj$family$linkinv(eta))
+                 tapply(mu_pred, newdata$treatment, FUN=mean)
                }
   )
   
