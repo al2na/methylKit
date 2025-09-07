@@ -701,7 +701,7 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
       
       message("destranding...")
       
-      destrandFun <- function(obj){
+      destrandFun <- function(obj, mc.cores=1){
         
         ## if resolution is not base or if strand is * then return object
         if(obj@resolution != "base" || any(headTabix(obj@dbpath)$strand == "*")) {return(obj)}
@@ -726,15 +726,16 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                                               tabixHead = tabixHead)
         
         # need to use .CpG.dinuc.unifyOld because output needs to be ordered
-        newdbpath <- applyTbxByChunk(obj@dbpath,
-                                      chunk.size = chunk.size, 
-                                      dir=dir,filename = filename,
+        newdbpath <- applyTbxByChr(obj@dbpath,
+                                      dir=dir,
+                                      filename = filename,
                                       return.type = "tabix", 
                                       FUN = function(x) { 
                                         .CpG.dinuc.unify(
                                           .setMethylDBNames(x,"methylRawDB") 
                                           )}, 
-                                      tabixHead = tabixHeadString)
+                                      tabixHead = tabixHeadString,
+                                      mc.cores = mc.cores)
         
         readMethylRawDB(dbpath = newdbpath,dbtype = "tabix",
                         sample.id = obj@sample.id,
@@ -742,7 +743,7 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
                         resolution = obj@resolution)
                 
       }
-      new.list=suppressMessages(lapply(object,destrandFun))
+      new.list=suppressMessages(lapply(object,destrandFun, mc.cores = mc.cores))
       object <- new("methylRawListDB", new.list,treatment=object@treatment)
 
       ## on exit remove all destrand files
