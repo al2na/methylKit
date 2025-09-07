@@ -7,77 +7,60 @@
 ## flat file database
 ## @param df data.frame containing methylRaw or methylBase data
 ## @param methylDBclass 
-.setMethylDBNames <- function(df,
-                              methylDBclass=c("methylRawDB","methylBaseDB",
-                                              "methylDiffDB")){
-  
-  if(nrow(df) == 0) return(df)
-  
-  if(missing(methylDBclass)){
-        
-    if( length(df) == 7 & unique(sapply(df,class)[5:7])=="integer"){
-      setnames(x = df,old = names(df), 
-                           new = c("chr","start","end","strand",
-                                   "coverage","numCs","numTs"))
-      
-    } else if( length(df) == 7 & unique(sapply(df,class)[5:7])=="numeric"){
-      setnames(x = df,old = names(df), 
-                           new = c("chr","start","end","strand",
-                                   "pvalue","qvalue","meth.diff")) 
+.setMethylDBNames <- function(df, 
+                              methylDBclass = NULL) {
 
-    } else if( length(df) > 7){
-      setnames(x = df,old = names(df)[1:4], 
-                           new = c("chr","start","end","strand"))
-      # get indices of coverage,numCs and numTs in the data frame 
-      numsamples = (length(df)-4)/3
-      coverage.ind=seq(5,by=3,length.out=numsamples)
-      numCs.ind   =coverage.ind+1
-      numTs.ind   =coverage.ind+2
-      
-      # change column names
-      setnames(df,names(df)[coverage.ind], 
-                           paste(c("coverage"),1:numsamples,sep="" ))
-      setnames(df,names(df)[numCs.ind], 
-                           paste(c("numCs"),1:numsamples,sep="" ))
-      setnames(df,names(df)[numTs.ind], 
-                           paste(c("numTs"),1:numsamples,sep="" ))
-      
-    } 
-    
-    #return(df)
-    
+  if (nrow(df) == 0) return(df)
+  
+  if (length(df) < 7) {
+    stop("Expected data frame must have at least 7 columns")
+  }
+
+  if (is.null(methylDBclass)) {
+    if (length(df) > 7) {
+      methylDBclass = "methylBaseDB"
+    } else {
+      if (all(sapply(df[5:7], is.integer))) {
+        methylDBclass = "methylRawDB"
+      } else {
+        methylDBclass = "methylDiffDB"
+      }
+    }
   } else {
-    
-    if( methylDBclass == "methylRawDB" ){
-      setnames(x = df,old = names(df), 
-                           new = c("chr","start","end","strand",
-                                   "coverage","numCs","numTs"))
-    
-    } else if ( methylDBclass == "methylBaseDB"){
-      setnames(x = df,old = names(df)[1:4], 
-                           new = c("chr","start","end","strand"))
-      # get indices of coverage,numCs and numTs in the data frame 
-      numsamples = (length(df)-4)/3
-      coverage.ind=seq(5,by=3,length.out=numsamples)
-      numCs.ind   =coverage.ind+1
-      numTs.ind   =coverage.ind+2
-      
-      # change column names
-      setnames(df,names(df)[coverage.ind], 
-                           paste(c("coverage"),1:numsamples,sep="" ))
-      setnames(df,names(df)[numCs.ind], 
-                           paste(c("numCs"),1:numsamples,sep="" ))
-      setnames(df,names(df)[numTs.ind], 
-                           paste(c("numTs"),1:numsamples,sep="" ))
-      
-    } else if( methylDBclass == "methylDiffDB" ){
-      setnames(x = df,old = names(df), 
-                           new = c("chr","start","end","strand",
-                                   "pvalue","qvalue","meth.diff"))
-    
-    #return(df)
+    if (!methylDBclass %in% c("methylRawDB", "methylBaseDB", "methylDiffDB")) {
+      stop("Unknown methylDBclass provided, ",
+           "allowed values are: methylRawDB, methylBaseDB, methylDiffDB")
     }
   }
+  
+  
+  if (methylDBclass == "methylRawDB") {
+    setnames(df, new = c("chr", "start", "end", "strand",
+                         "coverage", "numCs", "numTs"))
+    
+  } else if (methylDBclass == "methylBaseDB") {
+    # get indices of coverage,numCs and numTs in the data frame
+    numsamples = (length(df) - 4) / 3
+    coverage.ind = seq(5, by = 3, length.out = numsamples)
+    numCs.ind   = coverage.ind + 1
+    numTs.ind   = coverage.ind + 2
+    
+    # change column names
+    setnames(df, old = names(df)[1:4],
+             new = c("chr", "start", "end", "strand"))
+    setnames(df, old = names(df)[coverage.ind],
+             new = paste(c("coverage"), 1:numsamples, sep = ""))
+    setnames(df, old = names(df)[numCs.ind],
+             new = paste(c("numCs"), 1:numsamples, sep = ""))
+    setnames(df, old = names(df)[numTs.ind], 
+             new = paste(c("numTs"), 1:numsamples, sep = ""))
+    
+  } else if (methylDBclass == "methylDiffDB") {
+    setnames(df, new = c( "chr", "start", "end", "strand",
+                          "pvalue", "qvalue", "meth.diff" ))
+    
+  }
+  return(df)
 }
 
 
