@@ -256,10 +256,10 @@ myobj_test <- methRead(files,
                        mincov=1)
 
 test_that("test if unite with destranding works as tabix", {
-  expect_is(meth_test_db <- unite(myobj_test, destrand=TRUE, min.per.group=1L, chunk.size = 1e1, save.db = TRUE), "methylBaseDB")
+  expect_is(meth_test_db <<- unite(myobj_test, destrand=TRUE, min.per.group=1L, chunk.size = 1e1, save.db = TRUE), "methylBaseDB")
 })
 test_that("test if unite with destranding works in memory and as tabix", {
-  expect_is(meth_test_mem <- unite(myobj_test, destrand=TRUE, min.per.group=1L, chunk.size = 1e1, save.db = FALSE), "methylBase")
+  expect_is(meth_test_mem <<- unite(myobj_test, destrand=TRUE, min.per.group=1L, chunk.size = 1e1, save.db = FALSE), "methylBase")
 })
 test_that("test if output of unite with destranding is the same in memory and as tabix", {
   expect_identical(getData(meth_test_mem), getData(meth_test_db))
