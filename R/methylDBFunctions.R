@@ -704,7 +704,7 @@ unite.methylRawListDB <- function(object,destrand=FALSE,min.per.group=NULL,
       destrandFun <- function(obj){
         
         ## if resolution is not base or if strand is * then return object
-        if(obj@resolution != "base" || any(obj[1:100]$strand == "*")) {return(obj)}
+        if(obj@resolution != "base" || any(headTabix(obj@dbpath)$strand == "*")) {return(obj)}
 
         dir <- dirname(obj@dbpath)
         filename <- paste(gsub(".txt.bgz","",obj@dbpath),
