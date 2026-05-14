@@ -26,7 +26,7 @@
 #'                    overwritten by a character vector containing sample names.
 #' @param assembly    the assembly description (e.g. "hg18").Only
 #'                    needed for book keeping. 
-#' @param context     the experimanteal context of the data (e.g. "CpG"). Only
+#' @param context     the experimental context of the data (e.g. "CpG"). Only
 #'                    needed for book keeping. 
 #' @param add.info if set to TRUE, the output will be a list with the first 
 #'                    element being 
