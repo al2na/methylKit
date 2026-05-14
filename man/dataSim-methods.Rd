@@ -54,7 +54,7 @@ overwritten by a character vector containing sample names.}
 \item{assembly}{the assembly description (e.g. "hg18").Only
 needed for book keeping.}
 
-\item{context}{the experimanteal context of the data (e.g. "CpG"). Only
+\item{context}{the experimental context of the data (e.g. "CpG"). Only
 needed for book keeping.}
 
 \item{add.info}{if set to TRUE, the output will be a list with the first 
