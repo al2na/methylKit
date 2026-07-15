@@ -165,6 +165,13 @@ if you are going to submit bug reports or ask questions, please send sessionInfo
 Questions are very welcome, although we suggest you read the paper, documentation(function help pages and the vignette) and [ blog entries](http://zvfak.blogspot.com/search/label/methylKit) first. The answer to your question might be there already.
 
 -------
+# de.NBI Service
+
+<img src="img/denbi-logo-color.svg" alt="de.NBI logo" width="220">
+
+This is an approved de.NBI service. Please help us improve by taking our short [user survey](https://www.surveymonkey.de/r/denbi-service?sc=rbc&tool=methylkit).
+
+-------
 # Contribute to the development
 See the [trello board](https://trello.com/b/k2kv1Od7/methylkit) for methylKit development. You can contribute to the methylKit development via github ([http://github.com/al2na/methylKit/]) by opening an issue and discussing what you want to contribute, we will guide you from there. In addition, you should:
 
