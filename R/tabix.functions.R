@@ -273,7 +273,7 @@ obj2tabix <- function(obj,filename,rm.txt=TRUE){
            append = TRUE)
 }
 
-#' function to check wether tabix header exists 
+#' function to check whether tabix header exists 
 #' and exit with message instead of error
 #'
 #' @param tbxFile tabix file
