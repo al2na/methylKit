@@ -152,24 +152,44 @@ catsub2tabix<-function(dir,pattern,filename,tabixHead=NULL,sort=FALSE){
 
 #' make tabix from a flat file where first 3 columns
 #' are chr,start,end in that order
-#' 
+#'
 #' @param filepath path to the uncompressed file
 #' @param skip number of lines to skip
 #' @param rm.file remove the uncompressed text file (default: yes)
-#' 
+#'
 #' @usage makeMethTabix(filepath,skip=0)
 #' @noRd
-makeMethTabix<-function(filepath,skip=0,rm.file=TRUE){
+makeMethTabix <- function(filepath, skip = 0, rm.file = TRUE) {
   message("compressing the file with bgzip...")
-  zipped <- Rsamtools::bgzip(filepath,overwrite=TRUE)
-  
-  if(rm.file){file.remove(filepath)}
-  
+  zipped <- Rsamtools::bgzip(filepath, overwrite = TRUE)
+
+  if (rm.file) {
+    file.remove(filepath)
+  }
+
   message("making tabix index...")
-  Rsamtools::indexTabix(zipped,
-             seq=1, start=2, end=3,
-             skip=skip, comment="#", zeroBased=FALSE)
-  
+  indexMethTabix(zipped)
+}
+
+
+#' index a tabix file created with makeMethTabix
+#' 
+#' @param tabixfile path to the tabix file
+#' 
+#' @usage indexMethTabix(tabixfile)
+#' @noRd
+indexMethTabix <- function(tabixfile) {
+  # Use Rsamtools to create the index
+  Rsamtools::indexTabix(
+    tabixfile,
+    seq = 1,
+    start = 2,
+    end = 3,
+    skip = 0,
+    # tabixHeader is ignored for indexing
+    comment = "#",
+    zeroBased = FALSE
+  )
 }
 
 
@@ -273,23 +293,64 @@ obj2tabix <- function(obj,filename,rm.txt=TRUE){
            append = TRUE)
 }
 
-#' function to check wether tabix header exists 
-#' and exit with message instead of error
+#' Read the header of a tabix file if it exists
 #'
 #' @param tbxFile tabix file
-#' @param message text to print instead of default
 #' @noRd
-checkTabixHeader <- function(tbxFile,message=NULL) {
-  if(is.null(message)) message <- paste("Could not read header of file",tbxFile)
-  tryCatch(expr  = readTabixHeader(tbxFile),
-           error = function(cond){
-             # message(cond)
-             message(message)
-             return(NULL)
-             })
-  
-  
+readTabixHeader <- function(tbxFile){
+  if (is.null(checkTabixFile(tbxFile))) {
+    return(invisible(NULL))
+  }
+
+  header <- tryCatch(
+    expr = Rsamtools::headerTabix(tbxFile)$header,
+    error = function(cond) {
+      message(cond)
+      return(invisible(NULL))
+    }
+  )
+  if (length(header) == 0) {
+    message(paste("The Tabix File:", tbxFile, "does not include a header.\n"))
+    return(invisible(NULL))
+  } else {
+    return(header)
+  }
 }
+
+
+#' This function checks a tabix. It will verify the file and check if the
+#' associated index exist. If the index cannot be found, the file will be reindexed.
+#' 
+#' @return the path to the tabix file or NULL if the file does not exist
+#'
+#' @param tbxFile tabix file
+#' @param createIndex should the index be created if it does not exist
+#' @noRd
+checkTabixFile <- function(tbxFile, createIndex = TRUE) {
+
+  if(!is.character(tbxFile)) {
+    stop("tbxFile must be a character string")
+  }
+
+  if (tbxFile == "") {
+    stop("No tabix file specified.")
+  }
+  if (!file.exists(tbxFile)) {
+    message(paste0("Tabix file '", tbxFile, "' does not exist."))
+    return(invisible(NULL))
+  }
+  if (!file.exists(paste0(tbxFile, ".tbi"))) {
+    if (createIndex && (file.access(dirname(tbxFile)) == 0)) {
+      message("creating tabix index")
+      indexMethTabix(tbxFile)
+    } else {
+      message(paste("Tabix index file", paste0(tbxFile, ".tbi"), "does not exist."))
+      return(invisible(NULL))
+    }
+  }
+  return(invisible(tbxFile))
+}
+
 
 
 #' function to create a tabix header from methylKit object's slots 
@@ -366,36 +427,33 @@ writeTabixHeader <- function(obj,tabixHead,filename) {
 
 #' function to parse the information stored in the tabix header
 #'
-#' @param tbxFile tabix file
+#' @param header tabix header as read by readTabixHeader
 #' @noRd
-readTabixHeader <- function(tbxFile) {
-  
-  # save header values
-  h <- Rsamtools::headerTabix(tbxFile)$header
-  
-  # check if header is empty
-  if(length(h) == 0 ) stop(paste("The Tabix File:",tbxFile,"does not include a header.\n"))
-  
+parseTabixHeader <- function(header) {
+
+  if(is.null(header)) return(NULL)
   # parse the slots and format the values
-  headerVals <- sapply(h,
-                       USE.NAMES = FALSE,
-                       FUN = function(j) {
-                         tmp <- unlist(strsplit(gsub("#", "", j),split = ":"))
-                         val <- .formatShortSlotValues(tmp)
-                         names(val) <- .decodeShortSlotNames(names(val))
-                         return(val)
-                       }
+  headerVals <- sapply(header,
+    USE.NAMES = FALSE,
+    FUN = function(h) {
+      tmp <- unlist(strsplit(gsub("#", "", h), split = ":"))
+      val <- .formatShortSlotValues(tmp)
+      names(val) <- .decodeShortSlotNames(names(val))
+      # parse the object class
+      if (tmp[1] == "Class") {
+        val <- tmp[2]
+        names(val) <- c("class")
+      }
+      return(val)
+    }
   )
-  
-  headerVals <- headerVals[!is.null(headerVals)]
-  
-  # parse the object class 
-  class <- unlist(sapply((strsplit(gsub("#", "", h),split = ":")), function(x) if(x[1]=="Class") return(x[2])))
-  
-  headerVals$class <- class
-  
+
+  # remove empty slots and duplicates
+  headerVals <- headerVals[
+    (!sapply(headerVals, is.null)) &
+      (!duplicated(names(headerVals)))]
+
   return(headerVals)
-  
 }
 
 
