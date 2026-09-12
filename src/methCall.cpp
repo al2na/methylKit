@@ -922,7 +922,7 @@ int process_bam ( std::string &input,
     for (i = 0; i < (int)len_cigar; i++)
     {
       // format the cigar operations as string and save the string length as c
-      c = std::snprintf(cigar_buffer.data(), cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
+      c = std::snprintf(const_cast<char*>(cigar_buffer.data()), cigar_buffer.size(), "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
       if (verbosity > 1)
       {
         Rprintf("cigar buffer length: %i\n", c);
@@ -931,7 +931,7 @@ int process_bam ( std::string &input,
       }
 
       // place each operation as character into cigar_buffer
-      std::snprintf(cigar_buffer.data(), c + 1, "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
+      std::snprintf(const_cast<char*>(cigar_buffer.data()), c + 1, "%i%c", bam_cigar_oplen(cigar_pointer[i]), bam_cigar_opchr(cigar_pointer[i]));
       // append to cigar string
       cigar += cigar_buffer.c_str();
 
